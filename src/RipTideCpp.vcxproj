@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{61B8898C-F8D5-4D09-BC55-97875567A32C}</ProjectGuid>
+    <RootNamespace>RipTideCpp</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>RipTideCpp</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\envs\python36\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\..\envs\python36\libs;..\..\bin\Debug</LibraryPath>
+    <TargetName>sfwc_fastmath</TargetName>
+    <TargetExt>.pyd</TargetExt>
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\envs\python36\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\..\envs\python36\libs;..\..\bin\Release</LibraryPath>
+    <TargetName>riptide_cpp</TargetName>
+    <TargetExt>.pyd</TargetExt>
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AssemblerOutput>All</AssemblerOutput>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <IgnoreSpecificDefaultLibraries>python36_d.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);python37.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ArenaMemory.cpp" />
+    <ClCompile Include="Array.cpp" />
+    <ClCompile Include="BasicMath.cpp" />
+    <ClCompile Include="Bins.cpp" />
+    <ClCompile Include="BitCount.cpp" />
+    <ClCompile Include="Compare.cpp" />
+    <ClCompile Include="Compress.cpp" />
+    <ClCompile Include="Convert.cpp" />
+    <ClCompile Include="CRC32.cpp" />
+    <ClCompile Include="DateTime.cpp" />
+    <ClCompile Include="Ema.cpp" />
+    <ClCompile Include="Hook.cpp" />
+    <ClCompile Include="RipTide.cpp" />
+    <ClCompile Include="GroupBy.cpp" />
+    <ClCompile Include="HashFunctions.cpp" />
+    <ClCompile Include="HashLinear.cpp" />
+    <ClCompile Include="MathThreads.cpp" />
+    <ClCompile Include="MathWorker.cpp" />
+    <ClCompile Include="Merge.cpp" />
+    <ClCompile Include="MultiKey.cpp" />
+    <ClCompile Include="Recycler.cpp" />
+    <ClCompile Include="Reduce.cpp" />
+    <ClCompile Include="SDSFile.cpp" />
+    <ClCompile Include="SDSFilePython.cpp" />
+    <ClCompile Include="SharedMemory.cpp" />
+    <ClCompile Include="Sort.cpp" />
+    <ClCompile Include="strptime5.cpp" />
+    <ClCompile Include="TileRepeat.cpp" />
+    <ClCompile Include="TimeWindow.cpp" />
+    <ClCompile Include="UnaryOps.cpp" />
+    <ClCompile Include="zstd\lib\common\entropy_common.c" />
+    <ClCompile Include="zstd\lib\common\error_private.c" />
+    <ClCompile Include="zstd\lib\common\fse_decompress.c" />
+    <ClCompile Include="zstd\lib\common\pool.c" />
+    <ClCompile Include="zstd\lib\common\xxhash.c" />
+    <ClCompile Include="zstd\lib\common\zstd_common.c" />
+    <ClCompile Include="zstd\lib\compress\fse_compress.c" />
+    <ClCompile Include="zstd\lib\compress\hist.c" />
+    <ClCompile Include="zstd\lib\compress\huf_compress.c" />
+    <ClCompile Include="zstd\lib\compress\zstdmt_compress.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_compress.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_double_fast.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_fast.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_lazy.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_ldm.c" />
+    <ClCompile Include="zstd\lib\compress\zstd_opt.c" />
+    <ClCompile Include="zstd\lib\decompress\huf_decompress.c" />
+    <ClCompile Include="zstd\lib\decompress\zstd_ddict.c" />
+    <ClCompile Include="zstd\lib\decompress\zstd_decompress.c" />
+    <ClCompile Include="zstd\lib\decompress\zstd_decompress_block.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ArenaMemory.h" />
+    <ClInclude Include="Array.h" />
+    <ClInclude Include="BasicMath.h" />
+    <ClInclude Include="Bins.h" />
+    <ClInclude Include="BitCount.h" />
+    <ClInclude Include="CommonInc.h" />
+    <ClInclude Include="Compare.h" />
+    <ClInclude Include="Compress.h" />
+    <ClInclude Include="Convert.h" />
+    <ClInclude Include="Ema.h" />
+    <ClInclude Include="GroupBy.h" />
+    <ClInclude Include="Hook.h" />
+    <ClInclude Include="Merge.h" />
+    <ClInclude Include="MultiKey.h" />
+    <ClInclude Include="Reduce.h" />
+    <ClInclude Include="SDSFile.h" />
+    <ClInclude Include="SDSFilePython.h" />
+    <ClInclude Include="SharedMemory.h" />
+    <ClInclude Include="Sort.h" />
+    <ClInclude Include="HashFunctions.h" />
+    <ClInclude Include="HashLinear.h" />
+    <ClInclude Include="MathThreads.h" />
+    <ClInclude Include="RipTide.h" />
+    <ClInclude Include="MathWorker.h" />
+    <ClInclude Include="Recycler.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TileRepeat.h" />
+    <ClInclude Include="TimeWindow.h" />
+    <ClInclude Include="UnaryOps.h" />
+    <ClInclude Include="zstd\lib\compress\hist.h" />
+    <ClInclude Include="zstd\lib\compress\zstdmt_compress.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_compress_internal.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_double_fast.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_fast.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_lazy.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_ldm.h" />
+    <ClInclude Include="zstd\lib\compress\zstd_opt.h" />
+    <ClInclude Include="zstd\lib\decompress\zstd_ddict.h" />
+    <ClInclude Include="zstd\lib\decompress\zstd_decompress_block.h" />
+    <ClInclude Include="zstd\lib\decompress\zstd_decompress_internal.h" />
+    <ClInclude Include="zstd\lib\zstd.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="setup.py" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>
