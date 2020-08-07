@@ -25,7 +25,6 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
-#include "CRC32.h"
 
 #undef LOGGING
 //#define LOGGING printf
