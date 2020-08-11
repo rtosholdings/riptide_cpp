@@ -1,11 +1,10 @@
-
-from distutils.core import setup, Extension, DEBUG
+import setuptools
 import numpy as np
 import sys
 
 sm_module = None
 if sys.platform == 'linux':
-    sm_module = Extension(
+    sm_module = setuptools.Extension(
         'riptide_cpp', 
         sources = ['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
                     'Compare.cpp', 'MultiKey.cpp', 'MathWorker.cpp', 'BitCount.cpp', 'GroupBy.cpp','UnaryOps.cpp','Ema.cpp','Reduce.cpp',
@@ -41,7 +40,7 @@ if sys.platform == 'linux':
         )
 
 if sys.platform == 'win32':
-    sm_module = Extension(
+    sm_module = setuptools.Extension(
         'riptide_cpp', 
         sources = ['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
                     'Compare.cpp', 'MultiKey.cpp', 'MathWorker.cpp', 'BitCount.cpp', 'GroupBy.cpp','UnaryOps.cpp','Ema.cpp','Reduce.cpp',
@@ -74,11 +73,27 @@ if sys.platform == 'win32':
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',]
         )
 
-setup(name = 'riptide_cpp', 
-    version = '1.0',
+setuptools.setup(
+    name = 'riptide_cpp', 
+    version = '1.3',
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
+    author_email = 'nobody@rtosholdings.com',
     ext_modules = [sm_module],
+    long_description= 'Python Package with fast math util functions',
+    long_description_content_type= 'text/markdown',
+    url="https://github.com/rtosholdings/riptide_cpp",
+    #packages=setuptools.find_packages(),
+    packages=['riptide_cpp'],
+    package_dir={'riptide_cpp' : '.'},
+    classifiers=[
+         "Development Status :: 4 - Beta",
+         "Programming Language :: Python :: 3",
+         "Programming Language :: Python :: 3.6",
+         "Programming Language :: Python :: 3.7",
+         "Programming Language :: Python :: 3.8",
+         "License :: OSI Approved :: BSD License",
+         "Operating System :: OS Independent",
+    ],
     include_dirs=[np.get_include()]
     )
-
