@@ -289,13 +289,13 @@ namespace riptide
      template<>
      struct arrlen_index_cutoff<NPY_TYPES::NPY_INT16>
      {
-         static constexpr int64_t value = 30'000;
+         static constexpr int64_t value = 30000;
      };
 
      template<>
      struct arrlen_index_cutoff<NPY_TYPES::NPY_INT32>
      {
-         static constexpr int64_t value = 2'000'000'000LL;
+         static constexpr int64_t value = 2000000000LL;
      };
 
      /**
