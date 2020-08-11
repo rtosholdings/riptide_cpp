@@ -3,7 +3,7 @@ import numpy as np
 import sys
 
 sm_module = None
-if sys.platform == 'linux':
+if sys.platform != 'win32':
     sm_module = setuptools.Extension(
         'riptide_cpp', 
         sources = ['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
