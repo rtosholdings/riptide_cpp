@@ -50,7 +50,7 @@ if sys.platform == 'darwin':
         sources = sources_cpp,
         include_dirs = ['zstd'],
         libraries = ['zstd'],
-        library_dirs = ['./'],
+        library_dirs = ['./lib'],
         extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32'],
         )
 
