@@ -30,6 +30,8 @@
 //#define LOGGING printf
 #define LOGGING(...)
 
+#define LOG_ALLOC(...)
+
 #ifndef max
 #define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
@@ -367,12 +369,12 @@ extern "C" {
    // Called on PyDecRef when refcnt goes to zero
    void FastArrayDestructor(PyObject *object) {
 
-      printf("called %lld %ld\n", object->ob_refcnt, object->ob_type->tp_flags);
+      LOG_ALLOC("called %lld %ld\n", object->ob_refcnt, object->ob_type->tp_flags);
       // If we are the base then nothing else is attached to this array object
       // Attempt to recycle, if succeeds, the refnct will be incremented so we can hold on
       if (!RecycleNumpyInternal((PyArrayObject*)object)) {
          PyArrayObject* pArray = (PyArrayObject*)object;
-         printf("freeing %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
+		 LOG_ALLOC("freeing %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
          g_FastArrayInstanceDeallocate(object);
       } // else we are keeping it around
    }
