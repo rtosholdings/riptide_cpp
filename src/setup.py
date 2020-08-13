@@ -2,7 +2,7 @@ import setuptools
 import numpy as np
 import sys
 
-version_string = '1.4'
+version_string = '1.5'
 package_name = 'riptide_cpp'
 rc_module = None
 sources_cpp=['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
