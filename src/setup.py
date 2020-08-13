@@ -48,9 +48,9 @@ if sys.platform == 'darwin':
     rc_module = setuptools.Extension(
         package_name, 
         sources = sources_cpp,
-        libraries = ['lib/zstd_mac.lib'],
-        #library_dirs = ['./lib'],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32','-falign-loops=32'],
+        libraries = ['zstd'],
+        library_dirs = ['./'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32'],
         )
 
 
