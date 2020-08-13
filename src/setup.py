@@ -37,7 +37,7 @@ sources_zstd=['zstd/compress/fse_compress.c',
 if sys.platform == 'linux':
     rc_module = setuptools.Extension(
         package_name, 
-        sources = sources_cpp + source_zstd,
+        sources = sources_cpp + sources_zstd,
                  
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
         extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32','-falign-loops=32'],
@@ -57,7 +57,7 @@ if sys.platform == 'darwin':
 if sys.platform == 'win32':
     rc_module = setuptools.Extension(
         package_name, 
-        sources = sources_cpp + source_zstd,
+        sources = sources_cpp + sources_zstd,
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
         #extra_compile_args = ['/MT /Ox /Ob2 /Oi /Ot'],
         # For MSVC windows compiler it has the new __CxxFrameHandler4 which is found in vcrntime140_1.dll which is not on all systems
@@ -77,6 +77,7 @@ setuptools.setup(
     url="https://github.com/rtosholdings/riptide_cpp",
     #packages=setuptools.find_packages(),
     packages=[package_name],
+    install_requires=['numpy'],
     package_dir={package_name : '.'},
     classifiers=[
          "Development Status :: 4 - Beta",
