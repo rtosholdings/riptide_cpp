@@ -49,7 +49,7 @@ if sys.platform == 'darwin':
         package_name, 
         sources = sources_cpp,
         include_dirs = ['zstd'],
-        extra_link_args = ['lib/libzstd.a']
+        extra_link_args = ['lib/libzstd.a'],
         #libraries = ['libzstd.a'],
         #library_dirs = ['lib'],
         extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32'],
