@@ -1,0 +1,58 @@
+Example of how to build riptide_cpp from windows/linux/mac.
+
+download git command line tools (which may already be installed) OR
+download the .zip from the https://github.com/rtosholdings/riptide_cpp website
+
+Below snippet is for the git command line tool (skip this section if you downloaded zip)
+============
+Create a directory to build in, for example c:\source and cd into that directory.
+Or linux ~/source
+>> md c:\source
+>> cd c:\source
+==
+>> md ~/source
+>> cd ~/source
+
+Clone the source code from github
+>> git clone https://github.com/rtosholdings/riptide_cpp
+this will create a riptide_cpp directory in c:\source\riptide_cpp
+=============
+
+To make a python 3.8 build use conda to create the environment.
+I do:
+>> conda create -n riptable38 python=3.8
+>> conda create -n riptable37 python=3.7
+
+And to choose one..
+>> conda activate riptable38
+
+numpy is needed to compile riptide_cpp
+>> pip install numpy
+
+also move into the riptide src directory to build
+>> cd riptide_cpp\src    or  cd riptide_cpp/src
+
+If you are on Windows and use the VS2019 compiler see below (otherwise skip)
+==================
+VS2019 compiler has the new __CxxFrameHandler4 which is found in vcrntime140_1.dll which is not on all systems
+/d2FH4- is used to disable this but does not exist on VS2017 compiler (so remove compile arg for VS2017)
+==================
+
+Once you are in the src directory, to build on all platforms...
+>> python setup.py build
+NOTE: to force a rebuild add --force to end >> python setup.py build --force
+>> python setup.py install
+
+To build a binary wheel
+>> python setup.py bdist_wheel
+
+To upload the wheel to pypi.org
+>> pip install twine
+>> python -m twine upload dist/* --verbose
+Have to enter proper username/pw to upload  (ask me for permissions)
+
+Missing Dependencies:
+-------------
+python-dateutil
+scipy
+dataclasses
