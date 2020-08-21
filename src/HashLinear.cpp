@@ -5449,8 +5449,10 @@ IsMember32(PyObject *self, PyObject *args)
 // Workaround for old versions of gcc which don't have enable_if_t
 template <typename _Index>
 #else
-template <typename _Index,
-   std::enable_if_t<std::is_integral<_Index>::value, int> = 0>
+// removed std::is_integral due to debian compilers
+template <typename _Index>
+//template <typename _Index,
+//   std::enable_if_t<std::is_integral<_Index>::value, int> = 0>
 #endif
 static UINT64 GroupByImpl(
    const INT64  partitionLength, // may be 0
