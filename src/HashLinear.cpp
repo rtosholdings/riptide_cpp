@@ -122,101 +122,6 @@ INT64 PRIME_NUMBERS[] = {
    }\
 }
 
-static int MEMCMP(const char* pSrc1, const char* pSrc2, INT64 length) {
-   while (length >= 8) {
-      UINT64* p1 = (UINT64*)pSrc1;
-      UINT64* p2 = (UINT64*)pSrc2;
-
-      if (*p1 != *p2) return 1;
-      length -= 8;
-      pSrc1 += 8;
-      pSrc2 += 8;
-   }
-   //----------------------------------------------------
-   // TJD July 2018 -- this is not faster so it is commented out now
-   //switch (length & 7) {
-   //case 7:
-   //   if (*(UINT32*)pSrc1 != *(UINT32*)pSrc2) return 1;
-   //   pSrc1 += 4;
-   //   pSrc2 += 4;
-   //   if (*(UINT16*)pSrc1 != *(UINT16*)pSrc2) return 1;
-   //   pSrc1 += 2;
-   //   pSrc2 += 2;
-   //   if (*pSrc1 != *pSrc2) return 1;
-   //   return 0;
-   //case 6:
-   //   if (*(UINT32*)pSrc1 != *(UINT32*)pSrc2) return 1;
-   //   pSrc1 += 4;
-   //   pSrc2 += 4;
-   //   if (*(UINT16*)pSrc1 != *(UINT16*)pSrc2) return 1;
-   //   return 0;
-   //case 5:
-   //   if (*(UINT32*)pSrc1 != *(UINT32*)pSrc2) return 1;
-   //   pSrc1 += 4;
-   //   pSrc2 += 4;
-   //   if (*pSrc1 != *pSrc2) return 1;
-   //   return 0;
-   //case 4:
-   //   if (*(UINT32*)pSrc1 != *(UINT32*)pSrc2) return 1;
-   //   return 0;
-   //case 3:
-   //   if (*(UINT16*)pSrc1 != *(UINT16*)pSrc2) return 1;
-   //   pSrc1 += 2;
-   //   pSrc2 += 2;
-   //   if (*pSrc1 != *pSrc2) return 1;
-   //   return 0;
-   //case 2:
-   //   if (*(UINT16*)pSrc1 != *(UINT16*)pSrc2) return 1;
-   //   return 0;
-   //case 1:
-   //   if (*pSrc1 != *pSrc2) return 1;
-   //   return 0;
-   //case 0:
-   //   return 0;
-   //}
-
-   //return 0;
-   if (length >= 4) {
-      UINT32* p1 = (UINT32*)pSrc1;
-      UINT32* p2 = (UINT32*)pSrc2;
-
-      if (*p1 != *p2) return 1;
-      length -= 4;
-      pSrc1 += 4;
-      pSrc2 += 4;
-   }
-
-   while (length > 0) {
-      if (*pSrc1 != *pSrc2) return 1;
-      length -= 1;
-      pSrc1 += 1;
-      pSrc2 += 1;
-   }
-
-   return 0;
-}
-
-
-
-
-//---------------------------------------------
-// Meiyan hash function
-// TJD NOTE: I did not find this better than fastHash for multikey
-static inline UINT32 mHashOld(const char *key, INT64 count) {
-   typedef UINT32* P;
-   UINT32 h = 0x811c9dc5;
-   while (count >= 8) {
-      h = (h ^ ((((*(P)key) << 5) | ((*(P)key) >> 27)) ^ *(P)(key + 4))) * 0xad3e7;
-      count -= 8;
-      key += 8;
-   }
-#define tmp h = (h ^ *(UINT16*)key) * 0xad3e7; key += 2;
-   if (count & 4) { tmp tmp }
-   if (count & 2) { tmp }
-   if (count & 1) { h = (h ^ *key) * 0xad3e7; }
-#undef tmp
-   return h ^ (h >> 16);
-}
 
 //static inline UINT32  sse42_crc32(const uint8_t *bytes, size_t len)
 //{
@@ -328,35 +233,11 @@ FORCEINLINE UINT64 fasthash64_16(UINT64* v)
    return mix(h);
 }
 
-
-// --------------------------------------------
-// Meiyan hash function
-static inline UINT64 mHash(const char *key, INT64 count) {
-   UINT64 h = 0;
-
-   while (count >= 8) {
-      h ^= h >> 23;
-      h *= 0x2127599bf4325c37ULL;
-      h ^= h >> 47;
-      count -= 8;
-      key += 8;
-   }
-#define tmp h = (h ^ *(UINT16*)key) * 0xad3e7; key += 2;
-   if (count & 4) { tmp tmp }
-   if (count & 2) { tmp }
-   if (count & 1) { h = (h ^ *key) * 0xad3e7; }
-#undef tmp
-   return h ^ (h >> 16);
-}
-
 //===============================================================================================
 // NOTE: Both of these routines are fast
 #define DEFAULT_HASH64 crchash64
 //#define DEFAULT_HASH64 fasthash64
 //===============================================================================================
-
-
-
 
 
 //=====================================================================================================================

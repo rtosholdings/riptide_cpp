@@ -3987,7 +3987,9 @@ static PyObject* GroupFromLexSortInternal(
       pgroup.pFilter = pFilter;
       pgroup.base_index = base_index;
       pgroup.strlen = itemSizeValues;
-      pgroup.sizeofUINDEX = sizeof(UINDEX);
+      const INT64 INDEX_SIZE = (INT64)sizeof(UINDEX);
+
+      pgroup.sizeofUINDEX = INDEX_SIZE;
 
       // Use threads per partition
       auto lambdaPSCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
@@ -4039,10 +4041,10 @@ static PyObject* GroupFromLexSortInternal(
 
       // TODO: fix up keys
       //parallel add?
-      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
+      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
 
       totalUniques++;
-      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
+      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
 
       // ANOTHER PARALEL ROUTINE to copy
       struct stPGROUPADD {
@@ -4080,7 +4082,7 @@ static PyObject* GroupFromLexSortInternal(
       pgroupadd.pCountReduced = (char*)PyArray_BYTES(countReduced);
 
       // skip first value since reserved for zero bin (and assign it 0)
-      for (int c = 0; c < sizeof(UINDEX); c++) {
+      for (INT64 c = 0; c < INDEX_SIZE; c++) {
          *pgroupadd.pCountReduced++ = 0;
       }
 
