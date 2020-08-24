@@ -11,7 +11,6 @@
 
 // TODO: Remove these once users of this header have switched over.
 #include "missing_values.h"
-#include "TypeSystem.h"
 
 namespace riptide
 {
