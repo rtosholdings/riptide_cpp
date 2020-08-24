@@ -340,28 +340,6 @@ void CopyPythonString(PyObject* objColName, char* destBuffer, size_t maxLen) {
 
 
 
-// Helper routine to dump python object
-// returns what print(obj) would do in python
-static char* DumpPyObject(PyObject* obj) {
-
-   if (obj != NULL) {
-      PyObject* asciiObj = PyObject_ASCII(obj);
-      if (PyUnicode_Check(asciiObj)) {
-         PyObject* temp2 = PyUnicode_AsASCIIString(asciiObj);
-         if (temp2 != NULL) {
-            char* pTemp = PyBytes_AsString(temp2);
-
-            Py_DecRef(temp2);
-
-            return pTemp;
-
-         }
-      }
-   }
-   return (char*)"!dumpPyObject fail";
-}
-
-
 //-----------------------------------------------------------------------------------
 extern "C" {
 
@@ -697,7 +675,7 @@ PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT
    }
 
    if (!returnObject) {
-      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, dims[0]);
+      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (INT64)dims[0]);
       return nullptr;
    }
 
@@ -777,7 +755,7 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyTy
    
 
    if (!returnObject) {
-      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, dims[0]);
+      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (INT64)dims[0]);
       return nullptr;
    }
 

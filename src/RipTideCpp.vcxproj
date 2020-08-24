@@ -52,7 +52,7 @@
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\envs\python36\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(PYTHONPATH)\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\..\envs\python36\libs;..\..\bin\Release</LibraryPath>
     <TargetName>riptide_cpp</TargetName>
     <TargetExt>.pyd</TargetExt>
@@ -157,6 +157,7 @@
     <ClInclude Include="Hook.h" />
     <ClInclude Include="Merge.h" />
     <ClInclude Include="MultiKey.h" />
+    <ClInclude Include="numpy_traits.h" />
     <ClInclude Include="Reduce.h" />
     <ClInclude Include="SDSFile.h" />
     <ClInclude Include="SDSFilePython.h" />
@@ -171,6 +172,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TileRepeat.h" />
     <ClInclude Include="TimeWindow.h" />
+    <ClInclude Include="TypeSystem.h" />
     <ClInclude Include="UnaryOps.h" />
     <ClInclude Include="zstd\lib\compress\hist.h" />
     <ClInclude Include="zstd\lib\compress\zstdmt_compress.h" />

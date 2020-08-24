@@ -205,7 +205,8 @@ FORCEINLINE void *aligned_alloc(size_t alignment, size_t size)
 }
 
 #else
-#warning Unable to determine how to perform aligned allocations on this platform.
+// clang compiler does not support so we default to malloc
+//#warning Unable to determine how to perform aligned allocations on this platform.
 #define aligned_alloc(alignment, size) malloc(size)
 #endif  // defined(posix_memalign)
 
