@@ -23,7 +23,9 @@ futex(int *uaddr, int futex_op, int val,
 }
 
 #elif defined(__APPLE__)
-#warning MathThreads does not yet support Darwin/macOS.
+
+// temp remove warnings
+// #warning MathThreads does not yet support Darwin/macOS.
 
 #endif  // defined(__linux__)
 
