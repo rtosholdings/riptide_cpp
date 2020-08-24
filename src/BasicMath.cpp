@@ -98,19 +98,22 @@ template<typename T> static const inline double MaxOp(double x, double y) { if (
 template<typename T> static const inline T MaxOp(T x, T y) { if (x < y) return y; else return x; }
 //template<typename T> static const inline bool MulOp(bool x, bool y) { return x & y; }
 
+static const INT64 NAN_FOR_INT64 = (INT64)0x8000000000000000LL;
+static const INT64 NAN_FOR_INT32 = (INT32)0x80000000;
+
 template<typename T> static const inline double DivOp(T x, T y) { return (double)x / (double)y; }
 template<typename T> static const inline float DivOp(float x, T y) { return x / y; }
 
 // Subtraction only two DateTimeNano subtractions
 template<typename T> static const inline double SubDateTimeOp(INT64 x, INT64 y) {
-   if (x == 0 || y ==0 || x == 0x8000000000000000LL || y == 0x8000000000000000LL) {
+   if (x == 0 || y ==0 || x == NAN_FOR_INT64 || y == NAN_FOR_INT64) {
       return NAN;
    }
    return (double)( x - y); }
 
 // Subtraction only both sides checked
 template<typename T> static const inline double SubDateTimeOp(INT32 x, INT32 y) {
-   if (x == 0 || y ==0 || x == 0x8000000 || y == 0x80000000) {
+   if (x == 0 || y ==0 || x == NAN_FOR_INT32 || y == NAN_FOR_INT32) {
       return NAN;
    }
    return (double)(x - y);
@@ -118,14 +121,14 @@ template<typename T> static const inline double SubDateTimeOp(INT32 x, INT32 y) 
 
 // Subtract two dates to produce a DateSpan
 template<typename T> static const inline INT32 SubDatesOp(INT32 x, INT32 y) {
-   if (x == 0 || y == 0 || x == 0x8000000 || y == 0x80000000) {
+   if (x == 0 || y == 0 || x == NAN_FOR_INT32 || y == NAN_FOR_INT32) {
       return 0;
    }
    return (x - y);
 }
 
 template<typename T> static const inline INT64 SubDatesOp(INT64 x, INT64 y) {
-   if (x == 0 || y == 0 || x == 0x8000000000000000LL || y == 0x8000000000000000LL) {
+   if (x == 0 || y == 0 || x == NAN_FOR_INT64 || y == NAN_FOR_INT64) {
       return 0;
    }
    return (x - y);
