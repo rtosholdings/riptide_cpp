@@ -367,7 +367,8 @@ struct stWorkerRing {
          printf("***error futex-FUTEX_WAKE\n");     // TODO: Change to use fprintf(stderr, msg) instead
          
 #elif defined(__APPLE__)
-#warning MathThreads does not yet support Darwin/macOS.
+// temp remove warning
+//#warning MathThreads does not yet support Darwin/macOS.
 
 #else
 #error riptide MathThreads support not implemented for this platform.
