@@ -65,8 +65,10 @@ static const inline __m256i MIN_OPu16( __m256i x, __m256i y) { return _mm256_min
 static const inline __m256i MIN_OPi16( __m256i x, __m256i y) { return _mm256_min_epi16(x, y); }
 static const inline __m256i MIN_OPi32( __m256i x, __m256i y) { return _mm256_min_epi32(x, y); }
 static const inline __m256i MIN_OPu32( __m256i x, __m256i y) { return _mm256_min_epu32(x, y); }
-static const inline __m256  MIN_OPf32( __m256  x, __m256 y) { return _mm256_min_ps(x, y); }
-static const inline __m256d MIN_OPf64( __m256d x, __m256d y) { return _mm256_min_pd(x, y); }
+
+// Below unused
+//static const inline __m256  MIN_OPf32( __m256  x, __m256 y) { return _mm256_min_ps(x, y); }
+//static const inline __m256d MIN_OPf64( __m256d x, __m256d y) { return _mm256_min_pd(x, y); }
 
 static const inline __m256i MAX_OPi8( __m256i x, __m256i y) { return _mm256_max_epi8(x, y); }
 static const inline __m256i MAX_OPu8( __m256i x, __m256i y) { return _mm256_max_epu8(x, y); }
@@ -76,8 +78,9 @@ static const inline __m256i MAX_OPi32(__m256i x, __m256i y) { return _mm256_max_
 static const inline __m256i MAX_OPu32(__m256i x, __m256i y) { return _mm256_max_epu32(x, y); }
 // NOTE: Cannot use for np.maximum since it handles nans and intel intrinsic does not handle the same way
 // NOTE: Could use if we want a maximum and we dont care about nan handling
-static const inline __m256  MAX_OPf32(__m256  x, __m256 y) { return _mm256_max_ps(x, y); }
-static const inline __m256d MAX_OPf64(__m256d x, __m256d y) { return _mm256_max_pd(x, y); }
+// Below unused
+//static const inline __m256  MAX_OPf32(__m256  x, __m256 y) { return _mm256_max_ps(x, y); }
+//static const inline __m256d MAX_OPf64(__m256d x, __m256d y) { return _mm256_max_pd(x, y); }
 
 
 template<typename T> static const inline T AddOp(T x, T y) { return x + y; }
@@ -226,8 +229,9 @@ static const inline __m256i MUL_OP_256u64(__m256i x, __m256i y) {
 }
 
 // eight 32bit --> produce four 64 bit
-static const inline __m256i MULX_OP_256i32(__m256i x, __m256i y) { return _mm256_mul_epi32(x, y); }
-static const inline __m256i MULX_OP_256u32(__m256i x, __m256i y) { return _mm256_mul_epu32(x, y); }
+// below unused
+//static const inline __m256i MULX_OP_256i32(__m256i x, __m256i y) { return _mm256_mul_epi32(x, y); }
+//static const inline __m256i MULX_OP_256u32(__m256i x, __m256i y) { return _mm256_mul_epu32(x, y); }
 
 static const inline __m256  DIV_OP_256f32(__m256 x, __m256 y) { return _mm256_div_ps(x, y); }
 static const inline __m256d DIV_OP_256f64(__m256d x, __m256d y) { return _mm256_div_pd(x, y); }

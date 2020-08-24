@@ -338,7 +338,7 @@ static void DumpItemStats(stRecycleList* pItems, int k) {
    printf("    delta: %lld   refcount: %d  now: %lld  addr: %p  type: %d \t %p \t %lld\n",
       delta / NANO_BILLION,
       pItems->Item[k].initRefCount,
-      pItems->Item[k].recycledArray == NULL ? 0 : pItems->Item[k].recycledArray->ob_base.ob_refcnt,
+      pItems->Item[k].recycledArray == NULL ? 0LL : (INT64)(pItems->Item[k].recycledArray->ob_base.ob_refcnt),
       // too dangerous -- might be gone pItems->Item[k].recycledOrigArray == NULL ? 0 : pItems->Item[k].recycledOrigArray->ob_base.ob_refcnt,
       pItems->Item[k].recycledArray == NULL ? NULL: PyArray_BYTES(pItems->Item[k].recycledArray),
       pItems->Item[k].type,
