@@ -102,12 +102,6 @@ __inline bool COMPARE_LT(INT16 X, INT16 Y) { return (X < Y); }
 __inline bool COMPARE_LT(UINT8 X, UINT8 Y) { return (X < Y); }
 __inline bool COMPARE_LT(UINT16 X, UINT16 Y) { return (X < Y); }
 
-NPY_INLINE static void
-STRING_COPY(char *s1, char *s2, size_t len)
-{
-   memcpy(s1, s2, len);
-}
-
 NPY_INLINE static int
 STRING_LT(const char *s1, const char *s2, size_t len)
 {
@@ -617,165 +611,165 @@ orig_aheapsort_(INT32 *vv, INT64 *tosort, INT64 n)
    return 0;
 }
 
-//--------------------------------------------------------------------------------------
-static int
-orig_quicksort_(INT32 *start, INT64 num)
-{
-   INT32 vp;
-   INT32 *pl = start;
-   INT32 *pr = pl + num - 1;
-   INT32 *stack[PYA_QS_STACK];
-   INT32 **sptr = stack;
-   INT32 *pm, *pi, *pj, *pk;
-   int depth[PYA_QS_STACK];
-   int * psdepth = depth;
-   int cdepth = npy_get_msb(num) * 2;
-
-   for (;;) {
-      if (NPY_UNLIKELY(cdepth < 0)) {
-         orig_heapsort_(pl, pr - pl + 1);
-         goto stack_pop;
-      }
-      while ((pr - pl) > SMALL_QUICKSORT) {
-         /* quicksort partition */
-         pm = pl + ((pr - pl) >> 1);
-         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
-         if (INT32_LT(*pr, *pm)) INT32_SWAP(*pr, *pm);
-         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
-         vp = *pm;
-         pi = pl;
-         pj = pr - 1;
-         INT32_SWAP(*pm, *pj);
-         for (;;) {
-            do ++pi; while (INT32_LT(*pi, vp));
-            do --pj; while (INT32_LT(vp, *pj));
-            if (pi >= pj) {
-               break;
-            }
-            INT32_SWAP(*pi, *pj);
-         }
-         pk = pr - 1;
-         INT32_SWAP(*pi, *pk);
-         /* push largest partition on stack */
-         if (pi - pl < pr - pi) {
-            *sptr++ = pi + 1;
-            *sptr++ = pr;
-            pr = pi - 1;
-         }
-         else {
-            *sptr++ = pl;
-            *sptr++ = pi - 1;
-            pl = pi + 1;
-         }
-         *psdepth++ = --cdepth;
-      }
-
-      /* insertion sort */
-      for (pi = pl + 1; pi <= pr; ++pi) {
-         vp = *pi;
-         pj = pi;
-         pk = pi - 1;
-         while (pj > pl && INT32_LT(vp, *pk)) {
-            *pj-- = *pk--;
-         }
-         *pj = vp;
-      }
-   stack_pop:
-      if (sptr == stack) {
-         break;
-      }
-      pr = *(--sptr);
-      pl = *(--sptr);
-      cdepth = *(--psdepth);
-   }
-
-   return 0;
-}
-
-
-static int
-orig_aquicksort_(INT32 *vv, INT64* tosort, INT64 num)
-{
-   INT32 *v = vv;
-   INT32 vp;
-   INT64 *pl = tosort;
-   INT64 *pr = tosort + num - 1;
-   INT64 *stack[PYA_QS_STACK];
-   INT64 **sptr = stack;
-   INT64 *pm, *pi, *pj, *pk, vi;
-   int depth[PYA_QS_STACK];
-   int * psdepth = depth;
-   int cdepth = npy_get_msb(num) * 2;
-
-   for (;;) {
-      if (NPY_UNLIKELY(cdepth < 0)) {
-         orig_aheapsort_(vv, pl, pr - pl + 1);
-         goto stack_pop;
-      }
-
-      while ((pr - pl) > SMALL_QUICKSORT) {
-         /* quicksort partition */
-         pm = pl + ((pr - pl) >> 1);
-         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
-         if (INT32_LT(v[*pr], v[*pm])) INTP_SWAP(*pr, *pm);
-         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
-         vp = v[*pm];
-         pi = pl;
-         pj = pr - 1;
-         INTP_SWAP(*pm, *pj);
-         for (;;) {
-            do ++pi; while (INT32_LT(v[*pi], vp));
-            do --pj; while (INT32_LT(vp, v[*pj]));
-            if (pi >= pj) {
-               break;
-            }
-            INTP_SWAP(*pi, *pj);
-         }
-         pk = pr - 1;
-         INTP_SWAP(*pi, *pk);
-         /* push largest partition on stack */
-         if (pi - pl < pr - pi) {
-            *sptr++ = pi + 1;
-            *sptr++ = pr;
-            pr = pi - 1;
-         }
-         else {
-            *sptr++ = pl;
-            *sptr++ = pi - 1;
-            pl = pi + 1;
-         }
-         *psdepth++ = --cdepth;
-      }
-
-      /* insertion sort */
-      for (pi = pl + 1; pi <= pr; ++pi) {
-         vi = *pi;
-         vp = v[vi];
-         pj = pi;
-         pk = pi - 1;
-         while (pj > pl && INT32_LT(vp, v[*pk])) {
-            *pj-- = *pk--;
-         }
-         *pj = vi;
-      }
-   stack_pop:
-      if (sptr == stack) {
-         break;
-      }
-      pr = *(--sptr);
-      pl = *(--sptr);
-      cdepth = *(--psdepth);
-   }
-
-   return 0;
-}
-
-
-
-
-
-
-
+////--------------------------------------------------------------------------------------
+//static int
+//orig_quicksort_(INT32 *start, INT64 num)
+//{
+//   INT32 vp;
+//   INT32 *pl = start;
+//   INT32 *pr = pl + num - 1;
+//   INT32 *stack[PYA_QS_STACK];
+//   INT32 **sptr = stack;
+//   INT32 *pm, *pi, *pj, *pk;
+//   int depth[PYA_QS_STACK];
+//   int * psdepth = depth;
+//   int cdepth = npy_get_msb(num) * 2;
+//
+//   for (;;) {
+//      if (NPY_UNLIKELY(cdepth < 0)) {
+//         orig_heapsort_(pl, pr - pl + 1);
+//         goto stack_pop;
+//      }
+//      while ((pr - pl) > SMALL_QUICKSORT) {
+//         /* quicksort partition */
+//         pm = pl + ((pr - pl) >> 1);
+//         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
+//         if (INT32_LT(*pr, *pm)) INT32_SWAP(*pr, *pm);
+//         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
+//         vp = *pm;
+//         pi = pl;
+//         pj = pr - 1;
+//         INT32_SWAP(*pm, *pj);
+//         for (;;) {
+//            do ++pi; while (INT32_LT(*pi, vp));
+//            do --pj; while (INT32_LT(vp, *pj));
+//            if (pi >= pj) {
+//               break;
+//            }
+//            INT32_SWAP(*pi, *pj);
+//         }
+//         pk = pr - 1;
+//         INT32_SWAP(*pi, *pk);
+//         /* push largest partition on stack */
+//         if (pi - pl < pr - pi) {
+//            *sptr++ = pi + 1;
+//            *sptr++ = pr;
+//            pr = pi - 1;
+//         }
+//         else {
+//            *sptr++ = pl;
+//            *sptr++ = pi - 1;
+//            pl = pi + 1;
+//         }
+//         *psdepth++ = --cdepth;
+//      }
+//
+//      /* insertion sort */
+//      for (pi = pl + 1; pi <= pr; ++pi) {
+//         vp = *pi;
+//         pj = pi;
+//         pk = pi - 1;
+//         while (pj > pl && INT32_LT(vp, *pk)) {
+//            *pj-- = *pk--;
+//         }
+//         *pj = vp;
+//      }
+//   stack_pop:
+//      if (sptr == stack) {
+//         break;
+//      }
+//      pr = *(--sptr);
+//      pl = *(--sptr);
+//      cdepth = *(--psdepth);
+//   }
+//
+//   return 0;
+//}
+//
+//
+//static int
+//orig_aquicksort_(INT32 *vv, INT64* tosort, INT64 num)
+//{
+//   INT32 *v = vv;
+//   INT32 vp;
+//   INT64 *pl = tosort;
+//   INT64 *pr = tosort + num - 1;
+//   INT64 *stack[PYA_QS_STACK];
+//   INT64 **sptr = stack;
+//   INT64 *pm, *pi, *pj, *pk, vi;
+//   int depth[PYA_QS_STACK];
+//   int * psdepth = depth;
+//   int cdepth = npy_get_msb(num) * 2;
+//
+//   for (;;) {
+//      if (NPY_UNLIKELY(cdepth < 0)) {
+//         orig_aheapsort_(vv, pl, pr - pl + 1);
+//         goto stack_pop;
+//      }
+//
+//      while ((pr - pl) > SMALL_QUICKSORT) {
+//         /* quicksort partition */
+//         pm = pl + ((pr - pl) >> 1);
+//         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
+//         if (INT32_LT(v[*pr], v[*pm])) INTP_SWAP(*pr, *pm);
+//         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
+//         vp = v[*pm];
+//         pi = pl;
+//         pj = pr - 1;
+//         INTP_SWAP(*pm, *pj);
+//         for (;;) {
+//            do ++pi; while (INT32_LT(v[*pi], vp));
+//            do --pj; while (INT32_LT(vp, v[*pj]));
+//            if (pi >= pj) {
+//               break;
+//            }
+//            INTP_SWAP(*pi, *pj);
+//         }
+//         pk = pr - 1;
+//         INTP_SWAP(*pi, *pk);
+//         /* push largest partition on stack */
+//         if (pi - pl < pr - pi) {
+//            *sptr++ = pi + 1;
+//            *sptr++ = pr;
+//            pr = pi - 1;
+//         }
+//         else {
+//            *sptr++ = pl;
+//            *sptr++ = pi - 1;
+//            pl = pi + 1;
+//         }
+//         *psdepth++ = --cdepth;
+//      }
+//
+//      /* insertion sort */
+//      for (pi = pl + 1; pi <= pr; ++pi) {
+//         vi = *pi;
+//         vp = v[vi];
+//         pj = pi;
+//         pk = pi - 1;
+//         while (pj > pl && INT32_LT(vp, v[*pk])) {
+//            *pj-- = *pk--;
+//         }
+//         *pj = vi;
+//      }
+//   stack_pop:
+//      if (sptr == stack) {
+//         break;
+//      }
+//      pr = *(--sptr);
+//      pl = *(--sptr);
+//      cdepth = *(--psdepth);
+//   }
+//
+//   return 0;
+//}
+//
+//
+//
+//
+//
+//
+//
 
 //-----------------------------------------------------------------------------------------------
 template <typename T>
@@ -1608,44 +1602,6 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
   }
 
 
-  static inline void aligned_block_copy_backwards(int64_t *  dst_,
-     int64_t *  src,
-     INT64                size)
-  {
-     volatile int64_t *dst = dst_;
-     int64_t t1, t2, t3, t4;
-     src += size / 8 - 1;
-     dst += size / 8 - 1;
-     INT64 leftover = (size & 63) /8;
-     while ((size -= 64) >= 0)
-     {
-        t1 = *src--;
-        t2 = *src--;
-        t3 = *src--;
-        t4 = *src--;
-        *dst-- = t1;
-        *dst-- = t2;
-        *dst-- = t3;
-        *dst-- = t4;
-        t1 = *src--;
-        t2 = *src--;
-        t3 = *src--;
-        t4 = *src--;
-        *dst-- = t1;
-        *dst-- = t2;
-        *dst-- = t3;
-        *dst-- = t4;
-     }
-
-     while (leftover--) {
-        t1 = *src--;
-        *dst-- = t1;
-
-     }
-  }
-
-
-
    //-----------------------------------------------------------------------------------------------
    template <typename T, typename UINDEX> 
    static void
@@ -2161,7 +2117,6 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       }
       else {
          PLOGGING("**Already sorted %lld\n", (INT64)(*pm));
-
       }
 
    }
@@ -2191,87 +2146,6 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       INT64 Level[3];
 
    } stParMergeCallback;
-
-
-   //------------------------------------------------------------------------------
-   static void CalculateMerge(char* pl, char* pr, int depth, INT64 *count, char** pFirst, char**pSecond) {
-
-      char* pm = pl + ((pr - pl) >> 1);
-      depth--;
-      if (depth == 0) {
-         // at depth
-         if (*count == 0) {
-            *pFirst = pl;
-            *pSecond = pm;
-         }
-         if (*count == 1) {
-            *pFirst = pm;
-            *pSecond = pr;
-         }
-         *count -= 2;
-         depth++;
-         return;
-      }
-      CalculateMerge(pl, pm, depth, count, pFirst, pSecond);
-      CalculateMerge(pm, pr, depth, count, pFirst, pSecond);
-   }
-
-
-
-   ////------------------------------------------------------------------------------
-   ////  Concurrent callback from multiple threads
-   //static BOOL ParMergeThreadCallbackOld(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   //   MERGE_STEP_ONE_CALLBACK* Callback = (MERGE_STEP_ONE_CALLBACK*)pstWorkerItem->WorkCallbackArg;
-   //   BOOL didSomeWork = FALSE;
-
-   //   INT64 index;
-   //   INT64 workBlock;
-
-   //   PLOGGING("[%d] DoWork start loop -- %lld\n", core, workIndex);
-
-   //   // As long as there is work to do
-   //   while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0) {
-   //      // First index is 1 so we subtract
-   //      index--;
-
-   //      INT64 count = index;
-
-   //      char* pFirst = NULL;
-   //      char* pSecond = NULL;
-   //      char* pToSort1 = (char*)(Callback->pToSort);
-
-   //      switch (Callback->MergeBlocks) {
-   //      case 8:
-   //         CalculateMerge(pToSort1, pToSort1 + Callback->ArrayLength, 3, &count, &pFirst, &pSecond);
-
-   //         break;
-   //      case 4:
-   //         CalculateMerge(pToSort1, pToSort1 + Callback->ArrayLength, 2, &count, &pFirst, &pSecond);
-   //         break;
-   //      case 2:
-   //         CalculateMerge(pToSort1, pToSort1 + Callback->ArrayLength, 1, &count, &pFirst, &pSecond);
-   //         break;
-   //      }
-
-   //      INT64 MergeSize = (pSecond - pFirst);
-   //      INT64 OffsetSize = (pFirst - pToSort1);
-   //      PLOGGING("%d : MergeOne index: %llu  %p  %lld  %lld  %lld\n", core, index, pFirst, MergeSize, OffsetSize, count);
-
-   //      // Workspace uses half the size
-   //      //char* pWorkSpace1 = (char*)pWorkSpace + (offsetAdjToSort / 2);
-   //      char* pWorkSpace1 = (char*)Callback->pWorkSpace + (OffsetSize * Callback->TypeSizeOutput);
-
-   //      Callback->MergeCallbackOne(Callback->pValues, pToSort1 + (OffsetSize * Callback->TypeSizeOutput), MergeSize, Callback->StrLen, pWorkSpace1);
-
-   //      // Indicate we completed a block
-   //      didSomeWork = TRUE;
-
-   //      // tell others we completed this work block
-   //      pstWorkerItem->CompleteWorkBlock();
-   //   }
-
-   //   return didSomeWork;
-   //}
 
 
 

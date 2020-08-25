@@ -2285,7 +2285,7 @@ INT64 InternalBinCount(
 // check for "pack=" 
 // returns 0 if pack is not True
 INT64 GetPack(PyObject *kwargs) {
-   if (!kwargs) return NULL;
+   if (!kwargs) return 0;
 
    PyObject* packObject = PyDict_GetItemString(kwargs, "pack");
 

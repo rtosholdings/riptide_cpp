@@ -244,18 +244,6 @@ FORCEINLINE UINT64 fasthash64_16(UINT64* v)
 // STRING
 //=====================================================================================================================
 
-#define HASH_STRING_OLD()          \
-const char* strStart = (pHashList+(i*strWidth)); \
-const char* str = strStart; \
-const char* strEnd = str + strWidth; \
-UINT64 hash = 5381;                  \
-INT32  c;                            \
-while ((c = *str) !=0) { \
-   str++;                            \
-   hash = ((hash << 5) + hash) + c; \
-   if (str >= strEnd) break;         \
- }
-
 
 #define HASH_STRING()          \
 const char* strStart = (pHashList+(i*strWidth)); \
@@ -358,9 +346,6 @@ STRING_MATCH2(const char* str1, const char* str2, INT64 strWidth1, INT64 strWidt
    }
    return TRUE;
 }
-
-
-
 
 
 template<typename T, typename U>
