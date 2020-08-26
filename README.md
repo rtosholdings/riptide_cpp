@@ -1,2 +1,2 @@
 # riptide_cpp
-Multihreaded 64 bit c++ files for processing numba arrays
+Cross platform 64 bit c++ files for processing numpy arrays with stacking, multifile, and multithreaded SDS file format.
