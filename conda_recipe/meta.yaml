@@ -1,0 +1,29 @@
+package:
+  name: riptide_cpp
+  version: {{ load_file_regex(load_file='../src/VERSION', regex_pattern='.*', from_recipe_dir=True).string }}
+
+source:
+  path: ../
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+  host:
+    - python {{ python }}
+    - numpy {{ numpy }}
+  run:
+    - python
+    - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
+
+test:
+  imports:
+    riptide_cpp
+
+about:
+  home: https://github.com/rtosholdings/riptide_cpp
+  license_file: LICENSE
+  summary: 'Python Package with fast math util functions'
+
