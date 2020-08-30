@@ -3,3 +3,4 @@ include zstd/*
 include zstd/common/*
 include zstd/compress/*
 include zstd/decompress/*
+include VERSION
