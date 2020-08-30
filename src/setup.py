@@ -13,7 +13,10 @@ except:
     import numpy as np
 import sys
 
-version_string = '1.6.2'
+#version_string = '1.6.2'
+with open('VERSION', 'r') as f:
+    version_string = f.read()
+
 package_name = 'riptide_cpp'
 rc_module = None
 sources_cpp=['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
