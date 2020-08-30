@@ -1,5 +1,17 @@
 import setuptools
-import numpy as np
+try:
+    import numpy as np
+except:
+    # readthedocs does not install numpy
+    # another was is to use pip.__path__ and remove the pip and replace with numpy/core/include
+    import pip
+    package='riptide_cpp'
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        pip._internal.main(['install', package])
+    import numpy as np
+        
 import sys
 
 with open('VERSION', 'r') as f:
