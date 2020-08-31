@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install numpy
+        python -m pip install numpy
       working-directory: ${{ env.working-directory }}
     - name: Build with python setup.py
       run: |
@@ -38,7 +38,7 @@ jobs:
       working-directory: ${{ env.working-directory }}
         
   deploy:
-    # since riptable is all python source code, only a source build is required from one os
+    # deploys binary builds (the source code one is for all version of python)
     runs-on: ${{ matrix.os }}
     env:
       working-directory: ./src
@@ -56,7 +56,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        python -m pip install setuptools wheel twine
       working-directory: ${{ env.working-directory }}
     - name: Build and publish
       env:
