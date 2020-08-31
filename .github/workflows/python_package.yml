@@ -38,13 +38,13 @@ jobs:
       working-directory: ${{ env.working-directory }}
         
   deploy:
-    # deploys binary builds for all supported versions of python and os
+    # deploys binary builds for windows and mac versions of python and os
     runs-on: ${{ matrix.os }}
     env:
       working-directory: ./src
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
@@ -68,7 +68,7 @@ jobs:
       working-directory: ${{ env.working-directory }}
       
   deploy_source:
-    # since riptable is all python source code, only a source build is required from one os
+    # the linux version just does source 
     runs-on: ubuntu-latest
     env:
       working-directory: ./src
