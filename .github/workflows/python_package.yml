@@ -13,6 +13,8 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
+    env:
+      working-directory: ./src
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -28,15 +30,18 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install numpy
-      working-directory: ./src
-    - name: Build with pytest
+      working-directory: ${{ env.working-directory }}
+    - name: Build with python setup.py
       run: |
         python setup.py build --force
         python setup.py install
+      working-directory: ${{ env.working-directory }}
         
   deploy:
     # since riptable is all python source code, only a source build is required from one os
     runs-on: ${{ matrix.os }}
+    env:
+      working-directory: ./src
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -52,12 +57,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-      working-directory: ./src
+      working-directory: ${{ env.working-directory }}
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py sdist bdist_wheel
+        python setup.py bdist_wheel
         twine upload dist/* --verbose
-      working-directory: ./src
+      working-directory: ${{ env.working-directory }}
