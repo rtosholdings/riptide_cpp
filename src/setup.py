@@ -13,15 +13,11 @@ except:
     import numpy as np
 import sys
 
-#version_string = '1.6.2'
-with open('VERSION', 'r') as f:
-    version_string = f.read()
-
 package_name = 'riptide_cpp'
 rc_module = None
 sources_cpp=['RipTide.cpp','Recycler.cpp','BasicMath.cpp','HashFunctions.cpp','HashLinear.cpp', 'MathThreads.cpp', 'Sort.cpp',
             'Compare.cpp', 'MultiKey.cpp', 'MathWorker.cpp', 'BitCount.cpp', 'GroupBy.cpp','UnaryOps.cpp','Ema.cpp','Reduce.cpp',
-            'Merge.cpp','CRC32.cpp','Convert.cpp', 'SDSFile.cpp', 'SDSFilePython.cpp', 'TimeWindow.cpp', 'Compress.cpp', 'SharedMemory.cpp', 
+            'Merge.cpp','CRC32.cpp','Convert.cpp', 'SDSFile.cpp', 'SDSFilePython.cpp', 'TimeWindow.cpp', 'Compress.cpp', 'SharedMemory.cpp',
             'Bins.cpp', 'DateTime.cpp', 'strptime5.cpp', 'Hook.cpp', 'Array.cpp', 'TileRepeat.cpp']
 
 sources_zstd=['zstd/compress/fse_compress.c',
@@ -47,12 +43,12 @@ sources_zstd=['zstd/compress/fse_compress.c',
             'zstd/common/xxhash.c',
             'zstd/common/error_private.c',
             'zstd/common/pool.c']
-                  
+
 if sys.platform == 'linux':
     rc_module = setuptools.Extension(
-        package_name, 
+        package_name,
         sources = sources_cpp + sources_zstd,
-                 
+
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
         extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++11','-pthread','-falign-functions=32','-falign-loops=32'],
         extra_link_args = ['-lrt'],
@@ -61,7 +57,7 @@ if sys.platform == 'linux':
 
 if sys.platform == 'darwin':
     rc_module = setuptools.Extension(
-        package_name, 
+        package_name,
         sources = sources_cpp,
         include_dirs = ['zstd'],
         extra_link_args = ['lib/libzstd.a'],
@@ -73,7 +69,7 @@ if sys.platform == 'darwin':
 
 if sys.platform == 'win32':
     rc_module = setuptools.Extension(
-        package_name, 
+        package_name,
         sources = sources_cpp + sources_zstd,
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
         #extra_compile_args = ['/MT /Ox /Ob2 /Oi /Ot'],
@@ -83,8 +79,12 @@ if sys.platform == 'win32':
         )
 
 setuptools.setup(
-    name = package_name, 
-    version = version_string,
+    name = package_name,
+    use_scm_version = {
+        'root': '..',
+        'version_scheme': 'post-release',
+    },
+    setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
     author_email = 'thomasdimitri@gmail.com',
