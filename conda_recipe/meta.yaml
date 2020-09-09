@@ -1,6 +1,6 @@
 package:
   name: riptide_cpp
-  version: {{ load_file_regex(load_file='../src/VERSION', regex_pattern='.*', from_recipe_dir=True).string }}
+  version: {{ environ.get('BUILD_VERSION', 'DEV') }}
 
 source:
   path: ../
@@ -14,6 +14,7 @@ requirements:
   host:
     - python {{ python }}
     - numpy {{ numpy }}
+    - setuptools_scm
   run:
     - python
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
@@ -24,6 +25,7 @@ test:
 
 about:
   home: https://github.com/rtosholdings/riptide_cpp
+  license: BSD 3-Clause License
   license_file: LICENSE
   summary: 'Python Package with fast math util functions'
 
