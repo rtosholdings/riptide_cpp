@@ -8,6 +8,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -43,6 +44,7 @@ jobs:
         
   deploy:
     # deploys binary builds for windows and mac versions of python and os
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ${{ matrix.os }}
     env:
       working-directory: ./src
@@ -77,6 +79,7 @@ jobs:
       
   deploy_source:
     # the linux version just does source 
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     env:
       working-directory: ./src
