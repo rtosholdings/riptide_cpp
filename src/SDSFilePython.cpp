@@ -148,7 +148,7 @@ INT64 BuildListInfo(PyListObject *inListNames, OUT char* pListNames) {
             char* pName = PyBytes_AS_STRING(pBytes);
             LOGGING("Name is %s -- size %d  value %d\n", pName, (int)strSize, (int)value);
 
-            while (*pListNames++ = *pName++);
+            while ((*pListNames++ = *pName++));
 
             // Store the 1 byte enum type
             *pListNames++ = (UINT8)value;
@@ -828,7 +828,7 @@ CopyUnicodeString(PyObject* pUnicode, char** returnString, INT64* returnSize) {
 // must be a unicode string
 // returns 0 if no section
 INT64 GetStringFromDict(const char* dictstring, PyObject *kwargs, char** returnString, INT64* returnSize ) {
-   if (!kwargs) return NULL;
+   if (!kwargs) return 0;
 
    PyObject* sectionObject = PyDict_GetItemString(kwargs, dictstring);
 
@@ -865,7 +865,7 @@ SDS_STRING_LIST* GetSectionsName(PyObject *kwargs) {
 // must be an INT
 // returns 0 if no bandsize
 INT64 GetBandSize(PyObject *kwargs) {
-   if (!kwargs) return NULL;
+   if (!kwargs) return 0;
 
    PyObject* bandsizeObject = PyDict_GetItemString(kwargs, "bandsize");
 

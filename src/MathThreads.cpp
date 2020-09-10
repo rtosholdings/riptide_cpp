@@ -2,17 +2,21 @@
 #include "MathThreads.h"
 #include "platform_detect.h"
 
+// to debug thread wakeup allow LOGGING to printf
 //#define LOGGING printf
 #define LOGGING(...)
+
+#if defined(RT_OS_DARWIN)
+/* For MacOS use a conditional wakeup */
+pthread_cond_t  g_WakeupCond  = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t g_WakeupMutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 
 #if defined(RT_OS_WINDOWS)
 WakeSingleAddress g_WakeSingleAddress = InitWakeCalls();
 WakeAllAddress g_WakeAllAddress;
 WaitAddress g_WaitAddress;
-
-
-///typedef __int64 INT_PTR, *PINT_PTR;
 
 
 //-----------------------------------------------------------------
@@ -159,7 +163,11 @@ WorkerThreadFunction(void *lpParam)
          futex((int*)&pWorkerRing->WorkIndex, FUTEX_WAIT, (int)workIndexCompleted, NULL, NULL, 0);
 
 #elif defined(RT_OS_DARWIN)
-#warning MathThreads support for Darwin/macOS is not yet implemented.
+         LOGGING("[%lu] WaitAddress %llu  %llu  %d\n", core, workIndexCompleted, pWorkerRing->WorkIndex, (int)didSomeWork);
+
+         pthread_mutex_lock(&g_WakeupMutex);
+         pthread_cond_wait(&g_WakeupCond, &g_WakeupMutex);
+         pthread_mutex_unlock(&g_WakeupMutex);
 
 #else
 #error riptide MathThreads support needs to be implemented for this platform.

@@ -1072,8 +1072,6 @@ BooleanIndex(PyObject *self, PyObject *args)
 
       //-----------------------------------------------
       //-----------------------------------------------
-      typedef void(*BOOLEANINDEX_FUNC)(INT8* pBooleanMask, char* pValuesIn, char* pValuesOut, INT64 start, INT64 length, INT64 itemSize);
-
       // This is the routine that will be called back from multiple threads
       auto lambdaBICallback2 = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
          BICallbackStruct* callbackArg = (BICallbackStruct*)callbackArgT;

@@ -16,6 +16,10 @@
 #include <unordered_map>
 #include <string.h>
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wempty-body"
+#endif
+
 //found in riptide.h
 extern UINT64 GetUTCNanos();
 extern INT64 SumBooleanMask(const INT8* pIn, INT64 length);
@@ -1810,7 +1814,7 @@ void FillFileHeader(
    pFileHeader->FileOffset = fileOffset;
    pFileHeader->TimeStampUTCNanos = 0;
 
-   for (INT64 i = 0; i < sizeof(pFileHeader->Reserved); i++) {
+   for (UINT64 i = 0; i < sizeof(pFileHeader->Reserved); i++) {
       pFileHeader->Reserved[i] = 0;  
    }
 }
@@ -1886,7 +1890,7 @@ INT64
       const char* pName = pSectionNames[i];
 
       // strcpy the name with a 0 char termination
-      while (*pDest++ = *pName++);
+      while ((*pDest++ = *pName++));
 
       // after writing the name, write the new fileheader offset
       // Store the 64 bit offset
@@ -1895,7 +1899,7 @@ INT64
    }
 
    // strcpy
-   while (*pDest++ = *pNewSectionName++);
+   while ((*pDest++ = *pNewSectionName++));
 
    // Store the 64 bit offset
    *(INT64*)pDest = newSectionOffset;
@@ -6059,7 +6063,7 @@ public:
       // Use a 1 MB buffer
       const INT64 BUFFER_SIZE = 1024 * 1024;
       char* pBuffer = (char*)WORKSPACE_ALLOC(BUFFER_SIZE);
-      if (!pBuffer) return NULL;
+      if (!pBuffer) return 0;
 
       // Read from source and copy to output
       while (fileSize > 0) {

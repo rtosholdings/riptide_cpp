@@ -38,6 +38,7 @@ PyObject* ConvertFloat64(PyObject* object) {
 
 //---------------------------------------------------------
 // arg1: the list or item to be converted to an array
+/*
 static
 PyObject* ConvertFloat32(PyObject* object) {
    npy_intp size = Py_SIZE(object);
@@ -51,6 +52,7 @@ PyObject* ConvertFloat32(PyObject* object) {
    }
    return (PyObject*)pArray;
 }
+*/
 
 //---------------------------------------------------------
 // arg1: the list or item to be converted to an array

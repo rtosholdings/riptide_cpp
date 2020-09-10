@@ -26,6 +26,7 @@ futex(int *uaddr, int futex_op, int val,
 
 // temp remove warnings
 // #warning MathThreads does not yet support Darwin/macOS.
+extern pthread_cond_t  g_WakeupCond;
 
 #endif  // defined(__linux__)
 
@@ -369,7 +370,7 @@ struct stWorkerRing {
 #elif defined(__APPLE__)
 // temp remove warning
 //#warning MathThreads does not yet support Darwin/macOS.
-
+      pthread_cond_broadcast(&g_WakeupCond);
 #else
 #error riptide MathThreads support not implemented for this platform.
 

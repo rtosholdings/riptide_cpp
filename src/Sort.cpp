@@ -66,29 +66,16 @@ static __inline int npy_get_msb(UINT64 unum)
    return depth_limit;
 }
 
-
-//#define NPY_SIZEOF_PY_INTPTR_T 8
-//#define NPY_SIZEOF_INTP NPY_SIZEOF_PY_INTPTR_T
-//#define NPY_BITSOF_INTP (NPY_SIZEOF_INTP * 8)
-
-
 #define SMALL_MERGESORT 16
-//#define SMALL_MERGESORT 20
+
 #define PYA_QS_STACK (NPY_BITSOF_INTP * 2)  // 128
 #define SMALL_QUICKSORT 15
-//#define NPY_UNLIKELY(_X_) (_X_)
 
 #define T_LT(_X_,_Y_) (_X_ < _Y_)
 
 // Anything compared to a nan will return 0
-//#define FLOAT_LT(_X_,_Y_) (std::isnan(_Y_) ? 1 : (_X_ < _Y_))  BAD
-//#define FLOAT_LT(_X_,_Y_) ((_Y_ != _Y_) | (_X_ < _Y_))    BAD
-//#define FLOAT_LT(_X_,_Y_) ((_X_ < _Y_) || (_Y_ != _Y_) )  OK
-//#define FLOAT_LT(_X_,_Y_) ((_X_ < _Y_) + (_Y_ - _Y_) ) BAD
-
 #define FLOAT_LT(_X_,_Y_) (_X_ < _Y_ || (_Y_ != _Y_ && _X_ == _X_))  
-//#define FLOAT_LT(_X_,_Y_) (_X_ < _Y_ || (_Y_ != _Y_))  // good but doesnt match numpy
-//#define FLOAT_LT(_X_,_Y_) (_X_ < _Y_)
+
 
 __inline bool COMPARE_LT(float X, float Y)   { return (X < Y || (Y != Y && X == X)); }
 __inline bool COMPARE_LT(double X, double Y) { return (X < Y || (Y != Y && X == X)); }
@@ -505,111 +492,6 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //#define T_SWAP(_X_, _Y_) { auto temp;  temp = _X_; _X_ = _Y_; _Y_ = temp; }
 #define T_SWAP(_X_, _Y_)  std::swap(_X_,_Y_); 
 
-
-
-
-
-
-
-static int
-orig_heapsort_(INT32 *start, INT64 n)
-{
-   INT32 tmp, *a;
-   INT64 i, j, l;
-
-   /* The array needs to be offset by one for heapsort indexing */
-   a = (INT32 *)start - 1;
-
-   for (l = n >> 1; l > 0; --l) {
-      tmp = a[l];
-      for (i = l, j = l << 1; j <= n;) {
-         if (j < n && INT32_LT(a[j], a[j + 1])) {
-            j += 1;
-         }
-         if (INT32_LT(tmp, a[j])) {
-            a[i] = a[j];
-            i = j;
-            j += j;
-         }
-         else {
-            break;
-         }
-      }
-      a[i] = tmp;
-   }
-
-   for (; n > 1;) {
-      tmp = a[n];
-      a[n] = a[1];
-      n -= 1;
-      for (i = 1, j = 2; j <= n;) {
-         if (j < n && INT32_LT(a[j], a[j + 1])) {
-            j++;
-         }
-         if (INT32_LT(tmp, a[j])) {
-            a[i] = a[j];
-            i = j;
-            j += j;
-         }
-         else {
-            break;
-         }
-      }
-      a[i] = tmp;
-   }
-
-   return 0;
-}
-
-
-static int
-orig_aheapsort_(INT32 *vv, INT64 *tosort, INT64 n)
-{
-   INT32 *v = vv;
-   INT64 *a, i, j, l, tmp;
-   /* The arrays need to be offset by one for heapsort indexing */
-   a = tosort - 1;
-
-   for (l = n >> 1; l > 0; --l) {
-      tmp = a[l];
-      for (i = l, j = l << 1; j <= n;) {
-         if (j < n && INT32_LT(v[a[j]], v[a[j + 1]])) {
-            j += 1;
-         }
-         if (INT32_LT(v[tmp], v[a[j]])) {
-            a[i] = a[j];
-            i = j;
-            j += j;
-         }
-         else {
-            break;
-         }
-      }
-      a[i] = tmp;
-   }
-
-   for (; n > 1;) {
-      tmp = a[n];
-      a[n] = a[1];
-      n -= 1;
-      for (i = 1, j = 2; j <= n;) {
-         if (j < n && INT32_LT(v[a[j]], v[a[j + 1]])) {
-            j++;
-         }
-         if (INT32_LT(v[tmp], v[a[j]])) {
-            a[i] = a[j];
-            i = j;
-            j += j;
-         }
-         else {
-            break;
-         }
-      }
-      a[i] = tmp;
-   }
-
-   return 0;
-}
 
 ////--------------------------------------------------------------------------------------
 //static int

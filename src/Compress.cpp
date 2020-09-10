@@ -12,54 +12,6 @@
 #define LOGGING(...)
 //#define LOGGING printf
 
-// TJD NOTE: I question whether we need this entire file
-//------------------------------------------------------------
-static size_t CompressGetBound(int compMode, size_t srcSize) {
-   if (compMode == COMPRESSION_TYPE_ZSTD) {
-      return ZSTD_compressBound(srcSize);
-   }
-
-   printf("!!internal CompressBound error\n");
-   return srcSize;
-}
-
-
-//------------------------------------------------------------
-static size_t CompressData(int compMode, void* dst, size_t dstCapacity,
-   const void* src, size_t srcSize,
-   int compressionLevel) {
-
-   if (compMode == COMPRESSION_TYPE_ZSTD) {
-      return ZSTD_compress(dst, dstCapacity, src, srcSize, compressionLevel);
-   }
-
-   printf("!!internal CompressData error\n");
-   return srcSize;
-
-}
-
-//------------------------------------------------------------
-static size_t DecompressData(int compMode, void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
-
-   return ZSTD_decompress(dst, dstCapacity, src, srcSize);
-}
-
-
-//------------------------------------------------------------
-static BOOL CompressIsError(int compMode, size_t code) {
-   if (ZSTD_isError(code)) {
-      PyErr_Format(PyExc_ValueError, "Decompression error: %s", ZSTD_getErrorName(code));
-      return TRUE;
-   }
-   else {
-      return FALSE;
-   }
-
-}
-
-
-//------------------------------------------------------------
-
 
 //--------------------------
 // Used when compressing from one numpy array to another numpy array

@@ -13,6 +13,10 @@
 //#define LOGGING printf
 #define LOGGING(...)
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
+
 typedef  union {
    void*          vfunc;
    binaryfunc     bfunc;

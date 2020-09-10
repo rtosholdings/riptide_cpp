@@ -119,7 +119,7 @@ public:
 
       U currentSum = 0;
 
-      U invalid = GET_INVALID((U)0);
+      T invalid = GET_INVALID((T)0);
 
       if (invalid == invalid) {
          // NON_FLOAT

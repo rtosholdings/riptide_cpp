@@ -453,27 +453,6 @@ static UNARY_FUNC GetConversionStep2(int outputType) {
 
 }
 
-static UNARY_FUNC GetConversionFunction(int inputType, int outputType) {
-
-   switch (inputType) {
-   case NPY_BOOL:   return GetConversionStep2<bool>(outputType);
-   case NPY_FLOAT:  return GetConversionStep2<float>(outputType);
-   case NPY_DOUBLE: return GetConversionStep2<double>(outputType);
-   case NPY_LONGDOUBLE: return GetConversionStep2<long double>(outputType);
-   case NPY_BYTE:   return GetConversionStep2<INT8>(outputType);
-   case NPY_INT16:  return GetConversionStep2<INT16>(outputType);
-   CASE_NPY_INT32:  return GetConversionStep2<INT32>(outputType);
-   CASE_NPY_INT64:  return GetConversionStep2<INT64>(outputType);
-   case NPY_UBYTE:  return GetConversionStep2<UINT8>(outputType);
-   case NPY_UINT16: return GetConversionStep2<UINT16>(outputType);
-   CASE_NPY_UINT32: return GetConversionStep2<UINT32>(outputType);
-   CASE_NPY_UINT64: return GetConversionStep2<UINT64>(outputType);
-
-   }
-   return NULL;
-}
-
-
 template<typename T>
 static CONVERT_SAFE GetConversionStep2Safe(int outputType) {
    switch (outputType) {
@@ -656,32 +635,6 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType) {
    case NPY_UINT16: return GetConversionStep2Unsafe<UINT16>(outputType);
    CASE_NPY_UINT32: return GetConversionStep2Unsafe<UINT32>(outputType);
    CASE_NPY_UINT64: return GetConversionStep2Unsafe<UINT64>(outputType);
-
-   }
-   return NULL;
-}
-
-
-
-static CONVERT_SAFE GetConversionSetItemCopy(int inputType) {
-
-   switch (inputType) {
-   case NPY_BYTE:
-   case NPY_UBYTE:
-   case NPY_BOOL:   return ConvertBase<INT8, INT8>::OneStubConvertSafeCopy;
-
-   case NPY_INT16:
-   case NPY_UINT16:  return ConvertBase<INT16, INT16>::OneStubConvertSafeCopy;
-
-   CASE_NPY_INT32:
-   CASE_NPY_UINT32:
-   case NPY_FLOAT:  return ConvertBase<INT32, INT32>::OneStubConvertSafeCopy;
-
-   CASE_NPY_INT64:
-   CASE_NPY_UINT64:
-   case NPY_DOUBLE: return ConvertBase<INT64, INT64>::OneStubConvertSafeCopy;
-
-   case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::OneStubConvertSafeCopy;
 
    }
    return NULL;

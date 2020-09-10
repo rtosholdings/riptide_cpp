@@ -8,6 +8,11 @@
 
 #include <algorithm>
 
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wmissing-braces"
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 using namespace riptide;
 
 //#define LOGGING printf
@@ -2441,6 +2446,8 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
                LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                return PyFloat_FromDouble(sgFunc.resultOut);
             }
+         default:
+            break;
          }
       }
 
