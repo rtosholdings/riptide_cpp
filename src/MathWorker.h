@@ -161,7 +161,6 @@ public:
    void StartWorkerThreads(int numaNode) {
 
       MATHLOGGING("Start worker threads\n");
-      fprintf(stderr,"start worker threads\n");
       for (int i = 0; i < WorkerThreadCount; i++) {
 
          WorkerThreadHandles[i] = StartThread(pWorkerRing);
