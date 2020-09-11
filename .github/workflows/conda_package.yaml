@@ -15,7 +15,7 @@ jobs:
       ANACONDA_TOKEN: ${{ secrets.anaconda_token }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest']
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
