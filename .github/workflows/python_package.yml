@@ -50,7 +50,7 @@ jobs:
       working-directory: ./src
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
