@@ -15,7 +15,9 @@ jobs:
       ANACONDA_TOKEN: ${{ secrets.anaconda_token }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        # TJD removed macos-latest because conda cannot setup C++ include environment properly
+        # the python package and pip package does build correctly, perhaps pull from that
+        os: ['ubuntu-latest', 'windows-latest']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
