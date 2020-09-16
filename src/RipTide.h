@@ -99,7 +99,7 @@ typedef struct {
       npy_bool obval;
 } PyBoolScalarObject;
 
-extern BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2);
+extern BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, INT64 funcNumber);
 extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride);
 
 /**

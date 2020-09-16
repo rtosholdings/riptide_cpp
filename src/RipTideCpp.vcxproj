@@ -14,7 +14,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{61B8898C-F8D5-4D09-BC55-97875567A32C}</ProjectGuid>
     <RootNamespace>RipTideCpp</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>RipTideCpp</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -45,15 +45,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\envs\python36\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\envs\python36\include;c:\users\thomas\appdata\local\programs\python\Python38\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\..\envs\python36\libs;..\..\bin\Debug</LibraryPath>
     <TargetName>sfwc_fastmath</TargetName>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(PYTHONPATH)\include;.\zstd\lib\common;.\zstd\lib</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;..\..\envs\python36\libs;..\..\bin\Release</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);.\zstd\lib\common;.\zstd\lib;c:\users\thomas\appdata\local\programs\python\Python38\include;.\zstd</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;c:\users\thomas\appdata\local\programs\python\Python38\libs;..\..\bin\Release</LibraryPath>
     <TargetName>riptide_cpp</TargetName>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
@@ -86,8 +86,8 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <IgnoreSpecificDefaultLibraries>python36_d.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);python37.lib</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>python38_d.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);python38.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -121,26 +121,31 @@
     <ClCompile Include="TileRepeat.cpp" />
     <ClCompile Include="TimeWindow.cpp" />
     <ClCompile Include="UnaryOps.cpp" />
-    <ClCompile Include="zstd\lib\common\entropy_common.c" />
-    <ClCompile Include="zstd\lib\common\error_private.c" />
-    <ClCompile Include="zstd\lib\common\fse_decompress.c" />
-    <ClCompile Include="zstd\lib\common\pool.c" />
-    <ClCompile Include="zstd\lib\common\xxhash.c" />
-    <ClCompile Include="zstd\lib\common\zstd_common.c" />
-    <ClCompile Include="zstd\lib\compress\fse_compress.c" />
-    <ClCompile Include="zstd\lib\compress\hist.c" />
-    <ClCompile Include="zstd\lib\compress\huf_compress.c" />
-    <ClCompile Include="zstd\lib\compress\zstdmt_compress.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_compress.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_double_fast.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_fast.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_lazy.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_ldm.c" />
-    <ClCompile Include="zstd\lib\compress\zstd_opt.c" />
-    <ClCompile Include="zstd\lib\decompress\huf_decompress.c" />
-    <ClCompile Include="zstd\lib\decompress\zstd_ddict.c" />
-    <ClCompile Include="zstd\lib\decompress\zstd_decompress.c" />
-    <ClCompile Include="zstd\lib\decompress\zstd_decompress_block.c" />
+    <ClCompile Include="zstd\common\debug.c" />
+    <ClCompile Include="zstd\common\entropy_common.c" />
+    <ClCompile Include="zstd\common\error_private.c" />
+    <ClCompile Include="zstd\common\fse_decompress.c" />
+    <ClCompile Include="zstd\common\pool.c" />
+    <ClCompile Include="zstd\common\threading.c" />
+    <ClCompile Include="zstd\common\xxhash.c" />
+    <ClCompile Include="zstd\common\zstd_common.c" />
+    <ClCompile Include="zstd\compress\fse_compress.c" />
+    <ClCompile Include="zstd\compress\hist.c" />
+    <ClCompile Include="zstd\compress\huf_compress.c" />
+    <ClCompile Include="zstd\compress\zstdmt_compress.c" />
+    <ClCompile Include="zstd\compress\zstd_compress.c" />
+    <ClCompile Include="zstd\compress\zstd_compress_literals.c" />
+    <ClCompile Include="zstd\compress\zstd_compress_sequences.c" />
+    <ClCompile Include="zstd\compress\zstd_compress_superblock.c" />
+    <ClCompile Include="zstd\compress\zstd_double_fast.c" />
+    <ClCompile Include="zstd\compress\zstd_fast.c" />
+    <ClCompile Include="zstd\compress\zstd_lazy.c" />
+    <ClCompile Include="zstd\compress\zstd_ldm.c" />
+    <ClCompile Include="zstd\compress\zstd_opt.c" />
+    <ClCompile Include="zstd\decompress\huf_decompress.c" />
+    <ClCompile Include="zstd\decompress\zstd_ddict.c" />
+    <ClCompile Include="zstd\decompress\zstd_decompress.c" />
+    <ClCompile Include="zstd\decompress\zstd_decompress_block.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArenaMemory.h" />
@@ -174,18 +179,34 @@
     <ClInclude Include="TimeWindow.h" />
     <ClInclude Include="TypeSystem.h" />
     <ClInclude Include="UnaryOps.h" />
-    <ClInclude Include="zstd\lib\compress\hist.h" />
-    <ClInclude Include="zstd\lib\compress\zstdmt_compress.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_compress_internal.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_double_fast.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_fast.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_lazy.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_ldm.h" />
-    <ClInclude Include="zstd\lib\compress\zstd_opt.h" />
-    <ClInclude Include="zstd\lib\decompress\zstd_ddict.h" />
-    <ClInclude Include="zstd\lib\decompress\zstd_decompress_block.h" />
-    <ClInclude Include="zstd\lib\decompress\zstd_decompress_internal.h" />
-    <ClInclude Include="zstd\lib\zstd.h" />
+    <ClInclude Include="zstd\common\bitstream.h" />
+    <ClInclude Include="zstd\common\compiler.h" />
+    <ClInclude Include="zstd\common\cpu.h" />
+    <ClInclude Include="zstd\common\debug.h" />
+    <ClInclude Include="zstd\common\error_private.h" />
+    <ClInclude Include="zstd\common\fse.h" />
+    <ClInclude Include="zstd\common\huf.h" />
+    <ClInclude Include="zstd\common\mem.h" />
+    <ClInclude Include="zstd\common\pool.h" />
+    <ClInclude Include="zstd\common\threading.h" />
+    <ClInclude Include="zstd\common\xxhash.h" />
+    <ClInclude Include="zstd\common\zstd_errors.h" />
+    <ClInclude Include="zstd\common\zstd_internal.h" />
+    <ClInclude Include="zstd\compress\hist.h" />
+    <ClInclude Include="zstd\compress\zstdmt_compress.h" />
+    <ClInclude Include="zstd\compress\zstd_compress_internal.h" />
+    <ClInclude Include="zstd\compress\zstd_compress_literals.h" />
+    <ClInclude Include="zstd\compress\zstd_compress_sequences.h" />
+    <ClInclude Include="zstd\compress\zstd_compress_superblock.h" />
+    <ClInclude Include="zstd\compress\zstd_cwksp.h" />
+    <ClInclude Include="zstd\compress\zstd_double_fast.h" />
+    <ClInclude Include="zstd\compress\zstd_fast.h" />
+    <ClInclude Include="zstd\compress\zstd_lazy.h" />
+    <ClInclude Include="zstd\compress\zstd_ldm.h" />
+    <ClInclude Include="zstd\compress\zstd_opt.h" />
+    <ClInclude Include="zstd\decompress\zstd_ddict.h" />
+    <ClInclude Include="zstd\decompress\zstd_decompress_block.h" />
+    <ClInclude Include="zstd\decompress\zstd_decompress_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="setup.py" />

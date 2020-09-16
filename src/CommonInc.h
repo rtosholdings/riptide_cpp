@@ -302,6 +302,9 @@ enum MATH_OPERATION {
    REMAINDER = 12,
    FMOD = 13,
 
+   // where is special
+   WHERE = 50,
+
    // Two ops, always return a double
    DIV = 101,
    SUBDATETIMES = 102,  // returns double
