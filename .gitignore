@@ -1,0 +1,5 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/src/.vs/RipTideCpp/v16/ipch/AutoPCH/e8352f1a2f0c2c78/RIPTIDE.ipch
