@@ -241,6 +241,48 @@ static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len,
 }
 
 
+//------------------------------------------------------------------------------------------------------
+// This template takes ANY type such as 64 bit floats and uses C++ functions to apply the operation
+// It can handle scalars
+// Used by comparison of signed and unsigned integers
+template<typename T, typename U, const bool COMPARE(T, T)>
+static void CompareAnySpecialInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+   INT8* pDataOutX = (INT8*)pDataOut;
+   T* pDataInX = (T*)pDataIn;
+   U* pDataIn2X = (U*)pDataIn2;
+
+   LOGGING("compare any sizeof(T) %lld  len: %lld  scalarmode: %d\n", sizeof(T), len, scalarMode);
+
+   if (scalarMode == SCALAR_MODE::NO_SCALARS) {
+      for (INT64 i = 0; i < len; i++) {
+         pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
+      }
+   }
+   else
+      if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) {
+         T arg1 = *pDataInX;
+         for (INT64 i = 0; i < len; i++) {
+            pDataOutX[i] = COMPARE(arg1, pDataIn2X[i]);
+         }
+      }
+      else
+         if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR) {
+            T arg2 = *pDataIn2X;
+            LOGGING("arg2 is %lld or %llu\n", (INT64)arg2, (UINT64)arg2);
+            for (INT64 i = 0; i < len; i++) {
+               pDataOutX[i] = COMPARE(pDataInX[i], arg2);
+            }
+         }
+         else {
+            // probably cannot happen         
+            T arg1 = *pDataInX;
+            T arg2 = *pDataIn2X;
+            for (INT64 i = 0; i < len; i++) {
+               pDataOutX[i] = COMPARE(arg1, arg2);
+            }
+         }
+}
+
 //----------------------------------------------------------------------------------
 // Lookup to go from 1 byte to 8 byte boolean values
 template<const int COMP_OPCODE, const bool COMPARE(float, float)>
@@ -708,14 +750,29 @@ static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
 // May return NULL if it cannot handle type or function
 ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
 
+   BOOL bSpecialComparison = FALSE;
+
    if (scalarMode == SCALAR_MODE::NO_SCALARS && numpyInType1 != numpyInType2) {
-      return NULL;
+      // Because upcasting an INT64 to a float64 results in precision loss, we try comparisons
+      if (sizeof(long) == 8) {
+         if (numpyInType1 >= NPY_LONG && numpyInType1 <= NPY_ULONGLONG && numpyInType2 >= NPY_LONG && numpyInType2 <= NPY_ULONGLONG) {
+            bSpecialComparison = TRUE;
+         }
+      }
+      else {
+         if (numpyInType1 >= NPY_LONGLONG && numpyInType1 <= NPY_ULONGLONG && numpyInType2 >= NPY_LONGLONG && numpyInType2 <= NPY_ULONGLONG) {
+            bSpecialComparison = TRUE;
+         }
+      }
+
+      if (!bSpecialComparison)
+         return NULL;
    }
 
    *wantedOutType = NPY_BOOL;
    int mainType = scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1;
 
-   LOGGING("maintype %d for func %d\n", mainType, func);
+   LOGGING("Comparison maintype %d for func %d  inputs: %d %d\n", mainType, func, numpyInType1, numpyInType2);
 
    // NOTE: Intel on Nans
    // Use _CMP_NEQ_US instead of OS because it works with != nan comparisons
@@ -774,24 +831,52 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       }
       break;
    CASE_NPY_INT64:
-      switch (func) {
-      case MATH_OPERATION::CMP_EQ:      return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
-      case MATH_OPERATION::CMP_NE:      return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
-      case MATH_OPERATION::CMP_GT:      return CompareInt64<COMP64i_GT<__m256i>, COMP_GT>;
-      case MATH_OPERATION::CMP_GTE:     return CompareInt64<COMP64i_GE<__m256i>, COMP_GE>;
-      case MATH_OPERATION::CMP_LT:      return CompareInt64<COMP64i_LT<__m256i>, COMP_LT>;
-      case MATH_OPERATION::CMP_LTE:     return CompareInt64<COMP64i_LE<__m256i>, COMP_LE>;
+      // signed ints in numpy will have last bit set
+      if (numpyInType1 != numpyInType2 && !(numpyInType2 & 1)) {
+         switch (func) {
+         case MATH_OPERATION::CMP_EQ:      return CompareAnySpecialInt64<INT64, UINT64, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareAnySpecialInt64<INT64, UINT64, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAnySpecialInt64<INT64, UINT64, COMP_GT>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAnySpecialInt64<INT64, UINT64, COMP_GE>;
+         case MATH_OPERATION::CMP_LT:      return CompareAnySpecialInt64<INT64, UINT64, COMP_LT>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAnySpecialInt64<INT64, UINT64, COMP_LE>;
+         }
+      }
+      else {
+         switch (func) {
+         case MATH_OPERATION::CMP_EQ:      return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareInt64<COMP64i_GT<__m256i>, COMP_GT>;
+         case MATH_OPERATION::CMP_GTE:     return CompareInt64<COMP64i_GE<__m256i>, COMP_GE>;
+         case MATH_OPERATION::CMP_LT:      return CompareInt64<COMP64i_LT<__m256i>, COMP_LT>;
+         case MATH_OPERATION::CMP_LTE:     return CompareInt64<COMP64i_LE<__m256i>, COMP_LE>;
+         }
       }
       break;
    CASE_NPY_UINT64:
-      switch (func) {
-      // For equal, not equal the sign does not matter
-      case MATH_OPERATION::CMP_EQ:      return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
-      case MATH_OPERATION::CMP_NE:      return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
-      case MATH_OPERATION::CMP_GT:      return CompareAny<UINT64, COMP_GT>;
-      case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT64, COMP_GE>;
-      case MATH_OPERATION::CMP_LT:      return CompareAny<UINT64, COMP_LT>;
-      case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT64, COMP_LE>;
+      // signed ints in numpy will have last bit set
+      if (numpyInType1 != numpyInType2 && (numpyInType2 & 1)) {
+         switch (func) {
+            // For equal, not equal the sign does not matter
+         case MATH_OPERATION::CMP_EQ:      return CompareAnySpecialInt64<UINT64, INT64, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareAnySpecialInt64<UINT64, INT64, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAnySpecialInt64<UINT64, INT64, COMP_GT>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAnySpecialInt64<UINT64, INT64, COMP_GE>;
+         case MATH_OPERATION::CMP_LT:      return CompareAnySpecialInt64<UINT64, INT64, COMP_LT>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAnySpecialInt64<UINT64, INT64, COMP_LE>;
+         }
+      }
+      else {
+         switch (func) {
+            // For equal, not equal the sign does not matter
+         case MATH_OPERATION::CMP_EQ:      return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<UINT64, COMP_GT>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT64, COMP_GE>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<UINT64, COMP_LT>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT64, COMP_LE>;
+         }
+
       }
       break;
    case NPY_BOOL:

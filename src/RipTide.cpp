@@ -64,11 +64,14 @@ INT32 gBooleanLUT32[16];
 INT64 gBooleanLUT64Inverse[256];
 INT32 gBooleanLUT32Inverse[16];
 
-// upcast table from 0-16
+// upcast table from 0-13
 struct stUpCast {
    int      dtype1;
    int      dtype2;
-} gUpcastTable[14 * 14];
+};
+
+stUpCast gUpcastTable[14 * 14];
+stUpCast gUpcastTableComparison[14 * 14];
 
 
 // BUGBUG this is the windows version
@@ -1892,6 +1895,26 @@ count++;
       }
    }
 
+   // Comparisons should be able to handle int64 to uint64 specially
+   memcpy(&gUpcastTableComparison, &gUpcastTable, sizeof(gUpcastTable));
+   stUpCast* pRow;
+   if (sizeof(long) == 8) {
+      pRow = &gUpcastTableComparison[NPY_LONG * 14 + NPY_ULONG];
+      pRow->dtype1 = NPY_LONG;
+      pRow->dtype2 = NPY_ULONG;
+      pRow = &gUpcastTableComparison[NPY_ULONG * 14 + NPY_LONG];
+      pRow->dtype1 = NPY_ULONG;
+      pRow->dtype2 = NPY_LONG;
+   }
+
+   pRow = &gUpcastTableComparison[NPY_LONGLONG * 14 + NPY_ULONGLONG];
+   pRow->dtype1 = NPY_LONGLONG;
+   pRow->dtype2 = NPY_ULONGLONG;
+   pRow = &gUpcastTableComparison[NPY_ULONGLONG * 14 + NPY_LONGLONG];
+   pRow->dtype1 = NPY_ULONGLONG;
+   pRow->dtype2 = NPY_LONGLONG;
+
+   
    // start up the worker threads now in case we use them
    g_cMathWorker->StartWorkerThreads(0);
 
@@ -2002,14 +2025,21 @@ int GetNumpyType(char* value) {
 // Returns FALSE if cannot upcast
 // Input: numpyInType1, numpyInType2
 // Output: convertType1, convertType2
-BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2) {
+BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, INT64 funcNumber) {
    if (numpyInType1 == numpyInType2) {
       convertType1 = numpyInType1;
       convertType2 = numpyInType1;
       return TRUE;
    }
    if (numpyInType1 >=0 && numpyInType1 <= NPY_LONGDOUBLE && numpyInType2 >= 0 && numpyInType2 <= NPY_LONGDOUBLE) {
-      stUpCast *pUpcast = &gUpcastTable[numpyInType1 * 14 + numpyInType2];
+      stUpCast* pUpcast;
+      if (funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
+         pUpcast = &gUpcastTableComparison[numpyInType1 * 14 + numpyInType2];
+         LOGGING("special comparison upcast %d %d  to   %d %d\n", numpyInType1, numpyInType2, pUpcast->dtype1, pUpcast->dtype2);
+      }
+      else {
+         pUpcast = &gUpcastTable[numpyInType1 * 14 + numpyInType2];
+      }
       convertType1 = pUpcast->dtype1;
       convertType2 = pUpcast->dtype2;
       return TRUE;

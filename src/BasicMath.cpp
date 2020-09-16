@@ -1497,7 +1497,7 @@ public:
                }
                int convertType1 = dtype;
                int convertType2 = scalar_dtype;
-               BOOL result = GetUpcastType(dtype, scalar_dtype, convertType1, convertType2);
+               BOOL result = GetUpcastType(dtype, scalar_dtype, convertType1, convertType2, funcNumber);
                LOGGING("Getting upcast %d %d, result %d  convert:%d\n", dtype, scalar_dtype, result, convertType1);
                if (result) {
                   return convertType1;
@@ -1542,7 +1542,7 @@ public:
             LOGGING("scalars dont match %d %d\n", scalarType, dtype);
             int convertType1 = dtype;
             int convertType2 = scalarType;
-            BOOL result = GetUpcastType(dtype, scalarType, convertType1, convertType2);
+            BOOL result = GetUpcastType(dtype, scalarType, convertType1, convertType2, funcNumber);
             if (result) {
                return convertType1;
             }
@@ -1603,7 +1603,7 @@ public:
    //-------------------------------------------------------------------
    // Arg1: defaultScalarType currently not used
    // returns FALSE on failure
-   BOOL CheckInputs(PyObject* args, int defaultScalarType) {
+   BOOL CheckInputs(PyObject* args, int defaultScalarType, INT64 funcNumber) {
       if (!PyTuple_CheckExact(args)) {
          PyErr_Format(PyExc_ValueError, "BasicMath arguments needs to be a tuple");
          return FALSE;
@@ -1630,12 +1630,12 @@ public:
          // TODO: Get the third item, check if numpy array, if so use as output
          outputObject = PyTuple_GetItem(args, (expectedTupleSize - 1));
       }
-      return CheckInputsInternal(defaultScalarType);
+      return CheckInputsInternal(defaultScalarType, funcNumber);
    }
 
    // Called from low level __add__ hook
    // If output is set, it came from an inplace operation and the ref count does not need to be incremented
-   BOOL CheckInputs(PyObject* input1, PyObject* input2, PyObject* output) {
+   BOOL CheckInputs(PyObject* input1, PyObject* input2, PyObject* output, INT64 funcNumber) {
       tupleSize = 2;
       inObject1 = input1;
       inObject2 = input2;
@@ -1645,7 +1645,7 @@ public:
          numpyOutType = PyArray_TYPE((PyArrayObject*)outputObject);
       }
 
-      return CheckInputsInternal(0);
+      return CheckInputsInternal(0, funcNumber);
    }
 
    //----------------------------------------
@@ -1676,7 +1676,7 @@ public:
          if (numpyInType1 != numpyInType2) {
             int convertType1 = numpyInType1;
             int convertType2 = numpyInType2;
-            BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2);
+            BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
             if (result) {
                if (numpyInType1 != convertType1 && convertType1 <= NPY_LONGDOUBLE) {
                   // Convert
@@ -1716,12 +1716,30 @@ public:
    // Common routine from array_ufunc or lower level slot hook
    // inObject1 is set and will get analyzed
    // inObject2 is set and will get analyzed
-   BOOL CheckInputsInternal(int defaultScalarType) {
+   // funcNumber is passed because certain comparisons with INT64 <-> UINT64 dont need to get upcast to float64
+   BOOL CheckInputsInternal(int defaultScalarType, INT64 funcNumber) {
 
       BOOL isArray1 = IsFastArrayOrNumpy((PyArrayObject*)inObject1);
       BOOL isArray2 = IsFastArrayOrNumpy((PyArrayObject*)inObject2);
       isScalar1 = !isArray1;
       isScalar2 = !isArray2;
+
+      //// Special INT64/UINT64 check
+      //if (isArray1 && isArray2 && funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
+      //   int oldType = PyArray_TYPE((PyArrayObject*)inObject2);
+      //   int newType = PyArray_TYPE((PyArrayObject*)inObject1);
+
+      //   if (sizeof(long) == 8) {
+      //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
+      //         goto PROCESS_STAGE3;
+      //      }
+      //   }
+      //   else {
+      //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
+      //         goto PROCESS_STAGE3;
+      //      }
+      //   }
+      //}
 
       if (!isArray1) {
          isScalar1 = PyArray_IsAnyScalar(inObject1);
@@ -1744,6 +1762,19 @@ public:
             // Cannot convert string to unicode yet
             if (newType != oldType) {
                if (newType <= NPY_LONGDOUBLE) {
+                  //// Special INT64/UINT64 check
+                  //if (funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
+                  //   if (sizeof(long) == 8) {
+                  //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
+                  //            goto PROCESS_STAGE3;
+                  //      }
+                  //   }
+                  //   else {
+                  //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
+                  //            goto PROCESS_STAGE3;
+                  //      }
+                  //   }
+                  //}
                   // Convert second array - upcast
                   LOGGING("Converting because of scalar1 to %d from %d   in1:%s\n", newType, oldType, inObject1->ob_type->tp_name);
                   PyObject* newarray2 = ConvertSafeInternal((PyArrayObject*)inObject2, newType);
@@ -1767,6 +1798,8 @@ public:
             }
          }
       }
+
+
       if (!isArray2) {
          isScalar2 = PyArray_IsAnyScalar(inObject2);
          if (!isScalar2) {
@@ -1785,6 +1818,21 @@ public:
             int newType = PossiblyUpcast(inObject2, oldType);
             if (newType != oldType) {
                if (newType <= NPY_LONGDOUBLE) {
+
+                  //// Special INT64/UINT64 check
+                  //if (funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
+                  //   if (sizeof(long) == 8) {
+                  //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
+                  //         goto PROCESS_STAGE3;
+                  //      }
+                  //   }
+                  //   else {
+                  //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
+                  //         goto PROCESS_STAGE3;
+                  //      }
+                  //   }
+                  //}
+
                   // Convert first array - upcast
                   LOGGING("Converting because of scalar2 to %d from %d\n", newType, oldType);
                   PyObject* newarray1 = ConvertSafeInternal((PyArrayObject*)inObject1, newType);
@@ -1926,7 +1974,7 @@ public:
                numpyInType1 = GetArrDType(inArr);
                int convertType1 = numpyInType1;
                int convertType2 = numpyInType2;
-               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2);
+               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
                if (result) {
                   LOGGING("setting BM to first arg scalar from %d to %d.  ndim1: %d\n", numpyInType1, convertType1, ndim1);
                   // Convert
@@ -1964,7 +2012,7 @@ public:
                numpyInType2 = GetArrDType(inArr2);
                int convertType1 = numpyInType1;
                int convertType2 = numpyInType2;
-               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2);
+               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
                if (result) {
                   LOGGING("setting BM to second arg scalar from %d to %d.  ndim2: %d\n", numpyInType2, convertType2, ndim2);
 
@@ -2669,7 +2717,7 @@ BasicMathTwoInputs(PyObject *self, PyObject *args) {
 
    // Check the inputs to see if the user request makes sense
    BOOL result =
-   twoInputs.CheckInputs(tuple, 0);
+   twoInputs.CheckInputs(tuple, 0, funcNumber);
 
    if (result) {
       return TwoInputsInternal(twoInputs, funcNumber);
@@ -2690,7 +2738,7 @@ BasicMathTwoInputsFromNumber(PyObject* input1, PyObject* input2, PyObject* outpu
 
    // Check the inputs to see if the user request makes sense
    BOOL result = FALSE;
-   result = twoInputs.CheckInputs(input1, input2, output);
+   result = twoInputs.CheckInputs(input1, input2, output, funcNumber);
 
    if (result) {
       return TwoInputsInternal(twoInputs, funcNumber);
@@ -2974,7 +3022,7 @@ Where(PyObject *self, PyObject *args) {
    // Check the inputs to see if the user request makes sense
    BOOL result = FALSE;
 
-   result = twoInputs.CheckInputs(tuple, 0);
+   result = twoInputs.CheckInputs(tuple, 0, MATH_OPERATION::WHERE);
 
    if (result) {
 
