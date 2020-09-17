@@ -1250,7 +1250,7 @@ DecompressWithFilter(
       LOGGING("special read: %lld  lastData:%lld\n", lastRow, lastData);
 
       if (compressedSize == uncompressedSize) {
-         // Read compressed chunk directly into our tempBuffer
+         // Read compressed chunk directly into our destBuffer
          result = DefaultFileIO.FileReadChunk(eventHandle, fileHandle, destBuffer, lastData, arrayDataOffset);
       }
       else {
@@ -1296,13 +1296,14 @@ DecompressWithFilter(
 
       if (rowOffset > lastRow) {
          // nothing to do
-         //printf("nothing to read all filtered out!\n");
+         LOGGING("nothing to read all filtered out!\n");
          return result;
       }
       LOGGING("Boolmask bpr:%lld  ai:%lld  rowOffset:%lld  fixup:%lld  masklength:%lld\n", bytesPerRow, stackIndex, rowOffset, 0LL, pFilter->BoolMaskLength);
 
       // Make sure something to read
-      if (pFilter->pFilterInfo && pFilter->pFilterInfo[stackIndex].TrueCount > 0) {
+      //if (pFilter->pFilterInfo && pFilter->pFilterInfo[stackIndex].TrueCount > 0) {
+      if (pFilter->BoolMaskTrueCount > 0) {
          BOOL uncompressedRead = FALSE;
 
          if (compressedSize == uncompressedSize) {
@@ -1549,6 +1550,14 @@ ReadAndDecompressArrayBlockWithFilter(
 ) {
 
    INT64 result = -1;
+   BOOL didAlloc = FALSE;
+
+   if (!tempBuffer) {
+      LOGGING("Allocating tempbuffer of %lld\n", pBlockInfo->ArrayCompressedSize);
+      tempBuffer = WORKSPACE_ALLOC(pBlockInfo->ArrayCompressedSize);
+      didAlloc = TRUE;
+   }
+
    // All boolean masks come here
    if (tempBuffer) {
 
@@ -1605,8 +1614,13 @@ ReadAndDecompressArrayBlockWithFilter(
       }
    }
    else {
-      printf("out of mem no temp buffer\n");
+      printf("out of mem no temp buffer  bandcount:%d  bandsize:%d  uncomp size: %lld\n", pBlockInfo->ArrayBandCount, pBlockInfo->ArrayBandSize, pBlockInfo->ArrayUncompressedSize);
    }
+   if (didAlloc && tempBuffer) {
+      WORKSPACE_FREE(tempBuffer);
+   }
+      
+      
    return result;
 }
 
@@ -5563,11 +5577,12 @@ BOOL DecompressMultiArray(
          // Reallocate larger memory
          pMultiIOPackets->pCoreMemorySize[core] = source_size;
          pMultiIOPackets->pCoreMemory[core] = WORKSPACE_ALLOC(source_size);
-
+         ;
          // Log that we were forced to reallocate
          LOG_THREAD("-");
       }
 
+      LOG_THREAD("ALLOC %p %d %p  stackpos: %lld  bpr: %lld\n", pMultiIOPackets, core, pMultiIOPackets->pCoreMemory[core], pIOPacket->StackPosition, GetBytesPerRow(pBlockInfo));
       void* tempFileBuffer = pMultiIOPackets->pCoreMemory[core];
 
       // NEW ROUTINE...
@@ -5587,7 +5602,8 @@ BOOL DecompressMultiArray(
             //   printf("Fancy mask filtering not supported for %lld\n", t);
             //}
             // Stacking plus filtering
-            LOGGING("***stacking  plus filter  stack position: %lld  buffer: %p  TrueCount: %lld\n", pIOPacket->StackPosition, destBuffer, pMultiIOPackets->pFilter->pFilterInfo[pIOPacket->StackPosition].TrueCount);
+            //printf("**step2 %p\n", pMultiIOPackets->pFilter->pFilterInfo);
+            LOGGING("***stacking  plus filter  stack position: %lld  buffer: %p  TrueCount: %lld\n", pIOPacket->StackPosition, destBuffer, pMultiIOPackets->pFilter->pFilterInfo ? pMultiIOPackets->pFilter->pFilterInfo[pIOPacket->StackPosition].TrueCount: 0);
             result =
                ReadAndDecompressArrayBlockWithFilter(
                   pBlockInfo,

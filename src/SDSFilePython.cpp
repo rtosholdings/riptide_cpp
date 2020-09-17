@@ -612,7 +612,7 @@ PyObject* ReadFinalStackArrays(
       if (pOffsetArray) {
          INT64* pOffsets = (INT64*)PyArray_GETPTR1(pOffsetArray, 0);
 
-         LOGGING("arary hasfilter:%d  offsets%lld  %d  name:%s\n", hasFilter, fileCount, pSDSFinalCallback[t].ArrayEnum, pSDSFinalCallback[t].ArrayName);
+         LOGGING("arary hasfilter:%d  offsets%lld  %d  name:%s\n", pSDSFilter && pSDSFilter->pBoolMask, fileCount, pSDSFinalCallback[t].ArrayEnum, pSDSFinalCallback[t].ArrayName);
 
          // copy over our array offsets (skip past first element which is 0)
          memcpy(pOffsets, pSDSFinalCallback[t].pArrayOffsets + 1, fileCount * sizeof(INT64));
