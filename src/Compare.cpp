@@ -198,6 +198,22 @@ template<typename T> FORCE_INLINE const bool COMP_LT(T X, T Y) { return (X <  Y)
 template<typename T> FORCE_INLINE const bool COMP_LE(T X, T Y) { return (X <= Y); }
 template<typename T> FORCE_INLINE const bool COMP_NE(T X, T Y) { return (X != Y); }
 
+// Comparing INT64 to UINT64
+template<typename T> FORCE_INLINE const bool COMP_GT_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X <= Y); }
+
+// Comparing UINT64 to INT64
+template<typename T> FORCE_INLINE const bool COMP_EQ_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X == Y); }
+template<typename T> FORCE_INLINE const bool COMP_NE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X != Y); }
+template<typename T> FORCE_INLINE const bool COMP_GT_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X <= Y); }
+
+
+
 //------------------------------------------------------------------------------------------------------
 // This template takes ANY type such as 32 bit floats and uses C++ functions to apply the operation
 // It can handle scalars
@@ -240,48 +256,6 @@ static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len,
    }
 }
 
-
-//------------------------------------------------------------------------------------------------------
-// This template takes ANY type such as 64 bit floats and uses C++ functions to apply the operation
-// It can handle scalars
-// Used by comparison of signed and unsigned integers
-template<typename T, typename U, const bool COMPARE(T, T)>
-static void CompareAnySpecialInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
-   INT8* pDataOutX = (INT8*)pDataOut;
-   T* pDataInX = (T*)pDataIn;
-   U* pDataIn2X = (U*)pDataIn2;
-
-   LOGGING("compare any sizeof(T) %lld  len: %lld  scalarmode: %d\n", sizeof(T), len, scalarMode);
-
-   if (scalarMode == SCALAR_MODE::NO_SCALARS) {
-      for (INT64 i = 0; i < len; i++) {
-         pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
-      }
-   }
-   else
-      if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) {
-         T arg1 = *pDataInX;
-         for (INT64 i = 0; i < len; i++) {
-            pDataOutX[i] = COMPARE(arg1, pDataIn2X[i]);
-         }
-      }
-      else
-         if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR) {
-            T arg2 = *pDataIn2X;
-            LOGGING("arg2 is %lld or %llu\n", (INT64)arg2, (UINT64)arg2);
-            for (INT64 i = 0; i < len; i++) {
-               pDataOutX[i] = COMPARE(pDataInX[i], arg2);
-            }
-         }
-         else {
-            // probably cannot happen         
-            T arg1 = *pDataInX;
-            T arg2 = *pDataIn2X;
-            for (INT64 i = 0; i < len; i++) {
-               pDataOutX[i] = COMPARE(arg1, arg2);
-            }
-         }
-}
 
 //----------------------------------------------------------------------------------
 // Lookup to go from 1 byte to 8 byte boolean values
@@ -834,12 +808,12 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && !(numpyInType2 & 1)) {
          switch (func) {
-         case MATH_OPERATION::CMP_EQ:      return CompareAnySpecialInt64<INT64, UINT64, COMP_EQ>;
-         case MATH_OPERATION::CMP_NE:      return CompareAnySpecialInt64<INT64, UINT64, COMP_NE>;
-         case MATH_OPERATION::CMP_GT:      return CompareAnySpecialInt64<INT64, UINT64, COMP_GT>;
-         case MATH_OPERATION::CMP_GTE:     return CompareAnySpecialInt64<INT64, UINT64, COMP_GE>;
-         case MATH_OPERATION::CMP_LT:      return CompareAnySpecialInt64<INT64, UINT64, COMP_LT>;
-         case MATH_OPERATION::CMP_LTE:     return CompareAnySpecialInt64<INT64, UINT64, COMP_LE>;
+         case MATH_OPERATION::CMP_EQ:      return CompareAny<INT64, COMP_EQ_UINT64>;
+         case MATH_OPERATION::CMP_NE:      return CompareAny<INT64, COMP_NE_UINT64>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<INT64, COMP_GT_INT64>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<INT64, COMP_GE_INT64>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<INT64, COMP_LT_INT64>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<INT64, COMP_LE_INT64>;
          }
       }
       else {
@@ -858,12 +832,12 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       if (numpyInType1 != numpyInType2 && (numpyInType2 & 1)) {
          switch (func) {
             // For equal, not equal the sign does not matter
-         case MATH_OPERATION::CMP_EQ:      return CompareAnySpecialInt64<UINT64, INT64, COMP_EQ>;
-         case MATH_OPERATION::CMP_NE:      return CompareAnySpecialInt64<UINT64, INT64, COMP_NE>;
-         case MATH_OPERATION::CMP_GT:      return CompareAnySpecialInt64<UINT64, INT64, COMP_GT>;
-         case MATH_OPERATION::CMP_GTE:     return CompareAnySpecialInt64<UINT64, INT64, COMP_GE>;
-         case MATH_OPERATION::CMP_LT:      return CompareAnySpecialInt64<UINT64, INT64, COMP_LT>;
-         case MATH_OPERATION::CMP_LTE:     return CompareAnySpecialInt64<UINT64, INT64, COMP_LE>;
+         case MATH_OPERATION::CMP_EQ:      return CompareAny<INT64, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareAny<INT64, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<UINT64, COMP_GT_UINT64>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT64, COMP_GE_UINT64>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<UINT64, COMP_LT_UINT64>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT64, COMP_LE_UINT64>;
          }
       }
       else {
