@@ -1724,23 +1724,6 @@ public:
       isScalar1 = !isArray1;
       isScalar2 = !isArray2;
 
-      //// Special INT64/UINT64 check
-      //if (isArray1 && isArray2 && funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
-      //   int oldType = PyArray_TYPE((PyArrayObject*)inObject2);
-      //   int newType = PyArray_TYPE((PyArrayObject*)inObject1);
-
-      //   if (sizeof(long) == 8) {
-      //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
-      //         goto PROCESS_STAGE3;
-      //      }
-      //   }
-      //   else {
-      //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
-      //         goto PROCESS_STAGE3;
-      //      }
-      //   }
-      //}
-
       if (!isArray1) {
          isScalar1 = PyArray_IsAnyScalar(inObject1);
          if (!isScalar1) {
@@ -1762,19 +1745,7 @@ public:
             // Cannot convert string to unicode yet
             if (newType != oldType) {
                if (newType <= NPY_LONGDOUBLE) {
-                  //// Special INT64/UINT64 check
-                  //if (funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
-                  //   if (sizeof(long) == 8) {
-                  //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
-                  //            goto PROCESS_STAGE3;
-                  //      }
-                  //   }
-                  //   else {
-                  //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
-                  //            goto PROCESS_STAGE3;
-                  //      }
-                  //   }
-                  //}
+
                   // Convert second array - upcast
                   LOGGING("Converting because of scalar1 to %d from %d   in1:%s\n", newType, oldType, inObject1->ob_type->tp_name);
                   PyObject* newarray2 = ConvertSafeInternal((PyArrayObject*)inObject2, newType);
@@ -1818,20 +1789,6 @@ public:
             int newType = PossiblyUpcast(inObject2, oldType);
             if (newType != oldType) {
                if (newType <= NPY_LONGDOUBLE) {
-
-                  //// Special INT64/UINT64 check
-                  //if (funcNumber >= MATH_OPERATION::CMP_EQ && funcNumber <= MATH_OPERATION::CMP_GTE) {
-                  //   if (sizeof(long) == 8) {
-                  //      if (newType >= NPY_LONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONG && oldType <= NPY_ULONGLONG) {
-                  //         goto PROCESS_STAGE3;
-                  //      }
-                  //   }
-                  //   else {
-                  //      if (newType >= NPY_LONGLONG && newType <= NPY_ULONGLONG && oldType >= NPY_LONGLONG && oldType <= NPY_ULONGLONG) {
-                  //         goto PROCESS_STAGE3;
-                  //      }
-                  //   }
-                  //}
 
                   // Convert first array - upcast
                   LOGGING("Converting because of scalar2 to %d from %d\n", newType, oldType);

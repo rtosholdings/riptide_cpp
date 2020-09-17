@@ -1804,16 +1804,8 @@ PyObject* ProcessOneInput(
    // wantedOutputType will be returned
    int wantedOutputType = -1;
 
-   UNARY_FUNC pUnaryFunc = NULL;
-
-   // First check if strided has a special routine, otherwise it will use the normal routine
-   //if (isStrided) 
-   //   pUnaryFunc =
-   //      CheckMathOpOneInputStrided(funcNumber, numpyInType1, numpyOutType, &wantedOutputType);
-      
-   if (!pUnaryFunc) 
-      pUnaryFunc =
-         CheckMathOpOneInput(funcNumber, numpyInType1, numpyOutType, &wantedOutputType);
+   UNARY_FUNC pUnaryFunc = 
+      CheckMathOpOneInput(funcNumber, numpyInType1, numpyOutType, &wantedOutputType);
 
    // Check if we are aborting and punt this to numpy since we cannot do it/understand it
    if (pUnaryFunc && wantedOutputType != -1) {
@@ -1822,7 +1814,7 @@ PyObject* ProcessOneInput(
       PyArrayObject* outputArray = NULL;
 
       if (numpyOutType != -1 && numpyOutType != wantedOutputType) {
-         printf("Wanted output type %d does not match output type %d\n", wantedOutputType, numpyOutType);
+         LOGGING("Wanted output type %d does not match output type %d\n", wantedOutputType, numpyOutType);
          // punt to numpy
          RETURN_NONE;
       }
@@ -1844,7 +1836,7 @@ PyObject* ProcessOneInput(
          INT64 lenOut = ArrayLength(outputArray);
 
          if (len != lenOut) {
-            printf("Wanted output length does not match %lld vs %lld or output is not contiguous\n", len, lenOut);
+            LOGGING("Wanted output length does not match %lld vs %lld or output is not contiguous\n", len, lenOut);
             // punt to numpy
             RETURN_NONE;
          }
