@@ -6,6 +6,13 @@
 *.lo
 *.o
 *.obj
+*.tlog
+*.pdb
+*.ipdb
+*.cod
+*.iobj
+*.exp
+*.sln
 
 # Precompiled Headers
 *.gch
