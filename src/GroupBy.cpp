@@ -187,20 +187,61 @@ public:
          memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
       }
 
-////#ifdef _DEBUG
-//      for (INT64 i = 0; i < len; i++) {
-//         V index = pIndex[i];
-//         if (index < 0 || index >= unique_rows) {
-//            printf("index out of range %d\n", (INT32)index);
-//         }
-//      }
-////#endif
       for (INT64 i = 0; i < len; i++) {
          V index = pIndex[i];
 
          ACCUM_INNER_LOOP(index, binLow, binHigh)
             pOut[index] += (U)pIn[i];
          }
+      }
+   }
+
+   // This routine is only for float32.  It will upcast to float64, add up all the numbers, then convert back to float32
+   static void AccumSumFloat(void* pDataIn, void* pIndexT, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass) {
+
+      float* pIn = (float*)pDataIn;
+      float* pOut = (float*)pDataOut;
+      V* pIndex = (V*)pIndexT;
+      double* pOutAccum = NULL;
+
+      const INT64 maxStackAlloc = (1024 * 1024);  // 1 MB
+
+      INT64 allocSize = (binHigh - binLow)*sizeof(double);
+
+      if (allocSize > maxStackAlloc) {
+         pOutAccum = (double*)WORKSPACE_ALLOC(allocSize);
+      }
+      else {
+         pOutAccum = (double*)alloca(allocSize);
+      }
+
+      if (pass <= 0) {
+         // Clear out memory for our range
+         memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
+         memset(pOutAccum, 0, allocSize);
+      }
+      else {
+         // Upcast from single to double
+         for (INT64 i = binLow; i < binHigh; i++) {
+            pOutAccum[i - binLow] = pOut[i];
+         }
+      }
+
+      // Main loop
+      for (INT64 i = 0; i < len; i++) {
+         V index = pIndex[i];
+
+         ACCUM_INNER_LOOP(index, binLow, binHigh)
+            pOutAccum[index-binLow] += (double)pIn[i];
+         }
+      }
+
+      // Downcast from double to single
+      for (INT64 i = binLow; i < binHigh; i++) {
+         pOut[i] = (float)pOutAccum[i - binLow];
+      }
+      if (allocSize > maxStackAlloc) {
+         WORKSPACE_FREE(pOutAccum);
       }
    }
 
@@ -1977,7 +2018,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(BOOL *hasCounts, INT32 *wantedOutputT
    case GB_SUM:
       switch (inputType) {
       case NPY_BOOL:   *wantedOutputType = NPY_INT64; return GroupByBase<INT8,    INT64,  V>::AccumSum;
-      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float,   float,  V>::AccumSum;
+      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float,   float,  V>::AccumSumFloat;
       case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumSum;
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_LONGDOUBLE; return GroupByBase<long double, long double, V>::AccumSum;
       case NPY_INT8:   *wantedOutputType = NPY_INT64; return GroupByBase<INT8,    INT64,  V>::AccumSum;
