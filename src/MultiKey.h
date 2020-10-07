@@ -22,7 +22,8 @@ struct ArrayInfo {
    INT32       NDim;
 
    // When calling ensure contiguous, we might make a copy
-   PyArrayObject*   pCopiedObject;
+   // if so, pObject is the copy and must be deleted.  pOriginal was passed in
+   PyArrayObject*   pOriginalObject;
 
 };
 

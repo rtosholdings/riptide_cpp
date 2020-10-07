@@ -254,6 +254,7 @@ PyArrayObject* EnsureContiguousArray(PyArrayObject* inObject) {
 
    // make sure C or F contiguous
    if (!(arrFlags & (NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_F_CONTIGUOUS))) {
+      // Have to make a copy (which needs to be deleted later)
       inObject = (PyArrayObject*)PyArray_FromAny((PyObject*)inObject, NULL, 0, 0, NPY_ARRAY_ENSURECOPY, NULL);
       if (!inObject) {
          PyErr_Format(PyExc_ValueError, "RipTide: Error converting non-contiguous array");
