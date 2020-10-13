@@ -100,8 +100,8 @@ FreeArrayInfo(ArrayInfo* pAlloc) {
       // The next entry is the arrayInfo
       ArrayInfo* aInfo = (ArrayInfo*)&pRawAlloc[1];
       for (INT64 i = 0; i < tupleSize; i++) {
-         if (aInfo[i].pCopiedObject) {
-            Py_DecRef((PyObject*)aInfo[i].pCopiedObject);
+         if (aInfo[i].pOriginalObject) {
+            Py_DecRef((PyObject*)aInfo[i].pObject);
          }
       }
       WORKSPACE_FREE(pRawAlloc);
@@ -120,9 +120,9 @@ AllocArrayInfo(INT64 tupleSize) {
       // The next entry is the arrayInfo
       ArrayInfo* aInfo = (ArrayInfo*)&pRawAlloc[1];
 
-      // make sure we clear out pCopiedObject
+      // make sure we clear out pOriginalObject
       for (INT64 i = 0; i < tupleSize; i++) {
-         aInfo[i].pCopiedObject = NULL;
+         aInfo[i].pOriginalObject = NULL;
       }
       return aInfo;
    }
@@ -212,7 +212,10 @@ ArrayInfo* BuildArrayInfo(
             }
 
             if ((PyArrayObject*)inObject != aInfo[i].pObject) {
-               aInfo[i].pCopiedObject = (PyArrayObject*)inObject;
+               // the pObject was copied and needs to be deleted
+               // pOriginalObject is the original object
+               aInfo[i].pOriginalObject = aInfo[i].pObject;
+               aInfo[i].pObject = (PyArrayObject*)inObject;
             }
          }
 

@@ -1865,7 +1865,7 @@ INT64 ReadFileHeader(SDS_FILE_HANDLE fileHandle, SDS_FILE_HEADER* pFileHeader, I
          SetErr_Format(SDS_VALUE_ERROR, "SDS Version number not understood (may need newer version): %s  %d  arrays: %lld", fileName, (int)(pFileHeader->VersionHigh), pFileHeader->ArraysWritten);
       }
       else {
-         SetErr_Format(SDS_VALUE_ERROR, "Decompression error cannot understand header for file (corrupt or different filetype): %s  %d  arrays: %lld", fileName, (int)(pFileHeader->SDSHeaderMagic), pFileHeader->ArraysWritten);
+         SetErr_Format(SDS_VALUE_ERROR, "Decompression error cannot understand header for file (corrupt or different filetype): %s  %d  arrays: %lld  fileoffset: %lld", fileName, (int)(pFileHeader->SDSHeaderMagic), pFileHeader->ArraysWritten, fileOffset);
       }
       DefaultFileIO.FileClose(fileHandle);
       return -1;
@@ -6041,18 +6041,56 @@ public:
       return result;
    }
 
+
+   static void UpdateSectionData(
+      char* pSectionData,
+      INT64 currentSection,
+      INT64 currentOffset) {
+
+      // again very hackish
+      char* pEntry = pSectionData + (currentSection * 10);
+      pEntry[0] = '0';
+      pEntry[1] = 0;
+      *(INT64*)(pEntry + 2) = currentOffset;
+
+   }
    //=====================================================
    // fileHandle is the output file
-   // fileOffset is the offset in the output file to start writing at
    // pSDSDecompress is the input file
+   // fileOffset is the offset in the output file to start writing at
    // fileSize is the size of the input file
-   static INT64 AppendToFile(SDS_FILE_HANDLE  outFileHandle, SDSDecompressFile* pSDSDecompress, INT64 fileOffset, INT64 fileSize) {
+   // set localOffset to non-zero to indicate a section copy
+   static INT64 AppendToFile(
+      SDS_FILE_HANDLE  outFileHandle, 
+      SDSDecompressFile* pSDSDecompress,
+      INT64 fileOffset, 
+      INT64 fileSize,
+      char* pSectionData,
+      INT64 &currentSection) {
+
       LOGGING("files %s has size %lld\n", pSDSDecompress->FileName, fileSize);
       SDS_FILE_HEADER *pFileHeader = &pSDSDecompress->FileHeader;
       INT64 currentOffset = fileOffset;
-      INT64 localOffset = 0;
 
       INT64 origArrayBlockOffset = pFileHeader->ArrayBlockOffset;
+      SDS_FILE_HANDLE inFile = pSDSDecompress->SDSFile;
+      BOOL hasSections = FALSE;
+      INT64 localOffset = 0;
+
+      if (pFileHeader->SectionBlockOffset) {
+         LOGGING("!!warning file %s has section within section when concat\n", pSDSDecompress->FileName);
+         hasSections = TRUE;
+      }
+
+      // end of file might be larger due to padding... when it is, cap to filesize
+      //INT64 calculatedSize = pFileHeader->GetEndOfFileOffset();
+      //
+      //if (calculatedSize < fileSize) {
+      //   printf("reducing size %lld!\n", fileSize);
+      //   fileSize = calculatedSize;
+      //}
+
+      LOGGING("sds_concat %lld  vs  %lld   fileoffset:%lld\n", fileSize, pFileHeader->GetEndOfFileOffset(), fileOffset);
 
       // Fixup header offsets
       if (pFileHeader->NameBlockOffset) pFileHeader->NameBlockOffset += fileOffset;
@@ -6060,16 +6098,17 @@ public:
       if (pFileHeader->ArrayBlockOffset) pFileHeader->ArrayBlockOffset += fileOffset;
       if (pFileHeader->ArrayFirstOffset) pFileHeader->ArrayFirstOffset += fileOffset;
       if (pFileHeader->BandBlockOffset) pFileHeader->BandBlockOffset += fileOffset;
-      if (pFileHeader->SectionBlockOffset) printf("!!warning file %s has section within section when concat\n", pSDSDecompress->FileName);
+
       pFileHeader->SectionBlockOffset = 0;
       pFileHeader->FileOffset += fileOffset;
 
-      // append the file header to the output file
+      // append the file header to the output file at fileOffset
       INT64 bytesXfer = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
       if (bytesXfer != sizeof(SDS_FILE_HEADER)) {
-         printf("!!warning file %s failed to write header at offset %lld\n", pSDSDecompress->FileName, fileOffset);
+         LOGGING("!!warning file %s failed to write header at offset %lld\n", pSDSDecompress->FileName, fileOffset);
       }
-      SDS_FILE_HANDLE inFile = pSDSDecompress->SDSFile;
+
+      UpdateSectionData(pSectionData, currentSection++, currentOffset);
 
       // copy the rest of the file
       fileSize -= sizeof(SDS_FILE_HEADER);
@@ -6081,7 +6120,7 @@ public:
       char* pBuffer = (char*)WORKSPACE_ALLOC(BUFFER_SIZE);
       if (!pBuffer) return 0;
 
-      // Read from source and copy to output
+      // Read from source at localoffset and copy to output at currentOffset (which starts at fileOffset)
       while (fileSize > 0) {
          INT64 copySize = fileSize;
          if (fileSize > BUFFER_SIZE) {
@@ -6119,8 +6158,49 @@ public:
 
       WORKSPACE_FREE(pDestArrayBlock);
 
-      // return how many bytes copied
-      return localOffset;
+      //------------
+      // Check if sections.. if so read back in each section and fix it up
+      if (hasSections) {
+         for (INT64 section = 1; section < pSDSDecompress->cSectionName.SectionCount; section++) {
+            INT64 sectionOffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
+            // section within a section
+            // read in a new fileheader
+            SDS_FILE_HEADER tempFileHeader;
+            INT64 bytesRead = DefaultFileIO.FileReadChunk(NULL, inFile, &tempFileHeader, sizeof(SDS_FILE_HEADER), sectionOffset);
+
+            LOGGING("reading section at %lld for output fileoffset %lld\n", sectionOffset, fileOffset);
+
+            if (bytesRead != sizeof(SDS_FILE_HEADER)) {
+               printf("!!warning file %s failed to read section header at offset %lld\n", pSDSDecompress->FileName, sectionOffset);
+               return 0;
+            }
+
+            LOGGING("Some offsets %lld %lld %lld\n", tempFileHeader.NameBlockOffset, tempFileHeader.MetaBlockOffset, tempFileHeader.ArrayBlockOffset);
+            // Fixup header offsets
+            if (tempFileHeader.NameBlockOffset) tempFileHeader.NameBlockOffset += fileOffset;
+            if (tempFileHeader.MetaBlockOffset) tempFileHeader.MetaBlockOffset += fileOffset;
+            if (tempFileHeader.ArrayBlockOffset) tempFileHeader.ArrayBlockOffset += fileOffset;
+            if (tempFileHeader.ArrayFirstOffset) tempFileHeader.ArrayFirstOffset += fileOffset;
+            if (tempFileHeader.BandBlockOffset) tempFileHeader.BandBlockOffset += fileOffset;
+
+            tempFileHeader.SectionBlockOffset = 0;
+            tempFileHeader.FileOffset += fileOffset;
+
+            INT64 newOffset = fileOffset + sectionOffset;
+
+            UpdateSectionData(pSectionData, currentSection++, newOffset);
+
+            INT64 sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, &tempFileHeader, sizeof(SDS_FILE_HEADER), newOffset);
+            if (sizeof(SDS_FILE_HEADER) != sizeWritten) {
+               printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, newOffset, sectionOffset);
+            }
+         }
+
+      }
+
+      // return current offset in destination file
+      //return pSDSDecompress->FileSize;
+      return currentOffset;
    }
 
    //=====================================================
@@ -6148,44 +6228,44 @@ public:
       //
       INT64 fileOffset = 0;
       SDS_FILE_HEADER*  pFileHeader = NULL;
+      INT64 sectionCount = 0;
 
-      //void* saveState = pReadCallbacks->BeginAllowThreads();
-      //g_cMathWorker->DoMultiThreadedWork((int)FileCount, &DecompressManyFiles, this);
-      //pReadCallbacks->EndAllowThreads(saveState);
-
+      // Pass 1 count sections
       for (INT64 t = 0; t < FileCount; t++) {
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
          if (pSDSDecompress->IsFileValid) {
             if (!pFileHeader) pFileHeader = &pSDSDecompress->FileHeader;
-            AppendToFile(fileHandle, pSDSDecompress, fileOffset, pSDSDecompress->FileSize);
-            fileOffset += pSDSDecompress->FileSize;
+
+            // Check for sections
+            if (pSDSDecompress->FileHeader.SectionBlockOffset) {
+               sectionCount += pSDSDecompress->cSectionName.SectionCount;
+            }
+            else {
+               sectionCount += 1;
+            }
          }
       }
 
       // Allocate section offset
       // write to end of file
       if (pFileHeader) {
-         // quite hackish
-         // uses 10
-         // first 2 are '0', 0  for section '0' zero terminated
-         // then 8 for the offset 
-         INT64 sectionSize = validCount * 10;
-         INT64 sectionTotalSize = SDS_PAD_NUMBER(sectionSize);
-         char* pSectionData = (char*) WORKSPACE_ALLOC(sectionTotalSize);
-         INT64 valid = 0;
-         INT64 currentOffset = 0;
 
+         // Allocate section data
+         INT64 sectionSize = sectionCount * 10;
+         INT64 sectionTotalSize = SDS_PAD_NUMBER(sectionSize);
+         INT64 currentSection = 0;
+         char* pSectionData = (char*)WORKSPACE_ALLOC(sectionTotalSize);
+
+         // Pass 2 append to file
          for (INT64 t = 0; t < FileCount; t++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
             if (pSDSDecompress->IsFileValid) {
-               // again very hackish
-               char* pEntry = pSectionData + (valid * 10);
-               pEntry[0] = '0';
-               pEntry[1] = 0;
-               *(INT64*)(pEntry + 2) = currentOffset;
 
-               currentOffset += pSDSDecompress->FileSize;
-               valid++;
+               INT64 nextOffset =
+                  AppendToFile(fileHandle, pSDSDecompress, fileOffset, pSDSDecompress->FileSize, pSectionData, currentSection);
+
+               INT64 padFileSize = SDS_PAD_NUMBER(nextOffset);
+               fileOffset = padFileSize;
             }
          }
 
@@ -6200,7 +6280,7 @@ public:
 
          // At the end of the file, write out the section names and the file offset to find them
          // Update the first file header (current file header)
-         pFileHeader->SectionBlockCount = validCount;
+         pFileHeader->SectionBlockCount = sectionCount;
          pFileHeader->SectionBlockOffset = fileOffset;
          pFileHeader->SectionBlockSize = sectionSize;
          pFileHeader->SectionBlockReservedSize = sectionTotalSize;
@@ -6222,7 +6302,12 @@ public:
       GetFileInfo(multiMode);
 
       // If any of the files have sections, we have to grow the list of files
-      SDSDecompressFile** pSDSDecompressFileExtra = ScanForSections();
+      SDSDecompressFile** pSDSDecompressFileExtra = NULL;
+      
+      // Check if concat mode
+      if (multiMode != SDS_MULTI_MODE_CONCAT_MANY) {
+         pSDSDecompressFileExtra = ScanForSections();
+      }
 
       INT64 validCount = 0;
       void* result = NULL;
@@ -6243,7 +6328,7 @@ public:
 
       LOGGING("GetInfo ReadManyFiles complete.  FileCount %lld. valid %lld.  mode:%d \n", FileCount, validCount, multiMode);
 
-      // Check if concat more
+      // Check if concat mode
       if (multiMode == SDS_MULTI_MODE_CONCAT_MANY) {
          result =SDSConcatFiles(pReadCallbacks->strOutputFilename, validCount);
       }
