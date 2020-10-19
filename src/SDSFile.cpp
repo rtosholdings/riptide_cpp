@@ -635,6 +635,8 @@ void SDSFileClose(SDS_FILE_HANDLE handle) {
 
 #else
 
+#include <errno.h>
+
 const char* GetLastErrorMessage() {
    return (const char*)strerror(errno);
 }
@@ -648,12 +650,6 @@ void SDS_DESTROY_EVENTHANDLE(SDS_EVENT_HANDLE handle) {
 }
 
 #include <sys/stat.h>
-
-ssize_t linux_pwrite(int fildes, const void* buf, size_t nbyte, off_t offset) {
-   // Try pwrite first
-   ssize_t result = pwrite(fildes, buf, nbyte, offset);
-   return result;
-}
 
 // returns < 0 if file does not exist or error
 INT64 SDSFileSize(const char* fileName) {
@@ -722,7 +718,7 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle,
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
-         totalRead += pread(fileHandle, cbuffer, MAX_READSIZE_ALLOWED, bufferPos);
+         totalRead += SDSFileReadChunk(eventHandle, fileHandle, cbuffer, MAX_READSIZE_ALLOWED, bufferPos);
 
          cbuffer += MAX_READSIZE_ALLOWED;
          bufferPos += MAX_READSIZE_ALLOWED;
@@ -730,22 +726,30 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle,
       }
 
       if (bufferSize) {
-         totalRead += pread(fileHandle, cbuffer, (size_t)bufferSize, bufferPos);
+         totalRead += SDSFileReadChunk(eventHandle, fileHandle, cbuffer, bufferSize, bufferPos);
       }
 
       if (totalRead != origSize) {
-         printf("readchunk failed for fd %d -- %lld vs %lld\n", fileHandle, origSize, totalRead);
+         printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, origSize, totalRead, errno);
+         return 0;
       }
       return totalRead;
    }
    else {
+      ssize_t bytes_read = pread(fileHandle, buffer, (size_t)bufferSize, bufferPos);
 
-      INT64 result = pread(fileHandle, buffer, (size_t)bufferSize, bufferPos);
-
-      if (result != bufferSize) {
-         printf("readchunk failed for fd %d -- %lld vs %lld\n", fileHandle, bufferSize, result);
+      // pread() returns -1 on error; make sure the read actually succeeded.
+      if (bytes_read == -1)
+      {
+         printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, bufferSize, bytes_read, errno);
+         return 0;
       }
-      return result;
+
+      if (bytes_read != bufferSize) {
+         printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, bufferSize, bytes_read, errno);
+         return 0;
+      }
+      return bytes_read;
    }
 }
 
@@ -759,7 +763,7 @@ INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
-         totalWritten += linux_pwrite(fileHandle, cbuffer, (size_t)MAX_READSIZE_ALLOWED, bufferPos);
+         totalWritten += SDSFileWriteChunk(eventHandle, fileHandle, cbuffer, MAX_READSIZE_ALLOWED, bufferPos);
 
          cbuffer += MAX_READSIZE_ALLOWED;
          bufferPos += MAX_READSIZE_ALLOWED;
@@ -767,21 +771,32 @@ INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle
       }
 
       if (bufferSize) {
-         totalWritten += linux_pwrite(fileHandle, cbuffer, (size_t)bufferSize, bufferPos);
+         totalWritten += SDSFileWriteChunk(eventHandle, fileHandle, cbuffer, bufferSize, bufferPos);
       }
 
       if (totalWritten != origSize) {
-         printf("writechunk failed for large fd %d -- %lld vs %lld  offset:%lld\n", fileHandle, origSize, totalWritten, bufferPos);
+         printf("write chunk error  buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+         return 0;
       }
+
       return totalWritten;
    }
    else {
-      INT64 result = linux_pwrite(fileHandle, buffer, (size_t)bufferSize, bufferPos);
-      if (result != bufferSize) {
-         printf("writechunk failed for fd %d -- %lld vs %lld  offset:%lld\n", fileHandle, bufferSize, result, bufferPos);
-      }
-      return result;
+      ssize_t bytes_written = pwrite(fileHandle, buffer, (size_t)bufferSize, bufferPos);
 
+      // pwrite() returns -1 on error; make sure the write actually succeeded.
+      if (bytes_written == -1)
+      {
+         printf("!!Write failed done  buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+         return 0;
+      }
+
+      if (bytes_written != bufferSize) {
+         printf("!!Write failed small buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+         return 0;
+      }
+
+      return bytes_written;
    }
 }
 
