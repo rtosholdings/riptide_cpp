@@ -1001,10 +1001,10 @@ public:
                         pLastEma[location] = 0;
                         pLastTime[location] = 0;
                      }
+                     pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
+                     pLastTime[location] = pTime[i];
                   }
 
-                  pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
-                  pLastTime[location] = pTime[i];
                   pDest[i] = pLastEma[location];
                }
                else {
@@ -1025,9 +1025,9 @@ public:
                   // NOTE: fill in last value
                   if (pIncludeMask[i] != 0) {
                      value = pSrc[i];
+                     pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
+                     pLastTime[location] = pTime[i];
                   }
-                  pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
-                  pLastTime[location] = pTime[i];
                   pDest[i] = pLastEma[location];
                }
                else {
@@ -1176,9 +1176,13 @@ public:
                         pLastEma[location] = 0;
                         pLastTime[location] = 0;
                      }
+                     EMA_NORMAL_FUNC
+                  }
+                  else {
+                     pDest[i] = pLastEma[location];
+
                   }
 
-                  EMA_NORMAL_FUNC
                }
                else {
                   pDest[i] = Invalid;
@@ -1198,8 +1202,12 @@ public:
                   // NOTE: fill in last value
                   if (pIncludeMask[i] != 0) {
                      value = pSrc[i];
+                     EMA_NORMAL_FUNC
                   }
-                  EMA_NORMAL_FUNC
+                  else {
+                     pDest[i] = pLastEma[location];
+
+                  }
                }
                else {
                   pDest[i] = Invalid;
