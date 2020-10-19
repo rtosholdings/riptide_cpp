@@ -41,6 +41,7 @@ enum GB_FUNCTIONS {
 
    // All int/uints output upgraded to INT64
    // Output is all elements (not just grouped)
+   // Input must be same length
    GB_ROLLING_SUM = 200,
    GB_ROLLING_NANSUM = 201,
 
@@ -1269,6 +1270,7 @@ public:
    //------------------------------
    // Rolling uses entire size: totalInputRows
    // TODO: Check if group is always INT32
+   // NOTE: pDest/pAccumBin must be the size
    static void AccumRollingShift(void* pColumn, void* pGroupT, INT32* pFirst, INT32* pCount, void* pAccumBin, INT64 binLow, INT64 binHigh, INT64 totalInputRows, INT64 itemSize, INT64 funcParam) {
 
       T* pSrc = (T*)pColumn;
@@ -1278,6 +1280,8 @@ public:
 
       INT32 windowSize = (INT32)funcParam;
       U invalid = GET_INVALID(pDest[0]);
+
+      //printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh, windowSize);
 
       if (binLow == 0) {
          // Mark all invalid if invalid bin
@@ -1297,12 +1301,12 @@ public:
 
          if (windowSize >= 0) {
             // invalid for window
-            for (int j = start; j < last && j < (start + windowSize); j++) {
+            for (INT32 j = start; j < last && j < (start + windowSize); j++) {
                INT32 index = pGroup[j];
                pDest[index] = invalid;
             }
 
-            for (int j = start + windowSize; j < last; j++) {
+            for (INT32 j = start + windowSize; j < last; j++) {
                INT32 index = pGroup[j];
                pDest[index] = (U)pSrc[pGroup[j - windowSize]];
             }
@@ -1314,12 +1318,12 @@ public:
             start--;
             //printf("bin[%lld]  start:%d  last:%d  windowSize:%d\n", i, start, last, windowSize);
 
-            for (int j = last; j > start && j > (last - windowSize); j--) {
+            for (INT32 j = last; j > start && j > (last - windowSize); j--) {
                INT32 index = pGroup[j];
                pDest[index] = invalid;
             }
 
-            for (int j = last - windowSize; j > start; j--) {
+            for (INT32 j = last - windowSize; j > start; j--) {
                INT32 index = pGroup[j];
                pDest[index] = (U)pSrc[pGroup[j + windowSize]];
             }
@@ -3419,6 +3423,11 @@ GroupByAllPack32(PyObject *self, PyObject *args)
                      numpyOutType = NPY_FLOAT64;
                   }
 
+                  if (aInfo[i].ArrayLength != pstGroupBy32->totalInputRows) {
+                     PyErr_Format(PyExc_ValueError, "GroupByAll32 for rolling functions, input size must be same size as group size: %lld vs %lld", aInfo[i].ArrayLength, pstGroupBy32->totalInputRows);
+                     goto ERROR_EXIT;
+                  }
+
                   outArray = AllocateLikeNumpyArray(aInfo[i].pObject, numpyOutType);
                }
                else {
@@ -3429,7 +3438,7 @@ GroupByAllPack32(PyObject *self, PyObject *args)
 
             // Bail if out of memory (possible memory leak)
             if (outArray == NULL) {
-               return NULL;
+               goto ERROR_EXIT;
             }
 
          }
@@ -3487,6 +3496,7 @@ GroupByAllPack32(PyObject *self, PyObject *args)
 
       LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
 
+ERROR_EXIT:
       WORKSPACE_FREE(pstGroupBy32);
       FreeArrayInfo(aInfo);
 
