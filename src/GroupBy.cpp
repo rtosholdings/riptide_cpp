@@ -518,8 +518,87 @@ public:
    }
 
 
+   // Just for float32 since we can upcast
+   //-------------------------------------------------------------------------------
+   static void AccumMeanFloat(void* pDataIn, void* pIndexT, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass) {
+      T* pIn = (T*)pDataIn;
+      U* pOriginalOut = (U*)pDataOut;
+      V* pIndex = (V*)pIndexT;
+
+      // Allocate pOut
+      double* pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
+      if (pass <= 0) {
+         // Clear out memory for our range
+         memset(pOut, 0, sizeof(U) * (binHigh - binLow));
+      }
+
+      for (INT64 i = 0; i < len; i++) {
+         V index = pIndex[i];
+
+         //--------------------------------------
+         ACCUM_INNER_LOOP(index, binLow, binHigh)
+            double temp = pIn[i];
+            pOut[index - binLow] += (double)temp;
+            pCountOut[index]++;
+         }
+      }
+
+      if (pass < 0) {
+         for (INT64 i = binLow; i < binHigh; i++) {
+            if (pCountOut[i] > 0) {
+               pOriginalOut[i] = (U)(pOut[i-binLow] / (double)(pCountOut[i]));
+            }
+            else {
+               pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+            }
+         }
+      }
+
+      WORKSPACE_FREE(pOut);
+   }
+
+
    //-------------------------------------------------------------------------------
    static void AccumNanMean(void* pDataIn, void* pIndexT, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass) {
+      T* pIn = (T*)pDataIn;
+      U* pOriginalOut = (U*)pDataOut;
+      V* pIndex = (V*)pIndexT;
+
+      // Allocate pOut
+      double* pOut = (double*)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
+      if (pass <= 0) {
+         // Clear out memory for our range
+         memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+      }
+
+      for (INT64 i = 0; i < len; i++) {
+         V index = pIndex[i];
+
+         //--------------------------------------
+         ACCUM_INNER_LOOP(index, binLow, binHigh)
+            T temp = pIn[i];
+            if (temp == temp) {
+               pOut[index - binLow] += (U)temp;
+               pCountOut[index]++;
+            }
+         }
+      }
+
+      if (pass < 0) {
+         for (INT64 i = binLow; i < binHigh; i++) {
+            if (pCountOut[i] > 0) {
+               pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
+            }
+            else {
+               pOriginalOut[i] = GET_INVALID(pOut[i]);
+            }
+         }
+      }
+      WORKSPACE_FREE(pOut);
+   }
+
+   //-------------------------------------------------------------------------------
+   static void AccumNanMeanFloat(void* pDataIn, void* pIndexT, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass) {
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
       V* pIndex = (V*)pIndexT;
@@ -2131,7 +2210,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(BOOL *hasCounts, INT32 *wantedOutputT
       *hasCounts = TRUE;
       switch (inputType) {
       case NPY_BOOL:   *wantedOutputType = NPY_DOUBLE; return GroupByBase < INT8,   double, V > ::AccumMean;
-      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float,   float, V>::AccumMean;
+      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float,   float, V>::AccumMeanFloat;
       case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumMean;
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumMean;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<INT8,     double, V>::AccumMean;
@@ -2150,7 +2229,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(BOOL *hasCounts, INT32 *wantedOutputT
       *hasCounts = TRUE;
       switch (inputType) {
       case NPY_BOOL:   *wantedOutputType = NPY_DOUBLE; return GroupByBase < INT8, double, V > ::AccumNanMean;
-      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanMean;
+      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanMeanFloat;
       case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumNanMean;
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumNanMean;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<INT8, double, V>::AccumNanMean;

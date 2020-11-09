@@ -5,6 +5,15 @@
 #include "Ema.h"
 #include <stdio.h>
 #include <cmath>
+#include <pymem.h>
+//#include <numpy/ndarraytypes.h>
+//#include "numpy/arrayobject.h"
+//#include <numpy/npy_common.h>
+//#include "npy_config.h"
+#include <../Lib/site-packages/numpy/core/include/numpy/ndarraytypes.h>
+#include <../Lib/site-packages/numpy/core/include/numpy/arrayobject.h>
+#include <../Lib/site-packages/numpy/core/include/numpy/npy_common.h>
+//#include <../Lib/site-packages/numpy/npy_config.h>
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -973,6 +982,12 @@ public:
       // Default every LastTime bin to 0, including floats
       memset(pLastTime, 0, size);
 
+      size = (numUnique + GB_BASE_INDEX) * sizeof(T);
+      T* pLastValue = (T*)WORKSPACE_ALLOC(size);
+
+      // Default every LastValue bin to 0, including floats
+      memset(pLastValue, 0, size);
+
       U Invalid = GET_INVALID(pDest[0]);
 
       // Neiman's matlab loop below
@@ -1025,9 +1040,14 @@ public:
                   // NOTE: fill in last value
                   if (pIncludeMask[i] != 0) {
                      value = pSrc[i];
-                     pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
-                     pLastTime[location] = pTime[i];
                   }
+                  else {
+                     // Acts like fill forward
+                     value = pLastValue[location];
+                  }
+                  pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
+                  pLastTime[location] = pTime[i];
+                  pLastValue[location] = value;
                   pDest[i] = pLastEma[location];
                }
                else {
@@ -1079,6 +1099,7 @@ public:
 
       WORKSPACE_FREE(pLastTime);
       WORKSPACE_FREE(pLastEma);
+      WORKSPACE_FREE(pLastValue);
    }
 
 
