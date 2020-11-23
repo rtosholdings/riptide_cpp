@@ -10,9 +10,15 @@
 //#include "numpy/arrayobject.h"
 //#include <numpy/npy_common.h>
 //#include "npy_config.h"
+#if defined(_WIN32) && !defined(__GNUC__)
 #include <../Lib/site-packages/numpy/core/include/numpy/ndarraytypes.h>
 #include <../Lib/site-packages/numpy/core/include/numpy/arrayobject.h>
 #include <../Lib/site-packages/numpy/core/include/numpy/npy_common.h>
+#else
+#include <numpy/ndarraytypes.h>
+#include <numpy/arrayobject.h>
+#include <numpy/npy_common.h>
+#endif
 //#include <../Lib/site-packages/numpy/npy_config.h>
 
 #define LOGGING(...)
