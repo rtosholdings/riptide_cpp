@@ -1043,6 +1043,7 @@ public:
                   }
                   else {
                      // Acts like fill forward
+                     LOGGING("fill forward location: %lld\n", (long long)location);
                      value = pLastValue[location];
                   }
                   pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
@@ -1163,6 +1164,12 @@ public:
       size = (numUnique + GB_BASE_INDEX) * sizeof(V);
       V* pLastTime = (V*)WORKSPACE_ALLOC(size);
 
+      size = (numUnique + GB_BASE_INDEX) * sizeof(T);
+      T* pLastValue = (T*)WORKSPACE_ALLOC(size);
+
+      // Default every LastValue bin to 0, including floats
+      memset(pLastValue, 0, size);
+
       // Default every LastTime bin to 0, including floats
       // Set first time to very low value
       V largeNegative = 0;
@@ -1223,12 +1230,14 @@ public:
                   // NOTE: fill in last value
                   if (pIncludeMask[i] != 0) {
                      value = pSrc[i];
-                     EMA_NORMAL_FUNC
                   }
                   else {
-                     pDest[i] = pLastEma[location];
-
+                     // Acts like fill forward
+                     LOGGING("fill forward location: %lld\n", (long long)location);
+                     value = pLastValue[location];
                   }
+                  EMA_NORMAL_FUNC
+                  pLastValue[location] = value;
                }
                else {
                   pDest[i] = Invalid;
@@ -1277,6 +1286,7 @@ public:
 
       WORKSPACE_FREE(pLastTime);
       WORKSPACE_FREE(pLastEma);
+      WORKSPACE_FREE(pLastValue);
    }
 
 
