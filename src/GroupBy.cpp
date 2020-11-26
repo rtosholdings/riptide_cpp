@@ -529,7 +529,7 @@ public:
       double* pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
       if (pass <= 0) {
          // Clear out memory for our range
-         memset(pOut, 0, sizeof(U) * (binHigh - binLow));
+         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
       }
 
       for (INT64 i = 0; i < len; i++) {
@@ -568,7 +568,7 @@ public:
       double* pOut = (double*)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
       if (pass <= 0) {
          // Clear out memory for our range
-         memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
       }
 
       for (INT64 i = 0; i < len; i++) {
