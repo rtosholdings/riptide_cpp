@@ -24,7 +24,7 @@ static const INT64 CHUNKSIZE = 16384;
 void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffsets* pstOffset, INT64* pOffsets, INT64 numArrays, INT64 itemSize)
 {
    // Try to keep everything in L1Cache
-   const INT64 L1CACHE = 32764;
+   const INT64 L1CACHE = 32768;
    INT64 CHUNKROWS = L1CACHE / (itemSize * 2);
    if (CHUNKROWS < 1) {
       CHUNKROWS = 1;
@@ -211,7 +211,9 @@ RecordArrayToColMajor(PyObject* self, PyObject* args) {
       g_cMathWorker->DoMultiThreadedWork((int)items, lambdaConvertRecCallback, &stConvert);
 
    }
-   ConvertRecArray(pStartOffset, startRow, totalRows, pstOffset, pOffsets, numArrays, itemSize);
+   else {
+      ConvertRecArray(pStartOffset, startRow, totalRows, pstOffset, pOffsets, numArrays, itemSize);
+   }
 
    WORKSPACE_FREE(pstOffset);
 
