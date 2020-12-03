@@ -1560,6 +1560,7 @@ const char* docstring_asfastarray =
 "asarray : Similar function.\n";
 
 
+PyObject* RecordArrayToColMajor(PyObject* self, PyObject* args);
 
 /* ==== Set up the methods table ====================== */
 //struct PyMethodDef {
@@ -1601,7 +1602,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "IsMemberCategoricalFixup", IsMemberCategoricalFixup, METH_VARARGS, "IsMemberCategoricalFixup used for ismember unique on cat" },
 
    { "MultiKeyHash", MultiKeyHash, METH_VARARGS, "MultiKeyHash calculation" },
-   { "MultiKeyGroupBy32", (PyCFunction)MultiKeyGroupBy32, METH_VARARGS |  METH_KEYWORDS, "MultiKeyGroupBy32 calculation" },
+   { "MultiKeyGroupBy32", (PyCFunction)MultiKeyGroupBy32, METH_VARARGS | METH_KEYWORDS, "MultiKeyGroupBy32 calculation" },
    { "MultiKeyGroupBy32Super", MultiKeyGroupBy32Super, METH_VARARGS, "MultiKeyGroupBy32Super calculation" },
    { "MultiKeyUnique32", MultiKeyUnique32, METH_VARARGS, "MultiKeyUnique32 calculation" },
    { "MultiKeyIsMember32", MultiKeyIsMember32, METH_VARARGS, "MultiKeyIsMember32 calculation" },
@@ -1614,7 +1615,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "MergeBinnedAndSorted", MergeBinnedAndSorted, METH_VARARGS, "MergeBinnedAndSorted calculation" },
 
    { "GroupByPack32", GroupByPack32, METH_VARARGS, "GroupByPack32 data from int to float, etc" },
-   //{ "GroupByOp32", GroupByOp32, METH_VARARGS, "GroupByOp32 data from int to float, etc" },
+      //{ "GroupByOp32", GroupByOp32, METH_VARARGS, "GroupByOp32 data from int to float, etc" },
    { "GroupByAll32", GroupByAll32, METH_VARARGS, "GroupByAll32 data from int to float, etc" },
    { "GroupByAll64", GroupByAll64, METH_VARARGS, "GroupByAll64 data from int to float, etc" },
    { "GroupByAllPack32", GroupByAllPack32, METH_VARARGS, "GroupByAllPack32 data from int to float, etc" },
@@ -1622,7 +1623,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "EmaAll32", EmaAll32, METH_VARARGS, "EmaAll32 summation" },
    { "Rolling", Rolling, METH_VARARGS, "Rolling window summation" },
    { "TimeWindow", TimeWindow, METH_VARARGS, "Time window summation/prod" },
-   { "InterpExtrap2d", InterpExtrap2d, METH_VARARGS, "Interpolation routine see: np.interp"},
+   { "InterpExtrap2d", InterpExtrap2d, METH_VARARGS, "Interpolation routine see: np.interp" },
 
    { "ThreadingMode", ThreadingMode, METH_VARARGS, "Change Threading Mode" },
 
@@ -1656,9 +1657,9 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "BasicMathUnaryOp", (PyCFunction)BasicMathUnaryOp, METH_VARARGS | METH_KEYWORDS, "BasicMathUnaryOp functionality" },
    { "BasicMathOneInput", BasicMathOneInput, METH_VARARGS, "BasicMathOneInput functionality" },
    { "BasicMathTwoInputs", BasicMathTwoInputs, METH_VARARGS, "BasicMathTwoInputs functionality" },
-   
 
-   // for low level python hooks
+
+      // for low level python hooks
    { "BasicMathHook", BasicMathHook, METH_VARARGS, "BasicMathHook functionality (pass in fastarray class, FA, np.ndarray)" },
 
    { "LedgerFunction", (PyCFunction)LedgerFunction, METH_VARARGS | METH_KEYWORDS, "LedgerFunction calculation" },
@@ -1678,6 +1679,8 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "IsSorted", IsSorted, METH_VARARGS, "IsSorted" },
 
    { "Where", Where, METH_VARARGS, "Where version of np.where" },
+
+   { "RecordArrayToColMajor", RecordArrayToColMajor, METH_VARARGS, "Convert record arrays to col major" },
 
    { "NanInfCountFromSort", NanInfCountFromSort, METH_VARARGS, "NanInfCountFromSort" },
    { "BinsToCutsBSearch", BinsToCutsBSearch, METH_VARARGS, "BinsToCutsBSearch" },

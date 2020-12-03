@@ -8,7 +8,213 @@
 #define LOGGING(...)
 
 
-PyObject *
-ToBeDone(PyObject *self, PyObject *args, PyObject *kwargs) {
+PyObject*
+ToBeDone(PyObject* self, PyObject* args, PyObject* kwargs) {
    return NULL;
 }
+
+struct stOffsets {
+   char* pData;
+   INT64    itemsize;
+};
+static const INT64 CHUNKSIZE = 16384;
+
+//-----------------------------------
+//
+void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffsets* pstOffset, INT64* pOffsets, INT64 numArrays, INT64 itemSize)
+{
+   // Try to keep everything in L1Cache
+   const INT64 L1CACHE = 32764;
+   INT64 CHUNKROWS = L1CACHE / (itemSize * 2);
+   if (CHUNKROWS < 1) {
+      CHUNKROWS = 1;
+   }
+
+   while (startRow < totalRows) {
+
+      // Calc how many rows to process in this pass
+      INT64 endRow = startRow + CHUNKROWS;
+      if (endRow > totalRows) {
+         endRow = totalRows;
+      }
+      //printf("processing %lld\n", startRow);
+      //__m256i vindex = _mm256_set_epi64x(0, itemSize, itemSize*2, itemSize*3);
+
+      for (INT64 i = 0; i < numArrays; i++) {
+
+         // Calculate place to read
+         char* pRead = pStartOffset + pOffsets[i];
+         char* pWrite = pstOffset[i].pData;
+
+         INT64 arrItemSize = pstOffset[i].itemsize;
+
+         //printf("processing %p  %p  itemsize: %lld\n", pRead, pWrite, arrItemSize);
+
+         switch (pstOffset[i].itemsize) {
+         case 1:
+            while (startRow < endRow) {
+               INT8 data = *(INT8*)(pRead + (startRow * itemSize));
+               *(INT8*)(pWrite + startRow) = data;
+               startRow++;
+            }
+            break;
+         case 2:
+            while (startRow < endRow) {
+               INT16 data = *(INT16*)(pRead + (startRow * itemSize));
+               *(INT16*)(pWrite + startRow * arrItemSize) = data;
+               startRow++;
+            }
+            break;
+         case 4:
+            // ??? use _mm256_i32gather_epi32 to speed up
+            while (startRow < endRow) {
+               INT32 data = *(INT32*)(pRead + (startRow * itemSize));
+               *(INT32*)(pWrite + startRow * arrItemSize) = data;
+               startRow++;
+            }
+            break;
+         case 8:
+            {
+               //INT64 endSubRow = endRow - 4;
+               //while (startRow < endSubRow) {
+               //   __m256i m0 = _mm256_i64gather_epi64((INT64*)(pRead + (startRow * itemSize)), vindex, 1);
+               //   _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
+               //   startRow += 4;
+               //}
+               while (startRow < endRow) {
+                  INT64 data = *(INT64*)(pRead + (startRow * itemSize));
+                  *(INT64*)(pWrite + startRow * arrItemSize) = data;
+                  startRow++;
+               }
+            }
+            break;
+         default:
+            while (startRow < endRow) {
+               char* pSrc = pRead + (startRow * itemSize);
+               char* pDest = pWrite + (startRow * arrItemSize);
+               char* pEnd = pSrc + arrItemSize;
+               while ((pSrc + 8) < pEnd) {
+                  *(INT64*)pDest = *(INT64*)pSrc;
+                  pDest += 8;
+                  pSrc += 8;
+               }
+               while (pSrc < pEnd) {
+                  *pDest++ = *pSrc++;
+               }
+               startRow++;
+            }
+            break;
+
+         }
+
+      }
+   }
+}
+
+//-----------------------------------
+// Input1: the recordarray to convert
+// Input2: int64 array of offsets
+// Input3: list of arrays pre allocated
+PyObject*
+RecordArrayToColMajor(PyObject* self, PyObject* args) {
+   PyArrayObject* inArr = NULL;
+   PyArrayObject* offsetArr = NULL;
+   PyArrayObject* arrArr = NULL;
+
+   if (!PyArg_ParseTuple(args, "O!O!O!:RecordArrayToColMajor",
+      &PyArray_Type, &inArr,
+      &PyArray_Type, &offsetArr,
+      &PyArray_Type, &arrArr)) {
+      return NULL;
+   }
+
+   INT64 itemSize = PyArray_ITEMSIZE(inArr);
+
+   if (itemSize != PyArray_STRIDE(inArr, 0)) {
+      PyErr_Format(PyExc_ValueError, "RecordArrayToColMajor cannot handle strides");
+      return NULL;
+   }
+
+   INT64 length = ArrayLength(inArr);
+   INT64 numArrays = ArrayLength(arrArr);
+
+   if (numArrays != ArrayLength(offsetArr)) {
+      PyErr_Format(PyExc_ValueError, "RecordArrayToColMajor inputs do not match");
+      return NULL;
+   }
+
+
+   INT64 totalRows = length;
+   INT64* pOffsets = (INT64*)PyArray_BYTES(offsetArr);
+   PyArrayObject** ppArrays = (PyArrayObject**)PyArray_BYTES(arrArr);
+
+   stOffsets *pstOffset;
+   
+   pstOffset = (stOffsets*)WORKSPACE_ALLOC(sizeof(stOffsets) * numArrays);
+
+   for (INT64 i = 0; i < numArrays; i++) {
+      pstOffset[i].pData = PyArray_BYTES(ppArrays[i]);
+      pstOffset[i].itemsize = PyArray_ITEMSIZE(ppArrays[i]);
+   }
+
+   //printf("chunkrows is %lld\n", CHUNKROWS);
+
+   char* pStartOffset = PyArray_BYTES(inArr);
+   INT64 startRow = 0;
+
+   if (totalRows > 16384) {
+      // Prepare for multithreading
+      struct stConvertRec {
+         char* pStartOffset;
+         INT64 startRow;
+         INT64 totalRows;
+         stOffsets* pstOffset;
+         INT64* pOffsets;
+         INT64 numArrays;
+         INT64 itemSize;
+         INT64 lastRow;
+      } stConvert;
+
+      INT64 items = (totalRows + (CHUNKSIZE - 1)) / CHUNKSIZE;
+
+      stConvert.pStartOffset = pStartOffset;
+      stConvert.startRow = startRow;
+      stConvert.totalRows = totalRows;
+      stConvert.pstOffset = pstOffset;
+      stConvert.pOffsets = pOffsets;
+      stConvert.numArrays = numArrays;
+      stConvert.itemSize = itemSize;
+      stConvert.lastRow = items - 1;
+
+      auto lambdaConvertRecCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+         stConvertRec* callbackArg = (stConvertRec*)callbackArgT;
+         INT64 startRow = callbackArg->startRow + (workIndex * CHUNKSIZE);
+         INT64 totalRows = startRow + CHUNKSIZE;
+
+         if (totalRows > callbackArg->totalRows) {
+            totalRows = callbackArg->totalRows;
+         }
+
+         ConvertRecArray(
+            callbackArg->pStartOffset,
+            startRow,
+            totalRows,
+            callbackArg->pstOffset,
+            callbackArg->pOffsets,
+            callbackArg->numArrays,
+            callbackArg->itemSize);
+
+         LOGGING("[%d] %lld completed\n", core, workIndex);
+         return TRUE;
+      };
+
+      g_cMathWorker->DoMultiThreadedWork((int)items, lambdaConvertRecCallback, &stConvert);
+
+   }
+   ConvertRecArray(pStartOffset, startRow, totalRows, pstOffset, pOffsets, numArrays, itemSize);
+
+   WORKSPACE_FREE(pstOffset);
+
+   RETURN_NONE;
+}
+
