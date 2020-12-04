@@ -37,10 +37,13 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
       if (endRow > totalRows) {
          endRow = totalRows;
       }
-      //printf("processing %lld\n", startRow);
-      //__m256i vindex = _mm256_set_epi64x(0, itemSize, itemSize*2, itemSize*3);
 
+      INT64 origRow = startRow;
+
+      //printf("processing %lld\n", startRow);
       for (INT64 i = 0; i < numArrays; i++) {
+
+         startRow = origRow;
 
          // Calculate place to read
          char* pRead = pStartOffset + pOffsets[i];
@@ -48,7 +51,7 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
 
          INT64 arrItemSize = pstOffset[i].itemsize;
 
-         //printf("processing %p  %p  itemsize: %lld\n", pRead, pWrite, arrItemSize);
+         //printf("processing  start:%lld  end:%lld   pRead:%p  %p  itemsize: %lld\n", startRow, endRow, pRead, pWrite, arrItemSize);
 
          switch (pstOffset[i].itemsize) {
          case 1:
@@ -67,20 +70,35 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
             break;
          case 4:
             // ??? use _mm256_i32gather_epi32 to speed up
-            while (startRow < endRow) {
-               INT32 data = *(INT32*)(pRead + (startRow * itemSize));
-               *(INT32*)(pWrite + startRow * arrItemSize) = data;
-               startRow++;
+            {
+               INT64 endSubRow = endRow - 8;
+               if (startRow < endSubRow) {
+                  INT32 itemSize32 = (INT32)itemSize;
+                  __m256i vindex = _mm256_set_epi32(0, itemSize32, itemSize32 * 2, itemSize32 * 3, itemSize32 * 4, itemSize32 * 5, itemSize32 * 6, itemSize32 * 7);
+                  while (startRow < endSubRow) {
+                     __m256i m0 = _mm256_i32gather_epi32((INT32*)(pRead + (startRow * itemSize)), vindex, 1);
+                     _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
+                     startRow += 8;
+                  }
+               }
+               while (startRow < endRow) {
+                  INT32 data = *(INT32*)(pRead + (startRow * itemSize));
+                  *(INT32*)(pWrite + startRow * arrItemSize) = data;
+                  startRow++;
+               }
             }
             break;
          case 8:
             {
-               //INT64 endSubRow = endRow - 4;
-               //while (startRow < endSubRow) {
-               //   __m256i m0 = _mm256_i64gather_epi64((INT64*)(pRead + (startRow * itemSize)), vindex, 1);
-               //   _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
-               //   startRow += 4;
-               //}
+               INT64 endSubRow = endRow - 4;
+               if (startRow < endSubRow) {
+                  __m256i vindex = _mm256_set_epi64x(0, itemSize, itemSize * 2, itemSize * 3);
+                  while (startRow < endSubRow) {
+                     __m256i m0 = _mm256_i64gather_epi64((INT64*)(pRead + (startRow * itemSize)), vindex, 1);
+                     _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
+                     startRow += 4;
+                  }
+               }
                while (startRow < endRow) {
                   INT64 data = *(INT64*)(pRead + (startRow * itemSize));
                   *(INT64*)(pWrite + startRow * arrItemSize) = data;
@@ -93,11 +111,11 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
                char* pSrc = pRead + (startRow * itemSize);
                char* pDest = pWrite + (startRow * arrItemSize);
                char* pEnd = pSrc + arrItemSize;
-               while ((pSrc + 8) < pEnd) {
-                  *(INT64*)pDest = *(INT64*)pSrc;
-                  pDest += 8;
-                  pSrc += 8;
-               }
+               //while ((pSrc + 8) < pEnd) {
+               //   *(INT64*)pDest = *(INT64*)pSrc;
+               //   pDest += 8;
+               //   pSrc += 8;
+               //}
                while (pSrc < pEnd) {
                   *pDest++ = *pSrc++;
                }
