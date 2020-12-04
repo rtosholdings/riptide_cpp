@@ -19,6 +19,15 @@ struct stOffsets {
 };
 static const INT64 CHUNKSIZE = 16384;
 
+// This is used to multiply the strides
+SFW_ALIGN(64)
+const union
+{
+   INT32 i[8];
+   __m256i m;
+//} __vindex8_strides = { 7, 6, 5, 4, 3, 2, 1, 0 };
+} __vindex8_strides = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
 //-----------------------------------
 //
 void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffsets* pstOffset, INT64* pOffsets, INT64 numArrays, INT64 itemSize)
@@ -29,6 +38,9 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
    if (CHUNKROWS < 1) {
       CHUNKROWS = 1;
    }
+
+   __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32((INT32)itemSize), _mm256_loadu_si256(&__vindex8_strides.m));
+   __m128i vindex128 = _mm256_extracti128_si256(vindex, 0);
 
    while (startRow < totalRows) {
 
@@ -72,14 +84,10 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
             // ??? use _mm256_i32gather_epi32 to speed up
             {
                INT64 endSubRow = endRow - 8;
-               if (startRow < endSubRow) {
-                  INT32 itemSize32 = (INT32)itemSize;
-                  __m256i vindex = _mm256_set_epi32(0, itemSize32, itemSize32 * 2, itemSize32 * 3, itemSize32 * 4, itemSize32 * 5, itemSize32 * 6, itemSize32 * 7);
-                  while (startRow < endSubRow) {
-                     __m256i m0 = _mm256_i32gather_epi32((INT32*)(pRead + (startRow * itemSize)), vindex, 1);
-                     _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
-                     startRow += 8;
-                  }
+               while (startRow < endSubRow) {
+                  __m256i m0 = _mm256_i32gather_epi32((INT32*)(pRead + (startRow * itemSize)), vindex, 1);
+                  _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
+                  startRow += 8;
                }
                while (startRow < endRow) {
                   INT32 data = *(INT32*)(pRead + (startRow * itemSize));
@@ -91,13 +99,10 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
          case 8:
             {
                INT64 endSubRow = endRow - 4;
-               if (startRow < endSubRow) {
-                  __m256i vindex = _mm256_set_epi64x(0, itemSize, itemSize * 2, itemSize * 3);
-                  while (startRow < endSubRow) {
-                     __m256i m0 = _mm256_i64gather_epi64((INT64*)(pRead + (startRow * itemSize)), vindex, 1);
-                     _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
-                     startRow += 4;
-                  }
+               while (startRow < endSubRow) {
+                  __m256i m0 = _mm256_i32gather_epi64((INT64*)(pRead + (startRow * itemSize)), vindex128, 1);
+                  _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
+                  startRow += 4;
                }
                while (startRow < endRow) {
                   INT64 data = *(INT64*)(pRead + (startRow * itemSize));
@@ -111,11 +116,11 @@ void ConvertRecArray(char* pStartOffset, INT64 startRow, INT64 totalRows, stOffs
                char* pSrc = pRead + (startRow * itemSize);
                char* pDest = pWrite + (startRow * arrItemSize);
                char* pEnd = pSrc + arrItemSize;
-               //while ((pSrc + 8) < pEnd) {
-               //   *(INT64*)pDest = *(INT64*)pSrc;
-               //   pDest += 8;
-               //   pSrc += 8;
-               //}
+               while ((pSrc + 8) < pEnd) {
+                  *(INT64*)pDest = *(INT64*)pSrc;
+                  pDest += 8;
+                  pSrc += 8;
+               }
                while (pSrc < pEnd) {
                   *pDest++ = *pSrc++;
                }
