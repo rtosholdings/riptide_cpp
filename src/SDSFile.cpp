@@ -6535,6 +6535,9 @@ public:
             }
             else {
                pSDSDecompressFileExtra[FileWithSectionsCount] = CopyDecompressFileFrom(pSDSDecompress, FileWithSectionsCount);
+               
+               // TJD: Check to make sure no memory leaks, also, future optimization - we do not have to read it again
+               pSDSDecompressFileExtra[FileWithSectionsCount]->DecompressFileInternal(pReadCallbacks, 0, 0);
                FileWithSectionsCount += 1;
             }
          }
