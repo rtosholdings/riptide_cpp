@@ -15,494 +15,953 @@
 //#define LOGGING printf
 #define LOGGING(...)
 
-typedef void(*MBGET_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 valSize, INT64 itemSize, INT64 start, INT64 len, void* pDefault);
+#if defined(_WIN32) && !defined(__GNUC__)
 
+#define CASE_NPY_INT32      case NPY_INT32:       case NPY_INT
+#define CASE_NPY_UINT32     case NPY_UINT32:      case NPY_UINT
+#define CASE_NPY_INT64      case NPY_INT64
+#define CASE_NPY_UINT64     case NPY_UINT64
+#define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
 
-//-------------------------------------------------------------------
-// T = data type as input type for values
-// U = data type as index type
-// thus <float, int32> converts a float to an int32
-template<typename T, typename U>
-class MergeBase {
-public:
-   MergeBase() {};
-   ~MergeBase() {};
+#else
 
-   //----------------------------------------------------
-   // In parallel mode aValues DOES NOT change
-   // aValues  : remains constant
-   // aIndex   : incremented each call
-   // aDataOut : incremented each call
-   // start    : incremented each call
-   static void MBGetInt(void* aValues, void* aIndex, void* aDataOut, INT64 valSize, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const T* pValues = (T*)aValues;
-      const U* pIndex = (U*)aIndex;
-      T* pDataOut = (T*)aDataOut;
-      T  defaultVal = *(T*)pDefault;
+#define CASE_NPY_INT32      case NPY_INT32
+#define CASE_NPY_UINT32     case NPY_UINT32
+#define CASE_NPY_INT64      case NPY_INT64:    case NPY_LONGLONG
+#define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
+#define CASE_NPY_FLOAT64    case NPY_DOUBLE
+#endif
 
-      LOGGING("mbget sizes %lld  start:%lld  len: %lld   def: %lld  or  %lf\n", valSize, start, len, (INT64)defaultVal, (double)defaultVal);
-      LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
+/**
+ * Count the number of 'True' (nonzero) 1-byte bool values in an array,
+ * using an AVX2-based implementation.
+ *
+ * @param pData Array of 1-byte bool values.
+ * @param length The number of elements in the array.
+ * @return The number of nonzero 1-byte bool values in the array.
+ */
+ // TODO: When we support runtime CPU detection/dispatching, bring back the original popcnt-based implementation
+ //       of this function for systems that don't support AVX2. Also consider implementing an SSE-based version
+ //       of this function for the same reason (logic will be very similar, just using __m128i instead).
+ // TODO: Consider changing `length` to uint64_t here so it agrees better with the result of sizeof().
+int64_t SumBooleanMask(const int8_t* const pData, const int64_t length, const int64_t strideBoolean) {
+   // Basic input validation.
+   if (!pData)
+   {
+      return 0;
+   }
+   else if (length < 0)
+   {
+      return 0;
+   }
+   // Holds the accumulated result value.
+   int64_t result = 0;
 
-      for (INT64 i = 0; i < len; i++)
+   if (strideBoolean == 1) {
+      // Now that we know length is >= 0, it's safe to convert it to unsigned so it agrees with
+      // the sizeof() math in the logic below.
+      // Make sure to use this instead of 'length' in the code below to avoid signed/unsigned
+      // arithmetic warnings.
+      const size_t ulength = length;
+
+      // YMM (32-byte) vector packed with 32 byte values, each set to 1.
+      // NOTE: The obvious thing here would be to use _mm256_set1_epi8(1),
+      //       but many compilers (e.g. MSVC) store the data for this vector
+      //       then load it here, which unnecessarily wastes cache space we could be
+      //       using for something else.
+      //       Generate the constants using a few intrinsics, it's faster than even an L1 cache hit anyway.
+      const auto zeros_ = _mm256_setzero_si256();
+      // compare 0 to 0 returns 0xFF; treated as an int8_t, 0xFF = -1, so abs(-1) = 1.
+      const auto ones = _mm256_abs_epi8(_mm256_cmpeq_epi8(zeros_, zeros_));
+
+      //
+      // Convert each byte in the input to a 0 or 1 byte according to C-style boolean semantics.
+      //
+
+      // This first loop does the bulk of the processing for large vectors -- it doesn't use popcount
+      // instructions and instead relies on the fact we can sum 0/1 values to acheive the same result,
+      // up to CHAR_MAX. This allows us to use very inexpensive instructions for most of the accumulation
+      // so we're primarily limited by memory bandwidth.
+      const size_t vector_length = ulength / sizeof(__m256i);
+      const auto pVectorData = (__m256i*)pData;
+      for (size_t i = 0; i < vector_length;)
       {
-         const auto index = pIndex[i];
-         pDataOut[i] =
+         // Determine how much we can process in _this_ iteration of the loop.
+         // The maximum number of "inner" iterations here is CHAR_MAX (255),
+         // because otherwise our byte-sized counters would overflow.
+         auto inner_loop_iters = vector_length - i;
+         if (inner_loop_iters > 255) inner_loop_iters = 255;
+
+         // Holds the current per-vector-lane (i.e. per-byte-within-vector) popcount.
+         // PERF: If necessary, the loop below can be manually unrolled to ensure we saturate memory bandwidth.
+         auto byte_popcounts = _mm256_setzero_si256();
+         for (size_t j = 0; j < inner_loop_iters; j++)
+         {
+            // Use an unaligned load to grab a chunk of data;
+            // then call _mm256_min_epu8 where one operand is the register we set
+            // earlier containing packed byte-sized 1 values (e.g. 0x01010101...).
+            // This effectively converts each byte in the input to a 0 or 1 byte value.
+            const auto cstyle_bools = _mm256_min_epu8(ones, _mm256_loadu_si256(&pVectorData[i + j]));
+
+            // Since each byte in the converted vector now contains either a 0 or 1,
+            // we can simply add it to the running per-byte sum to simulate a popcount.
+            byte_popcounts = _mm256_add_epi8(byte_popcounts, cstyle_bools);
+         }
+
+         // Sum the per-byte-lane popcounts, then add them to the overall result.
+         // For the vectorized partial sums, it's important the 'zeros' argument is used as the second operand
+         // so that the zeros are 'unpacked' into the high byte(s) of each packed element in the result.
+         const auto zeros = _mm256_setzero_si256();
+
+         // Sum 32x 1-byte counts -> 16x 2-byte counts
+         const auto byte_popcounts_8a = _mm256_unpacklo_epi8(byte_popcounts, zeros);
+         const auto byte_popcounts_8b = _mm256_unpackhi_epi8(byte_popcounts, zeros);
+         const auto byte_popcounts_16 = _mm256_add_epi16(byte_popcounts_8a, byte_popcounts_8b);
+
+         // Sum 16x 2-byte counts -> 8x 4-byte counts
+         const auto byte_popcounts_16a = _mm256_unpacklo_epi16(byte_popcounts_16, zeros);
+         const auto byte_popcounts_16b = _mm256_unpackhi_epi16(byte_popcounts_16, zeros);
+         const auto byte_popcounts_32 = _mm256_add_epi32(byte_popcounts_16a, byte_popcounts_16b);
+
+         // Sum 8x 4-byte counts -> 4x 8-byte counts
+         const auto byte_popcounts_32a = _mm256_unpacklo_epi32(byte_popcounts_32, zeros);
+         const auto byte_popcounts_32b = _mm256_unpackhi_epi32(byte_popcounts_32, zeros);
+         const auto byte_popcounts_64 = _mm256_add_epi64(byte_popcounts_32a, byte_popcounts_32b);
+
+         // perform the operation horizontally in m0
+         union {
+            volatile int64_t  horizontal[4];
+            __m256i mathreg[1];
+         };
+
+         mathreg[0] = byte_popcounts_64;
+         for (int j = 0; j < 4; j++) {
+            result += horizontal[j];
+         }
+
+         // Increment the outer loop counter by the number of inner iterations we performed.
+         i += inner_loop_iters;
+      }
+
+      // Handle the last few bytes, if any, that couldn't be handled with the vectorized loop.
+      const size_t vectorized_length = vector_length * sizeof(__m256i);
+      for (size_t i = vectorized_length; i < ulength; i++)
+      {
+         if (pData[i])
+         {
+            result++;
+         }
+      }
+   }
+   else {
+      for (int64_t i = 0; i < length; i++)
+      {
+         if (pData[i * strideBoolean])
+         {
+            result++;
+         }
+      }
+      LOGGING("sum bool  %p   len:%I64d  vs  true:%I64d  stride:%I64d\n", pData, length, result, strideBoolean);
+
+   }
+   return result;
+}
+
+
+//===================================================
+// Input: boolean array
+// Output: chunk count and ppChunkCount
+// NOTE: CALLER MUST FREE pChunkCount
+//
+int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount) {
+
+   // Pass one, count the values
+   // Eight at a time
+   const int64_t lengthBool = ArrayLength(aIndex);
+   const int8_t* const pBooleanMask = (int8_t*)PyArray_BYTES(aIndex);
+
+   // Count the number of chunks (of boolean elements).
+   // It's important we handle the case of an empty array (zero length) when determining the number
+   // of per-chunk counts to return; the behavior of malloc'ing zero bytes is undefined, and the code
+   // below assumes there's always at least one entry in the count-per-chunk array. If we don't handle
+   // the empty array case we'll allocate an empty count-per-chunk array and end up doing an
+   // out-of-bounds write.
+   const int64_t chunkSize = g_cMathWorker->WORK_ITEM_CHUNK;
+   int64_t chunks = lengthBool > 1 ? lengthBool : 1;
+
+   chunks = (chunks + (chunkSize - 1)) / chunkSize;
+
+   // TOOD: try to allocate on stack when possible
+   int64_t* const pChunkCount = (int64_t*)WORKSPACE_ALLOC(chunks * sizeof(int64_t));
+
+   if (pChunkCount) {
+      // MT callback
+      struct BSCallbackStruct {
+         int64_t* pChunkCount;
+         const int8_t* pBooleanMask;
+         int64_t strideBoolean;
+      };
+
+      // This is the routine that will be called back from multiple threads
+      // t64_t(*MTCHUNK_CALLBACK)(void* callbackArg, int core, int64_t start, int64_t length);
+      auto lambdaBSCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
+         BSCallbackStruct* callbackArg = (BSCallbackStruct*)callbackArgT;
+
+         const int8_t* pBooleanMask = callbackArg->pBooleanMask;
+         int64_t* pChunkCount = callbackArg->pChunkCount;
+
+         // Use the single-threaded implementation to sum the number of
+         // 1-byte boolean TRUE values in the current chunk.
+         // This means the current function is just responsible for parallelizing over the chunks
+         // but doesn't do any real "math" itself.
+         int64_t strides = callbackArg->strideBoolean;
+         int64_t total = SumBooleanMask(&pBooleanMask[start * strides], length, strides);
+
+         pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK] = total;
+         return TRUE;
+      };
+
+      BSCallbackStruct stBSCallback;
+      stBSCallback.pChunkCount = pChunkCount;
+      stBSCallback.pBooleanMask = pBooleanMask;
+      stBSCallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
+
+      BOOL didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
+
+      *ppChunkCount = pChunkCount;
+      // if multithreading turned off...
+      return didMtWork ? chunks : 1;
+   }
+   // out of memory
+   return 0;
+
+}
+
+
+//---------------------------------------------------------------------------
+// Input:
+// Arg1: numpy array aValues (can be any array)
+// Arg2: numpy array aIndex (must be BOOL)
+//
+PyObject*
+BooleanIndexInternal(
+   PyArrayObject* aValues,
+   PyArrayObject* aIndex) {
+
+   if (PyArray_TYPE(aIndex) != NPY_BOOL) {
+      PyErr_Format(PyExc_ValueError, "Second argument must be a boolean array");
+      return NULL;
+   }
+   // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
+   if (PyArray_NDIM(aIndex) != 1 && !PyArray_ISCONTIGUOUS(aIndex)) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional boolean array.");
+      return NULL;
+   }
+   if (PyArray_NDIM(aValues) != 1 && !PyArray_ISCONTIGUOUS(aValues)) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
+      return NULL;
+   }
+
+   // Pass one, count the values
+   // Eight at a time
+   int64_t lengthBool = ArrayLength(aIndex);
+   int64_t lengthValue = ArrayLength(aValues);
+
+   if (lengthBool != lengthValue) {
+      PyErr_Format(PyExc_ValueError, "Array lengths must match %lld vs %lld", lengthBool, lengthValue);
+      return NULL;
+   }
+
+   int64_t* pChunkCount = NULL;
+   int64_t    chunks = BooleanCount(aIndex, &pChunkCount);
+
+   if (chunks == 0) {
+      PyErr_Format(PyExc_ValueError, "Out of memory");
+      return NULL;
+   }
+
+   int64_t totalTrue = 0;
+
+   // Store the offset
+   for (int64_t i = 0; i < chunks; i++) {
+      int64_t temp = totalTrue;
+      totalTrue += pChunkCount[i];
+
+      // reassign to the cumulative sum so we know the offset
+      pChunkCount[i] = temp;
+   }
+
+   LOGGING("boolean index total: %I64d  length: %I64d  type:%d   chunks:%I64d\n", totalTrue, lengthBool, PyArray_TYPE(aValues), chunks);
+
+   int8_t* pBooleanMask = (int8_t*)PyArray_BYTES(aIndex);
+
+   // Now we know per chunk how many true there are... we can allocate the new array
+   PyArrayObject* pReturnArray = AllocateLikeResize(aValues, totalTrue);
+
+   if (pReturnArray) {
+      // If the resulting array is empty there is no work to do
+      if (totalTrue > 0) {
+
+         // MT callback
+         struct BICallbackStruct {
+            int64_t* pChunkCount;
+            int8_t* pBooleanMask;
+            int64_t strideBoolean;
+            char* pValuesIn;
+            int64_t strideValues;
+            char* pValuesOut;
+            int64_t    itemSize;
+         };
+
+
+         //-----------------------------------------------
+         //-----------------------------------------------
+         // This is the routine that will be called back from multiple threads
+         auto lambdaBICallback2 = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
+            BICallbackStruct* callbackArg = (BICallbackStruct*)callbackArgT;
+
+            int8_t* pBooleanMask = callbackArg->pBooleanMask;
+            int64_t  chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];
+            int64_t  itemSize = callbackArg->itemSize;
+            int64_t strideBoolean = callbackArg->strideBoolean;
+            int64_t* pData = (int64_t*)&pBooleanMask[start * strideBoolean];
+            int64_t strideValues = callbackArg->strideValues;
+            char* pValuesIn = &callbackArg->pValuesIn[start * strideValues];
+
+            // output is assumed contiguous
+            char* pValuesOut = &callbackArg->pValuesOut[chunkCount * itemSize];
+
+            // process 8 booleans at a time in the loop
+            int64_t  blength = length / 8;
+
+            if (strideBoolean == 1) {
+               switch (itemSize) {
+               case 1:
+               {
+                  // NOTE: This routine can be improved further by
+                  // Loading 32 booleans at time in math register
+                  // Storing the result in a math register (shifting over new values) until full
+                  int8_t* pVOut = (int8_t*)pValuesOut;
+                  int8_t* pVIn = (int8_t*)pValuesIn;
+
+                  for (int64_t i = 0; i < blength; i++) {
+                     uint64_t bitmask = *(uint64_t*)pData;
+
+                     // NOTE: the below can be optimized with vector intrinsics
+                     // little endian, so the first value is low bit (not high bit)
+                     if (bitmask != 0) {
+                        for (int j = 0; j < 8; j++) {
+                           if (bitmask & 0xff) { *pVOut++ = *pVIn; } pVIn += strideValues; bitmask >>= 8;
+                        }
+                     }
+                     else {
+                        pVIn += 8 * strideValues;
+                     }
+                     pData++;
+                  }
+
+                  // Get last
+                  pBooleanMask = (int8_t*)pData;
+
+                  blength = length & 7;
+                  for (int64_t i = 0; i < blength; i++) {
+                     if (*pBooleanMask++) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pVIn += strideValues;
+                  }
+               }
+               break;
+               case 2:
+               {
+                  int16_t* pVOut = (int16_t*)pValuesOut;
+                  int16_t* pVIn = (int16_t*)pValuesIn;
+
+                  for (int64_t i = 0; i < blength; i++) {
+
+                     uint64_t bitmask = *(uint64_t*)pData;
+                     uint64_t mask = 0xff;
+                     // little endian, so the first value is low bit (not high bit)
+                     if (bitmask != 0) {
+                        for (int j = 0; j < 8; j++) {
+                           if (bitmask & 0xff) { *pVOut++ = *pVIn; } pVIn = STRIDE_NEXT(int16_t, pVIn, strideValues); bitmask >>= 8;
+                        }
+                     }
+                     else {
+                        pVIn = STRIDE_NEXT(int16_t, pVIn, 8 * strideValues);
+                     }
+                     pData++;
+                  }
+
+                  // Get last
+                  pBooleanMask = (int8_t*)pData;
+
+                  blength = length & 7;
+                  for (int64_t i = 0; i < blength; i++) {
+                     if (*pBooleanMask++) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pVIn = STRIDE_NEXT(int16_t, pVIn, strideValues);
+                  }
+               }
+               break;
+               case 4:
+               {
+                  int32_t* pVOut = (int32_t*)pValuesOut;
+                  int32_t* pVIn = (int32_t*)pValuesIn;
+
+                  for (int64_t i = 0; i < blength; i++) {
+
+                     // little endian, so the first value is low bit (not high bit)
+                     uint64_t bitmask = *(uint64_t*)pData;
+                     if (bitmask != 0) {
+                        for (int j = 0; j < 8; j++) {
+                           if (bitmask & 0xff) { *pVOut++ = *pVIn; } pVIn = STRIDE_NEXT(int32_t, pVIn, strideValues); bitmask >>= 8;
+                        }
+                     }
+                     else {
+                        pVIn = STRIDE_NEXT(int32_t, pVIn, 8 * strideValues);
+                     }
+                     pData++;
+                  }
+
+                  // Get last
+                  pBooleanMask = (int8_t*)pData;
+
+                  blength = length & 7;
+                  for (int64_t i = 0; i < blength; i++) {
+                     if (*pBooleanMask++) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pVIn = STRIDE_NEXT(int32_t, pVIn, strideValues);
+                  }
+               }
+               break;
+               case 8:
+               {
+                  int64_t* pVOut = (int64_t*)pValuesOut;
+                  int64_t* pVIn = (int64_t*)pValuesIn;
+
+                  for (int64_t i = 0; i < blength; i++) {
+
+                     // little endian, so the first value is low bit (not high bit)
+                     uint64_t bitmask = *(uint64_t*)pData;
+                     if (bitmask != 0) {
+                        for (int j = 0; j < 8; j++) {
+                           if (bitmask & 0xff) { *pVOut++ = *pVIn; } pVIn = STRIDE_NEXT(int64_t, pVIn, strideValues); bitmask >>= 8;
+                        }
+                     }
+                     else {
+                        pVIn = STRIDE_NEXT(int64_t, pVIn, 8 * strideValues);
+                     }
+                     pData++;
+                  }
+
+                  // Get last
+                  pBooleanMask = (int8_t*)pData;
+
+                  blength = length & 7;
+                  for (int64_t i = 0; i < blength; i++) {
+                     if (*pBooleanMask++) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pVIn = STRIDE_NEXT(int64_t, pVIn, strideValues);
+                  }
+               }
+               break;
+
+               default:
+               {
+                  for (int64_t i = 0; i < blength; i++) {
+
+                     // little endian, so the first value is low bit (not high bit)
+                     uint64_t bitmask = *(uint64_t*)pData;
+                     if (bitmask != 0) {
+                        int counter = 8;
+                        while (counter--) {
+                           if (bitmask & 0xff) {
+                              memcpy(pValuesOut, pValuesIn, itemSize);
+                              pValuesOut += itemSize;
+                           }
+                           pValuesIn += strideValues;
+                           bitmask >>= 8;
+                        }
+                     }
+                     else {
+                        pValuesIn += (strideValues * 8);
+                     }
+                     pData++;
+                  }
+
+                  // Get last
+                  pBooleanMask = (int8_t*)pData;
+
+                  blength = length & 7;
+                  for (int64_t i = 0; i < blength; i++) {
+                     if (*pBooleanMask++) {
+                        memcpy(pValuesOut, pValuesIn, itemSize);
+                        pValuesOut += strideValues;
+                     }
+                     pValuesIn += strideValues;
+                  }
+               }
+               break;
+               }
+            }
+            else {
+               // The boolean mask is strided
+               // FUTURE OPTIMIZATION: We can use the gather command to speed this path
+               int8_t* pBool = (int8_t*)pData;
+               switch (itemSize) {
+               case 1:
+               {
+                  int8_t* pVOut = (int8_t*)pValuesOut;
+                  int8_t* pVIn = (int8_t*)pValuesIn;
+                  for (int64_t i = 0; i < length; i++) {
+                     if (*pBool) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pBool += strideBoolean;
+                     pVIn += strideValues;
+                  }
+               }
+               break;
+               case 2:
+               {
+                  int16_t* pVOut = (int16_t*)pValuesOut;
+                  int16_t* pVIn = (int16_t*)pValuesIn;
+                  for (int64_t i = 0; i < length; i++) {
+                     if (*pBool) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pBool += strideBoolean;
+                     pVIn = STRIDE_NEXT(int16_t, pVIn, strideValues);
+                  }
+               }
+               break;
+               case 4:
+               {
+                  int32_t* pVOut = (int32_t*)pValuesOut;
+                  int32_t* pVIn = (int32_t*)pValuesIn;
+                  for (int64_t i = 0; i < length; i++) {
+                     if (*pBool) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pBool += strideBoolean;
+                     pVIn = STRIDE_NEXT(int32_t, pVIn, strideValues);
+                  }
+               }
+               break;
+               case 8:
+               {
+                  int64_t* pVOut = (int64_t*)pValuesOut;
+                  int64_t* pVIn = (int64_t*)pValuesIn;
+                  for (int64_t i = 0; i < length; i++) {
+                     if (*pBool) {
+                        *pVOut++ = *pVIn;
+                     }
+                     pBool += strideBoolean;
+                     pVIn = STRIDE_NEXT(int64_t, pVIn, strideValues);
+                  }
+               }
+               break;
+               default:
+               {
+                  char* pVOut = (char*)pValuesOut;
+                  char* pVIn = (char*)pValuesIn;
+                  for (int64_t i = 0; i < length; i++) {
+                     if (*pBool) {
+                        memcpy(pVOut, pVIn, itemSize);
+                        pVOut += itemSize;
+                     }
+                     pBool += strideBoolean;
+                     pVIn += strideValues;
+                  }
+               }
+               break;
+               }
+            }
+            return TRUE;
+         };
+
+         BICallbackStruct stBICallback;
+         stBICallback.pChunkCount = pChunkCount;
+         stBICallback.pBooleanMask = pBooleanMask;
+         stBICallback.pValuesIn = (char*)PyArray_BYTES(aValues);
+         stBICallback.pValuesOut = (char*)PyArray_BYTES(pReturnArray);
+         stBICallback.itemSize = PyArray_ITEMSIZE(aValues);
+         stBICallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
+         stBICallback.strideValues = PyArray_STRIDE(aValues, 0);
+
+         g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBICallback2, &stBICallback);
+      }
+   }
+   else {
+      // ran out of memory
+      PyErr_Format(PyExc_ValueError, "Out of memory");
+   }
+
+   WORKSPACE_FREE(pChunkCount);
+   return (PyObject*)pReturnArray;
+}
+
+
+//---------------------------------------------------------------------------
+// Input:
+// Arg1: numpy array aValues (can be anything)
+// Arg2: numpy array aIndex (must be BOOL)
+//
+PyObject*
+BooleanIndex(PyObject* self, PyObject* args)
+{
+   PyArrayObject* aValues = NULL;
+   PyArrayObject* aIndex = NULL;
+
+   if (!PyArg_ParseTuple(
+      args, "O!O!:BooleanIndex",
+      &PyArray_Type, &aValues,
+      &PyArray_Type, &aIndex
+   )) {
+
+      return NULL;
+   }
+   return BooleanIndexInternal(aValues, aIndex);
+}
+
+
+//---------------------------------------------------------------------------
+// Input:
+// Arg1: numpy array aIndex (must be BOOL)
+// Returns: how many true values there are
+// NOTE: faster than calling sum
+PyObject*
+BooleanSum(PyObject* self, PyObject* args)
+{
+   PyArrayObject* aIndex = NULL;
+
+   if (!PyArg_ParseTuple(
+      args, "O!",
+      &PyArray_Type, &aIndex
+   )) {
+
+      return NULL;
+   }
+
+   if (PyArray_TYPE(aIndex) != NPY_BOOL) {
+      PyErr_Format(PyExc_ValueError, "First argument must be boolean array");
+      return NULL;
+   }
+
+   INT64* pChunkCount = NULL;
+   INT64 chunks = BooleanCount(aIndex, &pChunkCount);
+
+   INT64 totalTrue = 0;
+   for (INT64 i = 0; i < chunks; i++) {
+      totalTrue += pChunkCount[i];
+   }
+
+   WORKSPACE_FREE(pChunkCount);
+   return PyLong_FromSize_t(totalTrue);
+
+}
+
+
+//----------------------------------------------------
+// Consider:  C=A[B]   where A is a value array
+// C must be the same type as A (and is also a value array)
+// B is an integer that indexes into A
+// The length of B is the length of the output C
+// valSize is the length of A
+// aValues  : remains constant (pointer to A)
+// aIndex   : incremented each call (pIndex) traverses B
+// aDataOut : incremented each call (pDataOut) traverses C
+// NOTE: The output CANNOT be strided
+template<typename VALUE, typename INDEX>
+static void GetItemInt(void* aValues, void* aIndex, void* aDataOut, int64_t valLength, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault) {
+   const VALUE* pValues = (VALUE*)aValues;
+   const INDEX* pIndex = (INDEX*)aIndex;
+   VALUE* pDataOut = (VALUE*)aDataOut;
+   VALUE  defaultVal = *(VALUE*)pDefault;
+
+   LOGGING("getitem sizes %lld  len: %lld   def: %I64d  or  %lf\n", valLength, len, (int64_t)defaultVal, (double)defaultVal);
+   LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
+
+   VALUE* pDataOutEnd = pDataOut + len;
+   if (sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex) {
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         *pDataOut =
             // Make sure the item is in range; if the index is negative -- but otherwise
             // still in range -- mimic Python's negative-indexing support.
-            index >= -valSize && index < valSize
-            ? pValues[index >= 0 ? index : index + valSize]
+            index >= -valLength && index < valLength
+            ? pValues[index >= 0 ? index : index + valLength]
 
             // Index is out of range -- assign the invalid value.
             : defaultVal;
+         pIndex++;
+         pDataOut++;
+      }
+
+   }
+   else {
+      // Either A or B or both are strided
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         // Make sure the item is in range; if the index is negative -- but otherwise
+         // still in range -- mimic Python's negative-indexing support.
+         if (index >= -valLength && index < valLength) {
+            int64_t newindex = index >= 0 ? index : index + valLength;
+            newindex *= strideValue;
+            *pDataOut = *(VALUE*)((char*)pValues + newindex);
+         }
+         else {
+            // Index is out of range -- assign the invalid value.
+            *pDataOut = defaultVal;
+         }
+
+         pIndex = STRIDE_NEXT(const INDEX, pIndex, strideIndex);
+         pDataOut++;
       }
    }
+}
 
-   //----------------------------------------------------------
-   //
-   static void MBGetIntU(void* aValues, void* aIndex, void* aDataOut, INT64 valSizeX, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const T* pValues = (T*)aValues;
-      const U* pIndex = (U*)aIndex;
-      T* pDataOut = (T*)aDataOut;
-      T  defaultVal = *(T*)pDefault;
 
-      UINT64 valSize = (UINT64)valSizeX;
+//----------------------------------------------------
+// Consider:  C=A[B]   where A is a value array
+// C must be the same type as A (and is also a value array)
+// B is an integer that indexes into A
+// The length of B is the length of the output C
+// valSize is the length of A
+// aValues  : remains constant (pointer to A)
+// aIndex   : incremented each call (pIndex) traverses B
+// aDataOut : incremented each call (pDataOut) traverses C
+// NOTE: The output CANNOT be strided
+template<typename VALUE, typename INDEX>
+static void GetItemUInt(void* aValues, void* aIndex, void* aDataOut, int64_t valLength, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault) {
+   const VALUE* pValues = (VALUE*)aValues;
+   const INDEX* pIndex = (INDEX*)aIndex;
+   VALUE* pDataOut = (VALUE*)aDataOut;
+   VALUE  defaultVal = *(VALUE*)pDefault;
 
-      LOGGING("mbgetu sizes %lld  start:%lld  len: %lld   def: %lld  or  %lf\n", valSize, start, len, (INT64)defaultVal, (double)defaultVal);
-      LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
+   LOGGING("getitem sizes %lld  len: %lld   def: %I64d  or  %lf\n", valLength, len, (int64_t)defaultVal, (double)defaultVal);
+   LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
-      for (INT64 i = 0; i < len; i++) {
-         const auto index = pIndex[i];
-         pDataOut[i] =
+   VALUE* pDataOutEnd = pDataOut + len;
+   if (sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex) {
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         *pDataOut =
+            *pDataOut =
             // Make sure the item is in range
-            index >= 0 && index < valSize
+            index < valLength
             ? pValues[index]
             : defaultVal;
+         pIndex++;
+         pDataOut++;
       }
+
    }
-
-
-   //----------------------------------------------------------
-   //
-   static void MBGetIntF(void* aValues, void* aIndex, void* aDataOut, INT64 valSizeX, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const T* pValues = (T*)aValues;
-      const U* pIndex = (U*)aIndex;
-      T* pDataOut = (T*)aDataOut;
-      T  defaultVal = *(T*)pDefault;
-
-      UINT64 valSize = (UINT64)valSizeX;
-
-      LOGGING("mbgetf sizes %lld  start:%lld  len: %lld   def: %lld  or  %lf\n", valSize, start, len, (INT64)defaultVal, (double)defaultVal);
-      LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
-
-      for (INT64 i = 0; i < len; i++) {
-         // Make sure float is not fractional value
-         const auto index = (INT64)pIndex[i];
-
-         pDataOut[i] =
-            // Make sure the item is in range
-            (U)index == pIndex[i] && index >= 0 && index < (INT64)valSize
-            ? pValues[index]
-            : defaultVal;
-      }
-   }
-
-
-   //----------------------------------------------------
-   // In parallel mode aValues DOES NOT change
-   // aValues  : remains constant
-   // aIndex   : incremented each call
-   // aDataOut : incremented each call
-   // start    : incremented each call
-   static void MBGetString(void* aValues, void* aIndex, void* aDataOut, INT64 valSize, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const char* pValues = (char*)aValues;
-      const U* pIndex = (U*)aIndex;
-      char* pDataOut = (char*)aDataOut;
-      char* defaultVal = (char*)pDefault;
-
-      LOGGING("mbget string sizes %lld  %lld %lld   \n", valSize, len, itemSize);
-      //printf("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
-
-      for (INT64 i = 0; i < len; i++) {
-         const U index = pIndex[i];
-         char* const dest = pDataOut + (i * itemSize);
-
-         // Make sure the item is in range
-         if (index >= -valSize && index < valSize) {
-            // Handle Python-style negative indexing.
-            const INT64 newIndex = index >= 0 ? index : index + valSize;
-            const char* const src = pValues + (newIndex * itemSize);
-
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = src[j];
-            }
+   else {
+      // Either A or B or both are strided
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         // Make sure the item is in range; if the index is negative -- but otherwise
+         // still in range -- mimic Python's negative-indexing support.
+         if (index < valLength) {
+            *pDataOut = *(VALUE*)((char*)pValues + (strideValue * index));
          }
          else {
-            // This is an out-of-bounds index -- set the result to the default value,
-            // which for string types is all NUL (0x00) characters.
-            // TODO: Consider using memset here instead -- need to benchmark before changing.
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = 0;
-            }
+            // Index is out of range -- assign the invalid value.
+            *pDataOut = defaultVal;
          }
+
+         pIndex = STRIDE_NEXT(const INDEX, pIndex, strideIndex);
+         pDataOut++;
       }
    }
+}
 
 
-   //----------------------------------------------------
-   // In parallel mode aValues DOES NOT change
-   // aValues  : remains constant
-   // aIndex   : incremented each call
-   // aDataOut : incremented each call
-   // start    : incremented each call
-   static void MBGetStringU(void* aValues, void* aIndex, void* aDataOut, INT64 valSizeX, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const char* pValues = (char*)aValues;
-      const U* pIndex = (U*)aIndex;
-      char* pDataOut = (char*)aDataOut;
-      char* defaultVal = (char*)pDefault;
+//----------------------------------------------------
+// This routine is for strings or NPY_VOID (variable length)
+// Consider:  C=A[B]   where A is a value array
+// C must be the same type as A (and is also a value array)
+// B is an integer that indexes into A
+// The length of B is the length of the output C
+// valSize is the length of A
+template<typename INDEX>
+static void GetItemIntVariable(void* aValues, void* aIndex, void* aDataOut, int64_t valLength, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault) {
+   const char* pValues = (char*)aValues;
+   const INDEX* pIndex = (INDEX*)aIndex;
+   char* pDataOut = (char*)aDataOut;
 
-      UINT64 valSize = (UINT64)valSizeX;
+   LOGGING("getitem sizes %I64d  len: %I64d   itemsize:%I64d\n", valLength, len, itemSize);
+   LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
-      LOGGING("mbgetu string sizes %lld  %lld %lld   \n", valSize, len, itemSize);
-      //printf("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
-
-      for (INT64 i = 0; i < len; i++) {
-         U index = pIndex[i];
-         char* const dest = pDataOut + (i*itemSize);
-
-         // Make sure the item is in range
-         if (index >= 0 && index < valSize) {
-            const char* const src = pValues + (index * itemSize);
-
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = src[j];
-            }
+   char* pDataOutEnd = pDataOut + (len * itemSize);
+   if (itemSize == strideValue && sizeof(INDEX) == strideIndex) {
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         const char* pSrc;
+         if (index >= -valLength && index < valLength) {
+            int64_t newindex = index >= 0 ? index : index + valLength;
+            newindex *= itemSize;
+            pSrc = pValues + newindex;
          }
          else {
-            // This is an out-of-bounds index -- set the result to the default value,
-            // which for string types is all NUL (0x00) characters.
-            // TODO: Consider using memset here instead -- need to benchmark before changing.
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = 0;
-            }
+            pSrc = (const char*)pDefault;
          }
 
+         char* pEnd = pDataOut + itemSize;
+
+         while (pDataOut < (pEnd - 8)) {
+            *(int64_t*)pDataOut = *(int64_t*)pSrc;
+            pDataOut += 8;
+            pSrc += 8;
+         }
+         while (pDataOut < pEnd) {
+            *pDataOut++ = *pSrc++;
+         }
+         //    memcpy(pDataOut, pSrc, itemSize);
+
+         pIndex++;
+         pDataOut += itemSize;
       }
    }
-
-
-   static void MBGetStringF(void* aValues, void* aIndex, void* aDataOut, INT64 valSizeX, INT64 itemSize, INT64 start, INT64 len, void* pDefault) {
-      const char* pValues = (char*)aValues;
-      const U* pIndex = (U*)aIndex;
-      char* pDataOut = (char*)aDataOut;
-      char* defaultVal = (char*)pDefault;
-
-      UINT64 valSize = (UINT64)valSizeX;
-
-      LOGGING("mbgetf string sizes %lld  %lld %lld   \n", valSize, len, itemSize);
-      //printf("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valSize);
-
-      for (INT64 i = 0; i < len; i++) {
-         const INT64 index = (INT64)pIndex[i];
-         char* const dest = pDataOut + (i*itemSize);
-
-         // Make sure the item is in range
-         if ((U)index == pIndex[i] && index >= 0 && index < (INT64)valSize) {
-            const char* const src = pValues + (index * itemSize);
-
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = src[j];
-            }
+   else {
+      // Either A or B or both are strided
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         const char* pSrc;
+         if (index >= -valLength && index < valLength) {
+            int64_t newindex = index >= 0 ? index : index + valLength;
+            newindex *= strideValue;
+            pSrc = pValues + newindex;
          }
          else {
-            // This is an out-of-bounds index -- set the result to the default value,
-            // which for string types is all NUL (0x00) characters.
-            // TODO: Consider using memset here instead -- need to benchmark before changing.
-            for (int j = 0; j < itemSize; j++) {
-               dest[j] = 0;
-            }
+            pSrc = (const char*)pDefault;
          }
 
+         char* pEnd = pDataOut + itemSize;
+
+         while (pDataOut < (pEnd - 8)) {
+            *(int64_t*)pDataOut = *(int64_t*)pSrc;
+            pDataOut += 8;
+            pSrc += 8;
+         }
+         while (pDataOut < pEnd) {
+            *pDataOut++ = *pSrc++;
+         }
+         pIndex = STRIDE_NEXT(const INDEX, pIndex, strideIndex);
+         pDataOut += itemSize;
       }
    }
+}
 
-   //static MBGET_FUNC  GetConversionFunction(int inputType, int func) {
+template<typename INDEX>
+static void GetItemUIntVariable(void* aValues, void* aIndex, void* aDataOut, int64_t valLength, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault) {
+   const char* pValues = (char*)aValues;
+   const INDEX* pIndex = (INDEX*)aIndex;
+   char* pDataOut = (char*)aDataOut;
 
-   //   if (inputType == NPY_STRING) {
-   //      return MBGetString;
-   //   }
+   LOGGING("getitem sizes %I64d  len: %I64d   itemsize:%I64d\n", valLength, len, itemSize);
+   LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
-   //   return MBGetInt;
-   //}
+   char* pDataOutEnd = pDataOut + (len * itemSize);
+   if (itemSize == strideValue && sizeof(INDEX) == strideIndex) {
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         const char* pSrc;
+         if (index < valLength) {
+            pSrc = pValues + (itemSize * index);
+         }
+         else {
+            pSrc = (const char*)pDefault;
+         }
 
+         char* pEnd = pDataOut + itemSize;
 
-};
+         while (pDataOut < (pEnd - 8)) {
+            *(int64_t*)pDataOut = *(int64_t*)pSrc;
+            pDataOut += 8;
+            pSrc += 8;
+         }
+         while (pDataOut < pEnd) {
+            *pDataOut++ = *pSrc++;
+         }
+         //    memcpy(pDataOut, pSrc, itemSize);
 
-
-//------------------------------------------------------------
-// inputType is Values type
-// inputType2 is Index type
-static MBGET_FUNC GetConversionFunction(int inputType, int inputType2, int func) {
-
-   switch (inputType2) {
-   case NPY_INT8:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::GetConversionFunction(inputType, func);
-      case NPY_FLOAT:  return MergeBase<float, INT8>::MBGetInt;
-      case NPY_DOUBLE: return MergeBase<double, INT8>::MBGetInt;
-      case NPY_LONGDOUBLE: return MergeBase<long double, INT8>::MBGetInt;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, INT8>::MBGetInt;
-      case NPY_INT16:  return MergeBase<INT16, INT8>::MBGetInt;
-      CASE_NPY_INT32:  return MergeBase<INT32, INT8>::MBGetInt;
-      CASE_NPY_INT64:  return MergeBase<INT64, INT8>::MBGetInt;
-      case NPY_UINT8:  return MergeBase<UINT8, INT8>::MBGetInt;
-      case NPY_UINT16: return MergeBase<UINT16, INT8>::MBGetInt;
-      CASE_NPY_UINT32: return MergeBase<UINT32, INT8>::MBGetInt;
-      CASE_NPY_UINT64: return MergeBase<UINT64, INT8>::MBGetInt;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, INT8>::MBGetString;
-
+         pIndex++;
+         pDataOut += itemSize;
       }
-      break;
-
-   case NPY_INT16:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, INT16>::MBGetInt;
-      case NPY_DOUBLE: return MergeBase<double, INT16>::MBGetInt;
-      case NPY_LONGDOUBLE: return MergeBase<long double, INT16>::MBGetInt;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, INT16>::MBGetInt;
-      case NPY_INT16:  return MergeBase<INT16, INT16>::MBGetInt;
-      CASE_NPY_INT32:  return MergeBase<INT32, INT16>::MBGetInt;
-      CASE_NPY_INT64:  return MergeBase<INT64, INT16>::MBGetInt;
-      case NPY_UINT8:  return MergeBase<UINT8, INT16>::MBGetInt;
-      case NPY_UINT16: return MergeBase<UINT16, INT16>::MBGetInt;
-      CASE_NPY_UINT32: return MergeBase<UINT32, INT16>::MBGetInt;
-      CASE_NPY_UINT64: return MergeBase<UINT64, INT16>::MBGetInt;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, INT16>::MBGetString;
-
-      }
-      break;
-
-   CASE_NPY_INT32:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, INT32>::MBGetInt;
-      case NPY_DOUBLE: return MergeBase<double, INT32>::MBGetInt;
-      case NPY_LONGDOUBLE: return MergeBase<long double, INT32>::MBGetInt;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, INT32>::MBGetInt;
-      case NPY_INT16:  return MergeBase<INT16, INT32>::MBGetInt;
-      CASE_NPY_INT32:  return MergeBase<INT32, INT32>::MBGetInt;
-      CASE_NPY_INT64:  return MergeBase<INT64, INT32>::MBGetInt;
-      case NPY_UINT8:  return MergeBase<UINT8, INT32>::MBGetInt;
-      case NPY_UINT16: return MergeBase<UINT16, INT32>::MBGetInt;
-      CASE_NPY_UINT32: return MergeBase<UINT32, INT32>::MBGetInt;
-      CASE_NPY_UINT64: return MergeBase<UINT64, INT32>::MBGetInt;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, INT32>::MBGetString;
-
-      }
-      break;
-
-   CASE_NPY_INT64:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, INT64>::MBGetInt;
-      case NPY_DOUBLE: return MergeBase<double, INT64>::MBGetInt;
-      case NPY_LONGDOUBLE: return MergeBase<long double, INT64>::MBGetInt;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, INT64>::MBGetInt;
-      case NPY_INT16:  return MergeBase<INT16, INT64>::MBGetInt;
-      CASE_NPY_INT32:  return MergeBase<INT32, INT64>::MBGetInt;
-      CASE_NPY_INT64:  return MergeBase<INT64, INT64>::MBGetInt;
-      case NPY_UINT8:  return MergeBase<UINT8, INT64>::MBGetInt;
-      case NPY_UINT16: return MergeBase<UINT16, INT64>::MBGetInt;
-      CASE_NPY_UINT32: return MergeBase<UINT32, INT64>::MBGetInt;
-      CASE_NPY_UINT64: return MergeBase<UINT64, INT64>::MBGetInt;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, INT64>::MBGetString;
-      }
-      break;
-
-
-   case NPY_UINT8:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::GetConversionFunction(inputType, func);
-      case NPY_FLOAT:  return MergeBase<float, UINT8>::MBGetIntU;
-      case NPY_DOUBLE: return MergeBase<double, UINT8>::MBGetIntU;
-      case NPY_LONGDOUBLE: return MergeBase<long double, UINT8>::MBGetIntU;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, UINT8>::MBGetIntU;
-      case NPY_INT16:  return MergeBase<INT16, UINT8>::MBGetIntU;
-      CASE_NPY_INT32:  return MergeBase<INT32, UINT8>::MBGetIntU;
-      CASE_NPY_INT64:  return MergeBase<INT64, UINT8>::MBGetIntU;
-      case NPY_UINT8:  return MergeBase<UINT8, UINT8>::MBGetIntU;
-      case NPY_UINT16: return MergeBase<UINT16, UINT8>::MBGetIntU;
-      CASE_NPY_UINT32: return MergeBase<UINT32, UINT8>::MBGetIntU;
-      CASE_NPY_UINT64: return MergeBase<UINT64, UINT8>::MBGetIntU;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, UINT8>::MBGetStringU;
-
-      }
-      break;
-
-   case NPY_UINT16:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, UINT16>::MBGetIntU;
-      case NPY_DOUBLE: return MergeBase<double, UINT16>::MBGetIntU;
-      case NPY_LONGDOUBLE: return MergeBase<long double, UINT16>::MBGetIntU;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, UINT16>::MBGetIntU;
-      case NPY_INT16:  return MergeBase<INT16, UINT16>::MBGetIntU;
-      CASE_NPY_INT32:  return MergeBase<INT32, UINT16>::MBGetIntU;
-      CASE_NPY_INT64:  return MergeBase<INT64, UINT16>::MBGetIntU;
-      case NPY_UINT8:  return MergeBase<UINT8, UINT16>::MBGetIntU;
-      case NPY_UINT16: return MergeBase<UINT16, UINT16>::MBGetIntU;
-      CASE_NPY_UINT32: return MergeBase<UINT32, UINT16>::MBGetIntU;
-      CASE_NPY_UINT64: return MergeBase<UINT64, UINT16>::MBGetIntU;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, UINT16>::MBGetStringU;
-
-      }
-      break;
-
-   CASE_NPY_UINT32:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, UINT32>::MBGetIntU;
-      case NPY_DOUBLE: return MergeBase<double, UINT32>::MBGetIntU;
-      case NPY_LONGDOUBLE: return MergeBase<long double, UINT32>::MBGetIntU;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, UINT32>::MBGetIntU;
-      case NPY_INT16:  return MergeBase<INT16, UINT32>::MBGetIntU;
-      CASE_NPY_INT32:  return MergeBase<INT32, UINT32>::MBGetIntU;
-      CASE_NPY_INT64:  return MergeBase<INT64, UINT32>::MBGetIntU;
-      case NPY_UINT8:  return MergeBase<UINT8, UINT32>::MBGetIntU;
-      case NPY_UINT16: return MergeBase<UINT16, UINT32>::MBGetIntU;
-      CASE_NPY_UINT32: return MergeBase<UINT32, UINT32>::MBGetIntU;
-      CASE_NPY_UINT64: return MergeBase<UINT64, UINT32>::MBGetIntU;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, UINT32>::MBGetStringU;
-
-      }
-      break;
-
-   CASE_NPY_UINT64:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, UINT64>::MBGetIntU;
-      case NPY_DOUBLE: return MergeBase<double, UINT64>::MBGetIntU;
-      case NPY_LONGDOUBLE: return MergeBase<long double, UINT64>::MBGetIntU;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, UINT64>::MBGetIntU;
-      case NPY_INT16:  return MergeBase<INT16, UINT64>::MBGetIntU;
-      CASE_NPY_INT32:  return MergeBase<INT32, UINT64>::MBGetIntU;
-      CASE_NPY_INT64:  return MergeBase<INT64, UINT64>::MBGetIntU;
-      case NPY_UINT8:  return MergeBase<UINT8, UINT64>::MBGetIntU;
-      case NPY_UINT16: return MergeBase<UINT16, UINT64>::MBGetIntU;
-      CASE_NPY_UINT32: return MergeBase<UINT32, UINT64>::MBGetIntU;
-      CASE_NPY_UINT64: return MergeBase<UINT64, UINT64>::MBGetIntU;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, UINT64>::MBGetStringU;
-      }
-      break;
-
-
-   case NPY_FLOAT32:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, float>::MBGetIntF;
-      case NPY_DOUBLE: return MergeBase<double, float>::MBGetIntF;
-      case NPY_LONGDOUBLE: return MergeBase<long double, float>::MBGetIntF;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, float>::MBGetIntF;
-      case NPY_INT16:  return MergeBase<INT16, float>::MBGetIntF;
-      CASE_NPY_INT32:  return MergeBase<INT32, float>::MBGetIntF;
-      CASE_NPY_INT64:  return MergeBase<INT64, float>::MBGetIntF;
-      case NPY_UINT8:  return MergeBase<UINT8, float>::MBGetIntF;
-      case NPY_UINT16: return MergeBase<UINT16, float>::MBGetIntF;
-      CASE_NPY_UINT32: return MergeBase<UINT32, float>::MBGetIntF;
-      CASE_NPY_UINT64: return MergeBase<UINT64, float>::MBGetIntF;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, float>::MBGetStringF;
-
-      }
-      break;
-
-   case NPY_FLOAT64:
-      switch (inputType) {
-         //case NPY_BOOL:   return MergeBase<bool, bool>::MBGetInt;
-      case NPY_FLOAT:  return MergeBase<float, UINT64>::MBGetIntF;
-      case NPY_DOUBLE: return MergeBase<double, UINT64>::MBGetIntF;
-      case NPY_LONGDOUBLE: return MergeBase<long double, UINT64>::MBGetIntF;
-      case NPY_BOOL:
-      case NPY_BYTE:   return MergeBase<INT8, UINT64>::MBGetIntF;
-      case NPY_INT16:  return MergeBase<INT16, UINT64>::MBGetIntF;
-      CASE_NPY_INT32:  return MergeBase<INT32, UINT64>::MBGetIntF;
-      CASE_NPY_INT64:  return MergeBase<INT64, UINT64>::MBGetIntF;
-      case NPY_UINT8:  return MergeBase<UINT8, UINT64>::MBGetIntF;
-      case NPY_UINT16: return MergeBase<UINT16, UINT64>::MBGetIntF;
-      CASE_NPY_UINT32: return MergeBase<UINT32, UINT64>::MBGetIntF;
-      CASE_NPY_UINT64: return MergeBase<UINT64, UINT64>::MBGetIntF;
-      case NPY_VOID:
-      case NPY_UNICODE:
-      case NPY_STRING: return MergeBase<char*, UINT64>::MBGetStringF;
-      }
-      break;
-
    }
-   printf("mbget cannot find type for %d\n", inputType);
-   return NULL;
+   else {
+      // Either A or B or both are strided
+      while (pDataOut != pDataOutEnd) {
+         const INDEX index = *pIndex;
+         const char* pSrc;
+         if (index < valLength) {
+            pSrc = pValues + (strideValue * index);
+         }
+         else {
+            pSrc = (const char*)pDefault;
+         }
+
+         char* pEnd = pDataOut + itemSize;
+
+         while (pDataOut < (pEnd - 8)) {
+            *(int64_t*)pDataOut = *(int64_t*)pSrc;
+            pDataOut += 8;
+            pSrc += 8;
+         }
+         while (pDataOut < pEnd) {
+            *pDataOut++ = *pSrc++;
+         }
+         pIndex = STRIDE_NEXT(const INDEX, pIndex, strideIndex);
+         pDataOut += itemSize;
+      }
+   }
 }
 
 
 
-struct MBGET_CALLBACK {
-   MBGET_FUNC MBGetCallback;
 
-   void*    pValues;
-   void*    pIndex;
-   void*    pDataOut;
-   INT64    valSize1;
-   INT64    aIndexSize;
-   void*    pDefault;
-   INT64    TypeSizeValues;
-   INT64    TypeSizeIndex;
+typedef void(*GETITEM_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t valLength, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault);
+struct MBGET_CALLBACK {
+   GETITEM_FUNC GetItemCallback;
+
+   void* pValues;    // value array or A in the equation C=A[B]
+   void* pIndex;     // index array or B in the equation C=A[B]
+   void* pDataOut;   // output array or C in the equation C=A[B]
+   int64_t    aValueLength;
+   int64_t    aIndexLength;
+   int64_t    aValueItemSize;
+   int64_t    aIndexItemSize;
+   int64_t    strideValue;
+   int64_t    strideIndex;
+   void* pDefault;
 
 } stMBGCallback;
 
-
 //---------------------------------------------------------
-// Used by MBGet
+// Used by GetItem
 //  Concurrent callback from multiple threads
-static BOOL AnyMBGet(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+static BOOL GetItemCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
 
-   BOOL didSomeWork = FALSE;
+   int64_t didSomeWork = 0;
    MBGET_CALLBACK* Callback = &stMBGCallback; // (MBGET_CALLBACK*)&pstWorkerItem->WorkCallbackArg;
 
-   char* aValues = (char *)Callback->pValues;
-   char* aIndex = (char *)Callback->pIndex;
+   char* aValues = (char*)Callback->pValues;
+   char* aIndex = (char*)Callback->pIndex;
 
-   INT64 typeSizeValues = Callback->TypeSizeValues;
-   INT64 typeSizeIndex = Callback->TypeSizeIndex;
+   int64_t valueItemSize = Callback->aValueItemSize;
+   int64_t strideValue = Callback->strideValue;
+   int64_t strideIndex = Callback->strideIndex;
 
    LOGGING("check2 ** %lld %lld\n", typeSizeValues, typeSizeIndex);
 
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
@@ -513,38 +972,130 @@ static BOOL AnyMBGet(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 w
       // move starting position
 
       // Calculate how much to adjust the pointers to get to the data for this work block
-      INT64 blockStart = workBlock * pstWorkerItem->BlockSize;
+      int64_t blockStart = workBlock * pstWorkerItem->BlockSize;
 
-      INT64 valueAdj = blockStart * typeSizeValues;
-      INT64 indexAdj = blockStart * typeSizeIndex;
+      int64_t valueAdj = blockStart * strideValue;
+      int64_t indexAdj = blockStart * strideIndex;
 
       LOGGING("%d : workBlock %lld   blocksize: %lld    lenx: %lld  %lld  %lld  %lld %lld\n", core, workBlock, pstWorkerItem->BlockSize, lenX, typeSizeValues, typeSizeIndex, valueAdj, indexAdj);
 
-      Callback->MBGetCallback(aValues, aIndex + indexAdj, (char*)Callback->pDataOut + valueAdj, Callback->valSize1, typeSizeValues, blockStart, lenX, Callback->pDefault);
+      Callback->GetItemCallback(aValues, aIndex + indexAdj, (char*)Callback->pDataOut + valueAdj, Callback->aValueLength, valueItemSize, lenX, strideIndex, strideValue, Callback->pDefault);
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork++;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
    }
 
-   return didSomeWork;
+   return didSomeWork > 0;
 }
 
 
 
+//------------------------------------------------------------
+// itemSize is Values itemSize
+// indexType is Index type
+static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType) {
 
+   switch (indexType) {
+   case NPY_INT8:
+      switch (itemSize) {
+      case 1:  return GetItemInt<int8_t, int8_t>;
+      case 2:  return GetItemInt<int16_t, int8_t>;
+      case 4:  return GetItemInt<int32_t, int8_t>;
+      case 8:  return GetItemInt<int64_t, int8_t>;
+      case 16:  return GetItemInt<__m128, int8_t>;
+      default: return GetItemIntVariable<int8_t>;
+      }
+      break;
+   case NPY_UINT8:
+      switch (itemSize) {
+      case 1:  return GetItemUInt<int8_t, int8_t>;
+      case 2:  return GetItemUInt<int16_t, int8_t>;
+      case 4:  return GetItemUInt<int32_t, int8_t>;
+      case 8:  return GetItemUInt<int64_t, int8_t>;
+      case 16:  return GetItemUInt<__m128, int8_t>;
+      default: return GetItemUIntVariable<int8_t>;
+      }
+      break;
+
+   case NPY_INT16:
+      switch (itemSize) {
+      case 1:  return GetItemInt<int8_t, int16_t>;
+      case 2:  return GetItemInt<int16_t, int16_t>;
+      case 4:  return GetItemInt<int32_t, int16_t>;
+      case 8:  return GetItemInt<int64_t, int16_t>;
+      case 16:  return GetItemInt<__m128, int16_t>;
+      default: return GetItemIntVariable<int16_t>;
+      }
+      break;
+   case NPY_UINT16:
+      switch (itemSize) {
+      case 1:  return GetItemUInt<int8_t, int16_t>;
+      case 2:  return GetItemUInt<int16_t, int16_t>;
+      case 4:  return GetItemUInt<int32_t, int16_t>;
+      case 8:  return GetItemUInt<int64_t, int16_t>;
+      case 16:  return GetItemUInt<__m128, int16_t>;
+      default: return GetItemUIntVariable<int16_t>;
+      }
+      break;
+
+   CASE_NPY_INT32:
+      switch (itemSize) {
+      case 1:  return GetItemInt<int8_t, int32_t>;
+      case 2:  return GetItemInt<int16_t, int32_t>;
+      case 4:  return GetItemInt<int32_t, int32_t>;
+      case 8:  return GetItemInt<int64_t, int32_t>;
+      case 16:  return GetItemInt<__m128, int32_t>;
+      default: return GetItemIntVariable<int32_t>;
+      }
+      break;
+   CASE_NPY_UINT32:
+      switch (itemSize) {
+      case 1:  return GetItemUInt<int8_t, int32_t>;
+      case 2:  return GetItemUInt<int16_t, int32_t>;
+      case 4:  return GetItemUInt<int32_t, int32_t>;
+      case 8:  return GetItemUInt<int64_t, int32_t>;
+      case 16:  return GetItemUInt<__m128, int32_t>;
+      default: return GetItemUIntVariable<int32_t>;
+      }
+      break;
+
+   CASE_NPY_INT64:
+      switch (itemSize) {
+      case 1:  return GetItemInt<int8_t, int64_t>;
+      case 2:  return GetItemInt<int16_t, int64_t>;
+      case 4:  return GetItemInt<int32_t, int64_t>;
+      case 8:  return GetItemInt<int64_t, int64_t>;
+      case 16:  return GetItemInt<__m128, int64_t>;
+      default: return GetItemIntVariable<int64_t>;
+      }
+      break;
+   CASE_NPY_UINT64:
+      switch (itemSize) {
+      case 1:  return GetItemUInt<int8_t, int64_t>;
+      case 2:  return GetItemUInt<int16_t, int64_t>;
+      case 4:  return GetItemUInt<int32_t, int64_t>;
+      case 8:  return GetItemUInt<int64_t, int64_t>;
+      case 16:  return GetItemUInt<__m128, int64_t>;
+      default: return GetItemUIntVariable<int64_t>;
+      }
+      break;
+   }
+
+   return NULL;
+}
 
 //---------------------------------------------------------------------------
 // Input:
 // Arg1: numpy array aValues (can be anything)
-// Arg2: numpy array aIndex (must be int8/int16/int32 or int64)
+// Arg2: numpy array aIndex (must be int8_t/int16_t/int32_t or int64_t)
 // Arg3: default value
 //
 //def fixMbget(aValues, aIndex, result, default) :
 //   """
-//   A numba routine to speed up mbget for numerical values.
+//   A proto routine.
 //   """
 //   N = aIndex.shape[0]
 //   valSize = aValues.shape[0]
@@ -552,41 +1103,57 @@ static BOOL AnyMBGet(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 w
 //      if (aIndex[i] >= 0 and aIndex[i] < valSize) :
 //         result[i] = aValues[aIndex[i]]
 //      else :
-//   result[i] = default
-PyObject *
-MBGet(PyObject *self, PyObject *args)
+//         result[i] = default  (OR RETURN ERROR)
+PyObject*
+MBGet(PyObject* self, PyObject* args)
 {
-   PyArrayObject *aValues = NULL;
-   PyArrayObject *aIndex = NULL;
+   PyArrayObject* aValues = NULL;
+   PyArrayObject* aIndex = NULL;
    PyObject* defaultValue = NULL;
 
-   if (PyTuple_GET_SIZE(args) == 2) {
+   if (PyTuple_Size(args) == 2) {
       if (!PyArg_ParseTuple(
-         args, "O!O!:MBGet",
+         args, "O!O!:getitem",
          &PyArray_Type, &aValues,
          &PyArray_Type, &aIndex
-         )) {
+      )) {
 
          return NULL;
       }
       defaultValue = Py_None;
 
-   } else
-   if (!PyArg_ParseTuple(
-      args, "O!O!O:MBGet",
-      &PyArray_Type, &aValues,
-      &PyArray_Type, &aIndex,
+   }
+   else
+      if (!PyArg_ParseTuple(
+         args, "O!O!O:getitem",
+         &PyArray_Type, &aValues,
+         &PyArray_Type, &aIndex,
+         &defaultValue)) {
 
-      &defaultValue)) {
+         return NULL;
+      }
 
+   int32_t numpyValuesType = PyArray_TYPE(aValues);
+   int32_t numpyIndexType = PyArray_TYPE(aIndex);
+
+   // TODO: For boolean call
+   if (numpyIndexType > NPY_LONGDOUBLE) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to convert these types %d using index dtype: %d", numpyValuesType, numpyIndexType);
       return NULL;
    }
 
-   INT32 numpyValuesType = ObjectToDtype(aValues);
-   INT32 numpyIndexType = ObjectToDtype(aIndex);
+   if (numpyIndexType == NPY_BOOL) {
+      // special path for boolean
+      return BooleanIndexInternal(aValues, aIndex);
+   }
 
-   if (numpyValuesType < 0 || numpyIndexType < 0) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to convert these types %d", numpyValuesType);
+   // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
+   if (PyArray_NDIM(aValues) != 1 && !PyArray_ISCONTIGUOUS(aValues)) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
+      return NULL;
+   }
+   if (PyArray_NDIM(aIndex) != 1 && !PyArray_ISCONTIGUOUS(aIndex)) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
       return NULL;
    }
 
@@ -595,81 +1162,77 @@ MBGet(PyObject *self, PyObject *args)
    void* pValues = PyArray_BYTES(aValues);
    void* pIndex = PyArray_BYTES(aIndex);
 
-   int ndim = PyArray_NDIM(aValues);
-   npy_intp* dims = PyArray_DIMS(aValues);
-   INT64 valSize1 = CalcArrayLength(ndim, dims);
-   INT64 len = valSize1;
+   int64_t aValueLength = ArrayLength(aValues);
+   int64_t aValueItemSize = PyArray_ITEMSIZE(aValues);
 
-   MBGET_FUNC  pFunction = GetConversionFunction(numpyValuesType, numpyIndexType, 0);
+   // Get the proper function to call
+   GETITEM_FUNC  pFunction = GetItemFunction(aValueItemSize, numpyIndexType);
 
    if (pFunction != NULL) {
 
       PyArrayObject* outArray = (PyArrayObject*)Py_None;
-      INT64 aIndexSize = ArrayLength(aIndex);
+      int64_t aIndexLength = ArrayLength(aIndex);
 
       // Allocate the size of aIndex but the type is the value
-      outArray = AllocateLikeResize(aValues, aIndexSize);
+      outArray = AllocateLikeResize(aValues, aIndexLength);
 
       if (outArray) {
          void* pDataOut = PyArray_BYTES(outArray);
          void* pDefault = GetDefaultForType(numpyValuesType);
+
+         int64_t strideIndex = PyArray_STRIDE(aIndex, 0);
+         int64_t strideValue = PyArray_STRIDE(aValues, 0);
 
          // reserve a full 16 bytes for default in case we have oneS
          _m256all tempDefault;
 
          // Check if a default value was passed in as third parameter
          if (defaultValue != Py_None) {
-            BOOL result;
-            INT64 itemSize;
-            void* pTempData = NULL;
-
-            // Try to convert the scalar
-            result = ConvertScalarObject(defaultValue, &tempDefault, numpyValuesType, &pTempData, &itemSize);
-
-            if (result) {
-               // Assign the new default for out of range indexes
-               pDefault = &tempDefault;
-            }
+            pDefault = &tempDefault;
          }
 
-         stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(aIndexSize);
+         stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(aIndexLength);
 
          if (pWorkItem == NULL) {
 
             // Threading not allowed for this work item, call it directly from main thread
-            pFunction(pValues, pIndex, pDataOut, valSize1, PyArray_ITEMSIZE(aValues), 0, aIndexSize, pDefault);
+            typedef void(*GETITEM_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t valSize, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault);
+            pFunction(pValues, pIndex, pDataOut, aValueLength, aValueItemSize, aIndexLength, strideIndex, strideValue, pDefault);
 
          }
          else {
             // Each thread will call this routine with the callbackArg
-            pWorkItem->DoWorkCallback = AnyMBGet;
+            // typedef int64_t(*DOWORK_CALLBACK)(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex);
+            pWorkItem->DoWorkCallback = GetItemCallback;
 
             pWorkItem->WorkCallbackArg = &stMBGCallback;
 
-            stMBGCallback.MBGetCallback = pFunction;
+            stMBGCallback.GetItemCallback = pFunction;
             stMBGCallback.pValues = pValues;
             stMBGCallback.pIndex = pIndex;
             stMBGCallback.pDataOut = pDataOut;
 
             // arraylength of values input array -- used to check array bounds
-            stMBGCallback.valSize1 = valSize1;
-            stMBGCallback.aIndexSize = aIndexSize;
+            stMBGCallback.aValueLength = aValueLength;
+            stMBGCallback.aIndexLength = aIndexLength;
             stMBGCallback.pDefault = pDefault;
 
             //
-            stMBGCallback.TypeSizeValues = PyArray_ITEMSIZE(aValues);
-            stMBGCallback.TypeSizeIndex = PyArray_ITEMSIZE(aIndex);
+            stMBGCallback.aValueItemSize = aValueItemSize;
+            stMBGCallback.aIndexItemSize = PyArray_ITEMSIZE(aIndex);
+            stMBGCallback.strideIndex = strideIndex;
+            stMBGCallback.strideValue = strideValue;
 
             //printf("**check %p %p %p %lld %lld\n", pValues, pIndex, pDataOut, stMBGCallback.TypeSizeValues, stMBGCallback.TypeSizeIndex);
 
             // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, aIndexSize, 0);
-            //g_cMathWorker->WorkMain(pWorkItem, aIndexSize);
+            g_cMathWorker->WorkMain(pWorkItem, aIndexLength, 0);
+            //g_cMathWorker->WorkMain(pWorkItem, aIndexLength);
          }
 
          return (PyObject*)outArray;
       }
-      PyErr_Format(PyExc_ValueError, "MBGet ran out of memory %d %d", numpyValuesType, numpyIndexType);
+      PyErr_Format(PyExc_ValueError, "GetItem ran out of memory %d %d", numpyValuesType, numpyIndexType);
       return NULL;
 
    }
@@ -678,72 +1241,12 @@ MBGet(PyObject *self, PyObject *args)
    return NULL;
 }
 
-//===================================================
-// Input: boolean array
-// Output: chunk count and ppChunkCount
-// NOTE: CALLER MUST FREE pChunkCount
-//
-INT64 BooleanCount(PyArrayObject* aIndex, INT64** ppChunkCount) {
-
-   // Pass one, count the values
-   // Eight at a time
-   const INT64 lengthBool = ArrayLength(aIndex);
-   const INT8* const pBooleanMask = (INT8*)PyArray_BYTES(aIndex);
-
-   // Count the number of chunks (of boolean elements).
-   // It's important we handle the case of an empty array (zero length) when determining the number
-   // of per-chunk counts to return; the behavior of malloc'ing zero bytes is undefined, and the code
-   // below assumes there's always at least one entry in the count-per-chunk array. If we don't handle
-   // the empty array case we'll allocate an empty count-per-chunk array and end up doing an
-   // out-of-bounds write.
-   const INT64 chunkSize = g_cMathWorker->WORK_ITEM_CHUNK;
-   const INT64 chunks = (std::max(lengthBool, 1LL) + (chunkSize - 1)) / chunkSize;
-
-   // TOOD: divide up per core instead
-   INT64* const pChunkCount = (INT64*)WORKSPACE_ALLOC(chunks * sizeof(INT64));
-
-
-   // MT callback
-   struct BSCallbackStruct {
-      INT64* pChunkCount;
-      const INT8*  pBooleanMask;
-   };
-
-   // This is the routine that will be called back from multiple threads
-   auto lambdaBSCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
-      BSCallbackStruct* callbackArg = (BSCallbackStruct*)callbackArgT;
-
-      const INT8*  pBooleanMask = callbackArg->pBooleanMask;
-      INT64* pChunkCount = callbackArg->pChunkCount;
-
-      // Use the single-threaded implementation to sum the number of
-      // 1-byte boolean TRUE values in the current chunk.
-      // This means the current function is just responsible for parallelizing over the chunks
-      // but doesn't do any real "math" itself.
-      INT64 total = SumBooleanMask(&pBooleanMask[start], length);
-
-      pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK] = total;
-      return TRUE;
-   };
-
-   BSCallbackStruct stBSCallback;
-   stBSCallback.pChunkCount = pChunkCount;
-   stBSCallback.pBooleanMask = pBooleanMask;
-
-   BOOL didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
-
-
-   *ppChunkCount = pChunkCount;
-   // if multithreading turned off...
-   return didMtWork ? chunks : 1;
-}
-
 
 
 //===============================================================================
 // checks for kwargs 'both'
 // if exists, and is True return True
-BOOL GetKwargBoth(PyObject *kwargs) {
+BOOL GetKwargBoth(PyObject* kwargs) {
    // Check for cutoffs kwarg to see if going into parallel mode
    if (kwargs && PyDict_Check(kwargs)) {
       PyObject* pBoth = NULL;
@@ -766,10 +1269,10 @@ BOOL GetKwargBoth(PyObject *kwargs) {
 // Returns: fancy index array where the true values are
 // if 'both' is set to True it returns an index array which has both True and False
 // if 'both' is set, the number of True values is also returned
-PyObject *
-BooleanToFancy(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject*
+BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
 {
-   PyArrayObject *aIndex = NULL;
+   PyArrayObject* aIndex = NULL;
 
    if (!PyArg_ParseTuple(
       args, "O!",
@@ -787,8 +1290,8 @@ BooleanToFancy(PyObject *self, PyObject *args, PyObject *kwargs)
    // if bothMode is set, will return fancy index for both True and False
    BOOL     bothMode = GetKwargBoth(kwargs);
 
-   INT64*   pChunkCount = NULL;
-   INT64*   pChunkCountFalse = NULL;
+   INT64* pChunkCount = NULL;
+   INT64* pChunkCountFalse = NULL;
    INT64    chunks = BooleanCount(aIndex, &pChunkCount);
    INT64    indexLength = ArrayLength(aIndex);
 
@@ -850,10 +1353,10 @@ BooleanToFancy(PyObject *self, PyObject *args, PyObject *kwargs)
    if (returnArray) {
       // MT callback
       struct BTFCallbackStruct {
-         INT64*   pChunkCount;
-         INT64*   pChunkCountFalse;
-         INT8*    pBooleanMask;
-         void*    pValuesOut;
+         INT64* pChunkCount;
+         INT64* pChunkCountFalse;
+         INT8* pBooleanMask;
+         void* pValuesOut;
          INT64    totalTrue;
          int      dtype;
          BOOL     bothMode;
@@ -864,7 +1367,7 @@ BooleanToFancy(PyObject *self, PyObject *args, PyObject *kwargs)
          BTFCallbackStruct* callbackArg = (BTFCallbackStruct*)callbackArgT;
 
          INT64  chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];
-         INT8*  pBooleanMask = callbackArg->pBooleanMask;
+         INT8* pBooleanMask = callbackArg->pBooleanMask;
          BOOL   bothMode = callbackArg->bothMode;
 
          if (bothMode) {
@@ -963,334 +1466,6 @@ BooleanToFancy(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
-//---------------------------------------------------------------------------
-// Input:
-// Arg1: numpy array aIndex (must be BOOL)
-// Returns: how many true values there are
-// NOTE: faster than calling sum
-PyObject *
-BooleanSum(PyObject *self, PyObject *args)
-{
-   PyArrayObject *aIndex = NULL;
-
-   if (!PyArg_ParseTuple(
-      args, "O!",
-      &PyArray_Type, &aIndex
-   )) {
-
-      return NULL;
-   }
-
-   if (PyArray_TYPE(aIndex) != NPY_BOOL) {
-      PyErr_Format(PyExc_ValueError, "First argument must be boolean array");
-      return NULL;
-   }
-
-   INT64*   pChunkCount = NULL;
-   INT64 chunks = BooleanCount(aIndex, &pChunkCount);
-
-   INT64 totalTrue = 0;
-   for (INT64 i = 0; i < chunks; i++) {
-      totalTrue += pChunkCount[i];
-   }
-
-   WORKSPACE_FREE(pChunkCount);
-   return PyLong_FromSize_t(totalTrue);
-
-}
-
-
-
-//---------------------------------------------------------------------------
-// Input:
-// Arg1: numpy array aValues (can be anything)
-// Arg2: numpy array aIndex (must be BOOL)
-//
-PyObject *
-BooleanIndex(PyObject *self, PyObject *args)
-{
-   PyArrayObject *aValues = NULL;
-   PyArrayObject *aIndex = NULL;
-
-   if (!PyArg_ParseTuple(
-      args, "O!O!",
-      &PyArray_Type, &aValues,
-      &PyArray_Type, &aIndex
-   )) {
-
-      return NULL;
-   }
-
-   if (PyArray_TYPE(aIndex) != NPY_BOOL) {
-      PyErr_Format(PyExc_ValueError, "Second argument must be boolean array");
-      return NULL;
-   }
-
-   // Pass one, count the values
-   // Eight at a time
-   INT64 lengthBool = ArrayLength(aIndex);
-   INT64 lengthValue = ArrayLength(aValues);
-
-   if (lengthBool != lengthValue) {
-      PyErr_Format(PyExc_ValueError, "Array lengths must match %lld vs %lld", lengthBool, lengthValue);
-      return NULL;
-   }
-
-   INT64*   pChunkCount = NULL;
-   INT64    chunks = BooleanCount(aIndex, &pChunkCount);
-
-   INT64 totalTrue = 0;
-
-   // Store the offset
-   for (INT64 i = 0; i < chunks; i++) {
-      INT64 temp = totalTrue;
-      totalTrue += pChunkCount[i];
-
-      // reassign to the cumulative sum so we know the offset
-      pChunkCount[i] = temp;
-   }
-
-   LOGGING("boolindex total: %I64d  length: %I64d  type:%d\n", totalTrue, lengthBool, PyArray_TYPE(aValues));
-
-   INT8* pBooleanMask = (INT8*)PyArray_BYTES(aIndex);
-
-
-   // Now we know per chunk how many true there are... we can allocate the new array
-   PyArrayObject* pReturnArray = AllocateLikeResize(aValues, totalTrue);
-
-   if (pReturnArray) {
-
-      // MT callback
-      struct BICallbackStruct {
-         INT64*   pChunkCount;
-         INT8*    pBooleanMask;
-         char*    pValuesIn;
-         char*    pValuesOut;
-         INT64    itemSize;
-      };
-
-
-      //-----------------------------------------------
-      //-----------------------------------------------
-      // This is the routine that will be called back from multiple threads
-      auto lambdaBICallback2 = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
-         BICallbackStruct* callbackArg = (BICallbackStruct*)callbackArgT;
-
-         INT8*  pBooleanMask = callbackArg->pBooleanMask;
-         INT64* pData = (INT64*)&pBooleanMask[start];
-         INT64  chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];
-         INT64  itemSize = callbackArg->itemSize;
-         char*  pValuesIn = &callbackArg->pValuesIn[start * itemSize];
-         char*  pValuesOut = &callbackArg->pValuesOut[chunkCount * itemSize];
-
-         INT64  blength = length / 8;
-
-         switch (itemSize) {
-         case 1:
-         {
-            INT8* pVOut = (INT8*)pValuesOut;
-            INT8* pVIn = (INT8*)pValuesIn;
-
-            for (INT64 i = 0; i < blength; i++) {
-
-               // little endian, so the first value is low bit (not high bit)
-               UINT32 bitmask = (UINT32)(_pext_u64(*pData, 0x0101010101010101));
-               if (bitmask != 0) {
-                  if (bitmask & 1) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 2) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 4) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 8) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 16) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 32) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 64) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 128) { *pVOut++ = *pVIn; } pVIn++;
-               }
-               else {
-                  pVIn += 8;
-               }
-               pData++;
-            }
-
-            // Get last
-            pBooleanMask = (INT8*)pData;
-
-            blength = length & 7;
-            for (INT64 i = 0; i < blength; i++) {
-               if (*pBooleanMask++) {
-                  *pVOut++ = *pVIn;
-               }
-               pVIn++;
-            }
-         }
-         break;
-         case 2:
-         {
-            INT16* pVOut = (INT16*)pValuesOut;
-            INT16* pVIn = (INT16*)pValuesIn;
-
-            for (INT64 i = 0; i < blength; i++) {
-
-               // little endian, so the first value is low bit (not high bit)
-               UINT32 bitmask = (UINT32)(_pext_u64(*pData, 0x0101010101010101));
-               if (bitmask != 0) {
-                  if (bitmask & 1) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 2) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 4) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 8) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 16) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 32) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 64) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 128) { *pVOut++ = *pVIn; } pVIn++;
-               }
-               else {
-                  pVIn += 8;
-               }
-               pData++;
-            }
-
-            // Get last
-            pBooleanMask = (INT8*)pData;
-
-            blength = length & 7;
-            for (INT64 i = 0; i < blength; i++) {
-               if (*pBooleanMask++) {
-                  *pVOut++ = *pVIn;
-               }
-               pVIn++;
-            }
-         }
-         break;
-         case 4:
-         {
-            INT32* pVOut = (INT32*)pValuesOut;
-            INT32* pVIn = (INT32*)pValuesIn;
-
-            for (INT64 i = 0; i < blength; i++) {
-
-               // little endian, so the first value is low bit (not high bit)
-               UINT32 bitmask = (UINT32)(_pext_u64(*pData, 0x0101010101010101));
-               if (bitmask != 0) {
-                  if (bitmask & 1) { *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 2) { *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 4) { *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 8) { *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 16){ *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 32){ *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 64){ *pVOut++ = *pVIn;} pVIn++;
-                  if (bitmask & 128){*pVOut++ = *pVIn;} pVIn++;
-               }
-               else {
-                  pVIn += 8;
-               }
-               pData++;
-            }
-
-            // Get last
-            pBooleanMask = (INT8*)pData;
-
-            blength = length & 7;
-            for (INT64 i = 0; i < blength; i++) {
-               if (*pBooleanMask++) {
-                  *pVOut++ = *pVIn;
-               }
-               pVIn++;
-            }
-         }
-         break;
-         case 8:
-         {
-            INT64* pVOut = (INT64*)pValuesOut;
-            INT64* pVIn = (INT64*)pValuesIn;
-
-            for (INT64 i = 0; i < blength; i++) {
-
-               // little endian, so the first value is low bit (not high bit)
-               UINT32 bitmask = (UINT32)(_pext_u64(*pData, 0x0101010101010101));
-               if (bitmask != 0) {
-                  if (bitmask & 1) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 2) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 4) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 8) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 16) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 32) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 64) { *pVOut++ = *pVIn; } pVIn++;
-                  if (bitmask & 128) { *pVOut++ = *pVIn; } pVIn++;
-               }
-               else {
-                  pVIn += 8;
-               }
-               pData++;
-            }
-
-            // Get last
-            pBooleanMask = (INT8*)pData;
-
-            blength = length & 7;
-            for (INT64 i = 0; i < blength; i++) {
-               if (*pBooleanMask++) {
-                  *pVOut++ = *pVIn;
-               }
-               pVIn++;
-            }
-         }
-         break;
-
-         default:
-         {
-            for (INT64 i = 0; i < blength; i++) {
-
-               // little endian, so the first value is low bit (not high bit)
-               UINT32 bitmask = (UINT32)(_pext_u64(*pData, 0x0101010101010101));
-               if (bitmask != 0) {
-                  int counter = 8;
-                  while (counter--) {
-                     if (bitmask & 1) {
-                        memcpy(pValuesOut, pValuesIn, itemSize);
-                        pValuesOut += itemSize;
-                     }
-
-                     pValuesIn += itemSize;
-                     bitmask >>= 1;
-                  }
-               }
-               else {
-                  pValuesIn += (itemSize * 8);
-               }
-               pData++;
-            }
-
-            // Get last
-            pBooleanMask = (INT8*)pData;
-
-            blength = length & 7;
-            for (INT64 i = 0; i < blength; i++) {
-               if (*pBooleanMask++) {
-                  memcpy(pValuesOut, pValuesIn, itemSize);
-                  pValuesOut += itemSize;
-               }
-               pValuesIn += itemSize;
-            }
-         }
-         break;
-         }
-
-         return TRUE;
-      };
-
-      BICallbackStruct stBICallback;
-      stBICallback.pChunkCount = pChunkCount;
-      stBICallback.pBooleanMask = pBooleanMask;
-      stBICallback.pValuesIn = (char*)PyArray_BYTES(aValues);
-      stBICallback.pValuesOut = (char*)PyArray_BYTES(pReturnArray);
-      stBICallback.itemSize = PyArray_ITEMSIZE(aValues);
-
-      g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBICallback2, &stBICallback);
-   }
-
-   WORKSPACE_FREE(pChunkCount);
-   return (PyObject*)pReturnArray;
-}
-
 //
 //
 //#--------- START OF C++ ROUTINE -------------
@@ -1337,16 +1512,16 @@ BooleanIndex(PyObject *self, PyObject *args)
 //
 
 struct stReIndex {
-   INT64*      pUCutOffs;
-   INT64*      pICutOffs;
-   INT32*      pUKey;
-   void*       pIKey;
+   INT64* pUCutOffs;
+   INT64* pICutOffs;
+   INT32* pUKey;
+   void* pIKey;
 
    INT64       ikey_length;
    INT64       uikey_length;
    INT64       u_cutoffs_length;
 
-} ;
+};
 
 //
 // t is the partition/cutoff index
@@ -1368,7 +1543,7 @@ BOOL ReIndexGroupsMT(void* preindexV, int core, INT64 t) {
    }
 
    INT64   stopi = pICutOffs[t];
-   INT32*  pUniques = &pUKey[start];
+   INT32* pUniques = &pUKey[start];
 
    // Check for out of bounds when indexing uniques
    INT64   uKeyLength = preindex->uikey_length - start;
@@ -1398,14 +1573,14 @@ BOOL ReIndexGroupsMT(void* preindexV, int core, INT64 t) {
 // Arg3: u_cutoffs
 // Arg3: i_cutoffs
 //
-PyObject *
-ReIndexGroups(PyObject *self, PyObject *args)
+PyObject*
+ReIndexGroups(PyObject* self, PyObject* args)
 {
 
-   PyArrayObject *ikey = NULL;
-   PyArrayObject *uikey = NULL;
-   PyArrayObject *u_cutoffs = NULL;
-   PyArrayObject *i_cutoffs = NULL;
+   PyArrayObject* ikey = NULL;
+   PyArrayObject* uikey = NULL;
+   PyArrayObject* u_cutoffs = NULL;
+   PyArrayObject* i_cutoffs = NULL;
 
    if (!PyArg_ParseTuple(
       args, "O!O!O!O!",
@@ -1413,7 +1588,7 @@ ReIndexGroups(PyObject *self, PyObject *args)
       &PyArray_Type, &uikey,
       &PyArray_Type, &u_cutoffs,
       &PyArray_Type, &i_cutoffs
-      )) {
+   )) {
 
       return NULL;
    }
@@ -1469,8 +1644,8 @@ ReIndexGroups(PyObject *self, PyObject *args)
 
 
 struct stReverseIndex {
-   void*       pIKey;
-   void*       pOutKey;
+   void* pIKey;
+   void* pOutKey;
    INT64       ikey_length;
 };
 
@@ -1505,10 +1680,10 @@ BOOL ReverseShuffleMT(void* preindexV, int core, INT64 start, INT64 length) {
 //       out[in[i]] = i
 // Output:
 //      Returns index array with indexes reversed back prior to lexsort
-PyObject *
-ReverseShuffle(PyObject *self, PyObject *args)
+PyObject*
+ReverseShuffle(PyObject* self, PyObject* args)
 {
-   PyArrayObject *ikey = NULL;
+   PyArrayObject* ikey = NULL;
 
    if (!PyArg_ParseTuple(
       args, "O!",
@@ -1519,15 +1694,15 @@ ReverseShuffle(PyObject *self, PyObject *args)
 
    stReverseIndex preindex;
 
-   int dtype=PyArray_TYPE(ikey);
+   int dtype = PyArray_TYPE(ikey);
 
    // check for only signed ints
-   if (dtype >= 10 || (dtype &1) == 0) {
+   if (dtype >= 10 || (dtype & 1) == 0) {
       PyErr_Format(PyExc_ValueError, "ReverseShuffle: ikey must be int8/16/32/64");
       return NULL;
    }
 
-   PyArrayObject *pReturnArray = AllocateLikeNumpyArray(ikey, dtype);
+   PyArrayObject* pReturnArray = AllocateLikeNumpyArray(ikey, dtype);
 
    if (pReturnArray) {
 
