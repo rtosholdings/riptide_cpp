@@ -825,7 +825,6 @@ static void GetItemIntVariable(void* aValues, void* aIndex, void* aDataOut, int6
          //    memcpy(pDataOut, pSrc, itemSize);
 
          pIndex++;
-         pDataOut += itemSize;
       }
    }
    else {
@@ -853,7 +852,6 @@ static void GetItemIntVariable(void* aValues, void* aIndex, void* aDataOut, int6
             *pDataOut++ = *pSrc++;
          }
          pIndex = STRIDE_NEXT(const INDEX, pIndex, strideIndex);
-         pDataOut += itemSize;
       }
    }
 }
