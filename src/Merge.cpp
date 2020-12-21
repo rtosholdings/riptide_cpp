@@ -224,7 +224,10 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount) {
       BSCallbackStruct stBSCallback;
       stBSCallback.pChunkCount = pChunkCount;
       stBSCallback.pBooleanMask = pBooleanMask;
-      stBSCallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
+      stBSCallback.strideBoolean = 1;
+      if (PyArray_NDIM(aIndex) > 0) {
+         stBSCallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
+      }
 
       BOOL didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
 
@@ -253,14 +256,15 @@ BooleanIndexInternal(
       return NULL;
    }
    // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
-   if (PyArray_NDIM(aIndex) != 1 && !PyArray_ISCONTIGUOUS(aIndex)) {
+   if (PyArray_NDIM(aIndex) != 1 || !PyArray_ISCONTIGUOUS(aIndex)) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional boolean array.");
       return NULL;
    }
-   if (PyArray_NDIM(aValues) != 1 && !PyArray_ISCONTIGUOUS(aValues)) {
+   if (PyArray_NDIM(aValues) != 1 || !PyArray_ISCONTIGUOUS(aValues)) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
       return NULL;
    }
+
 
    // Pass one, count the values
    // Eight at a time
@@ -590,8 +594,13 @@ BooleanIndexInternal(
          stBICallback.pValuesIn = (char*)PyArray_BYTES(aValues);
          stBICallback.pValuesOut = (char*)PyArray_BYTES(pReturnArray);
          stBICallback.itemSize = PyArray_ITEMSIZE(aValues);
-         stBICallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
-         stBICallback.strideValues = PyArray_STRIDE(aValues, 0);
+         stBICallback.strideBoolean = PyArray_ITEMSIZE(aIndex);
+         if (PyArray_NDIM(aIndex)>0)
+            stBICallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
+
+         stBICallback.strideValues = PyArray_ITEMSIZE(aValues); 
+         if (PyArray_NDIM(aValues) > 0)
+            stBICallback.strideValues = PyArray_STRIDE(aValues, 0);
 
          g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBICallback2, &stBICallback);
       }
