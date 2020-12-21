@@ -265,6 +265,7 @@ BooleanIndexInternal(
       return NULL;
    }
 
+
    // Pass one, count the values
    // Eight at a time
    int64_t lengthBool = ArrayLength(aIndex);
