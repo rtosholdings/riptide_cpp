@@ -253,10 +253,10 @@ BooleanIndexInternal(
       return NULL;
    }
 
-   int32_t ndimValue;
-   int32_t ndimBoolean;
-   int64_t strideValue;
-   int64_t strideBoolean;
+   int ndimValue=0;
+   int ndimBoolean=0;
+   INT64 strideValue=0;
+   INT64 strideBoolean=0;
 
    int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
    int result2 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
@@ -670,8 +670,8 @@ BooleanSum(PyObject* self, PyObject* args)
       return NULL;
    }
 
-   int32_t ndimBoolean;
-   int64_t strideBoolean;
+   int ndimBoolean;
+   INT64 strideBoolean;
 
    int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
@@ -1168,22 +1168,26 @@ MBGet(PyObject* self, PyObject* args)
       return BooleanIndexInternal(aValues, aIndex);
    }
 
-   int32_t ndimValue;
-   int32_t ndimIndex;
-   int64_t strideValue=0;
-   int64_t strideIndex=0;
+   int ndimValue;
+   int ndimIndex;
+   INT64 strideValue=0;
+   INT64 strideIndex=0;
 
    int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
    int result2 = GetStridesAndContig(aIndex, ndimIndex, strideIndex);
 
    // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
    if (result1 != 0) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
-      return NULL;
+      if (!PyArray_ISCONTIGUOUS(aValues)) {
+         PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
+         return NULL;
+      }
    }
    if (result2 != 0) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
-      return NULL;
+      if (!PyArray_ISCONTIGUOUS(aIndex)) {
+         PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
+         return NULL;
+      }
    }
 
    //printf("numpy types %d %d\n", numpyValuesType, numpyIndexType);
@@ -1323,8 +1327,8 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
       return NULL;
    }
 
-   int32_t ndimBoolean;
-   int64_t strideBoolean;
+   int ndimBoolean;
+   INT64 strideBoolean;
 
    int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
