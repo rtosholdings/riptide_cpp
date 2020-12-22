@@ -263,18 +263,22 @@ BooleanIndexInternal(
 
    // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
    if (result1 != 0) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional boolean array.");
-      return NULL;
+      if (!PyArray_ISCONTIGUOUS(aValues)) {
+         PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional value array for boolean index.");
+         return NULL;
+      }
    }
    if (result2 != 0) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
-      return NULL;
+      if (!PyArray_ISCONTIGUOUS(aIndex)) {
+         PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array used as boolean index.");
+         return NULL;
+      }
    }
 
-   if ( strideBoolean != 1) {
-      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
-      return NULL;
-   }
+   //if ( strideBoolean != 1) {
+   //   PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
+   //   return NULL;
+   //}
    // Pass one, count the values
    // Eight at a time
    int64_t lengthBool = ArrayLength(aIndex);
