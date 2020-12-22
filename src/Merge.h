@@ -9,7 +9,7 @@ BooleanIndex(PyObject *self, PyObject *args);
 PyObject *
 BooleanSum(PyObject *self, PyObject *args);
 
-PyObject *
+extern PyObject *
 BooleanToFancy(PyObject *self, PyObject *args, PyObject* kwargs);
 
 PyObject *

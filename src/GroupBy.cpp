@@ -527,36 +527,47 @@ public:
 
       // Allocate pOut
       double* pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-      if (pass <= 0) {
-         // Clear out memory for our range
-         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
-      }
-
-      for (INT64 i = 0; i < len; i++) {
-         V index = pIndex[i];
-
-         //--------------------------------------
-         ACCUM_INNER_LOOP(index, binLow, binHigh)
-            double temp = pIn[i];
-            pOut[index - binLow] += (double)temp;
-            pCountOut[index]++;
+      if (pOut) {
+         if (pass <= 0) {
+            // Clear out memory for our range
+            memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
          }
-      }
-
-      if (pass < 0) {
+         // copy over original values
          for (INT64 i = binLow; i < binHigh; i++) {
-            if (pCountOut[i] > 0) {
-               pOriginalOut[i] = (U)(pOut[i-binLow] / (double)(pCountOut[i]));
-            }
-            else {
-               pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+            pOut[i - binLow] = (double)pOriginalOut[i];
+         }
+
+         for (INT64 i = 0; i < len; i++) {
+            V index = pIndex[i];
+
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
+               double temp = pIn[i];
+               pOut[index - binLow] += (double)temp;
+               pCountOut[index]++;
             }
          }
+
+         if (pass < 0) {
+            for (INT64 i = binLow; i < binHigh; i++) {
+               if (pCountOut[i] > 0) {
+                  pOriginalOut[i] = (U)(pOut[i-binLow] / (double)(pCountOut[i]));
+               }
+               else {
+                  pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+               }
+            }
+         }
+         else {
+            // copy over original values
+            for (INT64 i = binLow; i < binHigh; i++) {
+               pOriginalOut[i] = (U)pOut[i - binLow];
+            }
+         }
+
+         WORKSPACE_FREE(pOut);         
       }
-
-      WORKSPACE_FREE(pOut);
    }
-
 
    //-------------------------------------------------------------------------------
    static void AccumNanMean(void* pDataIn, void* pIndexT, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass) {
@@ -566,35 +577,46 @@ public:
 
       // Allocate pOut
       double* pOut = (double*)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-      if (pass <= 0) {
-         // Clear out memory for our range
-         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
-      }
-
-      for (INT64 i = 0; i < len; i++) {
-         V index = pIndex[i];
-
-         //--------------------------------------
-         ACCUM_INNER_LOOP(index, binLow, binHigh)
-            T temp = pIn[i];
-            if (temp == temp) {
-               pOut[index - binLow] += (U)temp;
-               pCountOut[index]++;
-            }
+      if (pOut) {
+         if (pass <= 0) {
+            // Clear out memory for our range
+            memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
          }
-      }
-
-      if (pass < 0) {
+         // copy over original values
          for (INT64 i = binLow; i < binHigh; i++) {
-            if (pCountOut[i] > 0) {
-               pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
-            }
-            else {
-               pOriginalOut[i] = GET_INVALID(pOut[i]);
+            pOut[i - binLow] = (double)pOriginalOut[i];
+         }
+
+         for (INT64 i = 0; i < len; i++) {
+            V index = pIndex[i];
+
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
+               T temp = pIn[i];
+               if (temp == temp) {
+                  pOut[index - binLow] += (double)temp;
+                  pCountOut[index]++;
+               }
             }
          }
+         if (pass < 0) {
+            for (INT64 i = binLow; i < binHigh; i++) {
+               if (pCountOut[i] > 0) {
+                  pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
+               }
+               else {
+                  pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+               }
+            }
+         }
+         else {
+            // copy over original values
+            for (INT64 i = binLow; i < binHigh; i++) {
+               pOriginalOut[i] = (U)pOut[i - binLow];
+            }
+         }
+         WORKSPACE_FREE(pOut);
       }
-      WORKSPACE_FREE(pOut);
    }
 
    //-------------------------------------------------------------------------------
