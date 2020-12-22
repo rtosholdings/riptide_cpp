@@ -6176,21 +6176,25 @@ public:
       //------------
       // Check if sections.. if so read back in each section and fix it up
       if (hasSections) {
-         for (INT64 section = 1; section < pSDSDecompress->cSectionName.SectionCount; section++) {
+         INT64 sections = pSDSDecompress->cSectionName.SectionCount;
+
+         for (INT64 section = 1; section < sections; section++) {
             INT64 sectionOffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
             // section within a section
             // read in a new fileheader
             SDS_FILE_HEADER tempFileHeader;
             INT64 bytesRead = DefaultFileIO.FileReadChunk(NULL, inFile, &tempFileHeader, sizeof(SDS_FILE_HEADER), sectionOffset);
 
-            LOGGING("reading section at %lld for output fileoffset %lld\n", sectionOffset, fileOffset);
+            LOGGING("concat: reading section at %lld for output fileoffset %lld\n", sectionOffset, fileOffset);
 
             if (bytesRead != sizeof(SDS_FILE_HEADER)) {
                printf("!!warning file %s failed to read section header at offset %lld\n", pSDSDecompress->FileName, sectionOffset);
                return 0;
             }
 
-            LOGGING("Some offsets %lld %lld %lld\n", tempFileHeader.NameBlockOffset, tempFileHeader.MetaBlockOffset, tempFileHeader.ArrayBlockOffset);
+            origArrayBlockOffset = tempFileHeader.ArrayBlockOffset;
+
+            LOGGING("concat: Some offsets %lld %lld %lld  sbo:%lld  fo:%lld\n", tempFileHeader.NameBlockOffset, tempFileHeader.MetaBlockOffset, tempFileHeader.ArrayBlockOffset, tempFileHeader.SectionBlockOffset, tempFileHeader.FileOffset);
             // Fixup header offsets
             if (tempFileHeader.NameBlockOffset) tempFileHeader.NameBlockOffset += fileOffset;
             if (tempFileHeader.MetaBlockOffset) tempFileHeader.MetaBlockOffset += fileOffset;
@@ -6203,12 +6207,38 @@ public:
 
             INT64 newOffset = fileOffset + sectionOffset;
 
+            LOGGING("concat: newoffset: %lld   %lld + %lld\n", newOffset, fileOffset, sectionOffset);
             UpdateSectionData(pSectionData, currentSection++, newOffset);
 
             INT64 sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, &tempFileHeader, sizeof(SDS_FILE_HEADER), newOffset);
+            LOGGING("Wrote subsect fileheader %lld bytes at offset %lld\n", sizeof(SDS_FILE_HEADER), newOffset);
             if (sizeof(SDS_FILE_HEADER) != sizeWritten) {
                printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, newOffset, sectionOffset);
             }
+
+            // NEW CODE
+            // fixup arrayblocks
+            //-----------------------------------------
+            // Read array block and fix that up
+            SDS_ARRAY_BLOCK* pDestArrayBlock2 = (SDS_ARRAY_BLOCK*)WORKSPACE_ALLOC(tempFileHeader.ArrayBlockSize);
+
+            bytesXfer =
+                DefaultFileIO.FileReadChunk(NULL, inFile, pDestArrayBlock2, tempFileHeader.ArrayBlockSize, origArrayBlockOffset);
+            if (bytesXfer != tempFileHeader.ArrayBlockSize) {
+                printf("!!warning file %s failed to read array block at offset %lld\n", pSDSDecompress->FileName, origArrayBlockOffset);
+            }
+
+            // fixup arrayblocks
+            for (int i = 0; i < tempFileHeader.ArraysWritten; i++) {
+                //printf("start offset %d %lld\n", i, pDestArrayBlock2[i].ArrayDataOffset);
+                pDestArrayBlock2[i].ArrayDataOffset += fileOffset;
+            }
+            // Write the array block with offsets fixed up
+            DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pDestArrayBlock2, tempFileHeader.ArrayBlockSize, fileOffset + origArrayBlockOffset);
+            LOGGING("Wrote arrayblock %lld bytes at offset %lld from orig: %lld\n", tempFileHeader.ArrayBlockSize, fileOffset + origArrayBlockOffset, origArrayBlockOffset);
+
+            WORKSPACE_FREE(pDestArrayBlock2);
+
          }
 
       }
@@ -6535,6 +6565,9 @@ public:
             }
             else {
                pSDSDecompressFileExtra[FileWithSectionsCount] = CopyDecompressFileFrom(pSDSDecompress, FileWithSectionsCount);
+               
+               // TJD: Check to make sure no memory leaks, also, future optimization - we do not have to read it again
+               pSDSDecompressFileExtra[FileWithSectionsCount]->DecompressFileInternal(pReadCallbacks, 0, 0);
                FileWithSectionsCount += 1;
             }
          }

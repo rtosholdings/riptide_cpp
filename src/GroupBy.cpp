@@ -587,7 +587,6 @@ public:
             pOut[i - binLow] = (double)pOriginalOut[i];
          }
 
-
          for (INT64 i = 0; i < len; i++) {
             V index = pIndex[i];
 

@@ -124,6 +124,8 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup Miniconda
+        env:
+         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: goanpeca/setup-miniconda@v1
         with:
           activate-environment: ""
@@ -137,6 +139,8 @@ jobs:
           mkdir conda_pkgs_output
           conda build conda_recipe --output-folder ./conda_pkgs_output
       - name: Publish artifacts
+        env:
+         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true' 
         uses: actions/upload-artifact@v2
         with:
           name: packages
