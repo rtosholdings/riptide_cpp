@@ -529,7 +529,7 @@ public:
       double* pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
       if (pass <= 0) {
          // Clear out memory for our range
-         memset(pOut, 0, sizeof(U) * (binHigh - binLow));
+         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
       }
 
       for (INT64 i = 0; i < len; i++) {
@@ -568,7 +568,7 @@ public:
       double* pOut = (double*)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
       if (pass <= 0) {
          // Clear out memory for our range
-         memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+         memset(pOut, 0, sizeof(double) * (binHigh - binLow));
       }
 
       for (INT64 i = 0; i < len; i++) {
@@ -578,7 +578,7 @@ public:
          ACCUM_INNER_LOOP(index, binLow, binHigh)
             T temp = pIn[i];
             if (temp == temp) {
-               pOut[index - binLow] += (U)temp;
+               pOut[index - binLow] += (double)temp;
                pCountOut[index]++;
             }
          }
@@ -590,7 +590,7 @@ public:
                pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
             }
             else {
-               pOriginalOut[i] = GET_INVALID(pOut[i]);
+               pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
             }
          }
       }

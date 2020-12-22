@@ -173,7 +173,7 @@ int64_t SumBooleanMask(const int8_t* const pData, const int64_t length, const in
 // Output: chunk count and ppChunkCount
 // NOTE: CALLER MUST FREE pChunkCount
 //
-int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount) {
+int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount, int64_t strideBoolean) {
 
    // Pass one, count the values
    // Eight at a time
@@ -224,10 +224,7 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount) {
       BSCallbackStruct stBSCallback;
       stBSCallback.pChunkCount = pChunkCount;
       stBSCallback.pBooleanMask = pBooleanMask;
-      stBSCallback.strideBoolean = 1;
-      if (PyArray_NDIM(aIndex) > 0) {
-         stBSCallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
-      }
+      stBSCallback.strideBoolean = strideBoolean;
 
       BOOL didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
 
@@ -255,17 +252,29 @@ BooleanIndexInternal(
       PyErr_Format(PyExc_ValueError, "Second argument must be a boolean array");
       return NULL;
    }
+
+   int32_t ndimValue;
+   int32_t ndimBoolean;
+   int64_t strideValue;
+   int64_t strideBoolean;
+
+   int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
+   int result2 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
+
    // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
-   if (PyArray_NDIM(aIndex) != 1 || !PyArray_ISCONTIGUOUS(aIndex)) {
+   if (result1 != 0) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional boolean array.");
       return NULL;
    }
-   if (PyArray_NDIM(aValues) != 1 || !PyArray_ISCONTIGUOUS(aValues)) {
+   if (result2 != 0) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
       return NULL;
    }
 
-
+   if ( strideBoolean != 1) {
+      PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array to be indexed.");
+      return NULL;
+   }
    // Pass one, count the values
    // Eight at a time
    int64_t lengthBool = ArrayLength(aIndex);
@@ -277,7 +286,7 @@ BooleanIndexInternal(
    }
 
    int64_t* pChunkCount = NULL;
-   int64_t    chunks = BooleanCount(aIndex, &pChunkCount);
+   int64_t    chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
 
    if (chunks == 0) {
       PyErr_Format(PyExc_ValueError, "Out of memory");
@@ -594,13 +603,9 @@ BooleanIndexInternal(
          stBICallback.pValuesIn = (char*)PyArray_BYTES(aValues);
          stBICallback.pValuesOut = (char*)PyArray_BYTES(pReturnArray);
          stBICallback.itemSize = PyArray_ITEMSIZE(aValues);
-         stBICallback.strideBoolean = PyArray_ITEMSIZE(aIndex);
-         if (PyArray_NDIM(aIndex)>0)
-            stBICallback.strideBoolean = PyArray_STRIDE(aIndex, 0);
 
-         stBICallback.strideValues = PyArray_ITEMSIZE(aValues); 
-         if (PyArray_NDIM(aValues) > 0)
-            stBICallback.strideValues = PyArray_STRIDE(aValues, 0);
+         stBICallback.strideBoolean = strideBoolean;
+         stBICallback.strideValues = strideValue;
 
          g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBICallback2, &stBICallback);
       }
@@ -661,8 +666,13 @@ BooleanSum(PyObject* self, PyObject* args)
       return NULL;
    }
 
+   int32_t ndimBoolean;
+   int64_t strideBoolean;
+
+   int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
+
    INT64* pChunkCount = NULL;
-   INT64 chunks = BooleanCount(aIndex, &pChunkCount);
+   INT64 chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
 
    INT64 totalTrue = 0;
    for (INT64 i = 0; i < chunks; i++) {
@@ -1154,12 +1164,20 @@ MBGet(PyObject* self, PyObject* args)
       return BooleanIndexInternal(aValues, aIndex);
    }
 
+   int32_t ndimValue;
+   int32_t ndimIndex;
+   int64_t strideValue=0;
+   int64_t strideIndex=0;
+
+   int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
+   int result2 = GetStridesAndContig(aIndex, ndimIndex, strideIndex);
+
    // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
-   if (PyArray_NDIM(aValues) != 1 && !PyArray_ISCONTIGUOUS(aValues)) {
+   if (result1 != 0) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
       return NULL;
    }
-   if (PyArray_NDIM(aIndex) != 1 && !PyArray_ISCONTIGUOUS(aIndex)) {
+   if (result2 != 0) {
       PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d", numpyValuesType, numpyIndexType);
       return NULL;
    }
@@ -1171,72 +1189,79 @@ MBGet(PyObject* self, PyObject* args)
 
    int64_t aValueLength = ArrayLength(aValues);
    int64_t aValueItemSize = PyArray_ITEMSIZE(aValues);
+   int64_t aIndexLength = ArrayLength(aIndex);
 
    // Get the proper function to call
    GETITEM_FUNC  pFunction = GetItemFunction(aValueItemSize, numpyIndexType);
 
-   if (pFunction != NULL) {
+   if (pFunction != NULL || aIndexLength == 0) {
 
       PyArrayObject* outArray = (PyArrayObject*)Py_None;
-      int64_t aIndexLength = ArrayLength(aIndex);
 
       // Allocate the size of aIndex but the type is the value
       outArray = AllocateLikeResize(aValues, aIndexLength);
 
       if (outArray) {
-         void* pDataOut = PyArray_BYTES(outArray);
-         void* pDefault = GetDefaultForType(numpyValuesType);
 
-         int64_t strideIndex = PyArray_STRIDE(aIndex, 0);
-         int64_t strideValue = PyArray_STRIDE(aValues, 0);
+         if (aIndexLength != 0) {
+            void* pDataOut = PyArray_BYTES(outArray);
+            void* pDefault = GetDefaultForType(numpyValuesType);
 
-         // reserve a full 16 bytes for default in case we have oneS
-         _m256all tempDefault;
+            // reserve a full 16 bytes for default in case we have oneS
+            _m256all tempDefault;
 
-         // Check if a default value was passed in as third parameter
-         if (defaultValue != Py_None) {
-            pDefault = &tempDefault;
+            // Check if a default value was passed in as third parameter
+            if (defaultValue != Py_None) {
+               BOOL result;
+               INT64 itemSize;
+               void* pTempData = NULL;
+               // Try to convert the scalar
+               result = ConvertScalarObject(defaultValue, &tempDefault, numpyValuesType, &pTempData, &itemSize);
+               if (result) {
+                  // Assign the new default for out of range indexes
+                  pDefault = &tempDefault;
+               }
+            }
+
+            stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(aIndexLength);
+
+            if (pWorkItem == NULL) {
+
+               // Threading not allowed for this work item, call it directly from main thread
+               typedef void(*GETITEM_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t valSize, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault);
+               pFunction(pValues, pIndex, pDataOut, aValueLength, aValueItemSize, aIndexLength, strideIndex, strideValue, pDefault);
+
+            }
+            else {
+               // Each thread will call this routine with the callbackArg
+               // typedef int64_t(*DOWORK_CALLBACK)(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex);
+               pWorkItem->DoWorkCallback = GetItemCallback;
+
+               pWorkItem->WorkCallbackArg = &stMBGCallback;
+
+               stMBGCallback.GetItemCallback = pFunction;
+               stMBGCallback.pValues = pValues;
+               stMBGCallback.pIndex = pIndex;
+               stMBGCallback.pDataOut = pDataOut;
+
+               // arraylength of values input array -- used to check array bounds
+               stMBGCallback.aValueLength = aValueLength;
+               stMBGCallback.aIndexLength = aIndexLength;
+               stMBGCallback.pDefault = pDefault;
+
+               //
+               stMBGCallback.aValueItemSize = aValueItemSize;
+               stMBGCallback.aIndexItemSize = PyArray_ITEMSIZE(aIndex);
+               stMBGCallback.strideIndex = strideIndex;
+               stMBGCallback.strideValue = strideValue;
+
+               //printf("**check %p %p %p %lld %lld\n", pValues, pIndex, pDataOut, stMBGCallback.TypeSizeValues, stMBGCallback.TypeSizeIndex);
+
+               // This will notify the worker threads of a new work item
+               g_cMathWorker->WorkMain(pWorkItem, aIndexLength, 0);
+               //g_cMathWorker->WorkMain(pWorkItem, aIndexLength);
+            }
          }
-
-         stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(aIndexLength);
-
-         if (pWorkItem == NULL) {
-
-            // Threading not allowed for this work item, call it directly from main thread
-            typedef void(*GETITEM_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t valSize, int64_t itemSize, int64_t len, int64_t strideIndex, int64_t strideValue, void* pDefault);
-            pFunction(pValues, pIndex, pDataOut, aValueLength, aValueItemSize, aIndexLength, strideIndex, strideValue, pDefault);
-
-         }
-         else {
-            // Each thread will call this routine with the callbackArg
-            // typedef int64_t(*DOWORK_CALLBACK)(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex);
-            pWorkItem->DoWorkCallback = GetItemCallback;
-
-            pWorkItem->WorkCallbackArg = &stMBGCallback;
-
-            stMBGCallback.GetItemCallback = pFunction;
-            stMBGCallback.pValues = pValues;
-            stMBGCallback.pIndex = pIndex;
-            stMBGCallback.pDataOut = pDataOut;
-
-            // arraylength of values input array -- used to check array bounds
-            stMBGCallback.aValueLength = aValueLength;
-            stMBGCallback.aIndexLength = aIndexLength;
-            stMBGCallback.pDefault = pDefault;
-
-            //
-            stMBGCallback.aValueItemSize = aValueItemSize;
-            stMBGCallback.aIndexItemSize = PyArray_ITEMSIZE(aIndex);
-            stMBGCallback.strideIndex = strideIndex;
-            stMBGCallback.strideValue = strideValue;
-
-            //printf("**check %p %p %p %lld %lld\n", pValues, pIndex, pDataOut, stMBGCallback.TypeSizeValues, stMBGCallback.TypeSizeIndex);
-
-            // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, aIndexLength, 0);
-            //g_cMathWorker->WorkMain(pWorkItem, aIndexLength);
-         }
-
          return (PyObject*)outArray;
       }
       PyErr_Format(PyExc_ValueError, "GetItem ran out of memory %d %d", numpyValuesType, numpyIndexType);
@@ -1244,7 +1269,7 @@ MBGet(PyObject* self, PyObject* args)
 
    }
 
-   PyErr_Format(PyExc_ValueError, "Dont know how to convert these types %d %d", numpyValuesType, numpyIndexType);
+   PyErr_Format(PyExc_ValueError, "Dont know how to convert these types %d %d.  itemsize: %lld", numpyValuesType, numpyIndexType, aValueItemSize);
    return NULL;
 }
 
@@ -1294,12 +1319,17 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
       return NULL;
    }
 
+   int32_t ndimBoolean;
+   int64_t strideBoolean;
+
+   int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
+
    // if bothMode is set, will return fancy index for both True and False
    BOOL     bothMode = GetKwargBoth(kwargs);
 
    INT64* pChunkCount = NULL;
    INT64* pChunkCountFalse = NULL;
-   INT64    chunks = BooleanCount(aIndex, &pChunkCount);
+   INT64    chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
    INT64    indexLength = ArrayLength(aIndex);
 
    INT64    totalTrue = 0;
