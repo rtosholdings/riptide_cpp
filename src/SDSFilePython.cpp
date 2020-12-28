@@ -21,6 +21,304 @@
 #define LOGGING(...)
 //#define LOGGING printf
 
+// For supporting older versions of PyPy.
+// Source: https://github.com/numpy/numpy/blob/504fd7b2eedb90dd3aa0b326ac8c3120118b5f2d/numpy/core/src/multiarray/typeinfo.c#L8
+#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM <= 0x07030000))
+/* PyPy issue 3160 */
+#include <structseq.h>
+#endif
+
+// PyTypeObject for the 'sds_file_info' StructSequence type.
+static PyTypeObject PyType_sds_file_info;
+// PyTypeObject for the 'sds_container_item' StructSequence type.
+static PyTypeObject PyType_sds_container_item;
+// PyTypeObject for the 'sds_array_info' StructSequence type.
+static PyTypeObject PyType_sds_array_info;
+
+static PyStructSequence_Field sds_file_info_fields[] = {
+    // bytes
+    {"column_metadata",    "JSON-formatted metadata for columns (arrays) within the Dataset which have types subclassing FastArray (such as Categorical or DateTimeNano)."},
+    // Union[Sequence[np.ndarray], Sequence[riptide_cpp.sds_array_info]]
+    {"columns",            NULL},
+    // Sequence[riptide_cpp.sds_container_item]
+    {"container_items",    NULL},
+    // bytes
+    {"file_header",        "A dictionary created from the SDS file header."},
+    {NULL, NULL}
+};
+
+static PyStructSequence_Desc sds_file_info_desc = {
+    /* name */
+    "riptide_cpp.sds_file_info",
+    /* doc */
+    "Information about the contents of an SDS file.",
+    /* fields */
+    sds_file_info_fields,
+    /* n_in_sequence */
+    4,
+};
+
+static PyStructSequence_Field sds_container_item_fields[] = {
+   // bytes
+   {"itemname",   "The item name as an ASCII 'bytes' string."},
+   // SDSFlag
+   {"flags",      "The SDS flags for this item."},
+   {NULL, NULL}
+};
+
+static PyStructSequence_Desc sds_container_item_desc = {
+   /* name */
+   "riptide_cpp.sds_container_item",
+   /* doc */
+   "The name and flags for an item (e.g. a dataset, array, nested struct) stored within an SDS file.",
+   /* fields */
+   sds_container_item_fields,
+   /* n_in_sequence */
+   2,
+};
+
+static PyStructSequence_Field sds_array_info_fields[] = {
+   // Tuple[int, ...]
+   {"shape",      "The array shape, given as a tuple of non-negative integers."},
+   // int
+   {"dtype",      "The numeric code for the array's numpy dtype."},
+   // int
+   {"flags",      "The numpy array flags for the array."},
+   // int
+   {"itemsize",   "The size, in bytes, of each element in the array."},
+   {NULL, NULL}
+};
+
+static PyStructSequence_Desc sds_array_info_desc = {
+   /* name */
+   "riptide_cpp.sds_array_info",
+   /* doc */
+   "Description of an array stored within an SDS file.",
+   /* fields */
+   sds_array_info_fields,
+   /* n_in_sequence */
+   4,
+};
+
+// TODO: It could be helpful for this function to also define enum types used by SDS and currently repeated
+//       in riptable/rt_enum.py. rt_enum.py could still import + re-export these for backwards-compatibility,
+//       but it would allow the definitions to be centralized within riptide_cpp. A partial solution is
+//       implemented here (but it'd be better if we could define the IntEnum itself via the C API):
+//       https://stackoverflow.com/questions/61451232/how-to-return-a-python-enum-from-c-extension/61454030#61454030
+// TODO: Should this function accept a pointer to the module itself (instead of the module dictionary) and
+//       use the PyModule_AddObject() function to add the types to the module?
+bool RegisterSdsPythonTypes(PyObject* module_dict)
+{
+   // For each of the Struct Sequence (C-API version of namedtuple) types defined for SDS,
+   // initialize the PyTypeObject then add it to the module dictionary provided by the caller.
+
+   if (PyStructSequence_InitType2(
+      &PyType_sds_file_info, &sds_file_info_desc) < 0) {
+      return false;
+   }
+   if (PyDict_SetItemString(module_dict,
+      "sds_file_info", (PyObject*)&PyType_sds_file_info) < 0) {
+      return false;
+   }
+
+   // TODO: Do we need to Py_DECREF(&sds_file_info_desc) here to keep the refcounts correct?
+
+   if (PyStructSequence_InitType2(
+      &PyType_sds_container_item, &sds_container_item_desc) < 0) {
+      return false;
+   }
+   if (PyDict_SetItemString(module_dict,
+      "sds_container_item", (PyObject*)&PyType_sds_container_item) < 0) {
+      return false;
+   }
+
+   if (PyStructSequence_InitType2(
+      &PyType_sds_array_info, &sds_array_info_desc) < 0) {
+      return false;
+   }
+   if (PyDict_SetItemString(module_dict,
+      "sds_array_info", (PyObject*)&PyType_sds_array_info) < 0) {
+      return false;
+   }
+
+   // TODO: Can we add type hints to these types by defining an __annotations__ field on them (using PyObject_SetAttrString())?
+   //       (And perhaps also _fields and some others defined by typing.NamedTuple-derived classes.)
+
+   /*
+   In [1]: import numpy as np
+
+   In [2]: import riptable as rt
+
+   In [3]: from typing import NamedTuple, Sequence, Tuple, Union
+
+   In [4]: class SDSArrayInfo(NamedTuple):
+      ...:     shape: Tuple[int, ...]
+      ...:     dtype: int
+      ...:     flags: int
+      ...:     """numpy array flags"""
+      ...:     itemsize: int
+      ...:
+
+   In [5]: class SDSContainerItem(NamedTuple):
+      ...:     itemname: bytes
+      ...:     flags: rt.rt_enum.SDSFlag
+      ...:
+
+   In [6]: class SDSFileInfo(NamedTuple):
+      ...:     column_metadata: bytes
+      ...:     """JSON-formatted metadata for some columns in the dataset."""
+      ...:     columns: Union[Sequence[np.ndarray], Sequence[SDSArrayInfo]]
+      ...:     container_items: Sequence[SDSContainerItem]
+      ...:     file_metadata: bytes
+      ...:     """JSON-formatted file metadata."""
+      ...:
+
+   In [7]: dir(SDSArrayInfo)
+   ['__add__',
+    '__annotations__',
+    '__class__',
+    '__contains__',
+    '__delattr__',
+    '__dir__',
+    '__doc__',
+    '__eq__',
+    '__format__',
+    '__ge__',
+    '__getattribute__',
+    '__getitem__',
+    '__getnewargs__',
+    '__gt__',
+    '__hash__',
+    '__init__',
+    '__init_subclass__',
+    '__iter__',
+    '__le__',
+    '__len__',
+    '__lt__',
+    '__module__',
+    '__mul__',
+    '__ne__',
+    '__new__',
+    '__reduce__',
+    '__reduce_ex__',
+    '__repr__',
+    '__rmul__',
+    '__setattr__',
+    '__sizeof__',
+    '__slots__',
+    '__str__',
+    '__subclasshook__',
+    '_asdict',
+    '_field_defaults',
+    '_field_types',
+    '_fields',
+    '_fields_defaults',
+    '_make',
+    '_replace',
+    'count',
+    'dtype',
+    'flags',
+    'index',
+    'itemsize',
+    'shape']
+
+   In [8]: SDSArrayInfo.__annotations__
+   OrderedDict([('shape', typing.Tuple[int, ...]),
+                ('dtype', int),
+                ('flags', int),
+                ('itemsize', int)])
+
+   In [9]: SDSArrayInfo._field_defaults
+   {}
+
+   In [10]: SDSArrayInfo._field_types
+   OrderedDict([('shape', typing.Tuple[int, ...]),
+                ('dtype', int),
+                ('flags', int),
+                ('itemsize', int)])
+
+   In [11]: SDSArrayInfo._fields
+   ('shape', 'dtype', 'flags', 'itemsize')
+
+   In [12]: SDSArrayInfo._fields_defaults
+   {}
+
+    */
+
+   return true;
+}
+
+/*
+ * Factory functions for creating instances of SDS Python types.
+ */
+
+static PyObject* Create_sds_array_info(PyObject* const array_shape_tuple, const int32_t dtype, const int32_t flags, const int32_t itemsize)
+{
+   PyObject* entry = PyStructSequence_New(&PyType_sds_array_info);
+
+   if (!entry)
+      return NULL;
+
+   // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
+   PyStructSequence_SET_ITEM(entry, 0, Py_BuildValue("N", array_shape_tuple));
+   PyStructSequence_SET_ITEM(entry, 1, Py_BuildValue("i", dtype));
+   PyStructSequence_SET_ITEM(entry, 2, Py_BuildValue("i", flags));
+   PyStructSequence_SET_ITEM(entry, 3, Py_BuildValue("i", itemsize));
+
+   if (PyErr_Occurred()) {
+      Py_DECREF(entry);
+      return NULL;
+   }
+
+   return entry;
+}
+
+static PyObject* Create_sds_container_item(const char* const array_name, unsigned char sds_flags)
+{
+   PyObject* entry = PyStructSequence_New(&PyType_sds_container_item);
+
+   if (!entry)
+      return NULL;
+
+   // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
+   PyStructSequence_SET_ITEM(entry, 0, PyBytes_FromString(array_name));
+   PyStructSequence_SET_ITEM(entry, 1, Py_BuildValue("B", sds_flags));
+
+   if (PyErr_Occurred()) {
+      Py_DECREF(entry);
+      return NULL;
+   }
+
+   return entry;
+}
+
+static PyObject* Create_sds_file_info(
+   PyObject* const column_metadata_bytes,
+   PyObject* const columns,
+   PyObject* const container_items,
+   PyObject* const file_metadata_dict
+)
+{
+   PyObject* entry = PyStructSequence_New(&PyType_sds_file_info);
+
+   if (!entry)
+      return NULL;
+
+   // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
+   PyStructSequence_SET_ITEM(entry, 0, Py_BuildValue("N", column_metadata_bytes));
+   PyStructSequence_SET_ITEM(entry, 1, Py_BuildValue("N", columns));
+   PyStructSequence_SET_ITEM(entry, 2, Py_BuildValue("N", container_items));
+   PyStructSequence_SET_ITEM(entry, 3, Py_BuildValue("N", file_metadata_dict));
+
+   if (PyErr_Occurred()) {
+      Py_DECREF(entry);
+      return NULL;
+   }
+
+   return entry;
+}
+
+
 // Call to clear any previous errors
 static void ClearErrors() {
    g_lastexception = 0;
@@ -168,14 +466,13 @@ INT64 BuildListInfo(PyListObject *inListNames, OUT char* pListNames) {
 }
 
 
-//--------------------------------------------
-// Returns a list of string (Column names)
-//
-// Entry: 
-// arg1: pointer to string, null terminated, followed by UINT8 enum value
-// arg2: how many names
-// arg3: the size of pArrayNames (all of the names)
-
+/**
+ * @brief Create and return a Python list of sds_container_item objects.
+ * @param pArrayNames pointer to string, null terminated, followed by UINT8 enum value
+ * @param nameBlockCount how many names
+ * @param nameSize the size of pArrayNames (all of the names)
+ * @returns A Python list of sds_container_item objects.
+ */
 PyObject* MakeListNames(const char* pArrayNames, INT64 nameBlockCount, INT64 nameSize) {
    const char* nameData = pArrayNames;
    PyObject* pyListName = PyList_New(nameBlockCount);
@@ -189,17 +486,16 @@ PyObject* MakeListNames(const char* pArrayNames, INT64 nameBlockCount, INT64 nam
       // skip to end (search for 0 terminating char)
       while (*pArrayNames++);
 
-      // get the enum
+      // Read the 1-byte SDSFlags enum value that's stored just after the NUL ('\0') character.
       UINT8 value = *pArrayNames++;
 
-      PyObject* pTuple = PyTuple_New(2);
       LOGGING("makelist file name is %s, %lld\n", pStart, nameBlockCount);
 
-      PyTuple_SetItem(pTuple, 0, PyBytes_FromString(pStart));
-      PyTuple_SetItem(pTuple, 1, PyLong_FromLong((long)value));
+      // Create an sds_container_item instance for this array.
+      PyObject* item_obj = Create_sds_container_item(pStart, value);
 
-      // pylist_append will add a reference count but setitem will not
-      PyList_SetItem(pyListName, curPos, pTuple);
+      // PyList_Append() will add a reference count but PyList_SetItem() will not.
+      PyList_SetItem(pyListName, curPos, item_obj);
 
       curPos++;
 
@@ -211,7 +507,7 @@ PyObject* MakeListNames(const char* pArrayNames, INT64 nameBlockCount, INT64 nam
 
 
 //------------------------------------------------------
-// Input: file already openeded
+// Input: file already opened
 //
 // returns list of names or empty list
 PyObject* ReadListNamesPython(char* nameData, SDS_FILE_HEADER *pFileHeader) {
@@ -219,7 +515,7 @@ PyObject* ReadListNamesPython(char* nameData, SDS_FILE_HEADER *pFileHeader) {
 
    PyObject* pListName = NULL;
    if (nameData) {
-      // return list of strings
+      // return list of sds_container_item
       // GIL must be held to create the list
       INT64 nameSize = pFileHeader->NameBlockSize;
 
@@ -237,25 +533,27 @@ PyObject* ReadListNamesPython(char* nameData, SDS_FILE_HEADER *pFileHeader) {
 //---------------------------------------------------------
 // Linux: long = 64 bits
 // Windows: long = 32 bits
-static int FixupDType(int dtype, INT64 itemsize) {
+constexpr static /*NPY_TYPES*/ int FixupDType(const /*NPY_TYPES*/ int dtype, const INT64 itemsize) {
 
    if (dtype == NPY_LONG) {
-      // types 7 and 8 are ambiguous because of different compilers
+      // types 7 (NPY_LONG) and 8 (NPY_ULONG) are ambiguous due to differences
+      // in 64-bit OS memory models (LLP64 vs. LP64).
+      // https://en.wikipedia.org/wiki/64-bit_computing#64-bit_data_models
       if (itemsize == 4) {
-         dtype = NPY_INT;
+         return NPY_INT;
       }
       else {
-         dtype = NPY_LONGLONG;
+         return NPY_LONGLONG;
       }
    }
 
    if (dtype == NPY_ULONG) {
       // types 7 and 8 are ambiguous
       if (itemsize == 4) {
-         dtype = NPY_UINT;
+         return NPY_UINT;
       }
       else {
-         dtype = NPY_ULONGLONG;
+         return NPY_ULONGLONG;
       }
    }
    return dtype;
@@ -263,7 +561,7 @@ static int FixupDType(int dtype, INT64 itemsize) {
 
 //-----------------------------------------
 // Return empty string on failure
-PyObject*  GetMetaData(char* metaData, INT64 metaSize) {
+PyObject*  GetMetaData(const char* const metaData, const INT64 metaSize) {
    if (metaData) {
       // caller wants a pystring
       // this will make a copy of the data
@@ -281,10 +579,12 @@ int SetStringLong(PyObject* pDict, const char* strkey, long long value) {
 //----------------------------------------------------
 //
 PyObject* GetFileHeaderDict(
-   SDS_FILE_HEADER* pFileHeader,
-   SDS_FINAL_CALLBACK* pSDSFinalCallback) {
+   const SDS_FILE_HEADER* const pFileHeader,
+   SDS_FINAL_CALLBACK* const pSDSFinalCallback
+)
+{
    PyObject* pDict = PyDict_New();
-   if (pFileHeader) {
+   if (pFileHeader && pDict) {
       SetStringLong(pDict, "VersionHigh", (long long)(pFileHeader->VersionHigh));
       SetStringLong(pDict, "VersionLow", (long long)(pFileHeader->VersionLow));
       SetStringLong(pDict, "CompMode", (long long)(pFileHeader->CompMode));
@@ -344,60 +644,64 @@ PyObject* GetFileHeaderDict(
 }
 
 
-//----------------------------------------------------
-// Input: 
-// pListName == maybe NULL
-// pystring == maybe NULL
-// arrayCount
-// ppArrayBlock (allocated array block)
-//
-// Output: python object (tuple of 3 objects) to return to user
+/**
+ * @brief Create an sds_file_info Python object.
+ * @param[in] pListName A possibly-null Python list of sds_container_item objects.
+ * @param[in] pystring A possibly-null Python 'bytes' object containing JSON-encoded column metadata.
+ * @param arrayCount Length (# of elements) of @p pArrayBlockFirst.
+ * @param[in] pArrayBlockFirst (allocated array block)
+ * @param[in] pFileHeader TODO
+ * @param[in] pSDSFinalCallback TODO
+ * @returns python object (sds_file_info) to return to user
+ */
 PyObject* GetSDSFileInfo(
-   PyObject* pListName, 
-   PyObject* pystring, 
-   INT64 arrayCount, 
-   SDS_ARRAY_BLOCK* pArrayBlockFirst,
-   SDS_FILE_HEADER* pFileHeader,
+   PyObject* const pListName,
+   PyObject* const pystring,
+   const INT64 arrayCount,
+   const SDS_ARRAY_BLOCK* const pArrayBlockFirst,
+   const SDS_FILE_HEADER* const pFileHeader,
    // NULL possible
-   SDS_FINAL_CALLBACK* pSDSFinalCallback = NULL) {
+   SDS_FINAL_CALLBACK* const pSDSFinalCallback = nullptr) {
 
-   PyObject* numpyArrayTuple = Py_None;
-   numpyArrayTuple = PyTuple_New(arrayCount);
+   PyObject* numpyArrayTuple = PyTuple_New(arrayCount);
 
    LOGGING("In GetSDSFileInfo -- %lld   %p\n", arrayCount, pArrayBlockFirst);
 
    // Insert all the arrays
    for (INT64 i = 0; i < arrayCount; i++) {
-      SDS_ARRAY_BLOCK* pArrayBlock = &pArrayBlockFirst[i];
+      const SDS_ARRAY_BLOCK* pArrayBlock = &pArrayBlockFirst[i];
 
       //LOGGING("Array block %lld at %p  compsize:%lld  %lld\n", i, pArrayBlock, pArrayBlock->ArrayCompressedSize, pArrayBlock->ArrayUncompressedSize);
 
-      PyObject* numpyTuple = PyTuple_New(4);
       PyObject* shapeTuple = PyTuple_New(pArrayBlock->NDim);
-      
       for (INT64 j = 0; j < pArrayBlock->NDim; j++) {
          PyTuple_SET_ITEM(shapeTuple, j, PyLong_FromLongLong(pArrayBlock->Dimensions[j]));
       }
 
-      PyTuple_SET_ITEM(numpyTuple, 0, shapeTuple);
+      // dtype fixup for Windows (LLP64) vs Linux (LP64).
+      // INT/UINT/LONG/ULONG dtypes are tied directly to the OS' definition of 'int' and 'long',
+      // so they have OS-specific sizes and aren't stable for use when serializing arrays to disk,
+      // where they could be read from another OS. Such arrays should be caught (and the dtype transformed)
+      // when writing out the arrays; but in case such an array has been written to disk already,
+      // we try to fix it up here.
+      // TODO: For returning metadata (as this function does), it seems like it'd be better to _not_ do this here
+      //       and instead return *exactly* what's in the file, to aid in diagnosing issues if we hit such an array.
+      //       SDS readers should probably also refuse to load any arrays saved out with these dtypes rather than
+      //       trying to fix them up -- the onus should be on the writer to handle this dtype "fixup" so the on-disk
+      //       format is stable across OSes.
+      const int FixedUpDtype = FixupDType(pArrayBlock->DType, pArrayBlock->ItemSize);
 
-      // dtype fixup for Windows vs Linux
-      PyTuple_SET_ITEM(numpyTuple, 1, PyLong_FromLongLong((long long)FixupDType(pArrayBlock->DType, pArrayBlock->ItemSize)));
-      PyTuple_SET_ITEM(numpyTuple, 2, PyLong_FromLongLong((long long)pArrayBlock->Flags));
-      PyTuple_SET_ITEM(numpyTuple, 3, PyLong_FromLongLong((long long)pArrayBlock->ItemSize));
+      // Build the sds_array_info struct sequence (C-API namedtuple) instance for this array.
+      PyObject* array_info = Create_sds_array_info(shapeTuple, FixedUpDtype, pArrayBlock->Flags, pArrayBlock->ItemSize);
 
-      PyTuple_SET_ITEM(numpyArrayTuple, i, numpyTuple);
+      PyTuple_SET_ITEM(numpyArrayTuple, i, array_info);
    }
 
+   // Read the file header and create a Python dictionary object from the header data.
    PyObject* pDict = GetFileHeaderDict(pFileHeader, pSDSFinalCallback);
 
-   // return a tuple with a string and a tuple of arrays
-   PyObject* returnFileInfo = PyTuple_New(4);
-
-   PyTuple_SET_ITEM(returnFileInfo, 0, pystring);
-   PyTuple_SET_ITEM(returnFileInfo, 1, numpyArrayTuple);
-   PyTuple_SET_ITEM(returnFileInfo, 2, pListName);
-   PyTuple_SET_ITEM(returnFileInfo, 3, pDict);
+   // Create and return an sds_file_info Struct Sequence (C-API namedtuple).
+   PyObject* returnFileInfo = Create_sds_file_info(pystring, numpyArrayTuple, pListName, pDict);
    return returnFileInfo;
 }
 
@@ -1597,4 +1901,3 @@ PyObject *SetLustreGateway(PyObject* self, PyObject *args) {
    Py_INCREF(Py_None);
    return Py_None;
 }
-

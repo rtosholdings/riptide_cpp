@@ -10,3 +10,10 @@ PyObject *MultiPossiblyStackFiles(PyObject* self, PyObject *args, PyObject *kwar
 PyObject *MultiConcatFiles(PyObject* self, PyObject *args, PyObject *kwargs);
 PyObject *SetLustreGateway(PyObject* self, PyObject *args);
 
+/**
+ * @brief Create Python type objects used by some SDS Python functions, then add them to a module's dictionary.
+ * @param module_dict The module dictionary for riptide_cpp.
+ * @returns bool Indicates whether or not the type registration succeeded.
+ */
+bool RegisterSdsPythonTypes(PyObject* module_dict);
+
