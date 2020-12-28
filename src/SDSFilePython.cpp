@@ -891,8 +891,7 @@ void* ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK* pSMCB) {
       return GetSDSFileInfo(pListName, pystring, arrayCount, GetArrayBlock(baseOffset, 0), pFileHeader);
    }
 
-   PyObject* returnTuple = Py_None;
-   returnTuple = PyTuple_New(arrayCount);
+   PyObject* returnTuple = PyTuple_New(arrayCount);
 
    LOGGING("Number of arrays %lld\n", arrayCount);
 
@@ -934,12 +933,8 @@ void* ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK* pSMCB) {
 
    PyObject* pDict = GetFileHeaderDict(pFileHeader, NULL);
 
-   // return a tuple with a string and a tuple of arrays
-   PyObject* returnTupleTuple = PyTuple_New(4);
-   PyTuple_SET_ITEM(returnTupleTuple, 0, pystring);
-   PyTuple_SET_ITEM(returnTupleTuple, 1, returnTuple);
-   PyTuple_SET_ITEM(returnTupleTuple, 2, pListName);
-   PyTuple_SET_ITEM(returnTupleTuple, 3, pDict);
+   // Create and return an sds_file_info namedtuple.
+   PyObject* returnTupleTuple = Create_sds_file_info(pystring, returnTuple, pListName, pDict);
    return returnTupleTuple;
 }
 
