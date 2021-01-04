@@ -607,7 +607,8 @@ PyObject* ReadListNamesPython(char* nameData, SDS_FILE_HEADER *pFileHeader) {
 //---------------------------------------------------------
 // Linux: long = 64 bits
 // Windows: long = 32 bits
-constexpr static /*NPY_TYPES*/ int FixupDType(const /*NPY_TYPES*/ int dtype, const INT64 itemsize) {
+// TODO: This should be 'constexpr' but can't be as long as we want to support old versions of GCC.
+/*constexpr*/ static /*NPY_TYPES*/ int FixupDType(const /*NPY_TYPES*/ int dtype, const INT64 itemsize) {
 
    if (dtype == NPY_LONG) {
       // types 7 (NPY_LONG) and 8 (NPY_ULONG) are ambiguous due to differences
