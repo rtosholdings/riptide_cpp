@@ -1259,17 +1259,20 @@ CombineFilter(PyObject *self, PyObject *args)
 //=====================================================================================
 // COMBINE ACCUM 2 MASK----------------------------------------------------------------
 //=====================================================================================
-typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const INT64 multiplier, const INT64 maxbin, INT64 len, void* pCountOut, INT8* pFilter);
+typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const INT64 multiplier, const INT64 maxbin, INT64 len, void* pCountOut2, INT8* pFilter);
 
 template<typename T, typename U, typename V>
-static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const INT64 multiplier, const INT64 maxbinT, INT64 len, void* pCountOut, INT8* pFilter) {
+static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const INT64 multiplier, const INT64 maxbinT, INT64 len, void* pCountOut2, INT8* pFilter) {
    T*    pDataIn1 = (T*)pDataIn1T;
    U*    pDataIn2 = (U*)pDataIn2T;
    V*    pDataOut = (V*)pDataOutT;
 
    const V maxbin = (V)maxbinT;
 
-   if (pCountOut) {
+   if (pCountOut2) {
+      // TODO: handle INT64 also
+      INT32* pCountOut = (INT32*)pCountOut2;
+
       if (pFilter) {
          for (INT64 i = 0; i < len; i++) {
             if (pFilter[i]) {
