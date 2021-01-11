@@ -1487,9 +1487,8 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       pFilterIn = (INT8*)PyArray_BYTES((PyArrayObject*)inFilter);
    }
 
-
-   if (hashSize < 0 || hashSize > 2000000000) {
-      PyErr_Format(PyExc_ValueError, "CombineAccum2Filter: Index sizes are either 0, negative, or produce more than 2 billion results %lld", hashSize);
+   if (hashSize < 0) {
+      PyErr_Format(PyExc_ValueError, "CombineAccum2Filter: Index sizes are negative %lld", hashSize);
       return NULL;
    }
 
