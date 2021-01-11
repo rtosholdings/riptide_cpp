@@ -1259,10 +1259,10 @@ CombineFilter(PyObject *self, PyObject *args)
 //=====================================================================================
 // COMBINE ACCUM 2 MASK----------------------------------------------------------------
 //=====================================================================================
-typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const INT64 multiplier, const INT64 maxbin, INT64 len, INT32* pCountOut, INT8* pFilter);
+typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const INT64 multiplier, const INT64 maxbin, INT64 len, void* pCountOut, INT8* pFilter);
 
 template<typename T, typename U, typename V>
-static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const INT64 multiplier, const INT64 maxbinT, INT64 len, INT32* pCountOut, INT8* pFilter) {
+static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const INT64 multiplier, const INT64 maxbinT, INT64 len, void* pCountOut, INT8* pFilter) {
    T*    pDataIn1 = (T*)pDataIn1T;
    U*    pDataIn2 = (U*)pDataIn2T;
    V*    pDataOut = (V*)pDataOutT;
@@ -1364,13 +1364,13 @@ struct COMBINE_ACCUM2_CALLBACK {
    char* pDataOut;
    INT8* pFilter;
 
-   INT32* pCountOut;
+   void* pCountOut; // int32 or int64
    INT64 typeSizeIn1;
    INT64 typeSizeIn2;
    INT64 typeSizeOut;
    INT64 multiplier;
    INT64 maxbin;
-   INT32* pCountWorkSpace;
+   void* pCountWorkSpace; //int32 or int64
 
 } stCombineAccum2Callback;
 
@@ -1406,7 +1406,8 @@ static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem
          Callback->maxbin,
          lenX,
          // based on core, pick a counter
-         Callback->pCountWorkSpace ? &Callback->pCountWorkSpace[(core+1) * Callback->maxbin] : NULL,
+         // TODO: 64bit code also
+         Callback->pCountWorkSpace ? & ((INT32*)(Callback->pCountWorkSpace))[(core+1) * Callback->maxbin] : NULL,
          Callback->pFilter ? (Callback->pFilter + filterAdj) : NULL);
 
       // Indicate we completed a block
@@ -1511,7 +1512,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
    // SWTICH
    COMBINE_ACCUM2_MASK  pFunction = NULL;
 
-   INT32 type2 = PyArray_TYPE(inArr2);
+   int type2 = PyArray_TYPE(inArr2);
 
    switch (PyArray_TYPE(inArr1)) {
    case NPY_INT8:
@@ -1559,17 +1560,25 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 
       if (outArray) {
          void* pDataOut = PyArray_BYTES(outArray);
+         BOOL is64bithash = FALSE;
+         INT64 sizeofhash = 4;
 
          // 32 bit count limitation here
          PyArrayObject* countArray = NULL;
-         INT32* pCountArray = NULL;
+
+         if (hashSize > 2147480000) {
+            is64bithash = TRUE;
+            sizeofhash = 8;
+         }
+
+         void* pCountArray = NULL;
 
          if (bWantCount) {
-            countArray = AllocateNumpyArray(1, (npy_intp*)&hashSize, NPY_INT32);
+            countArray = AllocateNumpyArray(1, (npy_intp*)&hashSize, is64bithash ? NPY_INT64 : NPY_INT32);
             CHECK_MEMORY_ERROR(countArray);
             if (countArray) {
-               pCountArray = (INT32*)PyArray_BYTES(countArray);
-               memset(pCountArray, 0, hashSize * sizeof(INT32));
+               pCountArray = (INT64*)PyArray_BYTES(countArray);
+               memset(pCountArray, 0, hashSize * sizeofhash);
             }
          }
 
@@ -1584,7 +1593,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 
             // TODO: steal from hash
             INT numCores = g_cMathWorker->WorkerThreadCount + 1;
-            INT64 sizeToAlloc = numCores * hashSize * sizeof(INT32);
+            INT64 sizeToAlloc = numCores * hashSize * sizeofhash;
             PVOID pWorkSpace = 0;
 
             if (bWantCount) {
@@ -1608,7 +1617,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
             stCombineAccum2Callback.typeSizeOut = typeSizeOut;
             stCombineAccum2Callback.multiplier = inArr1Max;
             stCombineAccum2Callback.maxbin = hashSize;
-            stCombineAccum2Callback.pCountWorkSpace = (INT32*)pWorkSpace;
+            stCombineAccum2Callback.pCountWorkSpace = pWorkSpace;
 
             LOGGING("**array: %lld      out sizes: %lld %lld %lld\n", arraySize1, stCombineAccum2Callback.typeSizeIn1, stCombineAccum2Callback.typeSizeIn2, stCombineAccum2Callback.typeSizeOut);
 
@@ -1616,17 +1625,38 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
             g_cMathWorker->WorkMain(pWorkItem, arraySize1, 0);
 
             if (bWantCount && pCountArray) {
-               // Collect the results
-               INT32* pCoreCountArray = (INT32*)pWorkSpace;
 
-               for (int j = 0; j < numCores; j++) {
+               if (is64bithash) {
 
-                  for (int i = 0; i < hashSize; i++) {
-                     pCountArray[i] += pCoreCountArray[i];
+                  // Collect the results
+                  INT64* pCoreCountArray = (INT64*)pWorkSpace;
+                  INT64* pCountArray2 = (INT64*)pCountArray;
+
+                  for (int j = 0; j < numCores; j++) {
+
+                     for (int i = 0; i < hashSize; i++) {
+                        pCountArray2[i] += pCoreCountArray[i];
+                     }
+
+                     // go to next core
+                     pCoreCountArray += hashSize;
+                  }
+               }
+               else {
+                  // Collect the results
+                  INT32* pCoreCountArray = (INT32*)pWorkSpace;
+                  INT32* pCountArray2 = (INT32*)pCountArray;
+
+                  for (int j = 0; j < numCores; j++) {
+
+                     for (int i = 0; i < hashSize; i++) {
+                        pCountArray2[i] += pCoreCountArray[i];
+                     }
+
+                     // go to next core
+                     pCoreCountArray += hashSize;
                   }
 
-                  // go to next core
-                  pCoreCountArray += hashSize;
                }
             }
 
