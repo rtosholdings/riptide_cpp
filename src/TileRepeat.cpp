@@ -8,16 +8,11 @@
 #define LOGGING(...)
 
 
-PyObject*
-ToBeDone(PyObject* self, PyObject* args, PyObject* kwargs) {
-   return NULL;
-}
-
 struct stOffsets {
    char* pData;
    INT64    itemsize;
 };
-static const INT64 CHUNKSIZE = 16384;
+static constexpr INT64 CHUNKSIZE = 16384;
 
 // This is used to multiply the strides
 SFW_ALIGN(64)
@@ -185,7 +180,7 @@ RecordArrayToColMajor(PyObject* self, PyObject* args) {
    char* pStartOffset = PyArray_BYTES(inArr);
    INT64 startRow = 0;
 
-   if (totalRows > 16384) {
+   if (totalRows > CHUNKSIZE) {
       // Prepare for multithreading
       struct stConvertRec {
          char* pStartOffset;
