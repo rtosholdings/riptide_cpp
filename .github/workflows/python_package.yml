@@ -126,9 +126,13 @@ jobs:
       - name: Setup Miniconda
         env:
          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: goanpeca/setup-miniconda@v1
+        uses: conda-incubator/setup-miniconda@v2.0.1
         with:
           activate-environment: ""
+          auto-update-conda: true
+          channels: conda-forge
+          channel-priority: flexible
+          show-channel-urls: true
       - name: Build Package
         shell: bash -l {0}
         run: |
