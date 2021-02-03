@@ -29,8 +29,8 @@
 #endif
 
 
-// PyTypeObject for the 'SDSArrayStacks' StructSequence type.
-static PyTypeObject PyType_SDSArrayStacks;
+// PyTypeObject for the 'SDSArrayCutoffs' StructSequence type.
+static PyTypeObject PyType_SDSArrayCutoffs;
 // PyTypeObject for the 'SDSFileInfo' StructSequence type.
 static PyTypeObject PyType_SDSFileInfo;
 // PyTypeObject for the 'SDSContainerItem' StructSequence type.
@@ -39,13 +39,13 @@ static PyTypeObject PyType_SDSContainerItem;
 static PyTypeObject PyType_SDSArrayInfo;
 
 
-static PyStructSequence_Field SDSArrayStacks_fields[] = {
+static PyStructSequence_Field SDSArrayCutoffs_fields[] = {
    // typing.Tuple[np.ndarray, ...]
-   { "arrays",             "A sequence of arrays created by stacking the columns of one or more files." },
+   { "arrays",             "A sequence of arrays created by stacking the columns of one or more files or one or more sections of a single file." },
    // typing.Sequence[riptide_cpp.SDSContainerItem]
    { "array_infos",        "A sequence of the same length as the sequence provided in the 'arrays' component, where each element of the sequence contains an object with the name and SDS flags of the corresponding stacked array in 'arrays'." },
    // typing.Sequence[np.ndarray]
-   { "array_partition_offsets",     "A sequence of non-negative integer arrays; each array corresponds to the same-indexed array in the 'arrays' component and contains the cumsum of the lengths of the arrays that were stacked to create the output array." },
+   { "array_cutoffs",      "A sequence of non-negative integer arrays; each array corresponds to the same-indexed array in the 'arrays' component and contains the cumsum of the lengths of the arrays that were stacked to create the output array." },
    // typing.Sequence[bytes]
    { "file_metadata",      "A sequence where each element is the raw SDS file metadata for the corresponding element of the 'files' component." },
    // typing.Sequence[bytes]
@@ -55,13 +55,13 @@ static PyStructSequence_Field SDSArrayStacks_fields[] = {
    { NULL, NULL }
 };
 
-static PyStructSequence_Desc SDSArrayStacks_desc = {
+static PyStructSequence_Desc SDSArrayCutoffs_desc = {
    // name
-   "riptide_cpp.SDSArrayStacks",
+   "riptide_cpp.SDSArrayCutoffs",
    // doc
    "Information about the contents of one or more SDS files to be stacked.",
    // fields
-   SDSArrayStacks_fields,
+   SDSArrayCutoffs_fields,
    // n_in_sequence
    6,
 };
@@ -138,16 +138,16 @@ static PyStructSequence_Desc SDSArrayInfo_desc = {
 // Factory functions for creating instances of SDS Python types.
 //
 
-static PyObject* Create_SDSArrayStacks(
+static PyObject* Create_SDSArrayCutoffs(
    PyObject* const returnArrayTuple,
    PyObject* const pyListName,
-   PyObject* const pyArrayOffset,
+   PyObject* const pyArrayCutoffs,
    PyObject* const pyMeta,
    PyObject* const pyFiles,
    PyObject* const firstFileHeader
 )
 {
-   PyObject* entry = PyStructSequence_New(&PyType_SDSArrayStacks);
+   PyObject* entry = PyStructSequence_New(&PyType_SDSArrayCutoffs);
 
    if (!entry)
       return NULL;
@@ -155,7 +155,7 @@ static PyObject* Create_SDSArrayStacks(
    // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
    PyStructSequence_SET_ITEM(entry, 0, returnArrayTuple);
    PyStructSequence_SET_ITEM(entry, 1, pyListName);
-   PyStructSequence_SET_ITEM(entry, 2, pyArrayOffset);
+   PyStructSequence_SET_ITEM(entry, 2, pyArrayCutoffs);
    PyStructSequence_SET_ITEM(entry, 3, pyMeta);
    PyStructSequence_SET_ITEM(entry, 4, pyFiles);
    PyStructSequence_SET_ITEM(entry, 5, firstFileHeader);
@@ -249,11 +249,11 @@ bool RegisterSdsPythonTypes(PyObject* module_dict)
    // initialize the PyTypeObject then add it to the module dictionary provided by the caller.
 
    if (PyStructSequence_InitType2(
-      &PyType_SDSArrayStacks, &SDSArrayStacks_desc) < 0) {
+      &PyType_SDSArrayCutoffs, &SDSArrayCutoffs_desc) < 0) {
       return false;
    }
    if (PyDict_SetItemString(module_dict,
-      "SDSArrayStacks", (PyObject*)&PyType_SDSArrayStacks) < 0) {
+      "SDSArrayCutoffs", (PyObject*)&PyType_SDSArrayCutoffs) < 0) {
       return false;
    }
 
@@ -946,8 +946,8 @@ PyObject* ReadFinalStackArrays(
       Py_INCREF(Py_None);
    }
 
-   // Create and return an SDSArrayStacks namedtuple.
-   PyObject* returnTupleTuple = Create_SDSArrayStacks(
+   // Create and return an SDSArrayCutoffs namedtuple.
+   PyObject* returnTupleTuple = Create_SDSArrayCutoffs(
       returnArrayTuple, pyListName, pyArrayOffset, pyMeta, pyFiles, pDict);
 
    return returnTupleTuple;
