@@ -1507,6 +1507,10 @@ static PyObject* SetThreadWakeUp(PyObject* self, PyObject* args) {
    return PyLong_FromLongLong((long long)newWakeup);
 }
 
+
+PyObject* RecordArrayToColMajor(PyObject* self, PyObject* args);
+
+
 //--------------------------------------------------------
 const char* docstring_asarray =
 "Parameters\n"
@@ -1559,8 +1563,6 @@ const char* docstring_asfastarray =
 "--------\n"
 "asarray : Similar function.\n";
 
-
-PyObject* RecordArrayToColMajor(PyObject* self, PyObject* args);
 
 /* ==== Set up the methods table ====================== */
 //struct PyMethodDef {
@@ -1713,7 +1715,7 @@ static PyModuleDef CSigMathUtilModule = {
    NULL                                  // freefunc
 };
 
-// For version 3,  PyInut_Name must be used as this function is called when the module is imported
+// For Python version 3,  PyInit_{module_name} must be used as this function is called when the module is imported
 PyMODINIT_FUNC PyInit_riptide_cpp() {
 
    INT32 count = 0;
@@ -1765,7 +1767,7 @@ count++;
    }
 
 
-   // Build LUTs used in comarisons after mask generated
+   // Build LUTs used in comparisons after mask generated
    for (int i = 0; i < 256; i++) {
       BYTE* pDest = (BYTE*)&gBooleanLUT64[i];
       for (int j = 0; j < 8; j++) {
@@ -1918,11 +1920,24 @@ count++;
    pRow->dtype1 = NPY_ULONGLONG;
    pRow->dtype2 = NPY_LONGLONG;
 
+   // Register types defined by this module.
+   PyObject* mod_dict = PyModule_GetDict(m);
+   if (!mod_dict)
+   {
+      LOGGING("Unable to get the module dictionary for the riptide_cpp module.\n")
+      return NULL;
+   }
+
+   if (!RegisterSdsPythonTypes(mod_dict))
+   {
+      LOGGING("An error occurred when creating/registering SDS Python types.");
+      return NULL;
+   }
    
    // start up the worker threads now in case we use them
    g_cMathWorker->StartWorkerThreads(0);
 
-   LOGGING("Fastmath loaded\n");
+   LOGGING("riptide_cpp loaded\n");
    return m;
 }
 
