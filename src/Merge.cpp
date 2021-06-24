@@ -204,7 +204,7 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount, int64_t stri
 
       // This is the routine that will be called back from multiple threads
       // t64_t(*MTCHUNK_CALLBACK)(void* callbackArg, int core, int64_t start, int64_t length);
-      auto lambdaBSCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
+      auto lambdaBSCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
          BSCallbackStruct* callbackArg = (BSCallbackStruct*)callbackArgT;
 
          const int8_t* pBooleanMask = callbackArg->pBooleanMask;
@@ -226,7 +226,7 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount, int64_t stri
       stBSCallback.pBooleanMask = pBooleanMask;
       stBSCallback.strideBoolean = strideBoolean;
 
-      BOOL didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
+      bool didMtWork = g_cMathWorker->DoMultiThreadedChunkWork(lengthBool, lambdaBSCallback, &stBSCallback);
 
       *ppChunkCount = pChunkCount;
       // if multithreading turned off...
@@ -241,7 +241,7 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount, int64_t stri
 //---------------------------------------------------------------------------
 // Input:
 // Arg1: numpy array aValues (can be any array)
-// Arg2: numpy array aIndex (must be BOOL)
+// Arg2: numpy array aIndex (must be bool)
 //
 PyObject*
 BooleanIndexInternal(
@@ -255,8 +255,8 @@ BooleanIndexInternal(
 
    int ndimValue=0;
    int ndimBoolean=0;
-   INT64 strideValue=0;
-   INT64 strideBoolean=0;
+   int64_t strideValue=0;
+   int64_t strideBoolean=0;
 
    int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
    int result2 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
@@ -334,7 +334,7 @@ BooleanIndexInternal(
          //-----------------------------------------------
          //-----------------------------------------------
          // This is the routine that will be called back from multiple threads
-         auto lambdaBICallback2 = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
+         auto lambdaBICallback2 = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
             BICallbackStruct* callbackArg = (BICallbackStruct*)callbackArgT;
 
             int8_t* pBooleanMask = callbackArg->pBooleanMask;
@@ -627,7 +627,7 @@ BooleanIndexInternal(
 //---------------------------------------------------------------------------
 // Input:
 // Arg1: numpy array aValues (can be anything)
-// Arg2: numpy array aIndex (must be BOOL)
+// Arg2: numpy array aIndex (must be bool)
 //
 PyObject*
 BooleanIndex(PyObject* self, PyObject* args)
@@ -649,7 +649,7 @@ BooleanIndex(PyObject* self, PyObject* args)
 
 //---------------------------------------------------------------------------
 // Input:
-// Arg1: numpy array aIndex (must be BOOL)
+// Arg1: numpy array aIndex (must be bool)
 // Returns: how many true values there are
 // NOTE: faster than calling sum
 PyObject*
@@ -671,15 +671,15 @@ BooleanSum(PyObject* self, PyObject* args)
    }
 
    int ndimBoolean;
-   INT64 strideBoolean;
+   int64_t strideBoolean;
 
    int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
-   INT64* pChunkCount = NULL;
-   INT64 chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
+   int64_t* pChunkCount = NULL;
+   int64_t chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
 
-   INT64 totalTrue = 0;
-   for (INT64 i = 0; i < chunks; i++) {
+   int64_t totalTrue = 0;
+   for (int64_t i = 0; i < chunks; i++) {
       totalTrue += pChunkCount[i];
    }
 
@@ -967,7 +967,7 @@ struct MBGET_CALLBACK {
 //---------------------------------------------------------
 // Used by GetItem
 //  Concurrent callback from multiple threads
-static BOOL GetItemCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+static bool GetItemCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
 
    int64_t didSomeWork = 0;
    MBGET_CALLBACK* Callback = &stMBGCallback; // (MBGET_CALLBACK*)&pstWorkerItem->WorkCallbackArg;
@@ -1170,8 +1170,8 @@ MBGet(PyObject* self, PyObject* args)
 
    int ndimValue;
    int ndimIndex;
-   INT64 strideValue=0;
-   INT64 strideIndex=0;
+   int64_t strideValue=0;
+   int64_t strideIndex=0;
 
    int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
    int result2 = GetStridesAndContig(aIndex, ndimIndex, strideIndex);
@@ -1220,8 +1220,8 @@ MBGet(PyObject* self, PyObject* args)
 
             // Check if a default value was passed in as third parameter
             if (defaultValue != Py_None) {
-               BOOL result;
-               INT64 itemSize;
+               bool result;
+               int64_t itemSize;
                void* pTempData = NULL;
                // Try to convert the scalar
                result = ConvertScalarObject(defaultValue, &tempDefault, numpyValuesType, &pTempData, &itemSize);
@@ -1286,7 +1286,7 @@ MBGet(PyObject* self, PyObject* args)
 //===============================================================================
 // checks for kwargs 'both'
 // if exists, and is True return True
-BOOL GetKwargBoth(PyObject* kwargs) {
+bool GetKwargBoth(PyObject* kwargs) {
    // Check for cutoffs kwarg to see if going into parallel mode
    if (kwargs && PyDict_Check(kwargs)) {
       PyObject* pBoth = NULL;
@@ -1328,34 +1328,34 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
    }
 
    int ndimBoolean;
-   INT64 strideBoolean;
+   int64_t strideBoolean;
 
    int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
    // if bothMode is set, will return fancy index for both True and False
-   BOOL     bothMode = GetKwargBoth(kwargs);
+   bool     bothMode = GetKwargBoth(kwargs);
 
-   INT64* pChunkCount = NULL;
-   INT64* pChunkCountFalse = NULL;
-   INT64    chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
-   INT64    indexLength = ArrayLength(aIndex);
+   int64_t* pChunkCount = NULL;
+   int64_t* pChunkCountFalse = NULL;
+   int64_t    chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
+   int64_t    indexLength = ArrayLength(aIndex);
 
-   INT64    totalTrue = 0;
+   int64_t    totalTrue = 0;
 
    if (bothMode) {
       // now count up the chunks
       // TJD: April 2019 note -- when the chunk size is between 65536 and 128000
       // it is really one chunk, but the code still works
-      INT64 chunkSize = g_cMathWorker->WORK_ITEM_CHUNK;
-      INT64 chunks = (indexLength + (chunkSize - 1)) / chunkSize;
+      int64_t chunkSize = g_cMathWorker->WORK_ITEM_CHUNK;
+      int64_t chunks = (indexLength + (chunkSize - 1)) / chunkSize;
 
       // Also need false count
-      pChunkCountFalse = (INT64*)WORKSPACE_ALLOC(chunks * sizeof(INT64));
-      INT64 totalFalse = 0;
+      pChunkCountFalse = (int64_t*)WORKSPACE_ALLOC(chunks * sizeof(int64_t));
+      int64_t totalFalse = 0;
 
       // Store the offset
-      for (INT64 i = 0; i < chunks; i++) {
-         INT64 temp = totalFalse;
+      for (int64_t i = 0; i < chunks; i++) {
+         int64_t temp = totalFalse;
 
          // check for last chunk
          totalFalse += (chunkSize - pChunkCount[i]);
@@ -1368,8 +1368,8 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
    }
 
    // Store the offset
-   for (INT64 i = 0; i < chunks; i++) {
-      INT64 temp = totalTrue;
+   for (int64_t i = 0; i < chunks; i++) {
+      int64_t temp = totalTrue;
       totalTrue += pChunkCount[i];
 
       // reassign to the cumulative sum so we know the offset
@@ -1398,35 +1398,35 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
    if (returnArray) {
       // MT callback
       struct BTFCallbackStruct {
-         INT64* pChunkCount;
-         INT64* pChunkCountFalse;
-         INT8* pBooleanMask;
+         int64_t* pChunkCount;
+         int64_t* pChunkCountFalse;
+         int8_t* pBooleanMask;
          void* pValuesOut;
-         INT64    totalTrue;
+         int64_t    totalTrue;
          int      dtype;
-         BOOL     bothMode;
+         bool     bothMode;
       };
 
       // This is the routine that will be called back from multiple threads
-      auto lambdaCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+      auto lambdaCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
          BTFCallbackStruct* callbackArg = (BTFCallbackStruct*)callbackArgT;
 
-         INT64  chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];
-         INT8* pBooleanMask = callbackArg->pBooleanMask;
-         BOOL   bothMode = callbackArg->bothMode;
+         int64_t  chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];
+         int8_t* pBooleanMask = callbackArg->pBooleanMask;
+         bool   bothMode = callbackArg->bothMode;
 
          if (bothMode) {
-            INT64  chunkCountFalse = callbackArg->pChunkCountFalse[start / g_cMathWorker->WORK_ITEM_CHUNK];
+            int64_t  chunkCountFalse = callbackArg->pChunkCountFalse[start / g_cMathWorker->WORK_ITEM_CHUNK];
             //printf("[%lld] ccf %lld  length %lld\n", start, chunkCountFalse, length);
 
             if (callbackArg->dtype == NPY_INT64) {
-               INT64* pOut = (INT64*)callbackArg->pValuesOut;
+               int64_t* pOut = (int64_t*)callbackArg->pValuesOut;
                pOut = pOut + chunkCount;
 
-               INT64* pOutFalse = (INT64*)callbackArg->pValuesOut;
+               int64_t* pOutFalse = (int64_t*)callbackArg->pValuesOut;
                pOutFalse = pOutFalse + callbackArg->totalTrue + chunkCountFalse;
 
-               for (INT64 i = start; i < (start + length); i++) {
+               for (int64_t i = start; i < (start + length); i++) {
                   if (pBooleanMask[i]) {
                      *pOut++ = i;
                   }
@@ -1436,18 +1436,18 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
                }
             }
             else {
-               INT32* pOut = (INT32*)callbackArg->pValuesOut;
+               int32_t* pOut = (int32_t*)callbackArg->pValuesOut;
                pOut = pOut + chunkCount;
 
-               INT32* pOutFalse = (INT32*)callbackArg->pValuesOut;
+               int32_t* pOutFalse = (int32_t*)callbackArg->pValuesOut;
                pOutFalse = pOutFalse + callbackArg->totalTrue + chunkCountFalse;
 
-               for (INT64 i = start; i < (start + length); i++) {
+               for (int64_t i = start; i < (start + length); i++) {
                   if (pBooleanMask[i]) {
-                     *pOut++ = (INT32)i;
+                     *pOut++ = (int32_t)i;
                   }
                   else {
-                     *pOutFalse++ = (INT32)i;
+                     *pOutFalse++ = (int32_t)i;
                   }
                }
 
@@ -1456,22 +1456,22 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
          else {
 
             if (callbackArg->dtype == NPY_INT64) {
-               INT64* pOut = (INT64*)callbackArg->pValuesOut;
+               int64_t* pOut = (int64_t*)callbackArg->pValuesOut;
                pOut = pOut + chunkCount;
 
-               for (INT64 i = start; i < (start + length); i++) {
+               for (int64_t i = start; i < (start + length); i++) {
                   if (pBooleanMask[i]) {
                      *pOut++ = i;
                   }
                }
             }
             else {
-               INT32* pOut = (INT32*)callbackArg->pValuesOut;
+               int32_t* pOut = (int32_t*)callbackArg->pValuesOut;
                pOut = pOut + chunkCount;
 
-               for (INT64 i = start; i < (start + length); i++) {
+               for (int64_t i = start; i < (start + length); i++) {
                   if (pBooleanMask[i]) {
-                     *pOut++ = (INT32)i;
+                     *pOut++ = (int32_t)i;
                   }
                }
 
@@ -1484,8 +1484,8 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
       BTFCallbackStruct stBTFCallback;
       stBTFCallback.pChunkCount = pChunkCount;
       stBTFCallback.pChunkCountFalse = pChunkCountFalse;
-      stBTFCallback.pBooleanMask = (INT8*)PyArray_BYTES(aIndex);
-      stBTFCallback.pValuesOut = (INT64*)PyArray_BYTES(returnArray);
+      stBTFCallback.pBooleanMask = (int8_t*)PyArray_BYTES(aIndex);
+      stBTFCallback.pValuesOut = (int64_t*)PyArray_BYTES(returnArray);
       stBTFCallback.dtype = dtype;
       stBTFCallback.totalTrue = totalTrue;
       stBTFCallback.bothMode = bothMode;
@@ -1557,46 +1557,46 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
 //
 
 struct stReIndex {
-   INT64* pUCutOffs;
-   INT64* pICutOffs;
-   INT32* pUKey;
+   int64_t* pUCutOffs;
+   int64_t* pICutOffs;
+   int32_t* pUKey;
    void* pIKey;
 
-   INT64       ikey_length;
-   INT64       uikey_length;
-   INT64       u_cutoffs_length;
+   int64_t       ikey_length;
+   int64_t       uikey_length;
+   int64_t       u_cutoffs_length;
 
 };
 
 //
 // t is the partition/cutoff index
 template<typename KEYTYPE>
-BOOL ReIndexGroupsMT(void* preindexV, int core, INT64 t) {
+bool ReIndexGroupsMT(void* preindexV, int core, int64_t t) {
    stReIndex* preindex = (stReIndex*)preindexV;
 
-   INT64* pUCutOffs = preindex->pUCutOffs;
-   INT64* pICutOffs = preindex->pICutOffs;
-   INT32* pUKey = preindex->pUKey;
+   int64_t* pUCutOffs = preindex->pUCutOffs;
+   int64_t* pICutOffs = preindex->pICutOffs;
+   int32_t* pUKey = preindex->pUKey;
    KEYTYPE* pIKey = (KEYTYPE*)preindex->pIKey;
 
    // Base 1 loop
-   INT64    starti = 0;
-   INT64    start = 0;
+   int64_t    starti = 0;
+   int64_t    start = 0;
    if (t > 0) {
       starti = pICutOffs[t - 1];
       start = pUCutOffs[t - 1];
    }
 
-   INT64   stopi = pICutOffs[t];
-   INT32* pUniques = &pUKey[start];
+   int64_t   stopi = pICutOffs[t];
+   int32_t* pUniques = &pUKey[start];
 
    // Check for out of bounds when indexing uniques
-   INT64   uKeyLength = preindex->uikey_length - start;
+   int64_t   uKeyLength = preindex->uikey_length - start;
    if (uKeyLength < 0) uKeyLength = 0;
 
    LOGGING("Start %lld  Stop %lld  Len:%lld\n", starti, stopi, preindex->ikey_length);
 
-   for (INT64 j = starti; j < stopi; j++) {
+   for (int64_t j = starti; j < stopi; j++) {
       KEYTYPE index = pIKey[j];
       if (index <= 0 || index > uKeyLength) {
          // preserve filtered out or mark as filtered if out of range
@@ -1651,13 +1651,13 @@ ReIndexGroups(PyObject* self, PyObject* args)
       return NULL;
    }
 
-   INT64 u_cutoffs_length = ArrayLength(u_cutoffs);
+   int64_t u_cutoffs_length = ArrayLength(u_cutoffs);
 
    stReIndex preindex;
 
-   preindex.pUCutOffs = (INT64*)PyArray_BYTES(u_cutoffs);
-   preindex.pICutOffs = (INT64*)PyArray_BYTES(i_cutoffs);
-   preindex.pUKey = (INT32*)PyArray_BYTES(uikey);
+   preindex.pUCutOffs = (int64_t*)PyArray_BYTES(u_cutoffs);
+   preindex.pICutOffs = (int64_t*)PyArray_BYTES(i_cutoffs);
+   preindex.pUKey = (int32_t*)PyArray_BYTES(uikey);
    preindex.pIKey = PyArray_BYTES(ikey);
 
    preindex.ikey_length = ArrayLength(ikey);
@@ -1666,16 +1666,16 @@ ReIndexGroups(PyObject* self, PyObject* args)
 
    switch (PyArray_ITEMSIZE(ikey)) {
    case 1:
-      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<INT8>, &preindex);
+      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int8_t>, &preindex);
       break;
    case 2:
-      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<INT16>, &preindex);
+      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int16_t>, &preindex);
       break;
    case 4:
-      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<INT32>, &preindex);
+      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int32_t>, &preindex);
       break;
    case 8:
-      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<INT64>, &preindex);
+      g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int64_t>, &preindex);
       break;
    default:
       PyErr_Format(PyExc_ValueError, "ikey must be int8/16/32/64");
@@ -1691,21 +1691,21 @@ ReIndexGroups(PyObject* self, PyObject* args)
 struct stReverseIndex {
    void* pIKey;
    void* pOutKey;
-   INT64       ikey_length;
+   int64_t       ikey_length;
 };
 
 
 // This routine is parallelized
 // Algo: out[in[i]] = i
 template<typename KEYTYPE>
-BOOL ReverseShuffleMT(void* preindexV, int core, INT64 start, INT64 length) {
+bool ReverseShuffleMT(void* preindexV, int core, int64_t start, int64_t length) {
    stReverseIndex* preindex = (stReverseIndex*)preindexV;
 
    KEYTYPE* pIn = (KEYTYPE*)preindex->pIKey;
    KEYTYPE* pOut = (KEYTYPE*)preindex->pOutKey;
-   INT64 maxindex = preindex->ikey_length;
+   int64_t maxindex = preindex->ikey_length;
 
-   for (INT64 i = start; i < (start + length); i++) {
+   for (int64_t i = start; i < (start + length); i++) {
       KEYTYPE index = pIn[i];
       if (index >= 0 && index < maxindex) {
          pOut[index] = (KEYTYPE)i;
@@ -1754,21 +1754,21 @@ ReverseShuffle(PyObject* self, PyObject* args)
       preindex.pIKey = PyArray_BYTES(ikey);
       preindex.pOutKey = PyArray_BYTES(pReturnArray);
 
-      INT64 arrlength = ArrayLength(ikey);
+      int64_t arrlength = ArrayLength(ikey);
       preindex.ikey_length = arrlength;
 
       switch (PyArray_ITEMSIZE(ikey)) {
       case 1:
-         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<INT8>, &preindex);
+         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int8_t>, &preindex);
          break;
       case 2:
-         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<INT16>, &preindex);
+         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int16_t>, &preindex);
          break;
       case 4:
-         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<INT32>, &preindex);
+         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int32_t>, &preindex);
          break;
       case 8:
-         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<INT64>, &preindex);
+         g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int64_t>, &preindex);
          break;
       default:
          PyErr_Format(PyExc_ValueError, "ReverseShuffle: ikey must be int8/16/32/64");
@@ -1843,13 +1843,13 @@ MergeBinnedCutoffs(PyObject *self, PyObject *args) {
 
       if (PyArray_TYPE(mask) == NPY_BOOL) {
 
-         INT64 itemSizeOut = PyArray_ITEMSIZE(arr);
-         INT64 itemSizeIn = PyArray_ITEMSIZE(inValues);
+         int64_t itemSizeOut = PyArray_ITEMSIZE(arr);
+         int64_t itemSizeIn = PyArray_ITEMSIZE(inValues);
 
          // check for strides... ?
-         INT64 arrayLength = ArrayLength(arr);
+         int64_t arrayLength = ArrayLength(arr);
          if (arrayLength == ArrayLength(mask) && itemSizeOut == PyArray_STRIDE(arr, 0)) {
-            INT64 valLength = ArrayLength(inValues);
+            int64_t valLength = ArrayLength(inValues);
 
             if (arrayLength == valLength) {
                int outDType = PyArray_TYPE(arr);
@@ -1863,9 +1863,9 @@ MergeBinnedCutoffs(PyObject *self, PyObject *args) {
                      MASK_CONVERT_SAFE maskSafe;
                      char* pIn;
                      char* pOut;
-                     INT64 itemSizeOut;
-                     INT64 itemSizeIn;
-                     INT8* pMask;
+                     int64_t itemSizeOut;
+                     int64_t itemSizeIn;
+                     int8_t* pMask;
                      void* pBadInput1;
                      void* pBadOutput1;
 
@@ -1874,11 +1874,11 @@ MergeBinnedCutoffs(PyObject *self, PyObject *args) {
                   MASK_CALLBACK_STRUCT stMask;
 
                   // This is the routine that will be called back from multiple threads
-                  auto lambdaMaskCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+                  auto lambdaMaskCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
                      MASK_CALLBACK_STRUCT* callbackArg = (MASK_CALLBACK_STRUCT*)callbackArgT;
 
                      //printf("[%d] Mask %lld %lld\n", core, start, length);
-                     //maskSafe(pIn, pOut, (INT8*)pMask, length, pBadInput1, pBadOutput1);
+                     //maskSafe(pIn, pOut, (int8_t*)pMask, length, pBadInput1, pBadOutput1);
                      // Auto adjust pointers
                      callbackArg->maskSafe(
                         callbackArg->pIn + (start * callbackArg->itemSizeIn),
@@ -1898,7 +1898,7 @@ MergeBinnedCutoffs(PyObject *self, PyObject *args) {
 
                   stMask.pIn = (char*)PyArray_BYTES(inValues, 0);
                   stMask.pOut = (char*)PyArray_BYTES(arr, 0);
-                  stMask.pMask = (INT8*)PyArray_BYTES(mask, 0);
+                  stMask.pMask = (int8_t*)PyArray_BYTES(mask, 0);
                   stMask.maskSafe = maskSafe;
 
                   g_cMathWorker->DoMultiThreadedChunkWork(arrayLength, lambdaMaskCallback, &stMask);

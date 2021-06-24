@@ -30,10 +30,10 @@ extern "C" {
    extern int GetProcCount();
 
    //VOID WINAPI Sleep(DWORD dwMilliseconds);
-   //BOOL WINAPI CloseHandle(HANDLE hObject);
+   //bool WINAPI CloseHandle(HANDLE hObject);
    //HANDLE WINAPI GetCurrentThread(VOID);
-   //UINT64 WINAPI SetThreadAffinityMask(HANDLE hThread, UINT64 dwThreadAffinityMask);
-   //BOOL WINAPI GetProcessAffinityMask(HANDLE hProcess, UINT64* lpProcessAffinityMask, UINT64* lpSystemAffinityMask);
+   //uint64_t WINAPI SetThreadAffinityMask(HANDLE hThread, uint64_t dwThreadAffinityMask);
+   //bool WINAPI GetProcessAffinityMask(HANDLE hProcess, uint64_t* lpProcessAffinityMask, uint64_t* lpSystemAffinityMask);
    //HANDLE WINAPI GetCurrentProcess(VOID);
    //DWORD WINAPI GetLastError(VOID);
 
@@ -47,11 +47,11 @@ extern "C" {
 
    int GetProcCount();
    VOID Sleep(DWORD dwMilliseconds);
-   BOOL CloseHandle(THANDLE hObject);
+   bool CloseHandle(THANDLE hObject);
 
-   UINT64 SetThreadAffinityMask(pid_t hThread, UINT64 dwThreadAffinityMask);
+   uint64_t SetThreadAffinityMask(pid_t hThread, uint64_t dwThreadAffinityMask);
 
-   BOOL GetProcessAffinityMask(HANDLE hProcess, UINT64* lpProcessAffinityMask, UINT64* lpSystemAffinityMask);
+   bool GetProcessAffinityMask(HANDLE hProcess, uint64_t* lpProcessAffinityMask, uint64_t* lpSystemAffinityMask);
    pid_t GetCurrentThread();
 
    HANDLE GetCurrentProcess(VOID);
@@ -78,18 +78,18 @@ THANDLE StartThread(stWorkerRing* pWorkerRing);
 class CMathWorker {
 
 public:
-   static const INT64 WORK_ITEM_CHUNK = stMATH_WORKER_ITEM::WORK_ITEM_CHUNK;
-   static const INT64 WORK_ITEM_BIG = stMATH_WORKER_ITEM::WORK_ITEM_BIG;
-   static const INT64 WORK_ITEM_MASK = stMATH_WORKER_ITEM::WORK_ITEM_MASK;
-   static const INT MAX_WORKER_HANDLES = 64;
+   static const int64_t WORK_ITEM_CHUNK = stMATH_WORKER_ITEM::WORK_ITEM_CHUNK;
+   static const int64_t WORK_ITEM_BIG = stMATH_WORKER_ITEM::WORK_ITEM_BIG;
+   static const int64_t WORK_ITEM_MASK = stMATH_WORKER_ITEM::WORK_ITEM_MASK;
+   static const int32_t MAX_WORKER_HANDLES = 64;
 
-   INT   WorkerThreadCount;
+   int32_t   WorkerThreadCount;
 
    // Set to true to stop threading
-   BOOL  NoThreading;
+   bool  NoThreading;
 
    // Set to true to stop allocating from a cache
-   BOOL  NoCaching;
+   bool  NoCaching;
 
    //------------------------------------------------------------------------------
    // Data Members 
@@ -128,14 +128,14 @@ public:
 
    //------------------------------------------------------------------------------
    // Returns number of worker threads + main thread
-   INT GetNumCores() {
+   int32_t GetNumCores() {
       // include main python thread
       return WorkerThreadCount + 1;
    }
 
    //---------------------------------
    // Changes how many threads wake up in Linux
-   INT SetFutexWakeup(int howManyToWake) {
+   int32_t SetFutexWakeup(int howManyToWake) {
       if (howManyToWake < 1) {
          // On Windows seem to need at least 1
          howManyToWake = 1;
@@ -152,7 +152,7 @@ public:
       return previousVal;
    }
 
-   INT GetFutexWakeup() {
+   int32_t GetFutexWakeup() {
       return pWorkerRing->FutexWakeCount;
    }
 
@@ -168,9 +168,9 @@ public:
 
       // Pin the main thread to a numa node?
       // TODO: work
-      //UINT64 mask = ((UINT64)1 << WorkerThreadCount);//core number starts from 0
-      // UINT64 ret = SetThreadAffinityMask(GetCurrentThread(), (UINT64)0xFFFF);
-      // SetThreadAffinityMask(GetCurrentThread(), (UINT64)0xFFFFFFFF);
+      //uint64_t mask = ((uint64_t)1 << WorkerThreadCount);//core number starts from 0
+      // uint64_t ret = SetThreadAffinityMask(GetCurrentThread(), (uint64_t)0xFFFF);
+      // SetThreadAffinityMask(GetCurrentThread(), (uint64_t)0xFFFFFFFF);
 
    }
 
@@ -186,13 +186,13 @@ public:
 
    //------------------------------------------------------------------------------
    //  Concurrent callback from multiple threads
-   static BOOL MultiThreadedCounterCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+   static bool MultiThreadedCounterCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       // -1 is the first core
       core = core + 1;
-      BOOL didSomeWork = FALSE;
+      bool didSomeWork = FALSE;
 
-      INT64 index;
-      INT64 workBlock;
+      int64_t index;
+      int64_t workBlock;
 
       // As long as there is work to do
       while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0) {
@@ -213,7 +213,7 @@ public:
    //-----------------------------------------------------------
    // Automatically handles threading vs no threading
    // Uses counters that start at 0 and go up from 1
-   void DoMultiThreadedWork(int numItems, MTWORK_CALLBACK  doMTWorkCallback, void* workCallbackArg, INT32 threadWakeup=0)
+   void DoMultiThreadedWork(int numItems, MTWORK_CALLBACK  doMTWorkCallback, void* workCallbackArg, int32_t threadWakeup=0)
    {
       // See if we get a work item (threading might be off)
       stMATH_WORKER_ITEM* pWorkItem = GetWorkItemCount(numItems);
@@ -244,19 +244,19 @@ public:
    //------------------------------------------------------------------------------
    //  Concurrent callback from multiple threads
    //  Based on chunk size, each workIndex gets (0, 65536, 130000, etc.)
-   // callback sig: typedef BOOL(*MTCHUNK_CALLBACK)(void* callbackArg, int core, INT64 start, INT64 length);
+   // callback sig: typedef bool(*MTCHUNK_CALLBACK)(void* callbackArg, int core, int64_t start, int64_t length);
 
-   static BOOL MultiThreadedChunkCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+   static bool MultiThreadedChunkCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       // -1 is the first core
       core = core + 1;
-      BOOL didSomeWork = FALSE;
+      bool didSomeWork = FALSE;
 
-      INT64 lenX;
-      INT64 workBlock;
+      int64_t lenX;
+      int64_t workBlock;
 
       // As long as there is work to do
       while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
-         INT64 start = pstWorkerItem->BlockSize * workBlock;
+         int64_t start = pstWorkerItem->BlockSize * workBlock;
 
          pstWorkerItem->MTChunkCallback(pstWorkerItem->WorkCallbackArg, core, start, lenX);
 
@@ -273,7 +273,7 @@ public:
    // Automatically handles threading vs no threading
    // Used to divide up single array of data into chunks or sections
    // Returns TRUE if actually did multithreaded work, otherwise FALSE
-   BOOL DoMultiThreadedChunkWork(INT64 lengthData, MTCHUNK_CALLBACK  doMTChunkCallback, void* workCallbackArg, INT32 threadWakeup=0)
+   bool DoMultiThreadedChunkWork(int64_t lengthData, MTCHUNK_CALLBACK  doMTChunkCallback, void* workCallbackArg, int32_t threadWakeup=0)
    {
       // See if we get a work item (threading might be off)
       stMATH_WORKER_ITEM* pWorkItem = GetWorkItem(lengthData);
@@ -313,10 +313,10 @@ public:
    //
    // numCores often passed to DoMultiThreadedWork(numCores,...)
    ///
-   INT64 SegmentBins(INT64 bins, INT64 maxCores, stBinCount** ppstBinCount) {
+   int64_t SegmentBins(int64_t bins, int64_t maxCores, stBinCount** ppstBinCount) {
       // TODO: general purpose routine for this
-      INT numCores = GetFutexWakeup();
-      INT64 cores = numCores;
+      int32_t numCores = GetFutexWakeup();
+      int64_t cores = numCores;
 
       // Check if we are clamping the core count
       if (maxCores > 0 && cores > maxCores) {
@@ -330,13 +330,13 @@ public:
       stBinCount* pstBinCount = (stBinCount*)WORKSPACE_ALLOC(cores * sizeof(stBinCount));
 
       if (cores > 0) {
-         INT64 dividend = bins / cores;
-         INT64 remainder = bins % cores;
+         int64_t dividend = bins / cores;
+         int64_t remainder = bins % cores;
 
-         INT64 low = 0;
-         INT64 high = 0;
+         int64_t low = 0;
+         int64_t high = 0;
 
-         for (INT64 i = 0; i < cores; i++) {
+         for (int64_t i = 0; i < cores; i++) {
 
             // Calculate band range
             high = low + dividend;
@@ -365,7 +365,7 @@ public:
    //------------------------------------------------------------------------------
    // Returns NULL if work item is too small or threading turned off
    // Otherwise returns a work item
-   stMATH_WORKER_ITEM* GetWorkItemCount(INT64 len) {
+   stMATH_WORKER_ITEM* GetWorkItemCount(int64_t len) {
       // If it is a small work item, process it immediately
       if (NoThreading) {
          return NULL;
@@ -380,7 +380,7 @@ public:
    //------------------------------------------------------------------------------
    // Returns NULL if work item is too small or threading turned off
    // Otherwise returns a work item
-   stMATH_WORKER_ITEM* GetWorkItem(INT64 len) {
+   stMATH_WORKER_ITEM* GetWorkItem(int64_t len) {
       // If it is a small work item, process it immediately
       if (len < WORK_ITEM_BIG || NoThreading) {
          return NULL;
@@ -395,14 +395,14 @@ public:
    // Called from main thread
    void WorkMain(
       stMATH_WORKER_ITEM* pWorkItem, 
-      INT64 len, 
-      INT32  threadWakeup,
-      INT64 BlockSize= WORK_ITEM_CHUNK, 
+      int64_t len, 
+      int32_t  threadWakeup,
+      int64_t BlockSize= WORK_ITEM_CHUNK, 
       bool bGenericMode=TRUE) {
 
       pWorkItem->TotalElements = len;
 
-      const INT32   maxWakeup = GetFutexWakeup();
+      const int32_t   maxWakeup = GetFutexWakeup();
 
       MATHLOGGING("wakeup max:%d  requested:%d\n", maxWakeup, threadWakeup);
       // Only windows uses ThreadWakup
@@ -437,7 +437,7 @@ public:
 
       // Tell all worker threads about this new work item (futex or wakeall)
       // TODO: Consider waking a different number of threads based on complexity
-      UINT64 currentTSC = __rdtsc();
+      uint64_t currentTSC = __rdtsc();
       pWorkerRing->SetWorkItem(threadWakeup);
 
       MATHLOGGING("Took %lld cycles to wakeup\n", __rdtsc()-currentTSC);
@@ -468,15 +468,15 @@ public:
 
    //=================================================================================================================
 
-   static BOOL AnyScatterGather(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-      BOOL didSomeWork = FALSE;
+   static bool AnyScatterGather(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+      bool didSomeWork = FALSE;
       OLD_CALLBACK* OldCallback = &pstWorkerItem->OldCallback;
 
 
-      INT64 typeSizeIn = OldCallback->FunctionList->InputItemSize;
+      int64_t typeSizeIn = OldCallback->FunctionList->InputItemSize;
       char* pDataInX = (char *)OldCallback->pDataInBase1;
-      INT64 lenX;
-      INT64 workBlock;
+      int64_t lenX;
+      int64_t workBlock;
 
       // Get the workspace calculation for this column
       stScatterGatherFunc* pstScatterGatherFunc = &((stScatterGatherFunc*)(OldCallback->pThreadWorkSpace))[core + 1];
@@ -489,7 +489,7 @@ public:
          // workBlock is length of work
          THREADLOGGING("[%d][%llu] Zero started working on %lld\n", core, workIndex, workBlock);
 
-         INT64 offsetAdj = pstWorkerItem->BlockSize * workBlock * typeSizeIn;
+         int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * typeSizeIn;
 
          OldCallback->FunctionList->AnyScatterGatherCall(pDataInX + offsetAdj, lenX, pstScatterGatherFunc);
 
@@ -506,12 +506,12 @@ public:
 
    }
 
-   static BOOL AnyGroupby(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-      BOOL didSomeWork = FALSE;
+   static bool AnyGroupby(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+      bool didSomeWork = FALSE;
       GROUPBY_FUNC groupByCall = (GROUPBY_FUNC)(pstWorkerItem->WorkCallbackArg);
 
-      INT64 index;
-      INT64 workBlock;
+      int64_t index;
+      int64_t workBlock;
 
       THREADLOGGING("[%d] DoWork start loop\n", core);
 
@@ -539,27 +539,27 @@ public:
    }
 
 
-   static BOOL AnyTwoCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-      BOOL didSomeWork = FALSE;
+   static bool AnyTwoCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+      bool didSomeWork = FALSE;
       OLD_CALLBACK* OldCallback = &pstWorkerItem->OldCallback;
 
-      INT64 strideSizeIn = OldCallback->FunctionList->InputItemSize;
-      INT64 strideSizeOut = OldCallback->FunctionList->OutputItemSize;
+      int64_t strideSizeIn = OldCallback->FunctionList->InputItemSize;
+      int64_t strideSizeOut = OldCallback->FunctionList->OutputItemSize;
 
       char* pDataInX = (char *)OldCallback->pDataInBase1;
       char* pDataInX2 = (char *)OldCallback->pDataInBase2;
       char* pDataOutX = (char*)OldCallback->pDataOutBase1;
-      INT64 lenX;
-      INT64 workBlock;
+      int64_t lenX;
+      int64_t workBlock;
 
       // As long as there is work to do
       while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
 
          // Calculate how much to adjust the pointers to get to the data for this work block
-         INT64 offsetAdj = pstWorkerItem->BlockSize * workBlock * strideSizeIn;
-         INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * strideSizeOut;
-         //INT64 outputAdj = offsetAdj;
+         int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * strideSizeIn;
+         int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * strideSizeOut;
+         //int64_t outputAdj = offsetAdj;
 
          // Check if the outputtype is different
          //if (FunctionList->NumpyOutputType == NPY_BOOL) {
@@ -624,7 +624,7 @@ public:
 
    //------------------------------------------------------------------------------
    // 
-   void WorkGroupByCall(GROUPBY_FUNC groupByCall, void* pstData, INT64 tupleSize) {
+   void WorkGroupByCall(GROUPBY_FUNC groupByCall, void* pstData, int64_t tupleSize) {
       // If it is a small work item, process it immediately
       if ( tupleSize < 2 || NoThreading) {
 
@@ -649,8 +649,8 @@ public:
    void WorkScatterGatherCall(
       FUNCTION_LIST* anyScatterGatherCall, 
       void* pDataIn, 
-      INT64 len, 
-      INT64 func, 
+      int64_t len, 
+      int64_t func, 
       stScatterGatherFunc* pstScatterGatherFunc) {
 
       // If it is a small work item, process it immediately
@@ -663,8 +663,8 @@ public:
       stMATH_WORKER_ITEM* pWorkItem = pWorkerRing->GetWorkItem();
       pWorkItem->DoWorkCallback = AnyScatterGather;
 
-      INT numCores = WorkerThreadCount + 1;
-      INT64 sizeToAlloc = numCores * sizeof(stScatterGatherFunc);
+      int32_t numCores = WorkerThreadCount + 1;
+      int64_t sizeToAlloc = numCores * sizeof(stScatterGatherFunc);
       PVOID pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
 
       if (pWorkSpace) {
@@ -695,7 +695,7 @@ public:
 
          // Gather the results from all cores
          if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX) {
-            INT calcs = 0;
+            int32_t calcs = 0;
             // Collect all the results...
             for (int i = 0; i < numCores; i++) {
                pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
@@ -739,7 +739,7 @@ public:
 
    ////------------------------------------------------------------------------------
    //// 
-   //void WorkOneStubCall(FUNCTION_LIST* anyOneStubCall, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+   //void WorkOneStubCall(FUNCTION_LIST* anyOneStubCall, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    //   // If it is a small work item, process it immediately
    //   if (len < WORK_ITEM_BIG || NoThreading) {

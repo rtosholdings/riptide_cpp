@@ -46,7 +46,7 @@ static const inline void STOREA(__m256i* x, __m256i y) { _mm256_store_si256((__m
 SFW_ALIGN(64)
 const union
 {
-   INT32 i[8];
+   int32_t i[8];
    float f[8];
    __m256 m;
 } __f32vec8_abs_mask = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
@@ -55,7 +55,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT64  i[4];
+   int64_t  i[4];
    double d[4];
    __m256d m;
 } __f64vec4_abs_mask = { 0x7fffffffffffffff, 0x7fffffffffffffff, 0x7fffffffffffffff, 0x7fffffffffffffff };
@@ -64,7 +64,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT32 i[8];
+   int32_t i[8];
    float f[8];
    __m256 m;
    // all 1 bits in exponent must be 1 (8 bits after sign)
@@ -75,7 +75,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT32 i[8];
+   int32_t i[8];
    float f[8];
    __m256 m;
    // all 1 bits in exponent must be 1 (8 bits after sign)
@@ -85,7 +85,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT32 i[8];
+   int32_t i[8];
    float f[8];
    __m256 m;
    // all 1 bits in exponent must be 1 (8 bits after sign)
@@ -96,7 +96,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT64  i[4];
+   int64_t  i[4];
    double d[4];
    __m256d m;
    // all 1 bits in exponent must be 1 (11 bits after sign)
@@ -106,7 +106,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT64  i[4];
+   int64_t  i[4];
    double d[4];
    __m256d m;
    // all 1 bits in exponent must be 1 (11 bits after sign)
@@ -116,7 +116,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT64  i[4];
+   int64_t  i[4];
    double d[4];
    __m256d m;
    // all 1 bits in exponent must be 1 (11 bits after sign)
@@ -127,7 +127,7 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT32 i[8];
+   int32_t i[8];
    __m256i m;
 } __vec8_strides = { 0, 1, 2, 3, 4, 5, 6, 7};
 
@@ -135,18 +135,18 @@ const union
 SFW_ALIGN(64)
 const union
 {
-   INT64 i[8];
+   int64_t i[8];
    __m256i m;
 } __vec4_strides = { 0, 1, 2, 3 };
 
 //// IEEE Mask
 //// NOTE: Check NAN mask -- if not then return number, else return 0.0 or +INF or -INF
 //// For IEEE 754, MSB is the sign bit, then next section is the exponent.  If the exponent is all 1111s, it is some kind of NAN
-//#define NAN_TO_NUM_F32(x) ((((*(UINT32*)&x)  & 0x7f800000) != 0x7f800000) ?  x :  (((*(UINT32*)&x)  & 0x007fffff) != 0) ?  0.0f : (((*(UINT32*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX)
-//#define NAN_TO_NUM_F64(x) ((((*(UINT64*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(UINT64*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 : (((*(UINT64*)&x)  & 0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
+//#define NAN_TO_NUM_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :  (((*(uint32_t*)&x)  & 0x007fffff) != 0) ?  0.0f : (((*(uint32_t*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX)
+//#define NAN_TO_NUM_F64(x) ((((*(uint64_t*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(uint64_t*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 : (((*(uint64_t*)&x)  & 0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
 //
-//#define NAN_TO_ZERO_F32(x) ((((*(UINT32*)&x)  & 0x7f800000) != 0x7f800000) ?  x :   0.0f )
-//#define NAN_TO_ZERO_F64(x) ((((*(UINT64*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x : 0.0 )
+//#define NAN_TO_ZERO_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :   0.0f )
+//#define NAN_TO_ZERO_F64(x) ((((*(uint64_t*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x : 0.0 )
 //
 
 
@@ -162,7 +162,7 @@ template<typename T> static const inline T FLOATSIGN_OP(T x) { return x > (T)(0.
 template<typename T> static const inline T NEG_OP(T x) { return -x; }
 template<typename T> static const inline T BITWISE_NOT_OP(T x) { return ~x; }
 template<typename T> static const inline T INVERT_OP(T x) { return ~x; }
-template<typename T> static const inline T INVERT_OP_BOOL(INT8 x) { return x ^ 1; }
+template<typename T> static const inline T INVERT_OP_BOOL(int8_t x) { return x ^ 1; }
 
 template<typename T> static const inline bool NOT_OP(T x) { return (bool)(x==(T)0); }
 
@@ -293,21 +293,21 @@ template<typename T> static const inline __m256d SQRT_OP_256(__m256d x) { return
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, const T MATH_OP(T), const U256 MATH_OP256(U256)>
-static inline void UnaryOpFast(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryOpFast(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    
    T* pIn = (T*)pDataIn;
    T* pOut = (T*)pDataOut;
    T* pLastOut = (T*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
    LOGGING("unary op fast strides %lld %lld   sizeof: %lld\n", strideIn, strideOut, sizeof(T));
    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
 
       // possible to align 32 bit boundary?
-      //if (((INT64)pDataOut & 31) != 0) {
-      //   INT64 babylen = (32 - ((INT64)pDataOut & 31)) / sizeof(T);
+      //if (((int64_t)pDataOut & 31) != 0) {
+      //   int64_t babylen = (32 - ((int64_t)pDataOut & 31)) / sizeof(T);
       //   if (babylen > len) babylen = len;
-      //   for (INT64 i = 0; i < babylen; i++) {
+      //   for (int64_t i = 0; i < babylen; i++) {
       //      *pOut++ = MATH_OP(*pIn++);
       //   }
       //   len -= babylen;
@@ -347,25 +347,25 @@ static inline void UnaryOpFast(void* pDataIn, void* pDataOut, INT64 len, INT64 s
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, const T MATH_OP(T), const U256 MATH_OP256(U256)>
-static inline void UnaryOpFastStrided(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryOpFastStrided(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    T* pOut = (T*)pDataOut;
    T* pLastOut = (T*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = (sizeof(U256)) / sizeof(T);
+   int64_t chunkSize = (sizeof(U256)) / sizeof(T);
 
    // TOOD: ensure stride*len < 2billion
    // assumes output not strided
    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
-      const INT64 innerloopLen = chunkSize * (len / chunkSize);
+      const int64_t innerloopLen = chunkSize * (len / chunkSize);
       T* pEnd = &pOut[innerloopLen];
       U256* pEnd_256 = (U256*)pEnd;
 
       U256* pIn1_256 = (U256*)pIn;
       U256* pOut_256 = (U256*)pOut;
 
-      INT32 babyStride = (INT32)strideIn;
+      int32_t babyStride = (int32_t)strideIn;
       // add 8 strides everytime we process 8
       __m256i mindex = _mm256_mullo_epi32(_mm256_set1_epi32(babyStride), __vec8_strides.m );
 
@@ -400,20 +400,20 @@ static inline void UnaryOpFastStrided(void* pDataIn, void* pDataOut, INT64 len, 
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT64* pEnd_i64 = (INT64*)pEnd;
+      int64_t* pEnd_i64 = (int64_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT64* pOut_i64 = (INT64*)pDataOut;
+      int64_t* pOut_i64 = (int64_t*)pDataOut;
 
       while (pOut_i64 < pEnd_i64) {
          //// Use 256 bit registers which hold 8 floats or 4 doubles
@@ -445,19 +445,19 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, voi
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT32* pEnd_i32 = (INT32*)pEnd;
+      int32_t* pEnd_i32 = (int32_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT32* pOut_i32 = (INT32*)pDataOut;
+      int32_t* pOut_i32 = (int32_t*)pDataOut;
 
       while (pOut_i32 < pEnd_i32) {
          // Use 256 bit registers which hold 8 floats or 4 doubles
@@ -485,20 +485,20 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, vo
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT64* pEnd_i64 = (INT64*)pEnd;
+      int64_t* pEnd_i64 = (int64_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT64* pOut_i64 = (INT64*)pDataOut;
+      int64_t* pOut_i64 = (int64_t*)pDataOut;
 
       while (pOut_i64 < pEnd_i64) {
          U256 m0 = LOADU(pIn1_256);
@@ -527,20 +527,20 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, 
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT32* pEnd_i32 = (INT32*)pEnd;
+      int32_t* pEnd_i32 = (int32_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT32* pOut_i32 = (INT32*)pDataOut;
+      int32_t* pOut_i32 = (int32_t*)pDataOut;
 
       while (pOut_i32 < pEnd_i32) {
          U256 m0 = LOADU(pIn1_256);
@@ -568,20 +568,20 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void* pDataIn,
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT64* pEnd_i64 = (INT64*)pEnd;
+      int64_t* pEnd_i64 = (int64_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT64* pOut_i64 = (INT64*)pDataOut;
+      int64_t* pOut_i64 = (int64_t*)pDataOut;
 
       // finite_comp 0x7f800000
       const __m256 m_finitecomp = _mm256_load_ps(__f32vec8_finite_compare.f);
@@ -590,7 +590,7 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, 
          U256 m0 = LOADU(pIn1_256);
          pIn1_256++;
 
-         INT32 bitmask = _mm256_movemask_ps(
+         int32_t bitmask = _mm256_movemask_ps(
             _mm256_cmp_ps(m_finitecomp,
                _mm256_and_ps(m0, m_finitecomp), _CMP_NEQ_OQ));
 
@@ -615,19 +615,19 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, 
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT32* pEnd_i32 = (INT32*)pEnd;
+      int32_t* pEnd_i32 = (int32_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT32* pOut_i32 = (INT32*)pDataOut;
+      int32_t* pOut_i32 = (int32_t*)pDataOut;
 
       const __m256d m_finitecomp = _mm256_load_pd(__f64vec4_finite_compare.d);
 
@@ -635,7 +635,7 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn,
          U256 m0 = LOADU(pIn1_256);
          pIn1_256++;
 
-         INT32 bitmask = _mm256_movemask_pd(
+         int32_t bitmask = _mm256_movemask_pd(
             _mm256_cmp_pd(m_finitecomp,
                _mm256_and_pd(m0, m_finitecomp), _CMP_NEQ_OQ));
 
@@ -660,20 +660,20 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn,
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT64* pEnd_i64 = (INT64*)pEnd;
+      int64_t* pEnd_i64 = (int64_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT64* pOut_i64 = (INT64*)pDataOut;
+      int64_t* pOut_i64 = (int64_t*)pDataOut;
 
       // finite_comp 0x7f800000
       const __m256 m_finitecomp = _mm256_load_ps(__f32vec8_finite_compare.f);
@@ -682,7 +682,7 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataI
          U256 m0 = LOADU(pIn1_256);
          pIn1_256++;
 
-         INT32 bitmask = _mm256_movemask_ps(
+         int32_t bitmask = _mm256_movemask_ps(
             _mm256_cmp_ps(m_finitecomp,
                _mm256_and_ps(m0, m_finitecomp), _CMP_EQ_OQ));
 
@@ -707,20 +707,20 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void* pDataI
 // T = data type as input
 // MathOp operation to perform
 template<typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
    bool* pLastOut = (bool*)((char*)pOut + (strideOut*len));
 
-   INT64 chunkSize = sizeof(U256) / sizeof(T);
+   int64_t chunkSize = sizeof(U256) / sizeof(T);
 
    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize) {
       bool* pEnd = &pOut[chunkSize * (len / chunkSize)];
-      INT32* pEnd_i32 = (INT32*)pEnd;
+      int32_t* pEnd_i32 = (int32_t*)pEnd;
 
       U256* pIn1_256 = (U256*)pDataIn;
-      INT32* pOut_i32 = (INT32*)pDataOut;
+      int32_t* pOut_i32 = (int32_t*)pDataOut;
 
       const __m256d m_finitecomp = _mm256_load_pd(__f64vec4_finite_compare.d);
 
@@ -729,7 +729,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void* pData
          pIn1_256++;
 
          // After masking for all exponents == 1 check to see if same value
-         INT32 bitmask = _mm256_movemask_pd(
+         int32_t bitmask = _mm256_movemask_pd(
             _mm256_cmp_pd(m_finitecomp,
                _mm256_and_pd(m0, m_finitecomp), _CMP_EQ_OQ));
 
@@ -754,7 +754,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void* pData
 // Output same as input type
 // MathOp operation to perform
 template<typename T, typename MathFunctionPtr>
-static void UnaryOpSlow(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    T* pOut = (T*)pDataOut;
@@ -773,7 +773,7 @@ static void UnaryOpSlow(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, 
 // Output always returns a double
 // MathOp operation to perform
 template<typename T, typename MathFunctionPtr>
-static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    double* pOut = (double*)pDataOut;
@@ -792,7 +792,7 @@ static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn, void* pDat
 // Output always returns a double
 // MathOp operation to perform
 template<typename T, typename MathFunctionPtr>
-static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
    T* pIn = (T*)pDataIn;
    bool* pOut = (bool*)pDataOut;
@@ -806,7 +806,7 @@ static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void* pDataIn, void* pDataO
    }
 }
 
-static void UnaryOpSlow_FillTrue(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_FillTrue(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    if (strideOut == sizeof(bool)) {
       memset(pDataOut, 1, len);
    }
@@ -820,7 +820,7 @@ static void UnaryOpSlow_FillTrue(void* pDataIn1, void* pDataOut, INT64 len, INT6
    }
 }
 
-static void UnaryOpSlow_FillFalse(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_FillFalse(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    if (strideOut == sizeof(bool)) {
       memset(pDataOut, 0, len);
    }
@@ -836,56 +836,56 @@ static void UnaryOpSlow_FillFalse(void* pDataIn1, void* pDataOut, INT64 len, INT
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_ABS(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ABS(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(ABS_OP<T>,pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_FABS(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_FABS(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const double(*)(T)>(FABS_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_SIGN(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_SIGN(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(SIGN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_FLOATSIGN(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_FLOATSIGN(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(FLOATSIGN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_NEG(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_NEG(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(NEG_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_ISNOTNAN(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNOTNAN(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template<typename T>
-static void UnaryOpSlow_ISNAN(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNAN(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNANORZERO(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNANORZERO(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNANORZERO_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISINVALID(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISINVALID(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    T* pIn = (T*)pDataIn1;
    T invalid = *(T*)GetInvalid<T>(); 
-   INT8* pOut = (INT8*)pDataOut;
-   INT8* pLastOut = (INT8*)((char*)pOut + (strideOut*len));
+   int8_t* pOut = (int8_t*)pDataOut;
+   int8_t* pLastOut = (int8_t*)((char*)pOut + (strideOut*len));
 
    // Slow loop, handle 1 at a time
    while (pOut != pLastOut) {
@@ -895,17 +895,17 @@ static void UnaryOpSlow_ISINVALID(void* pDataIn1, void* pDataOut, INT64 len, INT
       else {
          *pOut = FALSE;
       }
-      pOut = STRIDE_NEXT(INT8, pOut, strideOut);
+      pOut = STRIDE_NEXT(int8_t, pOut, strideOut);
       pIn = STRIDE_NEXT(T, pIn, strideIn);
    }
 }
 
 template<typename T>
-static void UnaryOpSlow_ISINVALIDORZERO(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISINVALIDORZERO(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    T* pIn = (T*)pDataIn1;
    T invalid = *(T*)GetInvalid<T>();
-   INT8* pOut = (INT8*)pDataOut;
-   INT8* pLastOut = (INT8*)((char*)pOut + (strideOut*len));
+   int8_t* pOut = (int8_t*)pDataOut;
+   int8_t* pLastOut = (int8_t*)((char*)pOut + (strideOut*len));
 
    // Slow loop, handle 1 at a time
    while (pOut != pLastOut) {
@@ -915,17 +915,17 @@ static void UnaryOpSlow_ISINVALIDORZERO(void* pDataIn1, void* pDataOut, INT64 le
       else {
          *pOut = FALSE;
       }
-      pOut = STRIDE_NEXT(INT8, pOut, strideOut);
+      pOut = STRIDE_NEXT(int8_t, pOut, strideOut);
       pIn = STRIDE_NEXT(T, pIn, strideIn);
    }
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNOTINVALID(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNOTINVALID(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    T* pIn = (T*)pDataIn1;
    T invalid = *(T*)GetInvalid<T>();
-   INT8* pOut = (INT8*)pDataOut;
-   INT8* pLastOut = (INT8*)((char*)pOut + (strideOut*len));
+   int8_t* pOut = (int8_t*)pDataOut;
+   int8_t* pLastOut = (int8_t*)((char*)pOut + (strideOut*len));
 
    // Slow loop, handle 1 at a time
    while (pOut != pLastOut) {
@@ -935,154 +935,154 @@ static void UnaryOpSlow_ISNOTINVALID(void* pDataIn1, void* pDataOut, INT64 len, 
       else {
          *pOut = TRUE;
       }
-      pOut = STRIDE_NEXT(INT8, pOut, strideOut);
+      pOut = STRIDE_NEXT(int8_t, pOut, strideOut);
       pIn = STRIDE_NEXT(T, pIn, strideIn);
    }
 }
 
 template<typename T>
-static void UnaryOpSlow_ISFINITE(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISFINITE(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNOTFINITE(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNOTFINITE(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISINF(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISINF(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISINF_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNOTINF(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNOTINF(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNOTINF_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNORMAL(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNORMAL(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNORMAL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_ISNOTNORMAL(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ISNOTNORMAL(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(ISNOTNORMAL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template<typename T>
-static void UnaryOpSlow_SIGNBIT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_SIGNBIT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(SIGNBIT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_NOT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_NOT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowBool<T, const bool(*)(T)>(NOT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_INVERT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_INVERT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(INVERT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_INVERT_BOOL(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_INVERT_BOOL(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(INVERT_OP_BOOL<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_FLOOR(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_FLOOR(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(FLOOR_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_CEIL(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_CEIL(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(CEIL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_TRUNC(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_TRUNC(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(TRUNC_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_ROUND(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_ROUND(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(ROUND_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_SQRT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_SQRT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(SQRT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_CBRT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_CBRT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(CBRT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_LOG(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_LOG(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(LOG_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_LOG2(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_LOG2(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(LOG2_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_LOG10(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_LOG10(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(LOG10_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_EXP(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_EXP(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(EXP_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlow_EXP2(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlow_EXP2(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlow<T, const T(*)(T)>(EXP2_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_SQRT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_SQRT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(SQRT_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_CBRT(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_CBRT(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(CBRT_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_LOG(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_LOG(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(LOG_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_LOG2(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_LOG2(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(LOG2_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_LOG10(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_LOG10(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(LOG10_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_EXP(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_EXP(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(EXP_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template<typename T>
-static void UnaryOpSlowDouble_EXP2(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+static void UnaryOpSlowDouble_EXP2(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryOpSlowDouble<T, const double(*)(double)>(EXP2_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
@@ -1095,31 +1095,31 @@ static void UnaryOpSlowDouble_EXP2(void* pDataIn1, void* pDataOut, INT64 len, IN
 //------------------------------------------------------------------------------------
 // This routines will call the proper templated ABS function based on the type
 // It provides the standard signature
-template<typename T, typename U256> static inline void UnaryOpFast_NANF32(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NANF32(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNanFastFloat<T, U256, const bool(*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
-template<typename T, typename U256> static inline void UnaryOpFast_NANF64(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NANF64(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNanFastDouble<T, U256, const bool(*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
-template<typename T, typename U256> static inline void UnaryOpFast_NOTNANF32(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NOTNANF32(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNotNanFastFloat<T, U256, const bool(*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
-template<typename T, typename U256> static inline void UnaryOpFast_NOTNANF64(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NOTNANF64(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNotNanFastDouble<T, U256, const bool(*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
-template<typename T, typename U256> static inline void UnaryOpFast_FINITEF32(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_FINITEF32(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryFiniteFastFloat<T, U256, const bool(*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
-template<typename T, typename U256> static inline void UnaryOpFast_FINITEF64(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_FINITEF64(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryFiniteFastDouble<T, U256, const bool(*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
-template<typename T, typename U256> static inline void UnaryOpFast_NOTFINITEF32(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NOTFINITEF32(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNotFiniteFastFloat<T, U256, const bool(*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
-template<typename T, typename U256> static inline void UnaryOpFast_NOTFINITEF64(void* pDataIn1, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+template<typename T, typename U256> static inline void UnaryOpFast_NOTFINITEF64(void* pDataIn1, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
    return UnaryNotFiniteFastDouble<T, U256, const bool(*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
@@ -1130,10 +1130,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
    case MATH_OPERATION::FABS:
       //*wantedOutType = NPY_DOUBLE;
       //switch (numpyInType1) {
-      //CASE_NPY_INT32:  return UnaryOpSlow_FABS<INT32>;
-      //CASE_NPY_INT64:  return UnaryOpSlow_FABS<INT64>;
-      //case NPY_INT8:   return UnaryOpSlow_FABS<INT8>;
-      //case NPY_INT16:  return UnaryOpSlow_FABS<INT16>;
+      //CASE_NPY_INT32:  return UnaryOpSlow_FABS<int32_t>;
+      //CASE_NPY_INT64:  return UnaryOpSlow_FABS<int64_t>;
+      //case NPY_INT8:   return UnaryOpSlow_FABS<int8_t>;
+      //case NPY_INT16:  return UnaryOpSlow_FABS<int16_t>;
 
       //}
       break;
@@ -1144,10 +1144,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT:  return UnaryOpSlow_ABS<float>;
       case NPY_DOUBLE: return UnaryOpSlow_ABS<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_ABS<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlow_ABS<INT32>;
-      CASE_NPY_INT64:  return UnaryOpSlow_ABS<INT64>;
-      case NPY_INT8:   return UnaryOpSlow_ABS<INT8>;
-      case NPY_INT16:  return UnaryOpSlow_ABS<INT16>;
+      CASE_NPY_INT32:  return UnaryOpSlow_ABS<int32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlow_ABS<int64_t>;
+      case NPY_INT8:   return UnaryOpSlow_ABS<int8_t>;
+      case NPY_INT16:  return UnaryOpSlow_ABS<int16_t>;
 
       }
       break;
@@ -1158,10 +1158,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT:  return UnaryOpSlow_FLOATSIGN<float>;
       case NPY_DOUBLE: return UnaryOpSlow_FLOATSIGN<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_FLOATSIGN<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlow_SIGN<INT32>;
-      CASE_NPY_INT64:  return UnaryOpSlow_SIGN<INT64>;
-      case NPY_INT8:   return UnaryOpSlow_SIGN<INT8>;
-      case NPY_INT16:  return UnaryOpSlow_SIGN<INT16>;
+      CASE_NPY_INT32:  return UnaryOpSlow_SIGN<int32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlow_SIGN<int64_t>;
+      case NPY_INT8:   return UnaryOpSlow_SIGN<int8_t>;
+      case NPY_INT16:  return UnaryOpSlow_SIGN<int16_t>;
 
       }
       break;
@@ -1173,10 +1173,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT:  return UnaryOpSlow_NEG<float>;
       case NPY_DOUBLE: return UnaryOpSlow_NEG<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_NEG<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlow_NEG<INT32>;
-      CASE_NPY_INT64:  return UnaryOpSlow_NEG<INT64>;
-      case NPY_INT8:   return UnaryOpSlow_NEG<INT8>;
-      case NPY_INT16:  return UnaryOpSlow_NEG<INT16>;
+      CASE_NPY_INT32:  return UnaryOpSlow_NEG<int32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlow_NEG<int64_t>;
+      case NPY_INT8:   return UnaryOpSlow_NEG<int8_t>;
+      case NPY_INT16:  return UnaryOpSlow_NEG<int16_t>;
 
       }
       break;
@@ -1189,13 +1189,13 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          switch (numpyInType1) {
          case NPY_UINT8:
          case NPY_INT8:
-         case NPY_BOOL:   return UnaryOpSlow_NOT<INT8>;
+         case NPY_BOOL:   return UnaryOpSlow_NOT<int8_t>;
          case NPY_INT16:
-         case NPY_UINT16:   return UnaryOpSlow_NOT<INT16>;
+         case NPY_UINT16:   return UnaryOpSlow_NOT<int16_t>;
          CASE_NPY_INT32:
-         CASE_NPY_UINT32:   return UnaryOpSlow_NOT<INT32>;
+         CASE_NPY_UINT32:   return UnaryOpSlow_NOT<int32_t>;
          CASE_NPY_INT64:
-         CASE_NPY_UINT64:   return UnaryOpSlow_NOT<INT64>;
+         CASE_NPY_UINT64:   return UnaryOpSlow_NOT<int64_t>;
          case NPY_FLOAT:  return UnaryOpSlow_NOT<float>;
          case NPY_DOUBLE: return UnaryOpSlow_NOT<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_NOT<long double>;
@@ -1207,15 +1207,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
    case MATH_OPERATION::INVERT:
       *wantedOutType = numpyInType1;
       switch (numpyInType1) {
-      CASE_NPY_INT32:  return UnaryOpSlow_INVERT<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlow_INVERT<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlow_INVERT<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlow_INVERT<UINT64>;
-      case NPY_BOOL:   return UnaryOpSlow_INVERT_BOOL<INT8>;
-      case NPY_INT8:   return UnaryOpSlow_INVERT<INT8>;
-      case NPY_UINT8:   return UnaryOpSlow_INVERT<UINT8>;
-      case NPY_INT16:  return UnaryOpSlow_INVERT<INT16>;
-      case NPY_UINT16:  return UnaryOpSlow_INVERT<UINT16>;
+      CASE_NPY_INT32:  return UnaryOpSlow_INVERT<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlow_INVERT<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlow_INVERT<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlow_INVERT<uint64_t>;
+      case NPY_BOOL:   return UnaryOpSlow_INVERT_BOOL<int8_t>;
+      case NPY_INT8:   return UnaryOpSlow_INVERT<int8_t>;
+      case NPY_UINT8:   return UnaryOpSlow_INVERT<uint8_t>;
+      case NPY_INT16:  return UnaryOpSlow_INVERT<int16_t>;
+      case NPY_UINT16:  return UnaryOpSlow_INVERT<uint16_t>;
       }
       break;
 
@@ -1227,15 +1227,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          case NPY_FLOAT:  return UnaryOpSlow_ISFINITE<float>;
          case NPY_DOUBLE: return UnaryOpSlow_ISFINITE<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_ISFINITE<long double>;
-         CASE_NPY_INT32:      return UnaryOpSlow_ISNOTINVALID<INT32>;
-         CASE_NPY_UINT32:     return UnaryOpSlow_ISNOTINVALID<UINT32>;
-         CASE_NPY_INT64:      return UnaryOpSlow_ISNOTINVALID<INT64>;
-         CASE_NPY_UINT64:     return UnaryOpSlow_ISNOTINVALID<UINT64>;
+         CASE_NPY_INT32:      return UnaryOpSlow_ISNOTINVALID<int32_t>;
+         CASE_NPY_UINT32:     return UnaryOpSlow_ISNOTINVALID<uint32_t>;
+         CASE_NPY_INT64:      return UnaryOpSlow_ISNOTINVALID<int64_t>;
+         CASE_NPY_UINT64:     return UnaryOpSlow_ISNOTINVALID<uint64_t>;
          case NPY_BOOL:
-         case NPY_INT8:       return UnaryOpSlow_ISNOTINVALID<INT8>;
-         case NPY_UINT8:      return UnaryOpSlow_ISNOTINVALID<UINT8>;
-         case NPY_INT16:      return UnaryOpSlow_ISNOTINVALID<INT16>;
-         case NPY_UINT16:     return UnaryOpSlow_ISNOTINVALID<UINT16>;
+         case NPY_INT8:       return UnaryOpSlow_ISNOTINVALID<int8_t>;
+         case NPY_UINT8:      return UnaryOpSlow_ISNOTINVALID<uint8_t>;
+         case NPY_INT16:      return UnaryOpSlow_ISNOTINVALID<int16_t>;
+         case NPY_UINT16:     return UnaryOpSlow_ISNOTINVALID<uint16_t>;
          default: return UnaryOpSlow_FillTrue;
          }
       }
@@ -1250,15 +1250,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          case NPY_FLOAT:  return UnaryOpSlow_ISNOTFINITE<float>;
          case NPY_DOUBLE: return UnaryOpSlow_ISNOTFINITE<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_ISNOTFINITE<long double>;
-         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALID<INT32>;
-         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALID<UINT32>;
-         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALID<INT64>;
-         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALID<UINT64>;
+         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALID<int32_t>;
+         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALID<uint32_t>;
+         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALID<int64_t>;
+         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALID<uint64_t>;
          case NPY_BOOL:
-         case NPY_INT8:       return UnaryOpSlow_ISINVALID<INT8>;
-         case NPY_UINT8:      return UnaryOpSlow_ISINVALID<UINT8>;
-         case NPY_INT16:      return UnaryOpSlow_ISINVALID<INT16>;
-         case NPY_UINT16:     return UnaryOpSlow_ISINVALID<UINT16>;
+         case NPY_INT8:       return UnaryOpSlow_ISINVALID<int8_t>;
+         case NPY_UINT8:      return UnaryOpSlow_ISINVALID<uint8_t>;
+         case NPY_INT16:      return UnaryOpSlow_ISINVALID<int16_t>;
+         case NPY_UINT16:     return UnaryOpSlow_ISINVALID<uint16_t>;
          default: return UnaryOpSlow_FillTrue;
          }
       }
@@ -1273,15 +1273,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          case NPY_FLOAT:  return UnaryOpSlow_ISNAN<float>;
          case NPY_DOUBLE: return UnaryOpSlow_ISNAN<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_ISNAN<long double>;
-         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALID<INT32>;
-         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALID<UINT32>;
-         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALID<INT64>;
-         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALID<UINT64>;
+         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALID<int32_t>;
+         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALID<uint32_t>;
+         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALID<int64_t>;
+         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALID<uint64_t>;
          case NPY_BOOL:
-         case NPY_INT8:       return UnaryOpSlow_ISINVALID<INT8>;
-         case NPY_UINT8:      return UnaryOpSlow_ISINVALID<UINT8>;
-         case NPY_INT16:      return UnaryOpSlow_ISINVALID<INT16>;
-         case NPY_UINT16:     return UnaryOpSlow_ISINVALID<UINT16>;
+         case NPY_INT8:       return UnaryOpSlow_ISINVALID<int8_t>;
+         case NPY_UINT8:      return UnaryOpSlow_ISINVALID<uint8_t>;
+         case NPY_INT16:      return UnaryOpSlow_ISINVALID<int16_t>;
+         case NPY_UINT16:     return UnaryOpSlow_ISINVALID<uint16_t>;
 
          default: return UnaryOpSlow_FillFalse;
          }
@@ -1297,15 +1297,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          case NPY_FLOAT:  return UnaryOpSlow_ISNANORZERO<float>;
          case NPY_DOUBLE: return UnaryOpSlow_ISNANORZERO<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_ISNANORZERO<long double>;
-         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALIDORZERO<INT32>;
-         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALIDORZERO<UINT32>;
-         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALIDORZERO<INT64>;
-         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALIDORZERO<UINT64>;
+         CASE_NPY_INT32:      return UnaryOpSlow_ISINVALIDORZERO<int32_t>;
+         CASE_NPY_UINT32:     return UnaryOpSlow_ISINVALIDORZERO<uint32_t>;
+         CASE_NPY_INT64:      return UnaryOpSlow_ISINVALIDORZERO<int64_t>;
+         CASE_NPY_UINT64:     return UnaryOpSlow_ISINVALIDORZERO<uint64_t>;
          case NPY_BOOL:
-         case NPY_INT8:       return UnaryOpSlow_ISINVALIDORZERO<INT8>;
-         case NPY_UINT8:      return UnaryOpSlow_ISINVALIDORZERO<UINT8>;
-         case NPY_INT16:      return UnaryOpSlow_ISINVALIDORZERO<INT16>;
-         case NPY_UINT16:     return UnaryOpSlow_ISINVALIDORZERO<UINT16>;
+         case NPY_INT8:       return UnaryOpSlow_ISINVALIDORZERO<int8_t>;
+         case NPY_UINT8:      return UnaryOpSlow_ISINVALIDORZERO<uint8_t>;
+         case NPY_INT16:      return UnaryOpSlow_ISINVALIDORZERO<int16_t>;
+         case NPY_UINT16:     return UnaryOpSlow_ISINVALIDORZERO<uint16_t>;
 
          default: return UnaryOpSlow_FillFalse;
          }
@@ -1320,15 +1320,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          case NPY_FLOAT:  return UnaryOpSlow_ISNOTNAN<float>;
          case NPY_DOUBLE: return UnaryOpSlow_ISNOTNAN<double>;
          case NPY_LONGDOUBLE: return UnaryOpSlow_ISNOTNAN<long double>;
-         CASE_NPY_INT32:      return UnaryOpSlow_ISNOTINVALID<INT32>;
-         CASE_NPY_UINT32:     return UnaryOpSlow_ISNOTINVALID<UINT32>;
-         CASE_NPY_INT64:      return UnaryOpSlow_ISNOTINVALID<INT64>;
-         CASE_NPY_UINT64:     return UnaryOpSlow_ISNOTINVALID<UINT64>;
+         CASE_NPY_INT32:      return UnaryOpSlow_ISNOTINVALID<int32_t>;
+         CASE_NPY_UINT32:     return UnaryOpSlow_ISNOTINVALID<uint32_t>;
+         CASE_NPY_INT64:      return UnaryOpSlow_ISNOTINVALID<int64_t>;
+         CASE_NPY_UINT64:     return UnaryOpSlow_ISNOTINVALID<uint64_t>;
          case NPY_BOOL:
-         case NPY_INT8:       return UnaryOpSlow_ISNOTINVALID<INT8>;
-         case NPY_UINT8:      return UnaryOpSlow_ISNOTINVALID<UINT8>;
-         case NPY_INT16:      return UnaryOpSlow_ISNOTINVALID<INT16>;
-         case NPY_UINT16:     return UnaryOpSlow_ISNOTINVALID<UINT16>;
+         case NPY_INT8:       return UnaryOpSlow_ISNOTINVALID<int8_t>;
+         case NPY_UINT8:      return UnaryOpSlow_ISNOTINVALID<uint8_t>;
+         case NPY_INT16:      return UnaryOpSlow_ISNOTINVALID<int16_t>;
+         case NPY_UINT16:     return UnaryOpSlow_ISNOTINVALID<uint16_t>;
          default: return UnaryOpSlow_FillTrue;
          }
       }
@@ -1419,10 +1419,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          *wantedOutType = NPY_LONGDOUBLE;
       }
       switch (numpyInType1) {
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_SQRT<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_SQRT<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_SQRT<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_SQRT<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_SQRT<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_SQRT<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_SQRT<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_SQRT<int64_t>;
       case NPY_DOUBLE: return UnaryOpSlow_SQRT<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_SQRT<long double>;
       }
@@ -1436,10 +1436,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
          *wantedOutType = NPY_LONGDOUBLE;
       }
       switch (numpyInType1) {
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_CBRT<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_CBRT<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_CBRT<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_CBRT<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_CBRT<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_CBRT<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_CBRT<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_CBRT<int64_t>;
       }
       break;
 
@@ -1455,10 +1455,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT: return UnaryOpSlow_LOG<float>;
       case NPY_DOUBLE: return UnaryOpSlow_LOG<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_LOG<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_LOG<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_LOG<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_LOG<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_LOG<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_LOG<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_LOG<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_LOG<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_LOG<int64_t>;
       }
       break;
    
@@ -1474,10 +1474,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT: return UnaryOpSlow_LOG10<float>;
       case NPY_DOUBLE: return UnaryOpSlow_LOG10<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_LOG10<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_LOG10<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_LOG10<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_LOG10<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_LOG10<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_LOG10<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_LOG10<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_LOG10<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_LOG10<int64_t>;
       }
       break;
 
@@ -1493,10 +1493,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT: return UnaryOpSlow_EXP<float>;
       case NPY_DOUBLE: return UnaryOpSlow_EXP<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_EXP<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_EXP<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_EXP<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_EXP<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_EXP<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_EXP<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_EXP<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_EXP<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_EXP<int64_t>;
       }
       break;
 
@@ -1512,10 +1512,10 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT: return UnaryOpSlow_EXP2<float>;
       case NPY_DOUBLE: return UnaryOpSlow_EXP2<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_EXP2<long double>;
-      CASE_NPY_INT32:  return UnaryOpSlowDouble_EXP2<INT32>;
-      CASE_NPY_UINT32:  return UnaryOpSlowDouble_EXP2<UINT32>;
-      CASE_NPY_INT64:  return UnaryOpSlowDouble_EXP2<INT64>;
-      CASE_NPY_UINT64:  return UnaryOpSlowDouble_EXP2<INT64>;
+      CASE_NPY_INT32:  return UnaryOpSlowDouble_EXP2<int32_t>;
+      CASE_NPY_UINT32:  return UnaryOpSlowDouble_EXP2<uint32_t>;
+      CASE_NPY_INT64:  return UnaryOpSlowDouble_EXP2<int64_t>;
+      CASE_NPY_UINT64:  return UnaryOpSlowDouble_EXP2<int64_t>;
       }
       break;
 
@@ -1525,7 +1525,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int* wan
       case NPY_FLOAT: return UnaryOpSlow_SIGNBIT<float>;
       case NPY_DOUBLE: return UnaryOpSlow_SIGNBIT<double>;
       case NPY_LONGDOUBLE: return UnaryOpSlow_SIGNBIT<long double>;
-      //CASE_NPY_INT32:  return UnaryOpSlowDouble_SIGNBIT<INT32>;
+      //CASE_NPY_INT32:  return UnaryOpSlowDouble_SIGNBIT<int32_t>;
       }
       break;
 
@@ -1547,9 +1547,9 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int* wan
       switch (numpyInType1) {
       case NPY_FLOAT:  return UnaryOpFast<float, __m256, ABS_OP<float>, ABS_OP_256<__m256>>;
       case NPY_DOUBLE: return UnaryOpFast<double, __m256d, ABS_OP<double>, ABS_OP_256<__m256d>>;
-      CASE_NPY_INT32:  return UnaryOpFast<INT32, __m256i, ABS_OP<INT32>, ABS_OP_256i32>;
-      case NPY_INT16:  return UnaryOpFast<INT16, __m256i, ABS_OP<INT16>, ABS_OP_256i16>;
-      case NPY_INT8:   return UnaryOpFast<INT8, __m256i,  ABS_OP<INT8>, ABS_OP_256i8>;
+      CASE_NPY_INT32:  return UnaryOpFast<int32_t, __m256i, ABS_OP<int32_t>, ABS_OP_256i32>;
+      case NPY_INT16:  return UnaryOpFast<int16_t, __m256i, ABS_OP<int16_t>, ABS_OP_256i16>;
+      case NPY_INT8:   return UnaryOpFast<int8_t, __m256i,  ABS_OP<int8_t>, ABS_OP_256i8>;
       }
       break;
    case MATH_OPERATION::ISNAN:
@@ -1589,10 +1589,10 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int* wan
       switch (numpyInType1) {
       case NPY_FLOAT:  return UnaryOpFast<float, __m256, NEG_OP<float>, NEG_OP_256<__m256>>;
       case NPY_DOUBLE: return UnaryOpFast<double, __m256d, NEG_OP<double>, NEG_OP_256<__m256d>>;
-      CASE_NPY_INT64:  return UnaryOpFast<INT64, __m256i, NEG_OP<INT64>, NEG_OP_256i64>;
-      CASE_NPY_INT32:  return UnaryOpFast<INT32, __m256i, NEG_OP<INT32>, NEG_OP_256i32>;
-      case NPY_INT16:  return UnaryOpFast<INT16, __m256i, NEG_OP<INT16>, NEG_OP_256i16>;
-      case NPY_INT8:   return UnaryOpFast<INT8, __m256i, NEG_OP<INT8>, NEG_OP_256i8>;
+      CASE_NPY_INT64:  return UnaryOpFast<int64_t, __m256i, NEG_OP<int64_t>, NEG_OP_256i64>;
+      CASE_NPY_INT32:  return UnaryOpFast<int32_t, __m256i, NEG_OP<int32_t>, NEG_OP_256i32>;
+      case NPY_INT16:  return UnaryOpFast<int16_t, __m256i, NEG_OP<int16_t>, NEG_OP_256i16>;
+      case NPY_INT8:   return UnaryOpFast<int8_t, __m256i, NEG_OP<int8_t>, NEG_OP_256i8>;
       }
       break;
    case MATH_OPERATION::INVERT:
@@ -1655,9 +1655,9 @@ UNARY_FUNC_STRIDED GetUnaryOpFastStrided(int func, int numpyInType1, int numpyOu
       switch (numpyInType1) {
       case NPY_FLOAT:  return UnaryOpFastStrided<float, __m256, ABS_OP<float>, ABS_OP_256<__m256>>;
       //case NPY_DOUBLE: return UnaryOpFastStrided<double, __m256d, ABS_OP<double>, ABS_OP_256<__m256d>>;
-      //CASE_NPY_INT32:  return UnaryOpFastStrided<INT32, __m256i, ABS_OP<INT32>, ABS_OP_256i32>;
-      //case NPY_INT16:  return UnaryOpFastStrided<INT16, __m256i, ABS_OP<INT16>, ABS_OP_256i16>;
-      //case NPY_INT8:   return UnaryOpFastStrided<INT8, __m256i, ABS_OP<INT8>, ABS_OP_256i8>;
+      //CASE_NPY_INT32:  return UnaryOpFastStrided<int32_t, __m256i, ABS_OP<int32_t>, ABS_OP_256i32>;
+      //case NPY_INT16:  return UnaryOpFastStrided<int16_t, __m256i, ABS_OP<int16_t>, ABS_OP_256i16>;
+      //case NPY_INT8:   return UnaryOpFastStrided<int8_t, __m256i, ABS_OP<int8_t>, ABS_OP_256i8>;
 
       }
    }
@@ -1698,20 +1698,20 @@ static UNARY_FUNC_STRIDED CheckMathOpOneInputStrided(int func, int numpyInType1,
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL UnaryThreadCallbackStrided(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool UnaryThreadCallbackStrided(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = FALSE;
    UNARY_CALLBACK* Callback = (UNARY_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)Callback->pDataIn;
    char* pDataOut = (char*)Callback->pDataOut;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeIn;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeOut;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeIn;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeOut;
 
       LOGGING("[%d] working on %lld with len %lld   block: %lld\n", core, workIndex, lenX, workBlock);
       Callback->pUnaryCallbackStrided(pDataIn + inputAdj, pDataOut + outputAdj, lenX, Callback->itemSizeIn, Callback->itemSizeOut);
@@ -1742,10 +1742,10 @@ PyObject* ProcessOneInput(
 
    LOGGING("In process one input %d %d %d\n", funcNumber, numpyInType1, numpyOutType);
    int ndim ;
-   INT64 strideIn;
+   int64_t strideIn;
 
    int directionIn = GetStridesAndContig(inArray, ndim, strideIn);
-   INT64 len = CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(inArray));
+   int64_t len = CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(inArray));
 
    // Handle most common fast path up front
    if (directionIn == 0 && numpyOutType == -1) {
@@ -1819,7 +1819,7 @@ PyObject* ProcessOneInput(
          RETURN_NONE;
       }
 
-      INT64 lenOut = len;
+      int64_t lenOut = len;
 
       if (numpyOutType == -1) {
           LOGGING("Going to allocate   contig: %d  len: %lld\n", PyArray_FLAGS(inArray) & (NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS), len);
@@ -1833,7 +1833,7 @@ PyObject* ProcessOneInput(
       else {
          outputArray = outObject1;
          LOGGING("Output specified oref %llu\n", outObject1->ob_base.ob_refcnt);
-         INT64 lenOut = ArrayLength(outputArray);
+         int64_t lenOut = ArrayLength(outputArray);
 
          if (len != lenOut) {
             LOGGING("Wanted output length does not match %lld vs %lld or output is not contiguous\n", len, lenOut);
@@ -1848,7 +1848,7 @@ PyObject* ProcessOneInput(
       void* pDataOut = PyArray_BYTES(outputArray);
 
       int ndimOut;
-      INT64 strideOut;
+      int64_t strideOut;
       int directionOut = GetStridesAndContig(outputArray, ndimOut, strideOut);
 
       // F contig on 2 dim =>  dim0 * stride0 == stride1
@@ -1886,35 +1886,35 @@ PyObject* ProcessOneInput(
          // Check if we can process, else punt to numpy
          if (directionIn == 1 && directionOut == 0) {
             // Row Major 2dim like array with output being fully contiguous
-            INT64 innerLen=1;
+            int64_t innerLen=1;
             for (int i = directionIn; i < ndim; i++) {
                innerLen *= PyArray_DIM(inArray, i);
             }
             // TODO: consider dividing the work over multiple threads if innerLen is large enough
-            const INT64 outerLen = PyArray_DIM(inArray, 0);
-            const INT64 outerStride = PyArray_STRIDE(inArray, 0);
+            const int64_t outerLen = PyArray_DIM(inArray, 0);
+            const int64_t outerStride = PyArray_STRIDE(inArray, 0);
 
             LOGGING("Row Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-            for (INT64 j = 0; j < outerLen; j++) {
+            for (int64_t j = 0; j < outerLen; j++) {
                pUnaryFunc((char*)pDataIn + (j * outerStride), (char*)pDataOut + (j * innerLen * strideOut), innerLen, strideIn, strideOut);
             }
 
          }
          else if (directionIn == -1 && directionOut == 0) {
             // Col Major 2dim like array with output being fully contiguous
-            INT64 innerLen = 1;
+            int64_t innerLen = 1;
             directionIn = -directionIn;
             for (int i = 0; i < directionIn; i++) {
                innerLen *= PyArray_DIM(inArray, i);
             }
             // TODO: consider dividing the work over multiple threads if innerLen is large enough
-            const INT64 outerLen = PyArray_DIM(inArray, (ndim-1));
-            const INT64 outerStride = PyArray_STRIDE(inArray, (ndim - 1));
+            const int64_t outerLen = PyArray_DIM(inArray, (ndim-1));
+            const int64_t outerStride = PyArray_STRIDE(inArray, (ndim - 1));
 
             LOGGING("Col Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-            for (INT64 j = 0; j < outerLen; j++) {
+            for (int64_t j = 0; j < outerLen; j++) {
                pUnaryFunc((char*)pDataIn + (j * outerStride), (char*)pDataOut + (j * innerLen * strideOut), innerLen, strideIn, strideOut);
             }
          }
@@ -1940,8 +1940,8 @@ PyObject* ProcessOneInput(
 PyObject *
 BasicMathOneInput(PyObject *self, PyObject *args) {
    PyObject* tuple = NULL;
-   INT64 funcNumber;
-   INT64 numpyOutputType;
+   int64_t funcNumber;
+   int64_t numpyOutputType;
 
    if (!PyArg_ParseTuple(
       args, "OLL",
@@ -1952,7 +1952,7 @@ BasicMathOneInput(PyObject *self, PyObject *args) {
       return NULL;
    }
 
-   INT64 tupleSize = 1;
+   int64_t tupleSize = 1;
    // Assume no tuple and object passied in is array
    PyObject* inObject1 = tuple;
 
@@ -1998,7 +1998,7 @@ BasicMathOneInput(PyObject *self, PyObject *args) {
 //-----------------------------------------------------------------------------------
 // Called internally when python numbermethod called
 PyObject *
-BasicMathOneInputFromNumber(PyArrayObject* inObject1, INT64 funcNumber, BOOL inplace) {
+BasicMathOneInputFromNumber(PyArrayObject* inObject1, int64_t funcNumber, bool inplace) {
    UNARY_FUNC pOneFunc = NULL;
    int numpyInType1 = PyArray_TYPE(inObject1);
 
@@ -2050,7 +2050,7 @@ BasicMathUnaryOp(PyObject *self, PyObject *args, PyObject *kwargs) {
       PyArrayObject* inObject = (PyArrayObject*)PyTuple_GET_ITEM(args, 0);
       PyObject* funcNumber = PyTuple_GET_ITEM(args, 1);
       if (PyLong_CheckExact(funcNumber)) {
-         INT64 funcNum = PyLong_AsLongLong(funcNumber);
+         int64_t funcNum = PyLong_AsLongLong(funcNumber);
 
          if (IsFastArrayOrNumpy(inObject)) {
             PyObject* result =

@@ -47,7 +47,7 @@ inline __m256i LOADU(const __m256i* x) { return _mm256_loadu_si256((__m256i cons
 
 // Debug routine to dump 8 int32 values
 //void printm256(__m256i m0) {
-//   INT32* pData = (INT32*)&m0;
+//   int32_t* pData = (int32_t*)&m0;
 //   printf("Value is 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x 0x%.8x\n", pData[0], pData[1], pData[2], pData[3], pData[4], pData[5], pData[6], pData[7]);
 //}
 
@@ -124,24 +124,24 @@ template<typename T> FORCE_INLINE const __m256i COMP32i_LTS(T y1, T x1, T y2, T 
 }
 
 // This series of functions processes 8 int32 and returns 8 bools
-template<typename T> FORCE_INLINE const INT64 COMP32i_EQ(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255];}
-template<typename T> FORCE_INLINE const INT64 COMP32i_NE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255]; }
-template<typename T> FORCE_INLINE const INT64 COMP32i_GT(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255]; }
-template<typename T> FORCE_INLINE const INT64 COMP32i_LT(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255]; }
-template<typename T> FORCE_INLINE const INT64 COMP32i_GE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255]; }
-template<typename T> FORCE_INLINE const INT64 COMP32i_LE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255]; }
+template<typename T> FORCE_INLINE const int64_t COMP32i_EQ(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255];}
+template<typename T> FORCE_INLINE const int64_t COMP32i_NE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255]; }
+template<typename T> FORCE_INLINE const int64_t COMP32i_GT(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255]; }
+template<typename T> FORCE_INLINE const int64_t COMP32i_LT(T x, T y) { return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255]; }
+template<typename T> FORCE_INLINE const int64_t COMP32i_GE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255]; }
+template<typename T> FORCE_INLINE const int64_t COMP32i_LE(T x, T y) { return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255]; }
 
 // This will compute 4 x int64 comparison at a time
-template<typename T> FORCE_INLINE const INT32 COMP64i_EQ(T x, T y) { 
+template<typename T> FORCE_INLINE const int32_t COMP64i_EQ(T x, T y) { 
    return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(x, y))) & 15];
 }
 
 // This series of functions processes 4 int64 and returns 4 bools
-template<typename T> FORCE_INLINE const INT32 COMP64i_NE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(x, y))) & 15]; }
-template<typename T> FORCE_INLINE const INT32 COMP64i_GT(T x, T y) { return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15]; }
-template<typename T> FORCE_INLINE const INT32 COMP64i_LT(T x, T y) { return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15]; }
-template<typename T> FORCE_INLINE const INT32 COMP64i_GE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15]; }
-template<typename T> FORCE_INLINE const INT32 COMP64i_LE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15]; }
+template<typename T> FORCE_INLINE const int32_t COMP64i_NE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(x, y))) & 15]; }
+template<typename T> FORCE_INLINE const int32_t COMP64i_GT(T x, T y) { return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15]; }
+template<typename T> FORCE_INLINE const int32_t COMP64i_LT(T x, T y) { return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15]; }
+template<typename T> FORCE_INLINE const int32_t COMP64i_GE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15]; }
+template<typename T> FORCE_INLINE const int32_t COMP64i_LE(T x, T y) { return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15]; }
 
 // This will compute 32 x int8 comparison at a time
 template<typename T> FORCE_INLINE const __m256i COMP8i_EQ(T x, T y, T mask1) { return _mm256_and_si256(_mm256_cmpeq_epi8(x, y), mask1); }
@@ -198,19 +198,19 @@ template<typename T> FORCE_INLINE const bool COMP_LT(T X, T Y) { return (X <  Y)
 template<typename T> FORCE_INLINE const bool COMP_LE(T X, T Y) { return (X <= Y); }
 template<typename T> FORCE_INLINE const bool COMP_NE(T X, T Y) { return (X != Y); }
 
-// Comparing INT64 to UINT64
-template<typename T> FORCE_INLINE const bool COMP_GT_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X > Y); }
-template<typename T> FORCE_INLINE const bool COMP_GE_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X >= Y); }
-template<typename T> FORCE_INLINE const bool COMP_LT_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X < Y); }
-template<typename T> FORCE_INLINE const bool COMP_LE_INT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X <= Y); }
+// Comparing int64_t to uint64_t
+template<typename T> FORCE_INLINE const bool COMP_GT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X <= Y); }
 
-// Comparing UINT64 to INT64
-template<typename T> FORCE_INLINE const bool COMP_EQ_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X == Y); }
-template<typename T> FORCE_INLINE const bool COMP_NE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X != Y); }
-template<typename T> FORCE_INLINE const bool COMP_GT_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X > Y); }
-template<typename T> FORCE_INLINE const bool COMP_GE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X >= Y); }
-template<typename T> FORCE_INLINE const bool COMP_LT_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X < Y); }
-template<typename T> FORCE_INLINE const bool COMP_LE_UINT64(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X <= Y); }
+// Comparing uint64_t to int64_t
+template<typename T> FORCE_INLINE const bool COMP_EQ_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X == Y); }
+template<typename T> FORCE_INLINE const bool COMP_NE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X != Y); }
+template<typename T> FORCE_INLINE const bool COMP_GT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X <= Y); }
 
 
 
@@ -219,30 +219,30 @@ template<typename T> FORCE_INLINE const bool COMP_LE_UINT64(T X, T Y) { if ((X |
 // It can handle scalars
 // Used by comparison of integers
 template<typename T, const bool COMPARE(T,T)>
-static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
-   INT8* pDataOutX = (INT8*)pDataOut;    
+static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
+   int8_t* pDataOutX = (int8_t*)pDataOut;    
    T* pDataInX = (T*)pDataIn;      
    T* pDataIn2X = (T*)pDataIn2;      
 
    LOGGING("compare any sizeof(T) %lld  len: %lld  scalarmode: %d\n", sizeof(T), len, scalarMode);
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS) {
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       } 
    }
    else 
    if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) {
       T arg1 = *pDataInX;  
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(arg1, pDataIn2X[i]);
       } 
 }
    else 
    if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR) {
       T arg2 = *pDataIn2X;
-      LOGGING("arg2 is %lld or %llu\n", (INT64)arg2, (UINT64)arg2);
-      for (INT64 i = 0; i < len; i++) {
+      LOGGING("arg2 is %lld or %llu\n", (int64_t)arg2, (uint64_t)arg2);
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], arg2);
       } 
    }
@@ -250,7 +250,7 @@ static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len,
       // probably cannot happen         
       T arg1 = *pDataInX;  
       T arg2 = *pDataIn2X;  
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(arg1, arg2);
       } 
    }
@@ -260,51 +260,51 @@ static void CompareAny(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len,
 //----------------------------------------------------------------------------------
 // Lookup to go from 1 byte to 8 byte boolean values
 template<const int COMP_OPCODE, const bool COMPARE(float, float)>
-static void CompareFloat(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void CompareFloat(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    const __m256* pSrc1Fast = (const __m256*)pDataIn;                             
    const __m256* pSrc2Fast = (const __m256*)pDataIn2;                            
-   INT64 fastCount = len / 8;                                                    
-   INT64* pDestFast = (INT64*)pDataOut;          
+   int64_t fastCount = len / 8;                                                    
+   int64_t* pDestFast = (int64_t*)pDataOut;          
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS) {                                 
-      for (INT64 i = 0; i < fastCount; i++) {                                       
+      for (int64_t i = 0; i < fastCount; i++) {                                       
          // Alternate way
-         INT32 bitmask = _mm256_movemask_ps(_mm256_cmp_ps(LOADU(pSrc1Fast+i), LOADU(pSrc2Fast+ i), COMP_OPCODE));
+         int32_t bitmask = _mm256_movemask_ps(_mm256_cmp_ps(LOADU(pSrc1Fast+i), LOADU(pSrc2Fast+ i), COMP_OPCODE));
          pDestFast[i] = gBooleanLUT64[bitmask & 255];                               
       }                                                                             
       len = len - (fastCount * 8);                               
       const float* pDataInX = &((float*)pDataIn)[fastCount * 8];
       const float* pDataIn2X = &((float*)pDataIn2)[fastCount * 8];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    } else 
    if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) { 
       __m256 m0 = LOADU(pSrc1Fast);
-      for (INT64 i = 0; i < fastCount; i++) {                                       
-         INT32 bitmask = _mm256_movemask_ps(_mm256_cmp_ps(m0, LOADU(pSrc2Fast+i), COMP_OPCODE));
+      for (int64_t i = 0; i < fastCount; i++) {                                       
+         int32_t bitmask = _mm256_movemask_ps(_mm256_cmp_ps(m0, LOADU(pSrc2Fast+i), COMP_OPCODE));
          pDestFast[i] = gBooleanLUT64[bitmask & 255];                               
       }                                                                             
       len = len - (fastCount * 8);
       const float* pDataInX = (float*)pDataIn;
       const float* pDataIn2X = &((float*)pDataIn2)[fastCount * 8];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
       }
    } else 
    if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR) { 
       __m256 m0 = LOADU(pSrc2Fast);
-      for (INT64 i = 0; i < fastCount; i++) {
-         INT32 bitmask = _mm256_movemask_ps(_mm256_cmp_ps(LOADU(pSrc1Fast+i), m0, COMP_OPCODE));
+      for (int64_t i = 0; i < fastCount; i++) {
+         int32_t bitmask = _mm256_movemask_ps(_mm256_cmp_ps(LOADU(pSrc1Fast+i), m0, COMP_OPCODE));
          pDestFast[i] = gBooleanLUT64[bitmask & 255];                               
       }                                                                             
       len = len - (fastCount * 8);
       const float* pDataInX = &((float*)pDataIn)[fastCount * 8];
       const float* pDataIn2X = (float*)pDataIn2;
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
       }
    } else { 
@@ -315,19 +315,19 @@ static void CompareFloat(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
 //=======================================================================================================
 //
 template<const int COMP_OPCODE, const bool COMPARE(double, double)>
-static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
    
    const __m256d* pSrc1Fast = (const __m256d*)pDataIn;                             
    const __m256d* pSrc2Fast = (const __m256d*)pDataIn2;                            
-   INT64 fastCount = len / 4;                                                    
-   INT32* pDestFast = (INT32*)pDataOut;       
+   int64_t fastCount = len / 4;                                                    
+   int32_t* pDestFast = (int32_t*)pDataOut;       
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS) 
    {
-      for (INT64 i = 0; i < fastCount; i++)          
+      for (int64_t i = 0; i < fastCount; i++)          
       {
-         INT32 bitmask = _mm256_movemask_pd(_mm256_cmp_pd(LOADU(pSrc1Fast+i), LOADU(pSrc2Fast+ i), COMP_OPCODE));
+         int32_t bitmask = _mm256_movemask_pd(_mm256_cmp_pd(LOADU(pSrc1Fast+i), LOADU(pSrc2Fast+ i), COMP_OPCODE));
          //printf("bitmask is %d\n", bitmask);
          //printf("bitmask & 15 is %d\n", bitmask & 15);
          pDestFast[i] = gBooleanLUT32[bitmask & 15];
@@ -335,8 +335,8 @@ static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
       len = len - (fastCount * 4);
       const double* pDataInX = &((double*)pDataIn)[fastCount * 4];
       const double* pDataIn2X = &((double*)pDataIn2)[fastCount * 4];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    } 
@@ -344,16 +344,16 @@ static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
    if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) 
    {
       __m256d m0 = LOADU(pSrc1Fast);
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {   
-         INT32 bitmask = _mm256_movemask_pd( _mm256_cmp_pd(m0, LOADU(pSrc2Fast+i), COMP_OPCODE));
+         int32_t bitmask = _mm256_movemask_pd( _mm256_cmp_pd(m0, LOADU(pSrc2Fast+i), COMP_OPCODE));
          pDestFast[i] = gBooleanLUT32[bitmask & 15];                               
       }                                                                             
       len = len - (fastCount * 4);
       const double* pDataInX = (double*)pDataIn;
       const double* pDataIn2X = &((double*)pDataIn2)[fastCount * 4];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
       }
    } 
@@ -361,16 +361,16 @@ static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
    if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR) 
    {   
       __m256d m0 = LOADU(pSrc2Fast);
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {         
-         INT32 bitmask = _mm256_movemask_pd( _mm256_cmp_pd(LOADU(pSrc1Fast+i), m0, COMP_OPCODE));
+         int32_t bitmask = _mm256_movemask_pd( _mm256_cmp_pd(LOADU(pSrc1Fast+i), m0, COMP_OPCODE));
          pDestFast[i] = gBooleanLUT32[bitmask & 15];                               
       }                                                                             
       len = len - (fastCount * 4);
       const double* pDataInX = &((double*)pDataIn)[fastCount * 4];
       const double* pDataIn2X = (double*)pDataIn2;
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-      for (INT64 i = 0; i < len; i++) {
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
       }
    } 
@@ -380,27 +380,27 @@ static void CompareDouble(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
 
 //=======================================================================================================
 //
-template<const INT32 COMP_256(__m256i, __m256i), const bool COMPARE(INT64, INT64)>
-static void CompareInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+template<const int32_t COMP_256(__m256i, __m256i), const bool COMPARE(int64_t, int64_t)>
+static void CompareInt64(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
 
    const __m256i* pSrc1Fast = (const __m256i*)pDataIn;
    const __m256i* pSrc2Fast = (const __m256i*)pDataIn2;
-   INT64 fastCount = len / 4;
-   INT32* pDestFast = (INT32*)pDataOut;
+   int64_t fastCount = len / 4;
+   int32_t* pDestFast = (int32_t*)pDataOut;
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS)
    {
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {
          pDestFast[i] = COMP_256(LOADU(pSrc1Fast + i), LOADU(pSrc2Fast + i));
 
       }
       len = len - (fastCount * 4);
-      const INT64* pDataInX = &((INT64*)pDataIn)[fastCount * 4];
-      const INT64* pDataIn2X = &((INT64*)pDataIn2)[fastCount * 4];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-      for (INT64 i = 0; i < len; i++) {
+      const int64_t* pDataInX = &((int64_t*)pDataIn)[fastCount * 4];
+      const int64_t* pDataIn2X = &((int64_t*)pDataIn2)[fastCount * 4];
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    }
@@ -408,15 +408,15 @@ static void CompareInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR)
       {
          __m256i m0 = LOADU(pSrc1Fast);
-         for (INT64 i = 0; i < fastCount; i++)
+         for (int64_t i = 0; i < fastCount; i++)
          {
             pDestFast[i] = COMP_256(m0, LOADU(pSrc2Fast +i));
          }
          len = len - (fastCount * 4);
-         const INT64* pDataInX = (INT64*)pDataIn;
-         const INT64* pDataIn2X = &((INT64*)pDataIn2)[fastCount * 4];
-         INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-         for (INT64 i = 0; i < len; i++) {
+         const int64_t* pDataInX = (int64_t*)pDataIn;
+         const int64_t* pDataIn2X = &((int64_t*)pDataIn2)[fastCount * 4];
+         int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+         for (int64_t i = 0; i < len; i++) {
             pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
          }
       }
@@ -424,15 +424,15 @@ static void CompareInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
          if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR)
          {
             __m256i m0 = LOADU(pSrc2Fast);
-            for (INT64 i = 0; i < fastCount; i++)
+            for (int64_t i = 0; i < fastCount; i++)
             {
                pDestFast[i] = COMP_256(LOADU(pSrc1Fast+i), m0);
             }
             len = len - (fastCount * 4);
-            const INT64* pDataInX = &((INT64*)pDataIn)[fastCount * 4];
-            const INT64* pDataIn2X = (INT64*)pDataIn2;
-            INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 4];
-            for (INT64 i = 0; i < len; i++) {
+            const int64_t* pDataInX = &((int64_t*)pDataIn)[fastCount * 4];
+            const int64_t* pDataIn2X = (int64_t*)pDataIn2;
+            int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 4];
+            for (int64_t i = 0; i < len; i++) {
                pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
             }
          }
@@ -444,13 +444,13 @@ static void CompareInt64(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
 // Compare 4x8xint32 using 256bit vector intrinsics
 // This routine is currently disabled and runs at slightly faster speed as CompareInt32
 // Leave the code because as is a good example on how to compute 32 bools
-template<const __m256i COMP_256(__m256i, __m256i, __m256i, __m256i, __m256i, __m256i, __m256i, __m256i), const bool COMPARE(INT32, INT32)>
-static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+template<const __m256i COMP_256(__m256i, __m256i, __m256i, __m256i, __m256i, __m256i, __m256i, __m256i), const bool COMPARE(int32_t, int32_t)>
+static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
    const __m256i* pSrc1Fast = (const __m256i*)pDataIn;
    const __m256i* pSrc2Fast = (const __m256i*)pDataIn2;
    // compute 32 bools at once
-   INT64 fastCount = len / 32;
+   int64_t fastCount = len / 32;
    __m256i* pDestFast = (__m256i*)pDataOut;
    __m256i* pDestFastEnd = pDestFast + fastCount;
 
@@ -470,10 +470,10 @@ static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
          pDestFast++;
       }
       len = len - (fastCount * 32);
-      const INT32* pDataInX = (INT32*)pSrc1Fast;
-      const INT32* pDataIn2X =(INT32*)pSrc2Fast;
-      INT8* pDataOutX = (INT8*)pDestFast;
-      for (INT64 i = 0; i < len; i++) {
+      const int32_t* pDataInX = (int32_t*)pSrc1Fast;
+      const int32_t* pDataIn2X =(int32_t*)pSrc2Fast;
+      int8_t* pDataOutX = (int8_t*)pDestFast;
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    }
@@ -493,10 +493,10 @@ static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
             pDestFast++;
          }
          len = len - (fastCount * 32);
-         const INT32* pDataInX = (INT32*)pDataIn;
-         const INT32* pDataIn2X = (INT32*)pSrc2Fast;
-         INT8* pDataOutX = (INT8*)pDestFast;
-         for (INT64 i = 0; i < len; i++) {
+         const int32_t* pDataInX = (int32_t*)pDataIn;
+         const int32_t* pDataIn2X = (int32_t*)pSrc2Fast;
+         int8_t* pDataOutX = (int8_t*)pDestFast;
+         for (int64_t i = 0; i < len; i++) {
             pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
          }
       }
@@ -517,10 +517,10 @@ static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
                pDestFast++;
             }
             len = len - (fastCount * 32);
-            const INT32* pDataInX = (INT32*)pSrc1Fast;
-            const INT32* pDataIn2X = (INT32*)pDataIn2;
-            INT8* pDataOutX = (INT8*)pDestFast;
-            for (INT64 i = 0; i < len; i++) {
+            const int32_t* pDataInX = (int32_t*)pSrc1Fast;
+            const int32_t* pDataIn2X = (int32_t*)pDataIn2;
+            int8_t* pDataOutX = (int8_t*)pDestFast;
+            for (int64_t i = 0; i < len; i++) {
                pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
             }
          }
@@ -529,27 +529,27 @@ static void CompareInt32S(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 l
 
 //=======================================================================================================
 // Compare 8xint32 using 256bit vector intrinsics
-template<const INT64 COMP_256(__m256i, __m256i), const bool COMPARE(INT32, INT32)>
-static void CompareInt32(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+template<const int64_t COMP_256(__m256i, __m256i), const bool COMPARE(int32_t, int32_t)>
+static void CompareInt32(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
 
    const __m256i* pSrc1Fast = (const __m256i*)pDataIn;
    const __m256i* pSrc2Fast = (const __m256i*)pDataIn2;
    // compute 8 bools at once
-   INT64 fastCount = len / 8;
-   INT64* pDestFast = (INT64*)pDataOut;
+   int64_t fastCount = len / 8;
+   int64_t* pDestFast = (int64_t*)pDataOut;
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS)
    {
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {
          pDestFast[i] = COMP_256(LOADU(pSrc1Fast + i), LOADU(pSrc2Fast + i));
       }
       len = len - (fastCount * 8);
-      const INT32* pDataInX = &((INT32*)pDataIn)[fastCount * 8];
-      const INT32* pDataIn2X = &((INT32*)pDataIn2)[fastCount * 8];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-      for (INT64 i = 0; i < len; i++) {
+      const int32_t* pDataInX = &((int32_t*)pDataIn)[fastCount * 8];
+      const int32_t* pDataIn2X = &((int32_t*)pDataIn2)[fastCount * 8];
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    }
@@ -557,15 +557,15 @@ static void CompareInt32(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR)
       {
          __m256i m0 = LOADU(pSrc1Fast);
-         for (INT64 i = 0; i < fastCount; i++)
+         for (int64_t i = 0; i < fastCount; i++)
          {
             pDestFast[i] = COMP_256(m0, LOADU(pSrc2Fast + i));
          }
          len = len - (fastCount * 8);
-         const INT32* pDataInX = (INT32*)pDataIn;
-         const INT32* pDataIn2X = &((INT32*)pDataIn2)[fastCount * 8];
-         INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-         for (INT64 i = 0; i < len; i++) {
+         const int32_t* pDataInX = (int32_t*)pDataIn;
+         const int32_t* pDataIn2X = &((int32_t*)pDataIn2)[fastCount * 8];
+         int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+         for (int64_t i = 0; i < len; i++) {
             pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
          }
       }
@@ -573,15 +573,15 @@ static void CompareInt32(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
          if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR)
          {
             __m256i m0 = LOADU(pSrc2Fast);
-            for (INT64 i = 0; i < fastCount; i++)
+            for (int64_t i = 0; i < fastCount; i++)
             {
                pDestFast[i] = COMP_256(LOADU(pSrc1Fast + i), m0);
             }
             len = len - (fastCount * 8);
-            const INT32* pDataInX = &((INT32*)pDataIn)[fastCount * 8];
-            const INT32* pDataIn2X = (INT32*)pDataIn2;
-            INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 8];
-            for (INT64 i = 0; i < len; i++) {
+            const int32_t* pDataInX = &((int32_t*)pDataIn)[fastCount * 8];
+            const int32_t* pDataIn2X = (int32_t*)pDataIn2;
+            int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 8];
+            for (int64_t i = 0; i < len; i++) {
                pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
             }
          }
@@ -591,28 +591,28 @@ static void CompareInt32(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
 
 //=======================================================================================================
 // Compare 8xint8 using 256bit vector intrinsics
-template<const __m256i COMP_256(__m256i, __m256i, __m256i), const bool COMPARE(INT8, INT8)>
-static void CompareInt8(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+template<const __m256i COMP_256(__m256i, __m256i, __m256i), const bool COMPARE(int8_t, int8_t)>
+static void CompareInt8(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
 
    const __m256i* pSrc1Fast = (const __m256i*)pDataIn;
    const __m256i* pSrc2Fast = (const __m256i*)pDataIn2;
    // compute 32 bools at once
-   INT64 fastCount = len / 32;
+   int64_t fastCount = len / 32;
    __m256i* pDestFast = (__m256i*)pDataOut;
    __m256i mask1 = _mm256_set1_epi8(1);
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS)
    {
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {
          STOREU(pDestFast + i, COMP_256(LOADU(pSrc1Fast + i), LOADU(pSrc2Fast + i), mask1));
       }
       len = len - (fastCount * 32);
-      const INT8* pDataInX = &((INT8*)pDataIn)[fastCount * 32];
-      const INT8* pDataIn2X = &((INT8*)pDataIn2)[fastCount * 32];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 32];
-      for (INT64 i = 0; i < len; i++) {
+      const int8_t* pDataInX = &((int8_t*)pDataIn)[fastCount * 32];
+      const int8_t* pDataIn2X = &((int8_t*)pDataIn2)[fastCount * 32];
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 32];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    }
@@ -620,15 +620,15 @@ static void CompareInt8(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR)
       {
          __m256i m0 = LOADU(pSrc1Fast);
-         for (INT64 i = 0; i < fastCount; i++)
+         for (int64_t i = 0; i < fastCount; i++)
          {
             STOREU(pDestFast +i, COMP_256(m0, LOADU(pSrc2Fast + i), mask1));
          }
          len = len - (fastCount * 32);
-         const INT8* pDataInX = (INT8*)pDataIn;
-         const INT8* pDataIn2X = &((INT8*)pDataIn2)[fastCount * 32];
-         INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 32];
-         for (INT64 i = 0; i < len; i++) {
+         const int8_t* pDataInX = (int8_t*)pDataIn;
+         const int8_t* pDataIn2X = &((int8_t*)pDataIn2)[fastCount * 32];
+         int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 32];
+         for (int64_t i = 0; i < len; i++) {
             pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
          }
       }
@@ -636,15 +636,15 @@ static void CompareInt8(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len
          if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR)
          {
             __m256i m0 = LOADU(pSrc2Fast);
-            for (INT64 i = 0; i < fastCount; i++)
+            for (int64_t i = 0; i < fastCount; i++)
             {
                STOREU(pDestFast + i, COMP_256(LOADU(pSrc1Fast + i), m0, mask1));
             }
             len = len - (fastCount * 32);
-            const INT8* pDataInX = &((INT8*)pDataIn)[fastCount * 32];
-            const INT8* pDataIn2X = (INT8*)pDataIn2;
-            INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 32];
-            for (INT64 i = 0; i < len; i++) {
+            const int8_t* pDataInX = &((int8_t*)pDataIn)[fastCount * 32];
+            const int8_t* pDataIn2X = (int8_t*)pDataIn2;
+            int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 32];
+            for (int64_t i = 0; i < len; i++) {
                pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
             }
          }
@@ -654,28 +654,28 @@ static void CompareInt8(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len
 
 //=======================================================================================================
 // Compare 8xint16 using 256bit vector intrinsics
-template<const __m128i COMP_256(__m256i, __m256i, __m256i), const bool COMPARE(INT16, INT16)>
-static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode)
+template<const __m128i COMP_256(__m256i, __m256i, __m256i), const bool COMPARE(int16_t, int16_t)>
+static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode)
 {
 
    const __m256i* pSrc1Fast = (const __m256i*)pDataIn;
    const __m256i* pSrc2Fast = (const __m256i*)pDataIn2;
    // compute 16 bools at once
-   INT64 fastCount = len / 16;
+   int64_t fastCount = len / 16;
    __m128i* pDestFast = (__m128i*)pDataOut;
    __m256i mask1 = _mm256_set1_epi16(1);
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS)
    {
-      for (INT64 i = 0; i < fastCount; i++)
+      for (int64_t i = 0; i < fastCount; i++)
       {
          STOREU128(pDestFast + i, COMP_256(LOADU(pSrc1Fast + i), LOADU(pSrc2Fast + i), mask1));
       }
       len = len - (fastCount * 16);
-      const INT16* pDataInX = &((INT16*)pDataIn)[fastCount * 16];
-      const INT16* pDataIn2X = &((INT16*)pDataIn2)[fastCount * 16];
-      INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 16];
-      for (INT64 i = 0; i < len; i++) {
+      const int16_t* pDataInX = &((int16_t*)pDataIn)[fastCount * 16];
+      const int16_t* pDataIn2X = &((int16_t*)pDataIn2)[fastCount * 16];
+      int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 16];
+      for (int64_t i = 0; i < len; i++) {
          pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[i]);
       }
    }
@@ -683,15 +683,15 @@ static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR)
       {
          __m256i m0 = LOADU(pSrc1Fast);
-         for (INT64 i = 0; i < fastCount; i++)
+         for (int64_t i = 0; i < fastCount; i++)
          {
             STOREU128(pDestFast + i, COMP_256(m0, LOADU(pSrc2Fast + i), mask1));
          }
          len = len - (fastCount * 16);
-         const INT16* pDataInX = (INT16*)pDataIn;
-         const INT16* pDataIn2X = &((INT16*)pDataIn2)[fastCount * 16];
-         INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 16];
-         for (INT64 i = 0; i < len; i++) {
+         const int16_t* pDataInX = (int16_t*)pDataIn;
+         const int16_t* pDataIn2X = &((int16_t*)pDataIn2)[fastCount * 16];
+         int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 16];
+         for (int64_t i = 0; i < len; i++) {
             pDataOutX[i] = COMPARE(pDataInX[0], pDataIn2X[i]);
          }
       }
@@ -699,15 +699,15 @@ static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
          if (scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR)
          {
             __m256i m0 = LOADU(pSrc2Fast);
-            for (INT64 i = 0; i < fastCount; i++)
+            for (int64_t i = 0; i < fastCount; i++)
             {
                STOREU128(pDestFast + i, COMP_256(LOADU(pSrc1Fast + i), m0, mask1));
             }
             len = len - (fastCount * 16);
-            const INT16* pDataInX = &((INT16*)pDataIn)[fastCount * 16];
-            const INT16* pDataIn2X = (INT16*)pDataIn2;
-            INT8* pDataOutX = &((INT8*)pDataOut)[fastCount * 16];
-            for (INT64 i = 0; i < len; i++) {
+            const int16_t* pDataInX = &((int16_t*)pDataIn)[fastCount * 16];
+            const int16_t* pDataIn2X = (int16_t*)pDataIn2;
+            int8_t* pDataOutX = &((int8_t*)pDataOut)[fastCount * 16];
+            for (int64_t i = 0; i < len; i++) {
                pDataOutX[i] = COMPARE(pDataInX[i], pDataIn2X[0]);
             }
          }
@@ -717,17 +717,17 @@ static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 le
 
 
 // example of stub
-//static void Compare32(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) { return CompareFloat<_CMP_EQ_OS>(pDataIn, pDataIn2, pDataOut, len, scalarMode); }
+//static void Compare32(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) { return CompareFloat<_CMP_EQ_OS>(pDataIn, pDataIn2, pDataOut, len, scalarMode); }
 //const int CMP_LUT[6] = { _CMP_EQ_OS, _CMP_NEQ_OS, _CMP_LT_OS, _CMP_GT_OS, _CMP_LE_OS, _CMP_GE_OS };
 
 //==========================================================
 // May return NULL if it cannot handle type or function
 ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
 
-   BOOL bSpecialComparison = FALSE;
+   bool bSpecialComparison = FALSE;
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS && numpyInType1 != numpyInType2) {
-      // Because upcasting an INT64 to a float64 results in precision loss, we try comparisons
+      // Because upcasting an int64_t to a float64 results in precision loss, we try comparisons
       if (sizeof(long) == 8) {
          if (numpyInType1 >= NPY_LONG && numpyInType1 <= NPY_ULONGLONG && numpyInType2 >= NPY_LONG && numpyInType2 <= NPY_ULONGLONG) {
             bSpecialComparison = TRUE;
@@ -794,26 +794,26 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       break;
    CASE_NPY_UINT32:
       switch (func) {
-      // NOTE: if this needs to get sped up, upcast from UINT32 to INT64  using _mm256_cvtepu32_epi64 and cmpint64
+      // NOTE: if this needs to get sped up, upcast from uint32_t to int64_t  using _mm256_cvtepu32_epi64 and cmpint64
       // For equal, not equal the sign does not matter
       case MATH_OPERATION::CMP_EQ:      return CompareInt32<COMP32i_EQ<__m256i>, COMP_EQ>;
       case MATH_OPERATION::CMP_NE:      return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
-      case MATH_OPERATION::CMP_GT:      return CompareAny<UINT32, COMP_GT>;
-      case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT32, COMP_GE>;
-      case MATH_OPERATION::CMP_LT:      return CompareAny<UINT32, COMP_LT>;
-      case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT32, COMP_LE>;
+      case MATH_OPERATION::CMP_GT:      return CompareAny<uint32_t, COMP_GT>;
+      case MATH_OPERATION::CMP_GTE:     return CompareAny<uint32_t, COMP_GE>;
+      case MATH_OPERATION::CMP_LT:      return CompareAny<uint32_t, COMP_LT>;
+      case MATH_OPERATION::CMP_LTE:     return CompareAny<uint32_t, COMP_LE>;
       }
       break;
    CASE_NPY_INT64:
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && !(numpyInType2 & 1)) {
          switch (func) {
-         case MATH_OPERATION::CMP_EQ:      return CompareAny<INT64, COMP_EQ_UINT64>;
-         case MATH_OPERATION::CMP_NE:      return CompareAny<INT64, COMP_NE_UINT64>;
-         case MATH_OPERATION::CMP_GT:      return CompareAny<INT64, COMP_GT_INT64>;
-         case MATH_OPERATION::CMP_GTE:     return CompareAny<INT64, COMP_GE_INT64>;
-         case MATH_OPERATION::CMP_LT:      return CompareAny<INT64, COMP_LT_INT64>;
-         case MATH_OPERATION::CMP_LTE:     return CompareAny<INT64, COMP_LE_INT64>;
+         case MATH_OPERATION::CMP_EQ:      return CompareAny<int64_t, COMP_EQ_uint64_t>;
+         case MATH_OPERATION::CMP_NE:      return CompareAny<int64_t, COMP_NE_uint64_t>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<int64_t, COMP_GT_int64_t>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<int64_t, COMP_GE_int64_t>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<int64_t, COMP_LT_int64_t>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<int64_t, COMP_LE_int64_t>;
          }
       }
       else {
@@ -832,12 +832,12 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       if (numpyInType1 != numpyInType2 && (numpyInType2 & 1)) {
          switch (func) {
             // For equal, not equal the sign does not matter
-         case MATH_OPERATION::CMP_EQ:      return CompareAny<INT64, COMP_EQ>;
-         case MATH_OPERATION::CMP_NE:      return CompareAny<INT64, COMP_NE>;
-         case MATH_OPERATION::CMP_GT:      return CompareAny<UINT64, COMP_GT_UINT64>;
-         case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT64, COMP_GE_UINT64>;
-         case MATH_OPERATION::CMP_LT:      return CompareAny<UINT64, COMP_LT_UINT64>;
-         case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT64, COMP_LE_UINT64>;
+         case MATH_OPERATION::CMP_EQ:      return CompareAny<int64_t, COMP_EQ>;
+         case MATH_OPERATION::CMP_NE:      return CompareAny<int64_t, COMP_NE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<uint64_t, COMP_GT_uint64_t>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<uint64_t, COMP_GE_uint64_t>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<uint64_t, COMP_LT_uint64_t>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<uint64_t, COMP_LE_uint64_t>;
          }
       }
       else {
@@ -845,10 +845,10 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
             // For equal, not equal the sign does not matter
          case MATH_OPERATION::CMP_EQ:      return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
          case MATH_OPERATION::CMP_NE:      return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
-         case MATH_OPERATION::CMP_GT:      return CompareAny<UINT64, COMP_GT>;
-         case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT64, COMP_GE>;
-         case MATH_OPERATION::CMP_LT:      return CompareAny<UINT64, COMP_LT>;
-         case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT64, COMP_LE>;
+         case MATH_OPERATION::CMP_GT:      return CompareAny<uint64_t, COMP_GT>;
+         case MATH_OPERATION::CMP_GTE:     return CompareAny<uint64_t, COMP_GE>;
+         case MATH_OPERATION::CMP_LT:      return CompareAny<uint64_t, COMP_LT>;
+         case MATH_OPERATION::CMP_LTE:     return CompareAny<uint64_t, COMP_LE>;
          }
 
       }
@@ -868,10 +868,10 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       switch (func) {
       case MATH_OPERATION::CMP_EQ:      return CompareInt8<COMP8i_EQ<__m256i>, COMP_EQ>;
       case MATH_OPERATION::CMP_NE:      return CompareInt8<COMP8i_NE<__m256i>, COMP_NE>;
-      case MATH_OPERATION::CMP_GT:      return CompareAny<UINT8, COMP_GT>;
-      case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT8, COMP_GE>;
-      case MATH_OPERATION::CMP_LT:      return CompareAny<UINT8, COMP_LT>;
-      case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT8, COMP_LE>;
+      case MATH_OPERATION::CMP_GT:      return CompareAny<uint8_t, COMP_GT>;
+      case MATH_OPERATION::CMP_GTE:     return CompareAny<uint8_t, COMP_GE>;
+      case MATH_OPERATION::CMP_LT:      return CompareAny<uint8_t, COMP_LT>;
+      case MATH_OPERATION::CMP_LTE:     return CompareAny<uint8_t, COMP_LE>;
       }
    case NPY_INT16:
       switch (func) {
@@ -885,13 +885,13 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       break;
    case NPY_UINT16:
       switch (func) {
-         // NOTE: if this needs to get sped up, upcast from UINT16 to INT32  using _mm256_cvtepu16_epi32 and cmpint32
+         // NOTE: if this needs to get sped up, upcast from uint16_t to int32_t  using _mm256_cvtepu16_epi32 and cmpint32
       case MATH_OPERATION::CMP_EQ:      return CompareInt16<COMP16i_EQ<__m256i>, COMP_EQ>;
       case MATH_OPERATION::CMP_NE:      return CompareInt16<COMP16i_NE<__m256i>, COMP_NE>;
-      case MATH_OPERATION::CMP_GT:      return CompareAny<UINT16, COMP_GT>;
-      case MATH_OPERATION::CMP_GTE:     return CompareAny<UINT16, COMP_GE>;
-      case MATH_OPERATION::CMP_LT:      return CompareAny<UINT16, COMP_LT>;
-      case MATH_OPERATION::CMP_LTE:     return CompareAny<UINT16, COMP_LE>;
+      case MATH_OPERATION::CMP_GT:      return CompareAny<uint16_t, COMP_GT>;
+      case MATH_OPERATION::CMP_GTE:     return CompareAny<uint16_t, COMP_GE>;
+      case MATH_OPERATION::CMP_LT:      return CompareAny<uint16_t, COMP_LT>;
+      case MATH_OPERATION::CMP_LTE:     return CompareAny<uint16_t, COMP_LE>;
       }
       break;
    }

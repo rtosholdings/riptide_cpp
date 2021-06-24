@@ -37,24 +37,24 @@ extern pthread_cond_t  g_WakeupCond;
 
 
 //--------------------------------------------------------------------
-//BOOL
+//bool
 //WINAPI
 //WaitOnAddress(
-//   _In_reads_bytes_(AddressSize) volatile VOID * Address,
+//   _In_reads_bytes_(AddressSize) volatile void * Address,
 //   _In_reads_bytes_(AddressSize) PVOID CompareAddress,
 //   _In_ SIZE_T AddressSize,
 //   _In_opt_ DWORD dwMilliseconds
 //);
 //
 //
-//VOID
+//void
 //WINAPI
 //WakeByAddressSingle(
 //   _In_ PVOID Address
 //);
 //
 //
-//VOID
+//void
 //WINAPI
 //WakeByAddressAll(
 //   _In_ PVOID Address
@@ -63,9 +63,9 @@ extern pthread_cond_t  g_WakeupCond;
 //-------------------------------------------------------------------
 //
 // global scope
-typedef VOID(WINAPI *WakeSingleAddress)(PVOID);
-typedef VOID(WINAPI *WakeAllAddress)(PVOID);
-typedef BOOL(WINAPI *WaitAddress)(volatile VOID*, PVOID, SIZE_T, DWORD);
+typedef void(WINAPI *WakeSingleAddress)(PVOID);
+typedef void(WINAPI *WakeAllAddress)(PVOID);
+typedef bool(WINAPI *WaitAddress)(volatile void*, PVOID, SIZE_T, DWORD);
 
 extern WakeSingleAddress g_WakeSingleAddress;
 extern WakeAllAddress g_WakeAllAddress;
@@ -75,20 +75,20 @@ extern WaitAddress g_WaitAddress;
 extern FUNCTION_LIST*   g_FunctionListArray[];
 
 // Callback routine from worker thread
-typedef BOOL(*DOWORK_CALLBACK)(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex);
+typedef bool(*DOWORK_CALLBACK)(struct stMATH_WORKER_ITEM* pstWorkerItem, int32_t core, int64_t workIndex);
 
 // Callback routine from multithreaded worker thread (items just count up from 0,1,2,...)
-typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, INT64 workIndex);
+typedef bool(*MTWORK_CALLBACK)(void* callbackArg, int32_t core, int64_t workIndex);
 
 // Callback routine from multithreaded chunk thread (0, 65536, 130000, etc.)
-typedef BOOL(*MTCHUNK_CALLBACK)(void* callbackArg, int core, INT64 start, INT64 length);
+typedef bool(*MTCHUNK_CALLBACK)(void* callbackArg, int32_t core, int64_t start, int64_t length);
 
 // For auto binning we need to divide bins up amongst multiple thread
 struct stBinCount {
    // Valid if ... > BinLow && <= BinHigh
-   INT64 BinLow;
-   INT64 BinHigh;
-   INT64 BinNum;
+   int64_t BinLow;
+   int64_t BinHigh;
+   int64_t BinNum;
    void* pUserMemory;
 };
 
@@ -98,41 +98,41 @@ struct OLD_CALLBACK {
 
    // Args to call
    union {
-      VOID*             pDataInBase1;
-      VOID*             pValues;
+      void*             pDataInBase1;
+      void*             pValues;
    };
 
    union {
-      VOID*             pDataInBase2;
-      VOID*             pIndex;
-      VOID*             pToSort;
+      void*             pDataInBase2;
+      void*             pIndex;
+      void*             pToSort;
    };
 
-   VOID*             pDataInBase3;
+   void*             pDataInBase3;
 
    //-------------------------------------------------
    union {
-      VOID*             pDataOutBase1;
-      VOID*             pWorkSpace;
+      void*             pDataOutBase1;
+      void*             pWorkSpace;
    };
 
    // Total number of array elements
    union {
-      //INT64             TotalElements;
-      INT64             IndexSize;
+      //int64_t             TotalElements;
+      int64_t             IndexSize;
 
       // strlen is for sorting strings
-      INT64             StrLen;
+      int64_t             StrLen;
    };
 
    union {
-      INT32             ScalarMode;
-      INT32             MergeBlocks;
+      int32_t             ScalarMode;
+      int32_t             MergeBlocks;
    };
 
    union {
-      INT64             TotalElements2;
-      INT64             ValSize;
+      int64_t             TotalElements2;
+      int64_t             ValSize;
    };
 
    // Default value to fill
@@ -177,9 +177,9 @@ struct stMATH_WORKER_ITEM {
    // sum:        52      xx      30 us     xx
 
    // Items larger than this might be worked on in parallel
-   static const INT64 WORK_ITEM_CHUNK = 0x4000;
-   static const INT64 WORK_ITEM_BIG = (WORK_ITEM_CHUNK * 2);
-   static const INT64 WORK_ITEM_MASK = (WORK_ITEM_CHUNK - 1);
+   static const int64_t WORK_ITEM_CHUNK = 0x4000;
+   static const int64_t WORK_ITEM_BIG = (WORK_ITEM_CHUNK * 2);
+   static const int64_t WORK_ITEM_MASK = (WORK_ITEM_CHUNK - 1);
 
    // The callback to the thread routine that does work
    // with the argument to pass
@@ -187,7 +187,7 @@ struct stMATH_WORKER_ITEM {
    void*             WorkCallbackArg;
 
    // How many threads to wake up (atomic decrement)
-   INT64             ThreadWakeup;
+   int64_t             ThreadWakeup;
 
    // Used when calling MultiThreadedWork
    union {
@@ -196,34 +196,34 @@ struct stMATH_WORKER_ITEM {
    };
 
    // TotalElements is used on asymmetric last block
-   INT64             TotalElements;
+   int64_t             TotalElements;
 
    // How many elements per block to work on
-   INT64             BlockSize;
+   int64_t             BlockSize;
 
 
    // The last block to work on
-   volatile INT64    BlockLast;
+   volatile int64_t    BlockLast;
 
    //-------------------------------------------------
    // The next block (atomic)
    // Incremented
    // If BlockNext > BlockLast -- no work to be done
-   volatile INT64    BlockNext;
+   volatile int64_t    BlockNext;
 
 
    //-----------------------------------------------
    // Atomic access
    // When BlocksCompleted == BlockLast , the job is completed
-   INT64             BlocksCompleted;
+   int64_t             BlocksCompleted;
 
 
    // Get rid of this
    OLD_CALLBACK      OldCallback;
 
    //==============================================================
-   FORCE_INLINE INT64 GetWorkBlock() {
-      INT64 val=  InterlockedIncrement64(&BlockNext);
+   FORCE_INLINE int64_t GetWorkBlock() {
+      int64_t val=  InterlockedIncrement64(&BlockNext);
       return val - 1;
    }
 
@@ -237,8 +237,8 @@ struct stMATH_WORKER_ITEM {
    // Called by routines that work by index 
    // returns 0 on failure
    // else returns length of workblock
-   FORCE_INLINE INT64 GetNextWorkIndex(INT64* workBlock) {
-      INT64 wBlock = *workBlock = GetWorkBlock();
+   FORCE_INLINE int64_t GetNextWorkIndex(int64_t* workBlock) {
+      int64_t wBlock = *workBlock = GetWorkBlock();
 
       //printf("working on block %llu\n", wBlock);
 
@@ -254,15 +254,15 @@ struct stMATH_WORKER_ITEM {
    // Called by routines that work on chunks/blocks of memory
    // returns 0 on failure
    // else returns length of workblock
-   FORCE_INLINE INT64 GetNextWorkBlock(INT64* workBlock) {
+   FORCE_INLINE int64_t GetNextWorkBlock(int64_t* workBlock) {
 
-      INT64 wBlock = *workBlock = GetWorkBlock();
+      int64_t wBlock = *workBlock = GetWorkBlock();
 
       //printf("working on block %llu\n", wBlock);
 
       // Make sure something to work on
       if (wBlock < BlockLast) {
-         INT64  lenWorkBlock ;
+         int64_t  lenWorkBlock ;
          lenWorkBlock = BlockSize;
 
          // Check if this is the last workblock
@@ -287,7 +287,7 @@ struct stMATH_WORKER_ITEM {
    // Returns TRUE if it did some work
    // Returns FALSE if it did no work 
    // If core is -1, it is the main thread
-   FORCE_INLINE BOOL DoWork(int core, INT64 workIndex) {
+   FORCE_INLINE bool DoWork(int core, int64_t workIndex) {
 
       return DoWorkCallback(this, core, workIndex);
    }
@@ -298,22 +298,22 @@ struct stMATH_WORKER_ITEM {
 //-----------------------------------------------------------
 // allocated on 64 byte alignment
 struct stWorkerRing {
-   static const INT64   RING_BUFFER_SIZE = 1024;
-   static const INT64   RING_BUFFER_MASK = 1023;
+   static const int64_t   RING_BUFFER_SIZE = 1024;
+   static const int64_t   RING_BUFFER_MASK = 1023;
 
-   volatile INT64       WorkIndex ;
-   volatile INT64       WorkIndexCompleted ;
+   volatile int64_t       WorkIndex ;
+   volatile int64_t       WorkIndexCompleted ;
 
    // incremented when worker thread start
-   volatile INT64       WorkThread ;
-   INT32                Reserved32;
-   INT32                SleepTime ;
+   volatile int64_t       WorkThread ;
+   int32_t                Reserved32;
+   int32_t                SleepTime ;
 
-   INT32                NumaNode;
-   INT32                Cancelled;
+   int32_t                NumaNode;
+   int32_t                Cancelled;
 
    // Change this value to wake up less workers
-   INT32                FutexWakeCount;
+   int32_t                FutexWakeCount;
 
    stMATH_WORKER_ITEM   WorkerQueue[RING_BUFFER_SIZE];
 
@@ -340,7 +340,7 @@ struct stWorkerRing {
       return  &WorkerQueue[(WorkIndex - 1) & RING_BUFFER_MASK];
    }
 
-   FORCE_INLINE void SetWorkItem(INT32 maxThreadsToWake) {
+   FORCE_INLINE void SetWorkItem(int32_t maxThreadsToWake) {
       // This routine will wakup threads on Windows and Linux
       // Once we increment other threads will notice
       InterlockedIncrement64(&WorkIndex);
