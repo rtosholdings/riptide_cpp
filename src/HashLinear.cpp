@@ -28,10 +28,10 @@
 //static constexpr int numpy_type_code = -1;   // -1 is an invalid code, because if something uses this specialization we want it to break.
 //
 //template<>
-//static constexpr int numpy_type_code<INT32> = NPY_INT32;
+//static constexpr int numpy_type_code<int32_t> = NPY_INT32;
 //
 //template<>
-//static constexpr int numpy_type_code<INT64> = NPY_INT64;
+//static constexpr int numpy_type_code<int64_t> = NPY_INT64;
 
 /* Template-based, compile-time mapping between C++ types and numpy type codes (e.g. NPY_FLOAT64). */
 
@@ -42,13 +42,13 @@ struct numpy_type_code
 };
 
 template<>
-struct numpy_type_code<INT32>
+struct numpy_type_code<int32_t>
 {
    static constexpr int value = NPY_INT32;
 };
 
 template<>
-struct numpy_type_code<INT64>
+struct numpy_type_code<int64_t>
 {
    static constexpr int value = NPY_INT64;
 };
@@ -56,7 +56,7 @@ struct numpy_type_code<INT64>
 
 
 // Use this table to find a suitable hash size
-INT64 PRIME_NUMBERS[] = {
+int64_t PRIME_NUMBERS[] = {
    53,
    97,
    193,
@@ -93,18 +93,18 @@ INT64 PRIME_NUMBERS[] = {
 };
 
 #define MEMCMP_NEW(ARG1, ARG2, ARG3, ARG4) \
-{ ARG1 = 0; const char* pSrc1 = ARG2; const char* pSrc2 = ARG3; INT64 length = ARG4; \
+{ ARG1 = 0; const char* pSrc1 = ARG2; const char* pSrc2 = ARG3; int64_t length = ARG4; \
    while (length >= 8) { \
-      UINT64* p1 = (UINT64*)pSrc1; \
-      UINT64* p2 = (UINT64*)pSrc2;\
+      uint64_t* p1 = (uint64_t*)pSrc1; \
+      uint64_t* p2 = (uint64_t*)pSrc2;\
       if (*p1 != *p2) {ARG1=1; length=0; break;}\
       length -= 8;\
       pSrc1 += 8;\
       pSrc2 += 8;\
    }\
    if (length >= 4) { \
-      UINT32* p1 = (UINT32*)pSrc1; \
-      UINT32* p2 = (UINT32*)pSrc2; \
+      uint32_t* p1 = (uint32_t*)pSrc1; \
+      uint32_t* p2 = (uint32_t*)pSrc2; \
       if (*p1 != *p2) { \
          ARG1 = 1; length = 0; \
       } \
@@ -123,35 +123,35 @@ INT64 PRIME_NUMBERS[] = {
 }
 
 
-//static inline UINT32  sse42_crc32(const uint8_t *bytes, size_t len)
+//static inline uint32_t  sse42_crc32(const uint8_t *bytes, size_t len)
 //{
-//   UINT32 hash = 0;
-//   INT64 i = 0;
+//   uint32_t hash = 0;
+//   int64_t i = 0;
 //   for (i = 0; i<len; i++) {
 //      hash = _mm_crc32_u8(hash, bytes[i]);
 //   }
 //   return hash;
 //}
 
-static FORCEINLINE UINT64 crchash64(const char *buf, size_t count) {
-   UINT64 h = 0;
+static FORCEINLINE uint64_t crchash64(const char *buf, size_t count) {
+   uint64_t h = 0;
 
    while (count >= 8) {
-      h = _mm_crc32_u64(h, *(UINT64*)buf);
+      h = _mm_crc32_u64(h, *(uint64_t*)buf);
       count -= 8;
       buf += 8;
    }
 
-   UINT64 t = 0;
+   uint64_t t = 0;
 
    switch (count) {
-   case 7: t ^= (UINT64)buf[6] << 48;
-   case 6: t ^= (UINT64)buf[5] << 40;
-   case 5: t ^= (UINT64)buf[4] << 32;
-   case 4: t ^= (UINT64)buf[3] << 24;
-   case 3: t ^= (UINT64)buf[2] << 16;
-   case 2: t ^= (UINT64)buf[1] << 8;
-   case 1: t ^= (UINT64)buf[0];
+   case 7: t ^= (uint64_t)buf[6] << 48;
+   case 6: t ^= (uint64_t)buf[5] << 40;
+   case 5: t ^= (uint64_t)buf[4] << 32;
+   case 4: t ^= (uint64_t)buf[3] << 24;
+   case 3: t ^= (uint64_t)buf[2] << 16;
+   case 2: t ^= (uint64_t)buf[1] << 8;
+   case 1: t ^= (uint64_t)buf[0];
       return _mm_crc32_u64(h, t);
    }
    return h;
@@ -168,14 +168,14 @@ static FORCEINLINE UINT64 crchash64(const char *buf, size_t count) {
 // This function is generated using the framework provided.
 #define mix(h) h ^= h >> 23; h *= 0x2127599bf4325c37ULL;	 h ^= h >> 47;
 
-static FORCEINLINE UINT64 fasthash64(const void *buf, size_t len)
+static FORCEINLINE uint64_t fasthash64(const void *buf, size_t len)
 {
-   UINT64 seed = 0;
-   const UINT64    m = 0x880355f21e6d1965ULL;
-   const UINT64 *pos = (const UINT64 *)buf;
+   uint64_t seed = 0;
+   const uint64_t    m = 0x880355f21e6d1965ULL;
+   const uint64_t *pos = (const uint64_t *)buf;
    const unsigned char *pos2;
-   UINT64 h = seed ^ (len * m);
-   UINT64 v;
+   uint64_t h = seed ^ (len * m);
+   uint64_t v;
 
    while (len >=8) {
       v = *pos++;
@@ -188,13 +188,13 @@ static FORCEINLINE UINT64 fasthash64(const void *buf, size_t len)
    v = 0;
 
    switch (len) {
-   case 7: v ^= (UINT64)pos2[6] << 48;
-   case 6: v ^= (UINT64)pos2[5] << 40;
-   case 5: v ^= (UINT64)pos2[4] << 32;
-   case 4: v ^= (UINT64)pos2[3] << 24;
-   case 3: v ^= (UINT64)pos2[2] << 16;
-   case 2: v ^= (UINT64)pos2[1] << 8;
-   case 1: v ^= (UINT64)pos2[0];
+   case 7: v ^= (uint64_t)pos2[6] << 48;
+   case 6: v ^= (uint64_t)pos2[5] << 40;
+   case 5: v ^= (uint64_t)pos2[4] << 32;
+   case 4: v ^= (uint64_t)pos2[3] << 24;
+   case 3: v ^= (uint64_t)pos2[2] << 16;
+   case 2: v ^= (uint64_t)pos2[1] << 8;
+   case 1: v ^= (uint64_t)pos2[0];
       h ^= mix(v);
       h *= m;
    }
@@ -205,11 +205,11 @@ static FORCEINLINE UINT64 fasthash64(const void *buf, size_t len)
 
 // --------------------------------------------
 // Used when we know 8byte hash
-FORCEINLINE UINT64 fasthash64_8(UINT64 v)
+FORCEINLINE uint64_t fasthash64_8(uint64_t v)
 {
-   UINT64 seed = 0;
-   const UINT64    m = 0x880355f21e6d1965ULL;
-   UINT64 h = seed ^  m;
+   uint64_t seed = 0;
+   const uint64_t    m = 0x880355f21e6d1965ULL;
+   uint64_t h = seed ^  m;
 
    h ^= mix(v);
    h *= m;
@@ -219,11 +219,11 @@ FORCEINLINE UINT64 fasthash64_8(UINT64 v)
 
 // --------------------------------------------
 // Used when we know 8byte hash
-FORCEINLINE UINT64 fasthash64_16(UINT64* v)
+FORCEINLINE uint64_t fasthash64_16(uint64_t* v)
 {
-   UINT64 seed = 0;
-   const UINT64    m = 0x880355f21e6d1965ULL;
-   UINT64 h = seed ^ m;
+   uint64_t seed = 0;
+   const uint64_t    m = 0x880355f21e6d1965ULL;
+   uint64_t h = seed ^ m;
 
    h ^= mix(v[0]);
    h *= m;
@@ -250,15 +250,15 @@ const char* strStart = (pHashList+(i*strWidth)); \
 const char* str = strStart; \
 const char* strEnd = str + strWidth; \
 while (*str !=0) if (++str >= strEnd) break;         \
-UINT64 hash = fasthash64(strStart, str - strStart);
+uint64_t hash = fasthash64(strStart, str - strStart);
 
 
 #define HASH_UNICODE()          \
 const char* strStart = (pHashList+(i*strWidth)); \
-const UINT32* str = (UINT32*)strStart; \
-const UINT32* strEnd = str + strWidth/4; \
-UINT32 hash = 0;                  \
-UINT32  c;                            \
+const uint32_t* str = (uint32_t*)strStart; \
+const uint32_t* strEnd = str + strWidth/4; \
+uint32_t hash = 0;                  \
+uint32_t  c;                            \
 while ((c = *str) !=0) { \
    str++;                            \
    hash = _mm_crc32_u32(hash, c);    \
@@ -267,10 +267,10 @@ while ((c = *str) !=0) { \
 
 
 FORCE_INLINE
-BOOLEAN
-UNICODE_MATCH(const char* str1T, const char* str2T, INT64 strWidth1) {
-   const UINT32* str1 = (const UINT32*)str1T;
-   const UINT32* str2 = (const UINT32*)str2T;
+bool
+UNICODE_MATCH(const char* str1T, const char* str2T, int64_t strWidth1) {
+   const uint32_t* str1 = (const uint32_t*)str1T;
+   const uint32_t* str2 = (const uint32_t*)str2T;
    strWidth1 /= 4;
    while (strWidth1 > 0) {
       if (*str1 != *str2) return FALSE;
@@ -282,8 +282,8 @@ UNICODE_MATCH(const char* str1T, const char* str2T, INT64 strWidth1) {
 }
 
 FORCE_INLINE
-BOOLEAN
-STRING_MATCH(const char* str1, const char* str2, INT64 strWidth1) {
+bool
+STRING_MATCH(const char* str1, const char* str2, int64_t strWidth1) {
    while (strWidth1 > 0) {
       if (*str1 != *str2) return FALSE;
       ++str1;
@@ -295,10 +295,10 @@ STRING_MATCH(const char* str1, const char* str2, INT64 strWidth1) {
 
 
 FORCE_INLINE
-BOOLEAN
-UNICODE_MATCH2(const char* str1T, const char* str2T, INT64 strWidth1, INT64 strWidth2) {
-   const UINT32* str1 = (const UINT32*)str1T;
-   const UINT32* str2 = (const UINT32*)str2T;
+bool
+UNICODE_MATCH2(const char* str1T, const char* str2T, int64_t strWidth1, int64_t strWidth2) {
+   const uint32_t* str1 = (const uint32_t*)str1T;
+   const uint32_t* str2 = (const uint32_t*)str2T;
    strWidth1 /= 4;
    strWidth2 /= 4;
    while (1) {
@@ -324,8 +324,8 @@ UNICODE_MATCH2(const char* str1T, const char* str2T, INT64 strWidth1, INT64 strW
 
 
 FORCE_INLINE
-BOOLEAN
-STRING_MATCH2(const char* str1, const char* str2, INT64 strWidth1, INT64 strWidth2) {
+bool
+STRING_MATCH2(const char* str1, const char* str2, int64_t strWidth1, int64_t strWidth2) {
    while (1) {
 
       // Check for when one string ends and the other has not yet
@@ -349,8 +349,8 @@ STRING_MATCH2(const char* str1, const char* str2, INT64 strWidth1, INT64 strWidt
 
 
 template<typename T, typename U>
-INT64 CHashLinear<T, U>::GetHashSize(
-   INT64 numberOfEntries) {
+int64_t CHashLinear<T, U>::GetHashSize(
+   int64_t numberOfEntries) {
 
    // Check for perfect hashes first when type size is small
    //if (sizeof(T) == 1) {
@@ -377,8 +377,8 @@ INT64 CHashLinear<T, U>::GetHashSize(
       int i = 0;
       while ((1LL << i) < numberOfEntries) i++;
 
-      INT64 result= (1LL << i);
-      INT64 maxhashsize = (1LL << 31);
+      int64_t result= (1LL << i);
+      int64_t maxhashsize = (1LL << 31);
 
       // TODO: really need to change strategies if high unique count and high row count
       if (result > maxhashsize) {
@@ -392,7 +392,7 @@ INT64 CHashLinear<T, U>::GetHashSize(
 
 //-----------------------------------------------
 template<typename T, typename U>
-void CHashLinear<T, U>::FreeMemory(BOOL forceDeallocate) {
+void CHashLinear<T, U>::FreeMemory(bool forceDeallocate) {
 
    if (forceDeallocate || Deallocate) {
       //printf("deallocating\n");
@@ -409,13 +409,13 @@ void CHashLinear<T, U>::FreeMemory(BOOL forceDeallocate) {
 
 //-----------------------------------------------
 template<typename T, typename U>
-void CHashLinear<T, U>::AllocAndZeroBitFields(UINT64 hashSize) {
+void CHashLinear<T, U>::AllocAndZeroBitFields(uint64_t hashSize) {
 
    // Calculate how many bytes we need (in 64 bit/8 byte increments)
    BitAllocSize = (HashSize + 63) / 64;
-   BitAllocSize *= sizeof(UINT64);
+   BitAllocSize *= sizeof(uint64_t);
 
-   pBitFields = (UINT64*)WorkSpaceAllocSmall(BitAllocSize);
+   pBitFields = (uint64_t*)WorkSpaceAllocSmall(BitAllocSize);
 
    if (pBitFields) {
       // Fill with zeros to indicate no hash position is used yet
@@ -447,10 +447,10 @@ char* CHashLinear<T, U>::AllocHashTable(size_t allocSize) {
 // Returns NULL does not mean failure if sizeofExtraArray=0
 template<typename T, typename U>
 void* CHashLinear<T, U>::AllocMemory(
-   INT64 numberOfEntries,
-   INT64 sizeofStruct,
-   INT64 sizeofExtraArray,
-   BOOL  isFloat) {
+   int64_t numberOfEntries,
+   int64_t sizeofStruct,
+   int64_t sizeofExtraArray,
+   bool  isFloat) {
 
    if (sizeofStruct == -1) {
       sizeofStruct = sizeof(SingleKeyEntry);
@@ -493,7 +493,7 @@ void* CHashLinear<T, U>::AllocMemory(
    if (pBitFields) {
       if (sizeofExtraArray) {
          // 128 byte padding
-         INT64 padSize = (allocSize + 127) & ~127;
+         int64_t padSize = (allocSize + 127) & ~127;
          char* pRootBuffer = AllocHashTable(padSize + sizeofExtraArray);
 
          if (pRootBuffer) {
@@ -529,10 +529,10 @@ FORCE_INLINE
 void CHashLinear<T,U>::InternalGetLocation(
    U  i,
    HashLocation* pLocation,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
    T     item,
-   UINT64 hash) {
+   uint64_t hash) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -541,7 +541,7 @@ void CHashLinear<T,U>::InternalGetLocation(
       if (pLocation[hash].value == item) {
          // return the first location
          pLocationOutput[i] = pLocation[hash].Location;
-         pBooleanOutput[i] = 1;
+         pBoolOutput[i] = 1;
          return;
       }
 
@@ -552,7 +552,7 @@ void CHashLinear<T,U>::InternalGetLocation(
    }
    // Not found
    pLocationOutput[i] = BAD_INDEX ;
-   pBooleanOutput[i] = 0;
+   pBoolOutput[i] = 0;
 }
 
 
@@ -569,8 +569,8 @@ void CHashLinear<T, U>::InternalGetLocationCategorical(
    HashLocation* pLocation,
    U*    pLocationOutput,
    T     item,
-   UINT64 hash,
-   INT64 *missed) {
+   uint64_t hash,
+   int64_t *missed) {
 
    while (IsBitSet(hash)) {
       // Check if we have a match from before
@@ -601,7 +601,7 @@ void CHashLinear<T, U>::InternalSetLocation(
    U  i,
    HashLocation* pLocation,
    T  item,
-   UINT64 hash) {
+   uint64_t hash) {
 
    while (IsBitSet(hash)) {
       // Check if we have a match from before
@@ -664,22 +664,22 @@ while (1) { \
 //
 template<typename T, typename U>
 void CHashLinear<T, U>::MakeHashLocationMK(
-   INT64 arraySize,
+   int64_t arraySize,
    T*    pInput,
-   INT64 totalItemSize,
-   INT64 hintSize) {
+   int64_t totalItemSize,
+   int64_t hintSize) {
 
    if (hintSize == 0) {
       hintSize = arraySize;
    }
 
    AllocMemory(hintSize, sizeof(HashLocationMK), 0, FALSE);
-   //UINT64 NumUnique = 0;
-   //UINT64 NumCollisions = 0;
+   //uint64_t NumUnique = 0;
+   //uint64_t NumCollisions = 0;
 
    HashLocationMK* pLocation = (HashLocationMK*)pHashTableAny;
 
-   UINT64*     pBitFields = this->pBitFields;
+   uint64_t*     pBitFields = this->pBitFields;
 
    if (!pLocation || !pBitFields) {
       return;
@@ -689,13 +689,13 @@ void CHashLinear<T, U>::MakeHashLocationMK(
 
    for (U i = 0; i < arraySize; i++) {
       const char* pMatch = pInput + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
       hash = hash & (HashSize - 1);
 
       //printf("[%d] \n", (int)i);
 
       while (1) {
-         UINT64 index = hash >> 6;
+         uint64_t index = hash >> 6;
          if (pBitFields[index] & (1LL << (hash & 63))) {
             // Check if we have a match from before
             U Last = pLocation[hash].Location;
@@ -704,11 +704,11 @@ void CHashLinear<T, U>::MakeHashLocationMK(
             // TJD: August 2018 --unrolled MEMCMP and got 10-15% speedup
             const char* pSrc1 = pMatch;
             const char* pSrc2 = pMatch2;
-            INT64 length = totalItemSize;
+            int64_t length = totalItemSize;
 
             while (length >= 8) {
-               UINT64* p1 = (UINT64*)pSrc1;
-               UINT64* p2 = (UINT64*)pSrc2;
+               uint64_t* p1 = (uint64_t*)pSrc1;
+               uint64_t* p2 = (uint64_t*)pSrc2;
 
                if (*p1 != *p2) goto FAIL_MATCH;
                length -= 8;
@@ -716,8 +716,8 @@ void CHashLinear<T, U>::MakeHashLocationMK(
                pSrc2 += 8;
             }
             if (length >= 4) {
-               UINT32* p1 = (UINT32*)pSrc1;
-               UINT32* p2 = (UINT32*)pSrc2;
+               uint32_t* p1 = (uint32_t*)pSrc1;
+               uint32_t* p2 = (uint32_t*)pSrc2;
 
                if (*p1 != *p2) goto FAIL_MATCH;
                length -= 4;
@@ -769,18 +769,18 @@ void CHashLinear<T, U>::MakeHashLocationMK(
 //-----------------------------------------------
 // stores the index of the last matching index
 // ASSUMES that pVal1 and pVal2 are SORTED!!
-//  U is INT32 or INT64
-//  V is INT32, INT64, float, or double
+//  U is int32_t or int64_t
+//  V is int32_t, int64_t, float, or double
 template<typename U, typename V>
 void FindLastMatchCategorical(
-   INT64    arraySize1,
-   INT64    arraySize2,
+   int64_t    arraySize1,
+   int64_t    arraySize2,
    U*       pKey1,
    U*       pKey2,
    V*       pVal1,
    V*       pVal2,
    U*       pLocationOutput,
-   INT64    totalUniqueSize) {
+   int64_t    totalUniqueSize) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
    U*       pLocation = (U*)WORKSPACE_ALLOC(totalUniqueSize * sizeof(U));
@@ -836,14 +836,14 @@ void FindLastMatchCategorical(
 // ASSUMES that pVal1 and pVal2 are SORTED!!
 template<typename T, typename U> template<typename V>
 void CHashLinear<T, U>::FindLastMatchMK(
-   INT64 arraySize1,
-   INT64 arraySize2,
+   int64_t arraySize1,
+   int64_t arraySize2,
    T*    pKey1,
    T*    pKey2,
    V*    pVal1,
    V*    pVal2,
    U*    pLocationOutput,
-   INT64 totalItemSize,
+   int64_t totalItemSize,
    bool allowExact) {
 
    AllocMemory(arraySize2, sizeof(HashLocationMK), 0, FALSE);
@@ -861,7 +861,7 @@ void CHashLinear<T, U>::FindLastMatchMK(
    while (i < arraySize1 && j < arraySize2) {
       if (pVal1[i] < pVal2[j] || (!allowExact &&  pVal1[i] == pVal2[j]) ) {
          const char* pMatch1 = pKey1 + (totalItemSize*i);
-         UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
          hash = hash & (HashSize - 1);
 
          //TODO: should maybe put begin .. end into function implementing lookup for hashmap
@@ -894,7 +894,7 @@ void CHashLinear<T, U>::FindLastMatchMK(
       }
       else {
          const char* pMatch1 = pKey2 + (totalItemSize*j);
-         UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
          hash = hash & (HashSize - 1);
 
          //TODO: should maybe start .. end into a function implementing insertion for hashmap
@@ -930,7 +930,7 @@ void CHashLinear<T, U>::FindLastMatchMK(
    }
    while (i < arraySize1) {
       const char* pMatch1 = pKey1 + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
       hash = hash & (HashSize - 1);
 
       //TODO: should maybe put begin .. end into function implementing lookup for hashmap
@@ -972,14 +972,14 @@ void CHashLinear<T, U>::FindLastMatchMK(
 // TODO: Clean this up and merge with FindLastMatchMk
 template<typename T, typename U> template<typename V>
 void CHashLinear<T, U>::FindNextMatchMK(
-   INT64 arraySize1,
-   INT64 arraySize2,
+   int64_t arraySize1,
+   int64_t arraySize2,
    T*    pKey1,
    T*    pKey2,
    V*    pVal1,
    V*    pVal2,
    U*    pLocationOutput,
-   INT64 totalItemSize,
+   int64_t totalItemSize,
    bool allowExact) {
 
    AllocMemory(arraySize2, sizeof(HashLocationMK), 0, FALSE);
@@ -995,7 +995,7 @@ void CHashLinear<T, U>::FindNextMatchMK(
    while (i >= 0 && j >= 0) {
       if (pVal1[i] > pVal2[j] || (!allowExact &&  pVal1[i] == pVal2[j])) {
          const char* pMatch1 = pKey1 + (totalItemSize*i);
-         UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
          hash = hash & (HashSize - 1);
 
          //TODO: should maybe put begin .. end into function implementing lookup for hashmap
@@ -1028,7 +1028,7 @@ void CHashLinear<T, U>::FindNextMatchMK(
       }
       else {
          const char* pMatch1 = pKey2 + (totalItemSize*j);
-         UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
          hash = hash & (HashSize - 1);
 
          //TODO: should maybe start .. end into a function implementing insertion for hashmap
@@ -1064,7 +1064,7 @@ void CHashLinear<T, U>::FindNextMatchMK(
    }
    while (i >= 0) {
       const char* pMatch1 = pKey1 + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch1, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
       hash = hash & (HashSize - 1);
 
       //TODO: should maybe put begin .. end into function implementing lookup for hashmap
@@ -1105,18 +1105,18 @@ void CHashLinear<T, U>::FindNextMatchMK(
 // T is the input type
 // U is the index output type (int8/16/32/64)
 //
-// outputs boolean array
+// outputs bool array
 // outputs location array
 //
 template<typename T, typename U>
 static void IsMemberMK(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pInputT,
    void* pInput2T,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU,
-   INT64 totalItemSize) {
+   int64_t totalItemSize) {
 
    struct HashLocationMK
    {
@@ -1131,23 +1131,23 @@ static void IsMemberMK(
    T* pInput = (T*)pInputT;
    T* pInput2 = (T*)pInput2T;
 
-   UINT64 HashSize = pHashLinear->HashSize;
+   uint64_t HashSize = pHashLinear->HashSize;
 
    // to determine if hash location has been visited
-   UINT64*     pBitFields = pHashLinear->pBitFields;
+   uint64_t*     pBitFields = pHashLinear->pBitFields;
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
-   LOGGING("in ismembermk  asize: %llu   isize: %llu  %p   %p  %p\n", arraySize, totalItemSize, pBitFields, pLocationOutput, pBooleanOutput);
+   LOGGING("in ismembermk  asize: %llu   isize: %llu  %p   %p  %p\n", arraySize, totalItemSize, pBitFields, pLocationOutput, pBoolOutput);
 
    for (U i = 0; i < arraySize; i++) {
       const char* pMatch = pInput + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
       hash = hash & (HashSize - 1);
 
       //printf("[%d] %llu\n", (int)i, hash);
 
       while (1) {
-         UINT64 index = hash >> 6;
+         uint64_t index = hash >> 6;
          if (pBitFields[index] & (1LL << (hash & 63))) {
             // Check if we have a match from before
             U Last = pLocation[hash].Location;
@@ -1157,7 +1157,7 @@ static void IsMemberMK(
             if (!mresult) {
                // return the first location
                pLocationOutput[i] = pLocation[hash].Location;
-               pBooleanOutput[i] = 1;
+               pBoolOutput[i] = 1;
                break;
             }
 
@@ -1171,7 +1171,7 @@ static void IsMemberMK(
          //printf("[%d] Not found\n", (int)i);
          // Not found
          pLocationOutput[i] = BAD_INDEX;
-         pBooleanOutput[i] = 0;
+         pBoolOutput[i] = 0;
          break;
       }
    }
@@ -1183,16 +1183,16 @@ static void IsMemberMK(
 
 
 //=============================================
-#define HASH_INT1  INT64 h = (INT64)item; h= h % HashSize;
+#define HASH_INT1  int64_t h = (int64_t)item; h= h % HashSize;
 
-//#define HASH_INT32  UINT64 h = (UINT64)item; h ^= (h >> 16); h= h & (HashSize-1);
-//#define HASH_INT32 UINT64 h= fasthash64_8(item) & (HashSize-1);
-#define HASH_INT32  UINT64 h= _mm_crc32_u32(0, (UINT32)item) & (HashSize-1);
+//#define HASH_int32_t  uint64_t h = (uint64_t)item; h ^= (h >> 16); h= h & (HashSize-1);
+//#define HASH_int32_t uint64_t h= fasthash64_8(item) & (HashSize-1);
+#define HASH_int32_t  uint64_t h= _mm_crc32_u32(0, (uint32_t)item) & (HashSize-1);
 
-//#define HASH_INT64  UINT64 h= _mm_crc32_u64(0, item) & (HashSize-1);
-#define HASH_INT64 UINT64 h= fasthash64_8(item) & (HashSize-1);
+//#define HASH_int64_t  uint64_t h= _mm_crc32_u64(0, item) & (HashSize-1);
+#define HASH_int64_t uint64_t h= fasthash64_8(item) & (HashSize-1);
 
-#define HASH_INT128 UINT64 h= fasthash64_16((UINT64*)&pInput[i]) & (HashSize-1);
+#define HASH_INT128 uint64_t h= fasthash64_16((uint64_t*)&pInput[i]) & (HashSize-1);
 
 //=============================================
 //#define HASH_FLOAT1  h ^= h >> 16; h *= 0x85ebca6b; h ^= h >> 13; h *= 0xc2b2ae35; h ^= h >> 16;   h = h % HashSize;
@@ -1233,9 +1233,9 @@ static void IsMemberMK(
 //
 template<typename T, typename U>
 void CHashLinear<T,U>::MakeHashLocation(
-   INT64 arraySize,
+   int64_t arraySize,
    T*    pHashList,
-   INT64 hintSize) {
+   int64_t hintSize) {
 
    if (hintSize == 0) {
       hintSize = arraySize;
@@ -1247,7 +1247,7 @@ void CHashLinear<T,U>::MakeHashLocation(
    LOGGING("MakeHashLocation: hintSize %lld   HashSize %llu\n", hintSize, HashSize);
 
    HashLocation* pLocation = (HashLocation*)pHashTableAny;
-   UINT64*     pBitFields = this->pBitFields;
+   uint64_t*     pBitFields = this->pBitFields;
 
    if (!pLocation || !pBitFields) {
       return;
@@ -1264,7 +1264,7 @@ void CHashLinear<T,U>::MakeHashLocation(
       for (U i = 0; i < arraySize; i++) {
          // perfect hash
          T item = pHashList[i];
-         UINT64 hash = item;
+         uint64_t hash = item;
          INTERNAL_SET_LOCATION;
          //InternalSetLocation(i, pLocation, item, item);
       }
@@ -1275,7 +1275,7 @@ void CHashLinear<T,U>::MakeHashLocation(
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                HASH_INT1;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1284,8 +1284,8 @@ void CHashLinear<T,U>::MakeHashLocation(
 
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT32;
-               UINT64 hash = h;
+               HASH_int32_t;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1296,7 +1296,7 @@ void CHashLinear<T,U>::MakeHashLocation(
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                HASH_INT1;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1305,8 +1305,8 @@ void CHashLinear<T,U>::MakeHashLocation(
 
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT64;
-               UINT64 hash = h;
+               HASH_int64_t;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1335,17 +1335,17 @@ void CHashLinear<T,U>::MakeHashLocation(
 
 
 //-----------------------------------------------
-// outputs boolean array
+// outputs bool array
 // outputs location array
 //
 template<typename T, typename U>
-INT64 CHashLinear<T, U>::IsMemberCategorical(
-   INT64 arraySize,
+int64_t CHashLinear<T, U>::IsMemberCategorical(
+   int64_t arraySize,
    T*    pHashList,
    U*    pLocationOutput) {
 
    HashLocation* pLocation = (HashLocation*)pHashTableAny;
-   INT64 missed = 0;
+   int64_t missed = 0;
    if (sizeof(T) <= 2) {
       // perfect hash
       for (U i = 0; i < arraySize; i++) {
@@ -1368,7 +1368,7 @@ INT64 CHashLinear<T, U>::IsMemberCategorical(
 
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT32;
+               HASH_int32_t;
                InternalGetLocationCategorical(i, pLocation, pLocationOutput, item, h, &missed);
             }
          }
@@ -1386,7 +1386,7 @@ INT64 CHashLinear<T, U>::IsMemberCategorical(
 
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT64;
+               HASH_int64_t;
                InternalGetLocationCategorical(i, pLocation, pLocationOutput, item, h, &missed);
             }
          }
@@ -1403,12 +1403,12 @@ INT64 CHashLinear<T, U>::IsMemberCategorical(
 #define INNER_GET_LOCATION_PERFECT       \
    if (pBitFields[hash >> 6] & (1LL << (hash & 63))) { \
       pLocationOutput[i] = pLocation[hash].Location; \
-      pBooleanOutput[i] = 1; \
+      pBoolOutput[i] = 1; \
    } \
    else { \
       /* Not found */ \
       pLocationOutput[i] = BAD_INDEX; \
-      pBooleanOutput[i] = 0; \
+      pBoolOutput[i] = 0; \
    }
 
 
@@ -1420,7 +1420,7 @@ while (1) {             \
       if (pLocation[hash].value == item) {      \
          /* return the first location */ \
          pLocationOutput[i] = pLocation[hash].Location; \
-         pBooleanOutput[i] = 1; \
+         pBoolOutput[i] = 1; \
          break; \
       } \
       /* Linear goes to next position */ \
@@ -1432,7 +1432,7 @@ while (1) {             \
    else { \
       /* Not found */ \
       pLocationOutput[i] = BAD_INDEX; \
-      pBooleanOutput[i] = 0; \
+      pBoolOutput[i] = 0; \
       break; \
    } \
 }
@@ -1442,15 +1442,15 @@ while (1) {             \
 // T is the input type byte/float32/float64/int8/uint8/int16/uint16/int32/...
 // U is the index output type (int8/16/32/64)
 //
-// outputs boolean array
+// outputs bool array
 // outputs location array
 //
 template<typename T, typename U>
 void IsMember(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashListT,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU) {
 
 
@@ -1461,14 +1461,14 @@ void IsMember(
    };
 
    CHashLinear<T, U>* pHashLinear = (CHashLinear<T, U>*)pHashLinearVoid;
-   UINT64 HashSize = pHashLinear->HashSize;
+   uint64_t HashSize = pHashLinear->HashSize;
 
    HashLocation* pLocation = (HashLocation*)pHashLinear->pHashTableAny;
    U* pLocationOutput = (U*)pLocationOutputU;
    T* pHashList = (T*)pHashListT;
 
    // make local reference on stack
-   UINT64* pBitFields = pHashLinear->pBitFields;
+   uint64_t* pBitFields = pHashLinear->pBitFields;
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -1483,9 +1483,9 @@ void IsMember(
    if (sizeof(T) <= 2) {
       LOGGING("Perfect hash\n");
       // perfect hash
-      for (INT64 i = 0; i < arraySize; i++) {
+      for (int64_t i = 0; i < arraySize; i++) {
          T item = pHashList[i];
-         UINT64 hash = (UINT64)item;
+         uint64_t hash = (uint64_t)item;
          INNER_GET_LOCATION_PERFECT;
       }
    }
@@ -1494,42 +1494,42 @@ void IsMember(
 
       if (sizeof(T) == 4) {
          if (HashMode == HASH_MODE_PRIME) {
-            for (INT64 i = 0; i < arraySize; i++) {
+            for (int64_t i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                HASH_INT1;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
          }
          else {
 
-            for (INT64 i = 0; i < arraySize; i++) {
+            for (int64_t i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT32;
-               UINT64 hash = h;
+               HASH_int32_t;
+               uint64_t hash = h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
          }
       }
       else
       if (sizeof(T) == 8) {
          if (HashMode == HASH_MODE_PRIME) {
-            for (INT64 i = 0; i < arraySize; i++) {
+            for (int64_t i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                HASH_INT1;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
          }
          else {
 
-            for (INT64 i = 0; i < arraySize; i++) {
+            for (int64_t i = 0; i < arraySize; i++) {
                T item = pHashList[i];
-               HASH_INT64;
-               UINT64 hash = h;
+               HASH_int64_t;
+               uint64_t hash = h;
                INNER_GET_LOCATION;
             }
          }
@@ -1546,10 +1546,10 @@ void IsMember(
 //-----------------------------------------
 // bits 32-51 appear to be sweet spot
 void CalculateHashBits64(
-   INT64 arraySize,
-   UINT64* pHashList) {
+   int64_t arraySize,
+   uint64_t* pHashList) {
 
-   INT64 position[64];
+   int64_t position[64];
    for (int i = 0; i < 64; i++) position[i] = 0;
 
    while (arraySize--) {
@@ -1568,10 +1568,10 @@ void CalculateHashBits64(
 //-----------------------------------------------
 // bits 3-22 appear to be sweet spot
 void CalculateHashBits32(
-   INT64 arraySize,
-   UINT32* pHashList) {
+   int64_t arraySize,
+   uint32_t* pHashList) {
 
-   INT64 position[32];
+   int64_t position[32];
    for (int i = 0; i < 32; i++) position[i] = 0;
 
    while (arraySize--) {
@@ -1592,9 +1592,9 @@ void CalculateHashBits32(
 //
 template<typename T, typename U>
 void CHashLinear<T, U>::MakeHashLocationFloat(
-   INT64 arraySize,
+   int64_t arraySize,
    T*    pHashList,
-   INT64 hintSize ) {
+   int64_t hintSize ) {
 
    if (hintSize == 0) {
       hintSize = arraySize;
@@ -1606,7 +1606,7 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
    LOGGING("MakeHashLocationFloat: hintSize %lld   HashSize %llu\n", hintSize, HashSize);
 
    HashLocation* pLocation = (HashLocation*)pHashTableAny;
-   UINT64*     pBitFields = this->pBitFields;
+   uint64_t*     pBitFields = this->pBitFields;
 
    if (!pLocation || !pBitFields) {
       return;
@@ -1614,7 +1614,7 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
 
    if (sizeof(T) == 8) {
       //printf("**double %llu\n", HashSize);
-      //CalculateHashBits64(arraySize, (UINT64*)pHashList);
+      //CalculateHashBits64(arraySize, (uint64_t*)pHashList);
 
       if (HashMode == HASH_MODE_PRIME) {
 
@@ -1622,10 +1622,10 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
             T item = pHashList[i];
             // NAN CHECK FIRST
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT3;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1636,10 +1636,10 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
             T item = pHashList[i];
             // NAN CHECK FIRST
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT4;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1648,7 +1648,7 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
    }
    if (sizeof(T) == 4) {
       //printf("**single  %llu\n",HashSize);
-      //CalculateHashBits32(arraySize,(UINT32*)pHashList);
+      //CalculateHashBits32(arraySize,(uint32_t*)pHashList);
 
       if (HashMode == HASH_MODE_PRIME) {
 
@@ -1656,10 +1656,10 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
             T item = pHashList[i];
             // NAN CHECK FIRST
             if (item == item) {
-               UINT32* pHashList2 = (UINT32*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint32_t* pHashList2 = (uint32_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT1;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1670,10 +1670,10 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
             T item = pHashList[i];
             // NAN CHECK FIRST
             if (item == item) {
-               UINT32* pHashList2 = (UINT32*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint32_t* pHashList2 = (uint32_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT2;
-               UINT64 hash = h;
+               uint64_t hash = h;
                INTERNAL_SET_LOCATION;
                //InternalSetLocation(i, pLocation, item, h);
             }
@@ -1688,15 +1688,15 @@ void CHashLinear<T, U>::MakeHashLocationFloat(
 
 
 //-----------------------------------------------
-// outputs boolean array
+// outputs bool array
 // outputs location array
 //
 template<typename T, typename U>
 void IsMemberFloat(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashListT,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU) {
 
    LOGGING("IsMemberFloat: arraySize %lld \n", arraySize);
@@ -1709,7 +1709,7 @@ void IsMemberFloat(
    };
 
    CHashLinear<T, U>* pHashLinear = (CHashLinear<T, U>*)pHashLinearVoid;
-   UINT64 HashSize = pHashLinear->HashSize;
+   uint64_t HashSize = pHashLinear->HashSize;
    int HashMode = pHashLinear->HashMode;
 
 
@@ -1718,47 +1718,47 @@ void IsMemberFloat(
    T* pHashList = (T*)pHashListT;
 
    // make local reference on stack
-   UINT64* pBitFields = pHashLinear->pBitFields;
+   uint64_t* pBitFields = pHashLinear->pBitFields;
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
    if (sizeof(T) == 8) {
 
       if (HashMode == HASH_MODE_PRIME) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT3;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
             else {
                // Not found
                pLocationOutput[i] = BAD_INDEX;
-               pBooleanOutput[i] = 0;
+               pBoolOutput[i] = 0;
             }
          }
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT4;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
             else {
 
                // Not found
                pLocationOutput[i] = BAD_INDEX;
-               pBooleanOutput[i] = 0;
+               pBoolOutput[i] = 0;
             }
          }
       }
@@ -1766,40 +1766,40 @@ void IsMemberFloat(
    if (sizeof(T) == 4) {
 
       if (HashMode == HASH_MODE_PRIME) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT32* pHashList2 = (UINT32*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint32_t* pHashList2 = (uint32_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT1;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
             else {
                // Not found
                pLocationOutput[i] = BAD_INDEX;
-               pBooleanOutput[i] = 0;
+               pBoolOutput[i] = 0;
             }
          }
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT32* pHashList2 = (UINT32*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint32_t* pHashList2 = (uint32_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT2;
-               UINT64 hash = (UINT64)h;
+               uint64_t hash = (uint64_t)h;
                INNER_GET_LOCATION;
-               //InternalGetLocation(i, pLocation, pBooleanOutput, pLocationOutput, item, h);
+               //InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput, item, h);
             }
             else {
 
                // Not found
                pLocationOutput[i] = BAD_INDEX;
-               pBooleanOutput[i] = 0;
+               pBoolOutput[i] = 0;
             }
          }
       }
@@ -1814,13 +1814,13 @@ void IsMemberFloat(
 // outputs location array + 1
 //
 template<typename T, typename U>
-INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
-   INT64 arraySize,
+int64_t CHashLinear<T, U>::IsMemberFloatCategorical(
+   int64_t arraySize,
    T*    pHashList,
    U*    pLocationOutput) {
 
    HashLocation* pLocation = (HashLocation*)pHashTableAny;
-   INT64 missed = 0;
+   int64_t missed = 0;
 
    // BUG BUG -- LONG DOUBLE on Linux size 16
 
@@ -1830,8 +1830,8 @@ INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
          for (U i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT3;
                InternalGetLocationCategorical(i, pLocation, pLocationOutput, item, h, &missed);
             }
@@ -1847,8 +1847,8 @@ INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
          for (U i = 0; i < arraySize; i++) {
             T item = pHashList[i];
             if (item == item) {
-               UINT64* pHashList2 = (UINT64*)pHashList;
-               UINT64 h = pHashList2[i];
+               uint64_t* pHashList2 = (uint64_t*)pHashList;
+               uint64_t h = pHashList2[i];
                HASH_FLOAT4;
                InternalGetLocationCategorical(i, pLocation, pLocationOutput, item, h, &missed);
             }
@@ -1868,8 +1868,8 @@ INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                if (item == item) {
-                  UINT32* pHashList2 = (UINT32*)pHashList;
-                  UINT64 h = pHashList2[i];
+                  uint32_t* pHashList2 = (uint32_t*)pHashList;
+                  uint64_t h = pHashList2[i];
                   HASH_FLOAT1;
                   InternalGetLocationCategorical(i, pLocation,  pLocationOutput, item, h, &missed);
                }
@@ -1885,8 +1885,8 @@ INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
             for (U i = 0; i < arraySize; i++) {
                T item = pHashList[i];
                if (item == item) {
-                  UINT32* pHashList2 = (UINT32*)pHashList;
-                  UINT64 h = pHashList2[i];
+                  uint32_t* pHashList2 = (uint32_t*)pHashList;
+                  uint64_t h = pHashList2[i];
                   HASH_FLOAT2;
                   InternalGetLocationCategorical(i, pLocation, pLocationOutput, item, h, &missed);
                }
@@ -1909,7 +1909,7 @@ INT64 CHashLinear<T, U>::IsMemberFloatCategorical(
 //===========================================================================
 
 #define GROUPBY_INNER_LOOP_PERFECT \
-UINT64 hash = (UINT64)item & (HashSize -1); \
+uint64_t hash = (uint64_t)item & (HashSize -1); \
 SingleKeyEntry* pKey = &pLocation[hash]; \
    if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63))) { \
        pIndexArray[i] = pKey->UniqueKey;            \
@@ -1924,7 +1924,7 @@ SingleKeyEntry* pKey = &pLocation[hash]; \
 
 
 #define GROUPBY_INNER_LOOP \
-UINT64 hash = h; \
+uint64_t hash = h; \
 while (1) { \
    if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63))) { \
       /* Check if we have a match from before */     \
@@ -1954,12 +1954,12 @@ while (1) { \
    }                                \
 }
 
-typedef PyArrayObject*(COPY_TO_SMALLER_ARRAY)(void* pFirstArrayIndex, INT64 numUnique, INT64 totalRows);
+typedef PyArrayObject*(COPY_TO_SMALLER_ARRAY)(void* pFirstArrayIndex, int64_t numUnique, int64_t totalRows);
 //-----------------------------------------------------------------------------------------
 // Returns AN ALLOCATED numpy array
 // if firstArray is NULL, it will allocate
 template<typename INDEX_TYPE>
-PyArrayObject* CopyToSmallerArray(void* pFirstArrayIndex, INT64 numUnique, INT64 totalRows, PyArrayObject* firstArray = NULL) {
+PyArrayObject* CopyToSmallerArray(void* pFirstArrayIndex, int64_t numUnique, int64_t totalRows, PyArrayObject* firstArray = NULL) {
 
    // check for out of memory
    if (!pFirstArrayIndex) {
@@ -2013,16 +2013,16 @@ PyArrayObject* CopyToSmallerArray(void* pFirstArrayIndex, INT64 numUnique, INT64
 // *pFirstArrayObject = CopyToSmallerArray<U>(pFirstArray, numUnique, totalRows);
 
 template<typename T, typename U>
-UINT64 CHashLinear<T, U>::GroupByFloat(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t CHashLinear<T, U>::GroupByFloat(
+   int64_t totalRows,
+   int64_t totalItemSize,
    T* pInput,
    int coreType, // -1 when unknown  indicates only one array
                  // Return values
    U* pIndexArray,
    U* &pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
    LOGGING("GroupByFloat: hintSize %lld   HashSize %llu  totalRows %lld\n", hintSize, HashSize, totalRows);
@@ -2031,14 +2031,14 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
    SingleKeyEntry* pLocation = (SingleKeyEntry*)pHashTableAny;
 
    // make local reference on stack
-   UINT64* pBitFieldsX = pBitFields;
+   uint64_t* pBitFieldsX = pBitFields;
 
    switch (sizeof(T)) {
    case 4:
       if (pBoolFilter == NULL) {
          for (U i = 0; i < totalRows; i++) {
             T item = pInput[i];
-            UINT64 h = ((UINT32*)pInput)[i];
+            uint64_t h = ((uint32_t*)pInput)[i];
             HASH_FLOAT2;
             GROUPBY_INNER_LOOP;
          }
@@ -2048,7 +2048,7 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
          // check to see if in filter
          if (pBoolFilter[i]) {
             T item = pInput[i];
-            UINT64 h = ((UINT32*)pInput)[i];
+            uint64_t h = ((uint32_t*)pInput)[i];
             HASH_FLOAT2;
             GROUPBY_INNER_LOOP;
          }
@@ -2062,7 +2062,7 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
       if (pBoolFilter == NULL) {
          for (U i = 0; i < totalRows; i++) {
             T item = pInput[i];
-            UINT64 h = ((UINT64*)pInput)[i];
+            uint64_t h = ((uint64_t*)pInput)[i];
             HASH_FLOAT4;
             GROUPBY_INNER_LOOP;
          }
@@ -2072,7 +2072,7 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
             // check to see if in filter
             if (pBoolFilter[i]) {
                T item = pInput[i];
-               UINT64 h = ((UINT64*)pInput)[i];
+               uint64_t h = ((uint64_t*)pInput)[i];
                HASH_FLOAT4;
                GROUPBY_INNER_LOOP;
             }
@@ -2084,7 +2084,7 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
       break;
    }
 
-   LOGGING("GroupByFloat end! %I64d\n", (INT64)numUnique);
+   LOGGING("GroupByFloat end! %I64d\n", (int64_t)numUnique);
 
    return numUnique;
 }
@@ -2094,16 +2094,16 @@ UINT64 CHashLinear<T, U>::GroupByFloat(
 //------------------------------------------------------------------
 // Returns pFirstArray
 template<typename T, typename U>
-UINT64 CHashLinear<T, U>::GroupByItemSize(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t CHashLinear<T, U>::GroupByItemSize(
+   int64_t totalRows,
+   int64_t totalItemSize,
    T* pInput,
    int coreType, // -1 when unknown  indicates only one array
                  // Return values
    U* pIndexArray,
    U* &pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
    LOGGING("GroupByItem: hintSize %lld   HashSize %llu  totalRows %lld   sizeofT:%lld   sizeofU:%lld\n", hintSize, HashSize, totalRows, sizeof(T), sizeof(U));
@@ -2112,7 +2112,7 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
    SingleKeyEntry* pLocation = (SingleKeyEntry*)pHashTableAny;
 
    // make local reference on stack
-   UINT64* pBitFieldsX = pBitFields;
+   uint64_t* pBitFieldsX = pBitFields;
 
    switch (sizeof(T)) {
    case 1:
@@ -2165,7 +2165,7 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
       if (pBoolFilter == NULL) {
          for (U i = 0; i < totalRows; i++) {
             T item = pInput[i];
-            HASH_INT32;
+            HASH_int32_t;
             GROUPBY_INNER_LOOP;
          }
       }
@@ -2174,7 +2174,7 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
             // check to see if in filter
             if (pBoolFilter[i]) {
                T item = pInput[i];
-               HASH_INT32;
+               HASH_int32_t;
                GROUPBY_INNER_LOOP;
             }
             else {
@@ -2187,7 +2187,7 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
       if (pBoolFilter == NULL) {
          for (U i = 0; i < totalRows; i++) {
             T item = pInput[i];
-            HASH_INT64;
+            HASH_int64_t;
             GROUPBY_INNER_LOOP;
          }
       }
@@ -2196,7 +2196,7 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
             // check to see if in filter
             if (pBoolFilter[i]) {
                T item = pInput[i];
-               HASH_INT64;
+               HASH_int64_t;
                GROUPBY_INNER_LOOP;
             }
             else {
@@ -2245,9 +2245,9 @@ UINT64 CHashLinear<T, U>::GroupByItemSize(
 // hintSize can be 0 which will default to totalRows
 // pBoolFilter can be NULL
 template<typename T, typename U>
-UINT64 CHashLinear<T, U>::GroupBy(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t CHashLinear<T, U>::GroupBy(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput,
 
    int coreType, // -1 when unknown  indicates only one array
@@ -2257,7 +2257,7 @@ UINT64 CHashLinear<T, U>::GroupBy(
    U* &pFirstArray,
 
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
    LOGGING("GroupBy: hintSize %lld   HashSize %llu\n", hintSize, HashSize);
@@ -2267,14 +2267,14 @@ UINT64 CHashLinear<T, U>::GroupBy(
    MultiKeyEntry* pLocation = (MultiKeyEntry*)pHashTableAny;
 
    // make local reference on stack
-   UINT64* pBitFieldsX = pBitFields;
+   uint64_t* pBitFieldsX = pBitFields;
    if (pBoolFilter == NULL) {
       // make local reference on stack
 
       for (U i = 0; i < totalRows; i++) {
 
          const char* pMatch = pInput + (totalItemSize*i);
-         UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
 
          // Use and mask to strip off high bits
          hash = hash & (HashSize - 1);
@@ -2321,7 +2321,7 @@ UINT64 CHashLinear<T, U>::GroupBy(
          if (pBoolFilter[i]) {
 
             const char* pMatch = pInput + (totalItemSize*i);
-            UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+            uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
             while (1) {
@@ -2365,7 +2365,7 @@ UINT64 CHashLinear<T, U>::GroupBy(
       }
    }
 
-   LOGGING("%lld entries   hashSize %llu   %lld unique\n", totalRows, HashSize, (INT64)numUnique);
+   LOGGING("%lld entries   hashSize %llu   %lld unique\n", totalRows, HashSize, (int64_t)numUnique);
 
    // return to caller the first array that we reduced
    //*pFirstArrayObject = CopyToSmallerArray<U>(pFirstArray, numUnique, totalRows);
@@ -2381,9 +2381,9 @@ UINT64 CHashLinear<T, U>::GroupBy(
 // hintSize can be 0 which will default to totalRows
 // pBoolFilter can be NULL
 template<typename T, typename U>
-UINT64 CHashLinear<T, U>::GroupBySuper(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t CHashLinear<T, U>::GroupBySuper(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput,
 
    int coreType, // -1 when unknown  indicates only one array
@@ -2394,7 +2394,7 @@ UINT64 CHashLinear<T, U>::GroupBySuper(
    U* pUniqueArray,
    U* pUniqueCountArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
    if (hintSize == 0) {
@@ -2417,16 +2417,16 @@ UINT64 CHashLinear<T, U>::GroupBySuper(
    //pUniqueArray[0] = GB_INVALID_INDEX;
 
    // make local reference on stack
-   UINT64* pBitFieldsX = pBitFields;
+   uint64_t* pBitFieldsX = pBitFields;
    if (pBoolFilter == NULL) {
       // make local reference on stack
 
       for (U i = 0; i < totalRows; i++) {
 
          const char* pMatch = pInput + (totalItemSize*i);
-         UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
-         //UINT64 hash = mHashOld(pMatch, totalItemSize);
-         //UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
+         //uint64_t hash = mHashOld(pMatch, totalItemSize);
+         //uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
 
          //printf("%d", hash);
          // Use and mask to strip off high bits
@@ -2508,9 +2508,9 @@ UINT64 CHashLinear<T, U>::GroupBySuper(
          if (pBoolFilter[i]) {
 
             const char* pMatch = pInput + (totalItemSize*i);
-            UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
-            //UINT64 hash = mHashOld(pMatch, totalItemSize);
-            //UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+            uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
+            //uint64_t hash = mHashOld(pMatch, totalItemSize);
+            //uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
 
             //printf("%d", hash);
             // Use and mask to strip off high bits
@@ -2616,9 +2616,9 @@ UINT64 CHashLinear<T, U>::GroupBySuper(
 // hintSize can be 0 which will default to totalRows
 // pBoolFilter option (can be NULL)
 template<typename T, typename U>
-UINT64 CHashLinear<T, U>::Unique(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t CHashLinear<T, U>::Unique(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput,
 
    // Return values
@@ -2629,7 +2629,7 @@ UINT64 CHashLinear<T, U>::Unique(
 
    // inpuys
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
    if (hintSize == 0) {
@@ -2655,7 +2655,7 @@ UINT64 CHashLinear<T, U>::Unique(
          // Make sure in the filter
          if (pBoolFilter[i]) {
             const char* pMatch = pInput + (totalItemSize*i);
-            UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+            uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
             while (1) {
@@ -2703,7 +2703,7 @@ UINT64 CHashLinear<T, U>::Unique(
    else {
       for (U i = 0; i < totalRows; i++) {
          const char* pMatch = pInput + (totalItemSize*i);
-         UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
          // Use and mask to strip off high bits
          hash = hash & (HashSize - 1);
          while (1) {
@@ -2747,7 +2747,7 @@ UINT64 CHashLinear<T, U>::Unique(
       }
    }
 
-   LOGGING("%llu entries   hashSize %lld    %lld unique\n", totalRows, (INT64)HashSize, (INT64)NumUnique);
+   LOGGING("%llu entries   hashSize %lld    %lld unique\n", totalRows, (int64_t)HashSize, (int64_t)NumUnique);
 
    return NumUnique;
 
@@ -2759,15 +2759,15 @@ UINT64 CHashLinear<T, U>::Unique(
 // Set hintSize < 0 if second pass so it will not allocate
 template<typename T, typename U>
 void CHashLinear<T, U>::MultiKeyRolling(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput,
 
    // Return values
    U* pIndexArray,
    U* pRunningCountArray,
    HASH_MODE hashMode,
-   INT64 hintSize) {   // pass in -value to indicate reusing
+   int64_t hintSize) {   // pass in -value to indicate reusing
 
    if (totalItemSize > 16) { //sizeof(MultiKeyEntryRolling.Key))
       printf("!!!rolling key is too wide %lld\n", totalItemSize);
@@ -2792,7 +2792,7 @@ void CHashLinear<T, U>::MultiKeyRolling(
 
    for (U i = 0; i < totalRows; i++) {
       const char* pMatch = pInput + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
 
       // Use and mask to strip off high bits
       hash = hash & (HashSize - 1);
@@ -2813,7 +2813,7 @@ void CHashLinear<T, U>::MultiKeyRolling(
             ++NumCollisions;
 
             // Bail on too many collisions (could return FALSE)
-            if ((INT64)NumCollisions > hintSize)
+            if ((int64_t)NumCollisions > hintSize)
                break;
 
             // Linear goes to next position
@@ -2846,8 +2846,8 @@ void CHashLinear<T, U>::MultiKeyRolling(
 // pBoolFilter can be NULL
 template<typename T, typename U>
 void CHashLinear<T, U>::MakeHashLocationMultiKey(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput,
 
    // Return values
@@ -2857,12 +2857,12 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(
    U* pNextArray,
    U* pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
-   //INT64 arraySize,
+   //int64_t arraySize,
    //const char* pHashList,
-   //INT32 strWidth) {
+   //int32_t strWidth) {
 
    if (hintSize == 0) {
       hintSize = totalRows;
@@ -2881,9 +2881,9 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(
 
    for (U i = 0; i < totalRows; i++) {
       const char* pMatch = pInput + (totalItemSize*i);
-      UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
-      //UINT64 hash = mHashOld(pMatch, totalItemSize);
-      //UINT64 hash = DEFAULT_HASH64(pMatch, totalItemSize);
+      uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
+      //uint64_t hash = mHashOld(pMatch, totalItemSize);
+      //uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
 
       //printf("%d", hash);
       // Use and mask to strip off high bits
@@ -2947,11 +2947,11 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(
 //
 template<typename T, typename U>
 void CHashLinear<T, U>::MakeHashLocationString(
-   INT64 arraySize,
+   int64_t arraySize,
    const char* pHashList,
-   INT64 strWidth,
-   INT64 hintSize,
-   BOOL  isUnicode) {
+   int64_t strWidth,
+   int64_t hintSize,
+   bool  isUnicode) {
 
    if (hintSize == 0) {
       hintSize = arraySize;
@@ -2969,7 +2969,7 @@ void CHashLinear<T, U>::MakeHashLocationString(
    }
 
    if (isUnicode) {
-      for (INT64 i = 0; i < arraySize; i++) {
+      for (int64_t i = 0; i < arraySize; i++) {
          HASH_UNICODE()
          // Use and mask to strip off high bits
          hash = hash & (HashSize - 1);
@@ -2977,7 +2977,7 @@ void CHashLinear<T, U>::MakeHashLocationString(
       }
    }
    else {
-      for (INT64 i = 0; i < arraySize; i++) {
+      for (int64_t i = 0; i < arraySize; i++) {
          HASH_STRING()
          // Use and mask to strip off high bits
          hash = hash & (HashSize - 1);
@@ -2997,8 +2997,8 @@ void CHashLinear<T, U>::InternalSetLocationString(
    U  i,
    HashLocation* pLocation,
    const char* strValue,
-   INT64 strWidth,
-   UINT64 hash) {
+   int64_t strWidth,
+   uint64_t hash) {
 
    //printf("**set %llu  width: %d  string: %s\n", hash, strWidth, strValue);
 
@@ -3028,7 +3028,7 @@ void CHashLinear<T, U>::InternalSetLocationString(
    SetBit(hash);
    ++NumUnique;
    pLocation[hash].Location = i;
-   pLocation[hash].value = (INT64)strValue;
+   pLocation[hash].value = (int64_t)strValue;
 
 }
 
@@ -3043,8 +3043,8 @@ void CHashLinear<T, U>::InternalSetLocationUnicode(
    U  i,
    HashLocation* pLocation,
    const char* strValue,
-   INT64 strWidth,
-   UINT64 hash) {
+   int64_t strWidth,
+   uint64_t hash) {
 
    //printf("**set %llu  width: %d  string: %s\n", hash, strWidth, strValue);
 
@@ -3074,7 +3074,7 @@ void CHashLinear<T, U>::InternalSetLocationUnicode(
    SetBit(hash);
    ++NumUnique;
    pLocation[hash].Location = i;
-   pLocation[hash].value = (INT64)strValue;
+   pLocation[hash].value = (int64_t)strValue;
 
 }
 
@@ -3088,13 +3088,13 @@ void CHashLinear<T, U>::InternalSetLocationUnicode(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationString(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   UINT64 hash) {
+   int64_t strWidth,
+   uint64_t hash) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -3104,7 +3104,7 @@ void CHashLinear<T, U>::InternalGetLocationString(
       if (STRING_MATCH((const char*)pLocation[hash].value, strValue, strWidth)) {
          // return the first location
          pLocationOutput[i] = pLocation[hash].Location;
-         pBooleanOutput[i] = 1;
+         pBoolOutput[i] = 1;
          return;
       }
 
@@ -3115,7 +3115,7 @@ void CHashLinear<T, U>::InternalGetLocationString(
    }
    // Not found
    pLocationOutput[i] = BAD_INDEX;
-   pBooleanOutput[i] = 0;
+   pBoolOutput[i] = 0;
 }
 
 
@@ -3128,13 +3128,13 @@ void CHashLinear<T, U>::InternalGetLocationString(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationUnicode(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   UINT64 hash) {
+   int64_t strWidth,
+   uint64_t hash) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -3144,7 +3144,7 @@ void CHashLinear<T, U>::InternalGetLocationUnicode(
       if (UNICODE_MATCH((const char*)pLocation[hash].value, strValue, strWidth)) {
          // return the first location
          pLocationOutput[i] = pLocation[hash].Location;
-         pBooleanOutput[i] = 1;
+         pBoolOutput[i] = 1;
          return;
       }
 
@@ -3155,7 +3155,7 @@ void CHashLinear<T, U>::InternalGetLocationUnicode(
    }
    // Not found
    pLocationOutput[i] = BAD_INDEX;
-   pBooleanOutput[i] = 0;
+   pBoolOutput[i] = 0;
 }
 
 
@@ -3168,14 +3168,14 @@ void CHashLinear<T, U>::InternalGetLocationUnicode(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationString2(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   INT64 strWidth2,
-   UINT64 hash) {
+   int64_t strWidth,
+   int64_t strWidth2,
+   uint64_t hash) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -3187,7 +3187,7 @@ void CHashLinear<T, U>::InternalGetLocationString2(
          //printf("match\n");
          // return the first location
          pLocationOutput[i] = pLocation[hash].Location;
-         pBooleanOutput[i] = 1;
+         pBoolOutput[i] = 1;
          return;
       }
 
@@ -3199,7 +3199,7 @@ void CHashLinear<T, U>::InternalGetLocationString2(
    }
    // Not found
    pLocationOutput[i] = BAD_INDEX;
-   pBooleanOutput[i] = 0;
+   pBoolOutput[i] = 0;
 }
 
 
@@ -3213,14 +3213,14 @@ void CHashLinear<T, U>::InternalGetLocationString2(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationUnicode2(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   INT64 strWidth2,
-   UINT64 hash) {
+   int64_t strWidth,
+   int64_t strWidth2,
+   uint64_t hash) {
 
    const U        BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -3232,7 +3232,7 @@ void CHashLinear<T, U>::InternalGetLocationUnicode2(
          //printf("match\n");
          // return the first location
          pLocationOutput[i] = pLocation[hash].Location;
-         pBooleanOutput[i] = 1;
+         pBoolOutput[i] = 1;
          return;
       }
 
@@ -3244,7 +3244,7 @@ void CHashLinear<T, U>::InternalGetLocationUnicode2(
    }
    // Not found
    pLocationOutput[i] = BAD_INDEX;
-   pBooleanOutput[i] = 0;
+   pBoolOutput[i] = 0;
 }
 
 
@@ -3259,13 +3259,13 @@ void CHashLinear<T, U>::InternalGetLocationUnicode2(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationStringCategorical(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   UINT64 hash,
-   INT64* missed) {
+   int64_t strWidth,
+   uint64_t hash,
+   int64_t* missed) {
 
    while (IsBitSet(hash)) {
       // Check if we have a match from before
@@ -3296,14 +3296,14 @@ void CHashLinear<T, U>::InternalGetLocationStringCategorical(
 template <typename T, typename U>
 FORCE_INLINE
 void CHashLinear<T, U>::InternalGetLocationString2Categorical(
-   INT64  i,
+   int64_t  i,
    HashLocation* pLocation,
    U*    pLocationOutput,
    const char* strValue,
-   INT64 strWidth,
-   INT64 strWidth2,
-   UINT64 hash,
-   INT64* missed) {
+   int64_t strWidth,
+   int64_t strWidth2,
+   uint64_t hash,
+   int64_t* missed) {
 
    while (IsBitSet(hash)) {
       // Check if we have a match from before
@@ -3337,14 +3337,14 @@ void CHashLinear<T, U>::InternalGetLocationString2Categorical(
 // strWidth2 was used in InternalSetLocationString and refers to second argument
 
 template<typename T, typename U>
-static INT64 IsMemberStringCategorical(
+static int64_t IsMemberStringCategorical(
    void* pHashLinearVoid,
-   INT64 arraySize,
-   INT64 strWidth,
-   INT64 strWidth2,
+   int64_t arraySize,
+   int64_t strWidth,
+   int64_t strWidth2,
    const char* pHashList,
    void*  pLocationOutputU,
-   BOOL   isUnicode) {
+   bool   isUnicode) {
 
    struct HashLocation
    {
@@ -3357,24 +3357,24 @@ static INT64 IsMemberStringCategorical(
    HashLocation* pLocation = (HashLocation*)pHashLinear->pHashTableAny;
    U* pLocationOutput = (U*)pLocationOutputU;
 
-   INT64 missed = 0;
-   UINT64 HashSize = pHashLinear->HashSize;
+   int64_t missed = 0;
+   uint64_t HashSize = pHashLinear->HashSize;
 
    // to determine if hash location has been visited
-   UINT64*     pBitFields = pHashLinear->pBitFields;
+   uint64_t*     pBitFields = pHashLinear->pBitFields;
 
    if (strWidth == strWidth2) {
       //-------------------------------------------------------------------
       // STRINGS are SAME SIZE --------------------------------------------
       if (isUnicode) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_UNICODE()
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
 
             while (1) {
-               UINT64 index = hash >> 6;
+               uint64_t index = hash >> 6;
                if (pBitFields[index] & (1LL << (hash & 63))) {
                   // Check if we have a match from before
                   // Check if we have a match from before
@@ -3404,13 +3404,13 @@ static INT64 IsMemberStringCategorical(
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_STRING()
 
                // Use and mask to strip off high bits
                hash = hash & (HashSize - 1);
             while (1) {
-               UINT64 index = hash >> 6;
+               uint64_t index = hash >> 6;
                if (pBitFields[index] & (1LL << (hash & 63))) {
                   // Check if we have a match from before
                   if (STRING_MATCH((const char*)pLocation[hash].value, strStart, strWidth)) {
@@ -3441,14 +3441,14 @@ static INT64 IsMemberStringCategorical(
       //-------------------------------------------------------------------
       // STRINGS are DIFFERENT SIZE --------------------------------------------
       if (isUnicode) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_UNICODE()
 
             // Use and mask to strip off high bits
             hash = hash & (pHashLinear->HashSize - 1);
 
             while (1) {
-               UINT64 index = hash >> 6;
+               uint64_t index = hash >> 6;
                if (pBitFields[index] & (1LL << (hash & 63))) {
                   // Check if we have a match from before
                   // Check if we have a match from before
@@ -3478,14 +3478,14 @@ static INT64 IsMemberStringCategorical(
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_STRING()
 
             // Use and mask to strip off high bits
             hash = hash & (pHashLinear->HashSize - 1);
 
             while (1) {
-               UINT64 index = hash >> 6;
+               uint64_t index = hash >> 6;
                if (pBitFields[index] & (1LL << (hash & 63))) {
                   // Check if we have a match from before
                   if (STRING_MATCH2((const char*)pLocation[hash].value, strStart, strWidth2, strWidth)) {
@@ -3519,7 +3519,7 @@ static INT64 IsMemberStringCategorical(
 
 
 //-----------------------------------------------
-// outputs boolean array
+// outputs bool array
 // outputs location array
 //
 // strWidth is the width for pHashList and the first argument called passed
@@ -3527,13 +3527,13 @@ static INT64 IsMemberStringCategorical(
 
 template<typename T, typename U>
 void CHashLinear<T, U>::IsMemberString(
-   INT64 arraySize,
-   INT64 strWidth,
-   INT64 strWidth2,
+   int64_t arraySize,
+   int64_t strWidth,
+   int64_t strWidth2,
    const char* pHashList,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pLocationOutput,
-   BOOL  isUnicode) {
+   bool  isUnicode) {
 
    HashLocation* pLocation = (HashLocation*)pHashTableAny;
 
@@ -3541,23 +3541,23 @@ void CHashLinear<T, U>::IsMemberString(
       //-------------------------------------------------------------------
       // STRINGS are SAME SIZE --------------------------------------------
       if (isUnicode) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_UNICODE()
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
             //printf("**uni hash %lld\n", (long long)hash);
-            InternalGetLocationUnicode(i, pLocation, pBooleanOutput, pLocationOutput, strStart, strWidth,  hash);
+            InternalGetLocationUnicode(i, pLocation, pBoolOutput, pLocationOutput, strStart, strWidth,  hash);
          }
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_STRING()
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            InternalGetLocationString(i, pLocation, pBooleanOutput, pLocationOutput, strStart, strWidth,  hash);
+            InternalGetLocationString(i, pLocation, pBoolOutput, pLocationOutput, strStart, strWidth,  hash);
          }
       }
    }
@@ -3565,22 +3565,22 @@ void CHashLinear<T, U>::IsMemberString(
       //-------------------------------------------------------------------
       // STRINGS are DIFFERENT SIZE --------------------------------------------
       if (isUnicode) {
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_UNICODE()
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            InternalGetLocationUnicode2(i, pLocation, pBooleanOutput, pLocationOutput, strStart, strWidth2, strWidth, hash);
+            InternalGetLocationUnicode2(i, pLocation, pBoolOutput, pLocationOutput, strStart, strWidth2, strWidth, hash);
          }
       }
       else {
 
-         for (INT64 i = 0; i < arraySize; i++) {
+         for (int64_t i = 0; i < arraySize; i++) {
             HASH_STRING()
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            InternalGetLocationString2(i, pLocation, pBooleanOutput, pLocationOutput, strStart, strWidth2, strWidth, hash);
+            InternalGetLocationString2(i, pLocation, pBoolOutput, pLocationOutput, strStart, strWidth2, strWidth, hash);
          }
       }
    }
@@ -3592,9 +3592,9 @@ void CHashLinear<T, U>::IsMemberString(
 
 typedef void(*ISMEMBER_MT)(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashList,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU);
 
 //--------------------------------------------------------------------
@@ -3603,12 +3603,12 @@ struct IMMT_CALLBACK {
 
    void* pHashLinearVoid;
 
-   INT64 size1;
+   int64_t size1;
    void* pHashList;
-   INT8* pBooleanOutput;
+   int8_t* pBoolOutput;
    void* pOutput;
-   INT64 typeSizeIn;
-   INT64 typeSizeOut;
+   int64_t typeSizeIn;
+   int64_t typeSizeOut;
 
 } stIMMTCallback;
 
@@ -3616,23 +3616,23 @@ struct IMMT_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL IMMTThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool IMMTThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = FALSE;
    IMMT_CALLBACK* Callback = (IMMT_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pInput1 = (char *)Callback->pHashList;
    char* pOutput = (char*)Callback->pOutput;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
-      INT64 booleanAdj = pstWorkerItem->BlockSize * workBlock;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t boolAdj = pstWorkerItem->BlockSize * workBlock;
 
-      Callback->anyIMMTCallback(Callback->pHashLinearVoid, lenX, pInput1 + inputAdj, Callback->pBooleanOutput + booleanAdj, pOutput + outputAdj);
+      Callback->anyIMMTCallback(Callback->pHashLinearVoid, lenX, pInput1 + inputAdj, Callback->pBoolOutput + boolAdj, pOutput + outputAdj);
 
       // Indicate we completed a block
       didSomeWork = TRUE;
@@ -3651,12 +3651,12 @@ static BOOL IMMTThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int cor
 static void IsMemberMultiThread(
    ISMEMBER_MT pFunction,
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashList,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU,
-   INT64 sizeInput,
-   INT64 sizeOutput) {
+   int64_t sizeInput,
+   int64_t sizeOutput) {
 
 
    stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(arraySize);
@@ -3664,7 +3664,7 @@ static void IsMemberMultiThread(
    if (pWorkItem == NULL) {
 
       // Threading not allowed for this work item, call it directly from main thread
-      pFunction(pHashLinearVoid, arraySize, pHashList, pBooleanOutput, pLocationOutputU);
+      pFunction(pHashLinearVoid, arraySize, pHashList, pBoolOutput, pLocationOutputU);
    }
    else {
       // Each thread will call this routine with the callbackArg
@@ -3676,7 +3676,7 @@ static void IsMemberMultiThread(
       stIMMTCallback.anyIMMTCallback = pFunction;
       stIMMTCallback.size1 = arraySize;
       stIMMTCallback.pHashList = pHashList;
-      stIMMTCallback.pBooleanOutput = pBooleanOutput;
+      stIMMTCallback.pBoolOutput = pBoolOutput;
       stIMMTCallback.pOutput = pLocationOutputU;
       stIMMTCallback.typeSizeIn = sizeInput;
       stIMMTCallback.typeSizeOut = sizeOutput;
@@ -3691,45 +3691,45 @@ static void IsMemberMultiThread(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-// floats are 4 bytes and will be handled like INT32 or UIN32
+// floats are 4 bytes and will be handled like int32_t or UIN32
 //
 //    First arg: existing  numpy array
 //    Second arg: existing  numpy array
 //    Third arg: hashmode (1 or 2)
 //
 // Returns in pOutput: index location of second arg -- where first arg found in second arg
-// Returns in pBooleanOutput: True if found, False otherwise
+// Returns in pBoolOutput: True if found, False otherwise
 template<typename U>
 void* IsMemberHash32(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
 
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
 
    U* pOutput,
 
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    INT sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize) {
+   int64_t hintSize) {
 
 
    // Allocate hash
 
    switch (sizeType) {
    case 1: {
-      CHashLinear<UINT8, U>* pHashLinear = new CHashLinear<UINT8, U>(HASH_MODE_MASK);
-      pHashLinear->MakeHashLocation(size2, (UINT8*)pInput2, 256 / 2);
-      IsMemberMultiThread(IsMember<UINT8, U>, pHashLinear, size1, (UINT8*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(UINT8), sizeof(U));
+      CHashLinear<uint8_t, U>* pHashLinear = new CHashLinear<uint8_t, U>(HASH_MODE_MASK);
+      pHashLinear->MakeHashLocation(size2, (uint8_t*)pInput2, 256 / 2);
+      IsMemberMultiThread(IsMember<uint8_t, U>, pHashLinear, size1, (uint8_t*)pInput1, pBoolOutput, (U*)pOutput, sizeof(uint8_t), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
            break;
    case 2: {
-      CHashLinear<UINT16, U>* pHashLinear = new CHashLinear<UINT16, U>(HASH_MODE_MASK);
-      pHashLinear->MakeHashLocation(size2, (UINT16*)pInput2, 65536 / 2);
-      IsMemberMultiThread(IsMember<UINT16, U>, pHashLinear, size1, (UINT16*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(UINT16), sizeof(U));
+      CHashLinear<uint16_t, U>* pHashLinear = new CHashLinear<uint16_t, U>(HASH_MODE_MASK);
+      pHashLinear->MakeHashLocation(size2, (uint16_t*)pInput2, 65536 / 2);
+      IsMemberMultiThread(IsMember<uint16_t, U>, pHashLinear, size1, (uint16_t*)pInput1, pBoolOutput, (U*)pOutput, sizeof(uint16_t), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
@@ -3737,18 +3737,18 @@ void* IsMemberHash32(
 
    case 4:
    {
-      CHashLinear<UINT32, U>* pHashLinear = new CHashLinear<UINT32, U>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT32*)pInput2, hintSize);
-      IsMemberMultiThread(IsMember<UINT32, U>, pHashLinear, size1, (UINT32*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(UINT32), sizeof(U));
+      CHashLinear<uint32_t, U>* pHashLinear = new CHashLinear<uint32_t, U>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint32_t*)pInput2, hintSize);
+      IsMemberMultiThread(IsMember<uint32_t, U>, pHashLinear, size1, (uint32_t*)pInput1, pBoolOutput, (U*)pOutput, sizeof(uint32_t), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
    break;
    case 8:
    {
-      CHashLinear<UINT64, U>* pHashLinear = new CHashLinear<UINT64, U>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT64*)pInput2, hintSize);
-      IsMemberMultiThread(IsMember<UINT64, U>, pHashLinear, size1, (UINT64*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(UINT64), sizeof(U));
+      CHashLinear<uint64_t, U>* pHashLinear = new CHashLinear<uint64_t, U>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint64_t*)pInput2, hintSize);
+      IsMemberMultiThread(IsMember<uint64_t, U>, pHashLinear, size1, (uint64_t*)pInput1, pBoolOutput, (U*)pOutput, sizeof(uint64_t), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
@@ -3757,7 +3757,7 @@ void* IsMemberHash32(
    {
       CHashLinear<FLOAT, U>* pHashLinear = new CHashLinear<FLOAT, U>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (FLOAT*)pInput2, hintSize);
-      IsMemberMultiThread(IsMemberFloat<FLOAT, U>, pHashLinear, size1, (FLOAT*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(FLOAT), sizeof(U));
+      IsMemberMultiThread(IsMemberFloat<FLOAT, U>, pHashLinear, size1, (FLOAT*)pInput1, pBoolOutput, (U*)pOutput, sizeof(FLOAT), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
@@ -3766,7 +3766,7 @@ void* IsMemberHash32(
    {
       CHashLinear<DOUBLE, U>* pHashLinear = new CHashLinear<DOUBLE, U>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (DOUBLE*)pInput2, hintSize);
-      IsMemberMultiThread(IsMemberFloat<DOUBLE, U>, pHashLinear, size1, (DOUBLE*)pInput1, pBooleanOutput, (U*)pOutput, sizeof(DOUBLE), sizeof(U));
+      IsMemberMultiThread(IsMemberFloat<DOUBLE, U>, pHashLinear, size1, (DOUBLE*)pInput1, pBoolOutput, (U*)pOutput, sizeof(DOUBLE), sizeof(U));
       delete pHashLinear;
       return NULL;
    }
@@ -3785,31 +3785,31 @@ void* IsMemberHash32(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-// floats are + 100 and will be handled differnt from INT64 or UIN32
+// floats are + 100 and will be handled differnt from int64_t or UIN32
 void* IsMemberHash64(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT64* pOutput,
-   INT8* pBooleanOutput,
+   int64_t* pOutput,
+   int8_t* pBoolOutput,
    INT sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize) {
+   int64_t hintSize) {
 
    switch (sizeType) {
    case 1: {
-      CHashLinear<UINT8, INT64>* pHashLinear = new CHashLinear<UINT8, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT8*)pInput2, hintSize);
-      IsMember<UINT8, INT64>(pHashLinear, size1, (UINT8*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      CHashLinear<uint8_t, int64_t>* pHashLinear = new CHashLinear<uint8_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint8_t*)pInput2, hintSize);
+      IsMember<uint8_t, int64_t>(pHashLinear, size1, (uint8_t*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
            break;
    case 2: {
-      CHashLinear<UINT16, INT64>* pHashLinear = new CHashLinear<UINT16, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT16*)pInput2, hintSize);
-      IsMember<UINT16, INT64>(pHashLinear, size1, (UINT16*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      CHashLinear<uint16_t, int64_t>* pHashLinear = new CHashLinear<uint16_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint16_t*)pInput2, hintSize);
+      IsMember<uint16_t, int64_t>(pHashLinear, size1, (uint16_t*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
@@ -3817,36 +3817,36 @@ void* IsMemberHash64(
 
    case 4:
    {
-      CHashLinear<UINT32, INT64>* pHashLinear = new CHashLinear<UINT32, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT32*)pInput2, hintSize);
-      IsMember<UINT32, INT64>(pHashLinear, size1, (UINT32*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      CHashLinear<uint32_t, int64_t>* pHashLinear = new CHashLinear<uint32_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint32_t*)pInput2, hintSize);
+      IsMember<uint32_t, int64_t>(pHashLinear, size1, (uint32_t*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
    break;
    case 8:
    {
-      CHashLinear<UINT64, INT64>* pHashLinear = new CHashLinear<UINT64, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT64*)pInput2, hintSize);
-      IsMember<UINT64, INT64>(pHashLinear, size1, (UINT64*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      CHashLinear<uint64_t, int64_t>* pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint64_t*)pInput2, hintSize);
+      IsMember<uint64_t, int64_t>(pHashLinear, size1, (uint64_t*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
    break;
    case 104:
    {
-      CHashLinear<FLOAT, INT64>* pHashLinear = new CHashLinear<FLOAT, INT64>(hashMode);
+      CHashLinear<FLOAT, int64_t>* pHashLinear = new CHashLinear<FLOAT, int64_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (FLOAT*)pInput2, hintSize);
-      IsMemberFloat<FLOAT, INT64>(pHashLinear, size1, (FLOAT*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      IsMemberFloat<FLOAT, int64_t>(pHashLinear, size1, (FLOAT*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
    break;
    case 108:
    {
-      CHashLinear<DOUBLE, INT64>* pHashLinear = new CHashLinear<DOUBLE, INT64>(hashMode);
+      CHashLinear<DOUBLE, int64_t>* pHashLinear = new CHashLinear<DOUBLE, int64_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (DOUBLE*)pInput2, hintSize);
-      IsMemberFloat<DOUBLE, INT64>(pHashLinear, size1, (DOUBLE*)pInput1, pBooleanOutput, (INT64*)pOutput);
+      IsMemberFloat<DOUBLE, int64_t>(pHashLinear, size1, (DOUBLE*)pInput1, pBoolOutput, (int64_t*)pOutput);
       delete pHashLinear;
       return NULL;
    }
@@ -3861,42 +3861,42 @@ void* IsMemberHash64(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-// floats are 4 bytes and will be handled like INT32 or UIN32
+// floats are 4 bytes and will be handled like int32_t or UIN32
 //
 //    First arg: existing  numpy array
 //    Second arg: existing  numpy array
 //    Third arg: hashmode (1 or 2)
 //
 // Returns in pOutput: index location of second arg -- where first arg found in second arg
-// Returns in pBooleanOutput: True if found, False otherwise
-INT64 IsMemberHashCategorical(
-   INT64 size1,
+// Returns in pBoolOutput: True if found, False otherwise
+int64_t IsMemberHashCategorical(
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT32* pOutput,
+   int32_t* pOutput,
    INT sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize) {
+   int64_t hintSize) {
 
 
-   INT64 missed = 0;
+   int64_t missed = 0;
    // Allocate hash
 
    switch (sizeType) {
    case 1: {
-      CHashLinear<UINT8, INT32>* pHashLinear = new CHashLinear<UINT8, INT32>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT8*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT8*)pInput1, pOutput);
+      CHashLinear<uint8_t, int32_t>* pHashLinear = new CHashLinear<uint8_t, int32_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint8_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint8_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
    break;
 
    case 2: {
-      CHashLinear<UINT16, INT32>* pHashLinear = new CHashLinear<UINT16, INT32>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT16*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT16*)pInput1, pOutput);
+      CHashLinear<uint16_t, int32_t>* pHashLinear = new CHashLinear<uint16_t, int32_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint16_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint16_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
@@ -3904,25 +3904,25 @@ INT64 IsMemberHashCategorical(
 
    case 4:
    {
-      CHashLinear<UINT32, INT32>* pHashLinear = new CHashLinear<UINT32, INT32>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT32*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT32*)pInput1, pOutput);
+      CHashLinear<uint32_t, int32_t>* pHashLinear = new CHashLinear<uint32_t, int32_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint32_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint32_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
    break;
    case 8:
    {
-      CHashLinear<UINT64, INT32>* pHashLinear = new CHashLinear<UINT64, INT32>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT64*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT64*)pInput1, pOutput);
+      CHashLinear<uint64_t, int32_t>* pHashLinear = new CHashLinear<uint64_t, int32_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint64_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint64_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
    break;
    case 104:
    {
-      CHashLinear<FLOAT, INT32>* pHashLinear = new CHashLinear<FLOAT, INT32>(hashMode);
+      CHashLinear<FLOAT, int32_t>* pHashLinear = new CHashLinear<FLOAT, int32_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (FLOAT*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (FLOAT*)pInput1, pOutput);
       delete pHashLinear;
@@ -3931,7 +3931,7 @@ INT64 IsMemberHashCategorical(
    break;
    case 108:
    {
-      CHashLinear<DOUBLE, INT32>* pHashLinear = new CHashLinear<DOUBLE, INT32>(hashMode);
+      CHashLinear<DOUBLE, int32_t>* pHashLinear = new CHashLinear<DOUBLE, int32_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (DOUBLE*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (DOUBLE*)pInput1, pOutput);
       delete pHashLinear;
@@ -3940,7 +3940,7 @@ INT64 IsMemberHashCategorical(
    break;
    case 116:
    {
-      CHashLinear<long double, INT32>* pHashLinear = new CHashLinear<long double, INT32>(hashMode);
+      CHashLinear<long double, int32_t>* pHashLinear = new CHashLinear<long double, int32_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (long double*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (long double*)pInput1, pOutput);
       delete pHashLinear;
@@ -3958,42 +3958,42 @@ INT64 IsMemberHashCategorical(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-// floats are 4 bytes and will be handled like INT32 or UIN32
+// floats are 4 bytes and will be handled like int32_t or UIN32
 //
 //    First arg: existing  numpy array
 //    Second arg: existing  numpy array
 //    Third arg: hashmode (1 or 2)
 //
 // Returns in pOutput: index location of second arg -- where first arg found in second arg
-// Returns in pBooleanOutput: True if found, False otherwise
-INT64 IsMemberHashCategorical64(
-   INT64 size1,
+// Returns in pBoolOutput: True if found, False otherwise
+int64_t IsMemberHashCategorical64(
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT64* pOutput,
+   int64_t* pOutput,
    INT sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize) {
+   int64_t hintSize) {
 
 
-   INT64 missed = 0;
+   int64_t missed = 0;
    // Allocate hash
 
    switch (sizeType) {
    case 1: {
-      CHashLinear<UINT8, INT64>* pHashLinear = new CHashLinear<UINT8, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT8*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT8*)pInput1, pOutput);
+      CHashLinear<uint8_t, int64_t>* pHashLinear = new CHashLinear<uint8_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint8_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint8_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
            break;
 
    case 2: {
-      CHashLinear<UINT16, INT64>* pHashLinear = new CHashLinear<UINT16, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT16*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT16*)pInput1, pOutput);
+      CHashLinear<uint16_t, int64_t>* pHashLinear = new CHashLinear<uint16_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint16_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint16_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
@@ -4001,25 +4001,25 @@ INT64 IsMemberHashCategorical64(
 
    case 4:
    {
-      CHashLinear<UINT32, INT64>* pHashLinear = new CHashLinear<UINT32, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT32*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT32*)pInput1, pOutput);
+      CHashLinear<uint32_t, int64_t>* pHashLinear = new CHashLinear<uint32_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint32_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint32_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
    break;
    case 8:
    {
-      CHashLinear<UINT64, INT64>* pHashLinear = new CHashLinear<UINT64, INT64>(hashMode);
-      pHashLinear->MakeHashLocation(size2, (UINT64*)pInput2, hintSize);
-      missed = pHashLinear->IsMemberCategorical(size1, (UINT64*)pInput1, pOutput);
+      CHashLinear<uint64_t, int64_t>* pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
+      pHashLinear->MakeHashLocation(size2, (uint64_t*)pInput2, hintSize);
+      missed = pHashLinear->IsMemberCategorical(size1, (uint64_t*)pInput1, pOutput);
       delete pHashLinear;
       return missed;
    }
    break;
    case 104:
    {
-      CHashLinear<FLOAT, INT64>* pHashLinear = new CHashLinear<FLOAT, INT64>(hashMode);
+      CHashLinear<FLOAT, int64_t>* pHashLinear = new CHashLinear<FLOAT, int64_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (FLOAT*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (FLOAT*)pInput1, pOutput);
       delete pHashLinear;
@@ -4028,7 +4028,7 @@ INT64 IsMemberHashCategorical64(
    break;
    case 108:
    {
-      CHashLinear<DOUBLE, INT64>* pHashLinear = new CHashLinear<DOUBLE, INT64>(hashMode);
+      CHashLinear<DOUBLE, int64_t>* pHashLinear = new CHashLinear<DOUBLE, int64_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (DOUBLE*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (DOUBLE*)pInput1, pOutput);
       delete pHashLinear;
@@ -4037,7 +4037,7 @@ INT64 IsMemberHashCategorical64(
    break;
    case 116:
    {
-      CHashLinear<long double, INT64>* pHashLinear = new CHashLinear<long double, INT64>(hashMode);
+      CHashLinear<long double, int64_t>* pHashLinear = new CHashLinear<long double, int64_t>(hashMode);
       pHashLinear->MakeHashLocationFloat(size2, (long double*)pInput2, hintSize);
       missed = pHashLinear->IsMemberFloatCategorical(size1, (long double*)pInput1, pOutput);
       delete pHashLinear;
@@ -4055,7 +4055,7 @@ INT64 IsMemberHashCategorical64(
 
 //===================================================================================================
 
-typedef INT64(*ISMEMBER_STRING)(void* pHashLinearVoid, INT64 arraySize, INT64 strWidth1, INT64 strWidth2, const char* pHashList, void*    pLocationOutputU, BOOL isUnicode);
+typedef int64_t(*ISMEMBER_STRING)(void* pHashLinearVoid, int64_t arraySize, int64_t strWidth1, int64_t strWidth2, const char* pHashList, void*    pLocationOutputU, bool isUnicode);
 
 //--------------------------------------------------------------------
 struct IMS_CALLBACK {
@@ -4063,16 +4063,16 @@ struct IMS_CALLBACK {
 
    void* pHashLinearVoid;
 
-   INT64 size1;
-   INT64 strWidth1;
+   int64_t size1;
+   int64_t strWidth1;
    const char* pInput1;
-   INT64 size2;
-   INT64 strWidth2;
+   int64_t size2;
+   int64_t strWidth2;
    void* pOutput;
-   INT64 typeSizeOut;
-   INT64 missed;
+   int64_t typeSizeOut;
+   int64_t missed;
 
-   BOOL  isUnicode;
+   bool  isUnicode;
 
 } stIMSCallback;
 
@@ -4080,23 +4080,23 @@ struct IMS_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL IMSThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool IMSThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = FALSE;
    IMS_CALLBACK* Callback = (IMS_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
-   BOOL isUnicode = Callback->isUnicode;
+   bool isUnicode = Callback->isUnicode;
    char* pInput1 = (char *)Callback->pInput1;
    char* pOutput = (char*)Callback->pOutput;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->strWidth1;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->strWidth1;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
 
-      INT64 missed = Callback->anyIMSCallback(Callback->pHashLinearVoid, lenX, Callback->strWidth1, Callback->strWidth2, pInput1 + inputAdj, pOutput + outputAdj, isUnicode);
+      int64_t missed = Callback->anyIMSCallback(Callback->pHashLinearVoid, lenX, Callback->strWidth1, Callback->strWidth2, pInput1 + inputAdj, pOutput + outputAdj, isUnicode);
 
       // Careful with multithreading -- only set it to 1
       if (missed) {
@@ -4119,19 +4119,19 @@ static BOOL IMSThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 template<typename U>
-INT64 IsMemberHashStringCategorical(
-   INT64 size1,
-   INT64 strWidth1,
+int64_t IsMemberHashStringCategorical(
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
    U* pOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode) {
+   int64_t hintSize,
+   bool isUnicode) {
 
-   CHashLinear<UINT64, U>* pHashLinear = new CHashLinear<UINT64, U>(hashMode);
+   CHashLinear<uint64_t, U>* pHashLinear = new CHashLinear<uint64_t, U>(hashMode);
 
    LOGGING("MakeHashLocationString  %lld  %p  strdwidth2: %lld  hashMode %d\n", size2, pInput2, strWidth2, (int)hashMode);
 
@@ -4142,10 +4142,10 @@ INT64 IsMemberHashStringCategorical(
 
    // Second pass find matches
    // We can multithread it
-   INT64 missed;
+   int64_t missed;
 
    stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(size1);
-   ISMEMBER_STRING pFunction = IsMemberStringCategorical<UINT64, U>;
+   ISMEMBER_STRING pFunction = IsMemberStringCategorical<uint64_t, U>;
 
    if (pWorkItem == NULL) {
 
@@ -4188,19 +4188,19 @@ INT64 IsMemberHashStringCategorical(
 //  Based on the sizeType it will call different hash functions
 template<typename U>
 void IsMemberHashString32(
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
    U* pOutput,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode) {
+   int64_t hintSize,
+   bool isUnicode) {
 
-   CHashLinear<UINT64, U>* pHashLinear = new CHashLinear<UINT64, U>(hashMode);
+   CHashLinear<uint64_t, U>* pHashLinear = new CHashLinear<uint64_t, U>(hashMode);
 
    LOGGING("MakeHashLocationString  %lld  %p  strdwidth2: %lld  hashMode %d\n", size2, pInput2, strWidth2, (int)hashMode);
 
@@ -4211,7 +4211,7 @@ void IsMemberHashString32(
 
    // Second pass find matches
    // We can multithread it
-   pHashLinear->IsMemberString(size1, strWidth1, strWidth2, pInput1, pBooleanOutput, pOutput, isUnicode);
+   pHashLinear->IsMemberString(size1, strWidth1, strWidth2, pInput1, pBoolOutput, pOutput, isUnicode);
 
    LOGGING("IsMemberHashString32  done\n");
 
@@ -4222,21 +4222,21 @@ void IsMemberHashString32(
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void IsMemberHashString64(
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
-   INT64* pOutput,
-   INT8* pBooleanOutput,
+   int64_t* pOutput,
+   int8_t* pBoolOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode) {
+   int64_t hintSize,
+   bool isUnicode) {
 
-   CHashLinear<UINT64, INT64>* pHashLinear = new CHashLinear<UINT64, INT64>(hashMode);
+   CHashLinear<uint64_t, int64_t>* pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
    pHashLinear->MakeHashLocationString(size2, pInput2, strWidth2, hintSize, isUnicode);
-   pHashLinear->IsMemberString(size1, strWidth1, strWidth2, pInput1, pBooleanOutput, (INT64*)pOutput, isUnicode);
+   pHashLinear->IsMemberString(size1, strWidth1, strWidth2, pInput1, pBoolOutput, (int64_t*)pOutput, isUnicode);
    delete pHashLinear;
 }
 
@@ -4244,28 +4244,28 @@ void IsMemberHashString64(
 //-----------------------------------------------------------------------------------------
 // Returns 8/16/32/64 bit indexes
 template<typename KEY_TYPE>
-BOOL MergePreBinned(
-   INT64 size1,
+bool MergePreBinned(
+   int64_t size1,
    KEY_TYPE*    pKey1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    KEY_TYPE*    pKey2,
    void* pInVal2,
    KEY_TYPE*    pOutput,
-   INT64 totalUniqueSize,
+   int64_t totalUniqueSize,
    HASH_MODE hashMode,
    INT dtype) {
 
-   BOOL success = TRUE;
+   bool success = TRUE;
 
    LOGGING("AlignCategorical32 dtype: %d  size1: %lld  size2: %lld\n", dtype, size1, size2);
 
    switch (dtype) {
    CASE_NPY_INT64:
-      FindLastMatchCategorical<KEY_TYPE, INT64>(size1, size2, pKey1, pKey2, (INT64*)pInVal1, (INT64*)pInVal2, pOutput, totalUniqueSize);
+      FindLastMatchCategorical<KEY_TYPE, int64_t>(size1, size2, pKey1, pKey2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalUniqueSize);
       break;
    CASE_NPY_INT32:
-      FindLastMatchCategorical<KEY_TYPE, INT32>(size1, size2, pKey1, pKey2, (INT32*)pInVal1, (INT32*)pInVal2, pOutput, totalUniqueSize);
+      FindLastMatchCategorical<KEY_TYPE, int32_t>(size1, size2, pKey1, pKey2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalUniqueSize);
       break;
    case NPY_FLOAT64:
       FindLastMatchCategorical<KEY_TYPE, double>(size1, size2, pKey1, pKey2, (double*)pInVal1, (double*)pInVal2, pOutput, totalUniqueSize);
@@ -4289,38 +4289,38 @@ BOOL MergePreBinned(
 //-----------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
 // Returns 32 bit indexes
-BOOL AlignHashMK32(
-   INT64 size1,
+bool AlignHashMK32(
+   int64_t size1,
    void* pInput1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
    void* pInVal2,
-   INT32* pOutput,
-   INT64 totalItemSize,
+   int32_t* pOutput,
+   int64_t totalItemSize,
    HASH_MODE hashMode,
    INT dtype,
    bool isForward,
    bool allowExact) {
 
-   BOOL success = TRUE;
-   CHashLinear<char, INT32>* pHashLinear = new CHashLinear<char, INT32>(hashMode);
+   bool success = TRUE;
+   CHashLinear<char, int32_t>* pHashLinear = new CHashLinear<char, int32_t>(hashMode);
 
    switch (dtype) {
    CASE_NPY_INT64:
       if (isForward) {
-         pHashLinear->FindNextMatchMK<INT64>(size1, size2, (char*)pInput1, (char*)pInput2, (INT64*)pInVal1, (INT64*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindNextMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       else {
-         pHashLinear->FindLastMatchMK<INT64>(size1, size2, (char*)pInput1, (char*)pInput2, (INT64*)pInVal1, (INT64*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindLastMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       break;
    CASE_NPY_INT32:
       if (isForward) {
-         pHashLinear->FindNextMatchMK<INT32>(size1, size2, (char*)pInput1, (char*)pInput2, (INT32*)pInVal1, (INT32*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       else {
-         pHashLinear->FindLastMatchMK<INT32>(size1, size2, (char*)pInput1, (char*)pInput2, (INT32*)pInVal1, (INT32*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindLastMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       break;
    case NPY_FLOAT64:
@@ -4350,40 +4350,40 @@ BOOL AlignHashMK32(
 
 //-----------------------------------------------------------------------------------------
 // Returns 64 bit indexes
-BOOL AlignHashMK64(
-   INT64 size1,
+bool AlignHashMK64(
+   int64_t size1,
    void* pInput1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
    void* pInVal2,
-   INT64* pOutput,
-   INT64 totalItemSize,
+   int64_t* pOutput,
+   int64_t totalItemSize,
    HASH_MODE hashMode,
    INT dtype,
    bool isForward,
    bool allowExact) {
 
 
-   BOOL success = TRUE;
-   CHashLinear<char, INT64>* pHashLinear = new CHashLinear<char, INT64>(hashMode);
+   bool success = TRUE;
+   CHashLinear<char, int64_t>* pHashLinear = new CHashLinear<char, int64_t>(hashMode);
 
    switch (dtype) {
    CASE_NPY_INT64:
       if (isForward) {
-         pHashLinear->FindNextMatchMK<INT64>(size1, size2, (char*)pInput1, (char*)pInput2, (INT64*)pInVal1, (INT64*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindNextMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       else {
-         pHashLinear->FindLastMatchMK<INT64>(size1, size2, (char*)pInput1, (char*)pInput2, (INT64*)pInVal1, (INT64*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindLastMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
 
       break;
    CASE_NPY_INT32:
       if (isForward) {
-         pHashLinear->FindNextMatchMK<INT32>(size1, size2, (char*)pInput1, (char*)pInput2, (INT32*)pInVal1, (INT32*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       else {
-         pHashLinear->FindLastMatchMK<INT32>(size1, size2, (char*)pInput1, (char*)pInput2, (INT32*)pInVal1, (INT32*)pInVal2, pOutput, totalItemSize, allowExact);
+         pHashLinear->FindLastMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       break;
    case NPY_FLOAT64:
@@ -4414,21 +4414,21 @@ BOOL AlignHashMK64(
 //----------------------------------------------
 // any non standard size
 template<typename HASH_TYPE, typename INDEX_TYPE>
-UINT64
+uint64_t
 DoLinearHash(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    INDEX_TYPE* pIndexArray,
    void** pFirstArrayVoid,
    void** pHashTableAny,
-   INT64* hashTableSize,
+   int64_t* hashTableSize,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   UINT64 numUnique = 0;
+   uint64_t numUnique = 0;
    CHashLinear<HASH_TYPE, INDEX_TYPE>* pHashLinear = new CHashLinear<HASH_TYPE, INDEX_TYPE>(hashMode, FALSE);
    INDEX_TYPE* pFirstArray = (INDEX_TYPE*)pHashLinear->AllocMemory(hintSize, -2, sizeof(INDEX_TYPE) * (totalRows + 1), FALSE);
 
@@ -4447,21 +4447,21 @@ DoLinearHash(
 //----------------------------------------------
 // common float
 template<typename HASH_TYPE, typename INDEX_TYPE>
-UINT64
+uint64_t
 DoLinearHashFloat(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    INDEX_TYPE* pIndexArray,
    void** pFirstArrayVoid,
    void** pHashTableAny,
-   INT64* hashTableSize,
+   int64_t* hashTableSize,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   UINT64 numUnique = 0;
+   uint64_t numUnique = 0;
    CHashLinear<HASH_TYPE, INDEX_TYPE>* pHashLinear = new CHashLinear<HASH_TYPE, INDEX_TYPE>(hashMode, FALSE);
    INDEX_TYPE* pFirstArray = (INDEX_TYPE*)pHashLinear->AllocMemory(hintSize, -1, sizeof(INDEX_TYPE) * (totalRows + 1), FALSE);
 
@@ -4479,21 +4479,21 @@ DoLinearHashFloat(
 //----------------------------------------------
 // common types non-float
 template<typename HASH_TYPE, typename INDEX_TYPE>
-UINT64
+uint64_t
 DoLinearHashItemSize(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,  // This is the numpy type code, e.g. NPY_FLOAT32
    INDEX_TYPE* pIndexArray,
    void** pFirstArrayVoid,
    void** pHashTableAny,
-   INT64* hashTableSize,
+   int64_t* hashTableSize,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   UINT64 numUnique = 0;
+   uint64_t numUnique = 0;
 
    CHashLinear<HASH_TYPE, INDEX_TYPE>* pHashLinear = new CHashLinear<HASH_TYPE, INDEX_TYPE>(hashMode, FALSE);
    INDEX_TYPE* pFirstArray = (INDEX_TYPE*)pHashLinear->AllocMemory(hintSize, -1, sizeof(INDEX_TYPE) * (totalRows + 1), FALSE);
@@ -4516,22 +4516,22 @@ DoLinearHashItemSize(
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 template<typename INDEX_TYPE>
-UINT64 GroupByInternal(
+uint64_t GroupByInternal(
    void** pFirstArray,
    void** pHashTableAny,
-   INT64* hashTableSize,
+   int64_t* hashTableSize,
 
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    INDEX_TYPE* pIndexArray,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   UINT64 numUnique = 0;
-   BOOL calculated = FALSE;
+   uint64_t numUnique = 0;
+   bool calculated = FALSE;
 
    if (hintSize == 0) {
       hintSize = totalRows;
@@ -4548,7 +4548,7 @@ UINT64 GroupByInternal(
    {
       // so that nans compare, we tell it is uint32
       numUnique =
-         DoLinearHashFloat<UINT32, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
+         DoLinearHashFloat<uint32_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
       calculated = TRUE;
    }
    break;
@@ -4556,7 +4556,7 @@ UINT64 GroupByInternal(
    {
       // so that nans compare, we tell it is uint64
       numUnique =
-         DoLinearHashFloat<UINT64, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
+         DoLinearHashFloat<uint64_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
       calculated = TRUE;
    }
    break;
@@ -4568,28 +4568,28 @@ UINT64 GroupByInternal(
       case 1:
       {
          numUnique =
-            DoLinearHashItemSize<UINT8, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, 256/2, pBoolFilter);
+            DoLinearHashItemSize<uint8_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, 256/2, pBoolFilter);
          calculated = TRUE;
       }
       break;
       case 2:
       {
          numUnique =
-            DoLinearHashItemSize<UINT16, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, 65536/2, pBoolFilter);
+            DoLinearHashItemSize<uint16_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, 65536/2, pBoolFilter);
          calculated = TRUE;
       }
       break;
       case 4:
       {
          numUnique =
-            DoLinearHashItemSize<UINT32, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
+            DoLinearHashItemSize<uint32_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
          calculated = TRUE;
       }
       break;
       case 8:
       {
          numUnique =
-            DoLinearHashItemSize<UINT64, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
+            DoLinearHashItemSize<uint64_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
          calculated = TRUE;
       }
       break;
@@ -4598,7 +4598,7 @@ UINT64 GroupByInternal(
 
    if (calculated == FALSE) {
       numUnique =
-         DoLinearHash<UINT32, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
+         DoLinearHash<uint32_t, INDEX_TYPE>(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pFirstArray, pHashTableAny, hashTableSize, hashMode, hintSize, pBoolFilter);
    }
 
    return numUnique;
@@ -4607,22 +4607,22 @@ UINT64 GroupByInternal(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 GroupBy32Super(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy32Super(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
-   INT32* pIndexArray,
-   INT32* pNextArray,
-   INT32* pUniqueArray,
-   INT32* pUniqueCountArray,
+   int32_t* pIndexArray,
+   int32_t* pNextArray,
+   int32_t* pUniqueArray,
+   int32_t* pUniqueCountArray,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   UINT64 numUnique = 0;
+   uint64_t numUnique = 0;
 
-   CHashLinear<UINT32, INT32>* pHashLinear = new CHashLinear<UINT32, INT32>(hashMode);
+   CHashLinear<uint32_t, int32_t>* pHashLinear = new CHashLinear<uint32_t, int32_t>(hashMode);
    numUnique =
       pHashLinear->GroupBySuper(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pNextArray, pUniqueArray, pUniqueCountArray, hashMode, hintSize, pBoolFilter);
    delete pHashLinear;
@@ -4633,21 +4633,21 @@ UINT64 GroupBy32Super(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 GroupBy64Super(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy64Super(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
-   INT64* pIndexArray,
-   INT64* pNextArray,
-   INT64* pUniqueArray,
-   INT64* pUniqueCountArray,
+   int64_t* pIndexArray,
+   int64_t* pNextArray,
+   int64_t* pUniqueArray,
+   int64_t* pUniqueCountArray,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   CHashLinear<UINT64, INT64>* pHashLinear = new CHashLinear<UINT64, INT64>(hashMode);
-   UINT64 numUnique =
+   CHashLinear<uint64_t, int64_t>* pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
+   uint64_t numUnique =
       pHashLinear->GroupBySuper(totalRows, totalItemSize, pInput1, coreType, pIndexArray, pNextArray, pUniqueArray, pUniqueCountArray, hashMode, hintSize, pBoolFilter);
 
    delete pHashLinear;
@@ -4658,19 +4658,19 @@ UINT64 GroupBy64Super(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 Unique32(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t Unique32(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT32* pIndexArray,
-   INT32* pCountArray,
+   int32_t* pIndexArray,
+   int32_t* pCountArray,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   CHashLinear<UINT32, INT32>* pHashLinear = new CHashLinear<UINT32, INT32>(hashMode);
-   UINT64 numUnique =
+   CHashLinear<uint32_t, int32_t>* pHashLinear = new CHashLinear<uint32_t, int32_t>(hashMode);
+   uint64_t numUnique =
       pHashLinear->Unique(totalRows, totalItemSize, pInput1, pIndexArray, pCountArray, hashMode, hintSize, pBoolFilter);
 
    delete pHashLinear;
@@ -4680,19 +4680,19 @@ UINT64 Unique32(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 Unique64(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t Unique64(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pCountArray,
+   int64_t* pIndexArray,
+   int64_t* pCountArray,
    HASH_MODE hashMode,
-   INT64  hintSize,
+   int64_t  hintSize,
    bool* pBoolFilter) {
 
-   CHashLinear<UINT32, INT64>* pHashLinear = new CHashLinear<UINT32, INT64>(hashMode);
-   UINT64 numUnique =
+   CHashLinear<uint32_t, int64_t>* pHashLinear = new CHashLinear<uint32_t, int64_t>(hashMode);
+   uint64_t numUnique =
       pHashLinear->Unique(totalRows, totalItemSize, pInput1, pIndexArray, pCountArray, hashMode, hintSize, pBoolFilter);
 
    delete pHashLinear;
@@ -4702,11 +4702,11 @@ UINT64 Unique64(
 //-----------------------------------------------------------------------------------------
 void MultiKeyRollingStep2Delete(
    void* pHashLinearLast) {
-   CHashLinear<UINT64, INT64>* pHashLinear;
+   CHashLinear<uint64_t, int64_t>* pHashLinear;
 
    // If we are rolling, they will pass back what we returned
    if (pHashLinearLast) {
-      pHashLinear = (CHashLinear<UINT64, INT64>*)pHashLinearLast;
+      pHashLinear = (CHashLinear<uint64_t, int64_t>*)pHashLinearLast;
       delete pHashLinear;
    }
 }
@@ -4714,27 +4714,27 @@ void MultiKeyRollingStep2Delete(
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void* MultiKeyRollingStep2(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pRunningCountArray,
+   int64_t* pIndexArray,
+   int64_t* pRunningCountArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   UINT64* numUnique,     // returned back
+   int64_t hintSize,
+   uint64_t* numUnique,     // returned back
    void* pHashLinearLast) {
 
-   CHashLinear<UINT64, INT64>* pHashLinear;
+   CHashLinear<uint64_t, int64_t>* pHashLinear;
 
    // If we are rolling, they will pass back what we returned
    if (pHashLinearLast) {
-      pHashLinear = (CHashLinear<UINT64, INT64>*)pHashLinearLast;
+      pHashLinear = (CHashLinear<uint64_t, int64_t>*)pHashLinearLast;
       hintSize = -1;
       LOGGING("Rolling using existing! %llu\n", pHashLinear->NumUnique);
    }
    else {
-      pHashLinear  = new CHashLinear<UINT64, INT64>(hashMode);
+      pHashLinear  = new CHashLinear<uint64_t, int64_t>(hashMode);
    }
 
    pHashLinear->MultiKeyRolling(totalRows, totalItemSize, pInput1, pIndexArray, pRunningCountArray, hashMode, hintSize);
@@ -4748,20 +4748,20 @@ void* MultiKeyRollingStep2(
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void* MultiKeyHash32(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT32* pIndexArray,
-   INT32* pRunningCountArray,
-   INT32* pPrevArray,
-   INT32* pNextArray,
-   INT32* pFirstArray,
+   int32_t* pIndexArray,
+   int32_t* pRunningCountArray,
+   int32_t* pPrevArray,
+   int32_t* pNextArray,
+   int32_t* pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
-   CHashLinear<UINT32, INT32>* pHashLinear = new CHashLinear<UINT32, INT32>(hashMode);
+   CHashLinear<uint32_t, int32_t>* pHashLinear = new CHashLinear<uint32_t, int32_t>(hashMode);
    pHashLinear->MakeHashLocationMultiKey(totalRows, totalItemSize, pInput1, pIndexArray, pRunningCountArray, pPrevArray, pNextArray, pFirstArray, hashMode, hintSize, pBoolFilter);
    delete pHashLinear;
    return NULL;
@@ -4771,20 +4771,20 @@ void* MultiKeyHash32(
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void* MultiKeyHash64(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pRunningCountArray,
-   INT64* pPrevArray,
-   INT64* pNextArray,
-   INT64* pFirstArray,
+   int64_t* pIndexArray,
+   int64_t* pRunningCountArray,
+   int64_t* pPrevArray,
+   int64_t* pNextArray,
+   int64_t* pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter) {
 
-   CHashLinear<UINT32, INT64>* pHashLinear = new CHashLinear<UINT32, INT64>(hashMode);
+   CHashLinear<uint32_t, int64_t>* pHashLinear = new CHashLinear<uint32_t, int64_t>(hashMode);
    pHashLinear->MakeHashLocationMultiKey(totalRows, totalItemSize, pInput1, pIndexArray, pRunningCountArray, pPrevArray, pNextArray, pFirstArray, hashMode, hintSize, pBoolFilter);
    delete pHashLinear;
    return NULL;
@@ -4799,44 +4799,44 @@ void* MultiKeyHash64(
 void IsMemberHashString32Pre(
    PyArrayObject** indexArray,
    PyArrayObject* inArr1,
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode) {
+   int64_t hintSize,
+   bool isUnicode) {
 
-   INT64 size = size1;
+   int64_t size = size1;
    if (size2 > size) {
       size = size2;
    }
 
    if (size < 100) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT8);
-      INT8* pDataOut2 = (INT8*)PyArray_BYTES(*indexArray);
-      IsMemberHashString32<INT8>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBooleanOutput, HASH_MODE(hashMode), hintSize, isUnicode);
+      int8_t* pDataOut2 = (int8_t*)PyArray_BYTES(*indexArray);
+      IsMemberHashString32<int8_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBoolOutput, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else if (size < 30000) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT16);
-      INT16* pDataOut2 = (INT16*)PyArray_BYTES(*indexArray);
-      IsMemberHashString32<INT16>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBooleanOutput, HASH_MODE(hashMode), hintSize, isUnicode);
+      int16_t* pDataOut2 = (int16_t*)PyArray_BYTES(*indexArray);
+      IsMemberHashString32<int16_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBoolOutput, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else if (size < 2000000000) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
-      INT32* pDataOut2 = (INT32*)PyArray_BYTES(*indexArray);
-      IsMemberHashString32<INT32>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBooleanOutput, HASH_MODE(hashMode), hintSize, isUnicode);
+      int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(*indexArray);
+      IsMemberHashString32<int32_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBoolOutput, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
-      INT64* pDataOut2 = (INT64*)PyArray_BYTES(*indexArray);
-      IsMemberHashString32<INT64>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBooleanOutput, HASH_MODE(hashMode), hintSize, isUnicode);
+      int64_t* pDataOut2 = (int64_t*)PyArray_BYTES(*indexArray);
+      IsMemberHashString32<int64_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBoolOutput, HASH_MODE(hashMode), hintSize, isUnicode);
    }
 
 }
@@ -4846,43 +4846,43 @@ void IsMemberHashString32Pre(
 //-----------------------------------------------------------------------------------------
 // Should follow categorical size checks
 //
-INT64 IsMemberCategoricalHashStringPre(
+int64_t IsMemberCategoricalHashStringPre(
    PyArrayObject** indexArray,
    PyArrayObject* inArr1,
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode) {
+   int64_t hintSize,
+   bool isUnicode) {
 
-   INT64 missed = 0;
+   int64_t missed = 0;
 
    if (size2 < 100) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT8);
-      INT8* pDataOut2 = (INT8*)PyArray_BYTES(*indexArray);
-      missed = IsMemberHashStringCategorical<INT8>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
+      int8_t* pDataOut2 = (int8_t*)PyArray_BYTES(*indexArray);
+      missed = IsMemberHashStringCategorical<int8_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else if (size2 < 30000) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT16);
-      INT16* pDataOut2 = (INT16*)PyArray_BYTES(*indexArray);
-      missed = IsMemberHashStringCategorical<INT16>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
+      int16_t* pDataOut2 = (int16_t*)PyArray_BYTES(*indexArray);
+      missed = IsMemberHashStringCategorical<int16_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else if (size2 < 2000000000) {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
-      INT32* pDataOut2 = (INT32*)PyArray_BYTES(*indexArray);
-      missed = IsMemberHashStringCategorical<INT32>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
+      int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(*indexArray);
+      missed = IsMemberHashStringCategorical<int32_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
    else {
       *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
-      INT64* pDataOut2 = (INT64*)PyArray_BYTES(*indexArray);
-      missed = IsMemberHashStringCategorical<INT64>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
+      int64_t* pDataOut2 = (int64_t*)PyArray_BYTES(*indexArray);
+      missed = IsMemberHashStringCategorical<int64_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
 
    }
 
@@ -4894,12 +4894,12 @@ INT64 IsMemberCategoricalHashStringPre(
 
 typedef void(*ISMEMBER_MK)(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pInputT,
    void* pInput2T,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    void* pLocationOutputU,
-   INT64 totalItemSize);
+   int64_t totalItemSize);
 
 //--------------------------------------------------------------------
 struct IMMK_CALLBACK {
@@ -4907,14 +4907,14 @@ struct IMMK_CALLBACK {
 
    void* pHashLinearVoid;
 
-   INT64 size1;
+   int64_t size1;
    void* pInput1;
-   INT64 size2;         // size of the second argument
+   int64_t size2;         // size of the second argument
    void* pInput2;
-   INT8* pBooleanOutput;
+   int8_t* pBoolOutput;
    void* pOutput;
-   INT64 totalItemSize;
-   INT64 typeSizeOut;
+   int64_t totalItemSize;
+   int64_t typeSizeOut;
 
 } stIMMKCallback;
 
@@ -4922,23 +4922,23 @@ struct IMMK_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL IMMKThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool IMMKThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = FALSE;
    IMMK_CALLBACK* Callback = (IMMK_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pInput1 = (char *)Callback->pInput1;
    char* pOutput = (char*)Callback->pOutput;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->totalItemSize;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
-      INT64 booleanAdj = pstWorkerItem->BlockSize * workBlock ;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->totalItemSize;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t boolAdj = pstWorkerItem->BlockSize * workBlock ;
 
-      Callback->anyIMMKCallback(Callback->pHashLinearVoid, lenX, pInput1 + inputAdj, Callback->pInput2, Callback->pBooleanOutput + booleanAdj, pOutput + outputAdj, Callback->totalItemSize);
+      Callback->anyIMMKCallback(Callback->pHashLinearVoid, lenX, pInput1 + inputAdj, Callback->pInput2, Callback->pBoolOutput + boolAdj, pOutput + outputAdj, Callback->totalItemSize);
 
       // Indicate we completed a block
       didSomeWork = TRUE;
@@ -4957,14 +4957,14 @@ static BOOL IMMKThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int cor
 //  Based on the sizeType it will call different hash functions
 template<typename U>
 void IsMemberHashMK(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,         // size of the second argument
+   int64_t size2,         // size of the second argument
    void* pInput2,
-   INT8* pBooleanOutput,
+   int8_t* pBoolOutput,
    U*    pOutput,
-   INT64 totalItemSize,
-   INT64 hintSize,
+   int64_t totalItemSize,
+   int64_t hintSize,
    HASH_MODE hashMode) {
 
    LOGGING("ismember hash  sz1:%lld  sz2:%lld   totalitemsize:%lld  %p  %p\n", size1, size2, totalItemSize, pInput1, pInput2);
@@ -4978,7 +4978,7 @@ void IsMemberHashMK(
    if (pWorkItem == NULL) {
 
       // Threading not allowed for this work item, call it directly from main thread
-      pFunction(pHashLinear, size1, (char*)pInput1, (char*)pInput2, pBooleanOutput, pOutput, totalItemSize);
+      pFunction(pHashLinear, size1, (char*)pInput1, (char*)pInput2, pBoolOutput, pOutput, totalItemSize);
 
    }
    else {
@@ -4993,7 +4993,7 @@ void IsMemberHashMK(
       stIMMKCallback.pInput1 = pInput1;
       stIMMKCallback.size2 = size2;
       stIMMKCallback.pInput2 = pInput2;
-      stIMMKCallback.pBooleanOutput = pBooleanOutput;
+      stIMMKCallback.pBoolOutput = pBoolOutput;
       stIMMKCallback.pOutput = pOutput;
       stIMMKCallback.totalItemSize = totalItemSize;
       stIMMKCallback.typeSizeOut = sizeof(U);
@@ -5013,20 +5013,20 @@ void IsMemberHashMK(
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-// floats are 4 bytes and will be handled like INT32 or UIN32
+// floats are 4 bytes and will be handled like int32_t or UIN32
 void IsMemberHashMKPre(
    PyArrayObject** indexArray,
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,         // size of the second argument
+   int64_t size2,         // size of the second argument
    void* pInput2,
-   INT8* pBooleanOutput,
-   INT64 totalItemSize,
-   INT64 hintSize,
+   int8_t* pBoolOutput,
+   int64_t totalItemSize,
+   int64_t hintSize,
    HASH_MODE hashMode) {
 
 
-   INT64 size = size1;
+   int64_t size = size1;
 
    if (size2 > size1) {
       size = size2;
@@ -5037,29 +5037,29 @@ void IsMemberHashMKPre(
    if (size < 100) {
       *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT8);
       if (*indexArray) {
-         INT8* pOutput = (INT8*)PyArray_BYTES(*indexArray);
-         IsMemberHashMK<INT8>(size1, pInput1, size2, pInput2, pBooleanOutput, pOutput, totalItemSize, hintSize, hashMode);
+         int8_t* pOutput = (int8_t*)PyArray_BYTES(*indexArray);
+         IsMemberHashMK<int8_t>(size1, pInput1, size2, pInput2, pBoolOutput, pOutput, totalItemSize, hintSize, hashMode);
       }
    }
    else if (size < 30000) {
       *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT16);
       if (*indexArray) {
-         INT16* pOutput = (INT16*)PyArray_BYTES(*indexArray);
-         IsMemberHashMK<INT16>(size1, pInput1, size2, pInput2, pBooleanOutput, pOutput, totalItemSize, hintSize, hashMode);
+         int16_t* pOutput = (int16_t*)PyArray_BYTES(*indexArray);
+         IsMemberHashMK<int16_t>(size1, pInput1, size2, pInput2, pBoolOutput, pOutput, totalItemSize, hintSize, hashMode);
       }
    }
    else if (size < 2000000000) {
       *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT32);
       if (*indexArray) {
-         INT32* pOutput = (INT32*)PyArray_BYTES(*indexArray);
-         IsMemberHashMK<INT32>(size1, pInput1, size2, pInput2, pBooleanOutput, pOutput, totalItemSize, hintSize, hashMode);
+         int32_t* pOutput = (int32_t*)PyArray_BYTES(*indexArray);
+         IsMemberHashMK<int32_t>(size1, pInput1, size2, pInput2, pBoolOutput, pOutput, totalItemSize, hintSize, hashMode);
       }
    }
    else {
       *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT64);
       if (*indexArray) {
-         INT64* pOutput = (INT64*)PyArray_BYTES(*indexArray);
-         IsMemberHashMK<INT64>(size1, pInput1, size2, pInput2, pBooleanOutput, pOutput, totalItemSize, hintSize, hashMode);
+         int64_t* pOutput = (int64_t*)PyArray_BYTES(*indexArray);
+         IsMemberHashMK<int64_t>(size1, pInput1, size2, pInput2, pBoolOutput, pOutput, totalItemSize, hintSize, hashMode);
       }
    }
    CHECK_MEMORY_ERROR(*indexArray);
@@ -5086,8 +5086,8 @@ void IsMemberHashMKPre(
 //    Second arg: existing  numpy array
 //    Third arg: hashmode (1 or 2)
 //    Fourth arg: <optional> hashSize (default to 0)
-//    Returns: boolean array and optional INT32 location array
-//       boolean array: True if first arg found in second arg
+//    Returns: bool array and optional int32_t location array
+//       bool array: True if first arg found in second arg
 //       index: index location of where first arg found in second arg  (index into second arg)
 
 /*
@@ -5139,7 +5139,7 @@ IsMember32(PyObject *self, PyObject *args)
    PyArrayObject *inArr1 = NULL;
    PyArrayObject *inArr2 = NULL;
    int hashMode = 2;
-   INT64 hintSize = 0;
+   int64_t hintSize = 0;
 
    Py_ssize_t tupleSize = PyTuple_GET_SIZE(args);
 
@@ -5159,8 +5159,8 @@ IsMember32(PyObject *self, PyObject *args)
       if (!PyArg_ParseTuple(args, "O!O!iL", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode, &hintSize)) return NULL;
 
    }
-   INT32 arrayType1 = PyArray_TYPE(inArr1);
-   INT32 arrayType2 = PyArray_TYPE(inArr2);
+   int32_t arrayType1 = PyArray_TYPE(inArr1);
+   int32_t arrayType2 = PyArray_TYPE(inArr2);
 
    int sizeType1 = (int)NpyItemSize((PyObject*)inArr1);
    int sizeType2 = (int)NpyItemSize((PyObject*)inArr2);
@@ -5215,8 +5215,8 @@ IsMember32(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT64 arraySize1 = ArrayLength(inArr1);
-   INT64 arraySize2 = ArrayLength(inArr2);
+   int64_t arraySize1 = ArrayLength(inArr1);
+   int64_t arraySize2 = ArrayLength(inArr2);
 
    PyArrayObject* boolArray = AllocateLikeNumpyArray(inArr1, NPY_BOOL);
 
@@ -5224,7 +5224,7 @@ IsMember32(PyObject *self, PyObject *args)
       void* pDataIn1 = PyArray_BYTES(inArr1);
       void* pDataIn2 = PyArray_BYTES(inArr2);
 
-      INT8* pDataOut1 = (INT8*)PyArray_BYTES(boolArray);
+      int8_t* pDataOut1 = (int8_t*)PyArray_BYTES(boolArray);
 
       PyArrayObject* indexArray = NULL;
 
@@ -5266,16 +5266,16 @@ IsMember32(PyObject *self, PyObject *args)
             void* pDataOut2 = PyArray_BYTES(indexArray);
             switch (dtype) {
             case NPY_INT8:
-               IsMemberHash32<INT8>(arraySize1, pDataIn1, arraySize2, pDataIn2, (INT8*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
+               IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             case NPY_INT16:
-               IsMemberHash32<INT16>(arraySize1, pDataIn1, arraySize2, pDataIn2, (INT16*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
+               IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             case NPY_INT32:
-               IsMemberHash32<INT32>(arraySize1, pDataIn1, arraySize2, pDataIn2, (INT32*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
+               IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             case NPY_INT64:
-               IsMemberHash32<INT64>(arraySize1, pDataIn1, arraySize2, pDataIn2, (INT64*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
+               IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             }
          }
@@ -5297,7 +5297,7 @@ IsMember32(PyObject *self, PyObject *args)
 /**
  * @brief
  *
- * @tparam _Index The type of the integer indices used and returned by this function. Should be INT32 or INT64.
+ * @tparam _Index The type of the integer indices used and returned by this function. Should be int32_t or int64_t.
  * @param partitionLength
  * @param pCutOffs
  * @param totalRows
@@ -5309,7 +5309,7 @@ IsMember32(PyObject *self, PyObject *args)
  * @param hashMode
  * @param hintSize
  * @param pBoolFilter
- * @return UINT64
+ * @return uint64_t
  */
 #if defined(__GNUC__) && __GNUC__ < 5
 // Workaround for old versions of gcc which don't have enable_if_t
@@ -5320,22 +5320,22 @@ template <typename _Index>
 //template <typename _Index,
 //   std::enable_if_t<std::is_integral<_Index>::value, int> = 0>
 #endif
-static UINT64 GroupByImpl(
-   const INT64  partitionLength, // may be 0
-   INT64* const pCutOffs,        // may be NULL
-   const INT64 totalRows,
-   const INT64 totalItemSize,
+static uint64_t GroupByImpl(
+   const int64_t  partitionLength, // may be 0
+   int64_t* const pCutOffs,        // may be NULL
+   const int64_t totalRows,
+   const int64_t totalItemSize,
    const char* const pInput1,
    const int coreType,
    _Index* const pIndexArray,
    PyArrayObject** pFirstArrayObject,
    const HASH_MODE hashMode,
-   const INT64   hintSize,
+   const int64_t   hintSize,
    bool* const pBoolFilter) {
 
    _Index* pFirstArray = nullptr;
    void* pHashTableAny = nullptr;
-   INT64  hashTableSize = 0;
+   int64_t  hashTableSize = 0;
 
    if (partitionLength) {
       // turn off threading? or memory allocations?
@@ -5352,37 +5352,37 @@ static UINT64 GroupByImpl(
       struct PARTITION_GB {
          _Index* pFirstArray;
          void* pHashTableAny;
-         INT64  HashTableSize;
-         INT64  NumUnique;
-         INT64  TotalRows;
+         int64_t  HashTableSize;
+         int64_t  NumUnique;
+         int64_t  TotalRows;
       };
 
       // MT callback
       struct MKGBCallbackStruct {
          PARTITION_GB* pPartitions;
-         INT64             PartitionLength;
-         INT64* pCutOffs;
+         int64_t             PartitionLength;
+         int64_t* pCutOffs;
 
-         INT64             TotalRows;
-         INT64             TotalItemSize;
+         int64_t             TotalRows;
+         int64_t             TotalItemSize;
          const char* pInput1;
 
          int               CoreType;
          _Index* pIndexArray;
          HASH_MODE         HashMode;
-         INT64             HintSize;
+         int64_t             HintSize;
          bool* pBoolFilter;
       };
 
       // This is the routine that will be called back from multiple threads
-      auto lambdaMKGBCallback = [](void* callbackArgT, int core, INT64 count) -> BOOL {
+      auto lambdaMKGBCallback = [](void* callbackArgT, int core, int64_t count) -> bool {
          auto* cb = static_cast<MKGBCallbackStruct*>(callbackArgT);
 
-         INT64* pCutOffs = cb->pCutOffs;
+         int64_t* pCutOffs = cb->pCutOffs;
          PARTITION_GB* pPartition = &cb->pPartitions[count];
 
-         INT64             partOffset = 0;
-         INT64             partLength = pCutOffs[count];
+         int64_t             partOffset = 0;
+         int64_t             partLength = pCutOffs[count];
          bool* pBoolFilter = cb->pBoolFilter;
          auto* pIndexArray = cb->pIndexArray;
          const char* pInput1 = cb->pInput1;
@@ -5404,7 +5404,7 @@ static UINT64 GroupByImpl(
          pInput1 += (partOffset * cb->TotalItemSize);
 
          // NOW HASH the data
-         pPartition->NumUnique = (INT64)
+         pPartition->NumUnique = (int64_t)
             GroupByInternal<_Index>(
                // These three are returned, they have to be deallocated
                reinterpret_cast<void**>(&pPartition->pFirstArray), &pPartition->pHashTableAny, &pPartition->HashTableSize,
@@ -5450,9 +5450,9 @@ static UINT64 GroupByImpl(
       CHECK_MEMORY_ERROR(cutoffsArray);
       if (!cutoffsArray) return 0;
 
-      INT64* pCutOffs = (INT64*)PyArray_BYTES(cutoffsArray);
+      int64_t* pCutOffs = (int64_t*)PyArray_BYTES(cutoffsArray);
 
-      INT64 totalUniques = 0;
+      int64_t totalUniques = 0;
       for (int i = 0; i < partitionLength; i++) {
          totalUniques += pPartitions[i].NumUnique;
          pCutOffs[i] = totalUniques;
@@ -5464,7 +5464,7 @@ static UINT64 GroupByImpl(
 
       _Index* pFirstArray = (_Index*)PyArray_BYTES(firstArray);
 
-      INT64 startpos = 0;
+      int64_t startpos = 0;
 
       // Clean up------------------------------
       for (int i = 0; i < partitionLength; i++) {
@@ -5496,7 +5496,7 @@ static UINT64 GroupByImpl(
       // This makes for a more complicated GroupBy as in parallel mode, it has to shut down the low level caching
       // Further, the size of the first array is not known until the unique count is known
 
-      UINT64 numUnique =
+      uint64_t numUnique =
          GroupByInternal<_Index>(
 
             reinterpret_cast<void**>(&pFirstArray), &pHashTableAny, &hashTableSize,
@@ -5520,40 +5520,40 @@ static UINT64 GroupByImpl(
 }
 
 //===================================================================================================
-UINT64 GroupBy32(
-   INT64  partitionLength, // may be 0
-   INT64* pCutOffs,        // may be NULL
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy32(
+   int64_t  partitionLength, // may be 0
+   int64_t* pCutOffs,        // may be NULL
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    void* pIndexArray,
    PyArrayObject** pFirstArrayObject,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter) {
    // Call the templated implementation of this function.
-   using index_type = INT32;
+   using index_type = int32_t;
    return GroupByImpl<index_type>(
       partitionLength, pCutOffs, totalRows, totalItemSize, pInput1, coreType,
       static_cast<index_type*>(pIndexArray), pFirstArrayObject, hashMode, hintSize, pBoolFilter);
 }
 
 //===================================================================================================
-UINT64 GroupBy64(
-   INT64  partitionLength, // may be 0
-   INT64* pCutOffs,        // may be NULL
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy64(
+   int64_t  partitionLength, // may be 0
+   int64_t* pCutOffs,        // may be NULL
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    void* pIndexArray,
    PyArrayObject** pFirstArrayObject,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter) {
    // Call the templated implementation of this function.
-   using index_type = INT64;
+   using index_type = int64_t;
    return GroupByImpl<index_type>(
       partitionLength, pCutOffs, totalRows, totalItemSize, pInput1, coreType,
       static_cast<index_type*>(pIndexArray), pFirstArrayObject, hashMode, hintSize, pBoolFilter);
@@ -5568,7 +5568,7 @@ PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args)
    PyArrayObject* key2;
    PyArrayObject* pvalArray1;
    PyArrayObject* pvalArray2;
-   INT64 totalUniqueSize;
+   int64_t totalUniqueSize;
 
    if (!PyArg_ParseTuple(
       args, "O!O!O!O!L",
@@ -5583,8 +5583,8 @@ PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args)
    }
 
    LOGGING("Unique size %lld\n", totalUniqueSize);
-   INT32 dtype1 = ObjectToDtype((PyArrayObject*)pvalArray1);
-   INT32 dtype2 = ObjectToDtype((PyArrayObject*)pvalArray2);
+   int32_t dtype1 = ObjectToDtype((PyArrayObject*)pvalArray1);
+   int32_t dtype2 = ObjectToDtype((PyArrayObject*)pvalArray2);
 
    if (dtype1 < 0) {
       PyErr_Format(PyExc_ValueError, "MergeBinnedAndSorted data types are not understood dtype.num: %d vs %d", dtype1, dtype2);
@@ -5609,29 +5609,29 @@ PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args)
 
    PyArrayObject* indexArray = (PyArrayObject*)Py_None;
    bool isIndex32 = TRUE;
-   BOOL success = FALSE;
+   bool success = FALSE;
 
    indexArray = AllocateLikeNumpyArray(key1, dtype1);
 
    if (indexArray) {
       switch (dtype1) {
       case NPY_INT8:
-         success = MergePreBinned<INT8>(ArrayLength(key1), (INT8*)pKey1, pVal1, ArrayLength(key2), (INT8*)pKey2, pVal2, (INT8*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
+         success = MergePreBinned<int8_t>(ArrayLength(key1), (int8_t*)pKey1, pVal1, ArrayLength(key2), (int8_t*)pKey2, pVal2, (int8_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       case NPY_INT16:
-         success = MergePreBinned<INT16>(ArrayLength(key1), (INT16*)pKey1, pVal1, ArrayLength(key2), (INT16*)pKey2, pVal2, (INT16*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
+         success = MergePreBinned<int16_t>(ArrayLength(key1), (int16_t*)pKey1, pVal1, ArrayLength(key2), (int16_t*)pKey2, pVal2, (int16_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       CASE_NPY_INT32:
-         success = MergePreBinned<INT32>(ArrayLength(key1), (INT32*)pKey1, pVal1, ArrayLength(key2), (INT32*)pKey2, pVal2, (INT32*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
+         success = MergePreBinned<int32_t>(ArrayLength(key1), (int32_t*)pKey1, pVal1, ArrayLength(key2), (int32_t*)pKey2, pVal2, (int32_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       CASE_NPY_INT64:
-         success = MergePreBinned<INT64>(ArrayLength(key1), (INT64*)pKey1, pVal1, ArrayLength(key2), (INT64*)pKey2, pVal2, (INT64*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
+         success = MergePreBinned<int64_t>(ArrayLength(key1), (int64_t*)pKey1, pVal1, ArrayLength(key2), (int64_t*)pKey2, pVal2, (int64_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       }
    }
 
    if (!success) {
-      PyErr_Format(PyExc_ValueError, "MultiKeyAlign failed.  Only accepts INT32,INT64,FLOAT32,FLOAT64");
+      PyErr_Format(PyExc_ValueError, "MultiKeyAlign failed.  Only accepts int32_t,int64_t,FLOAT32,FLOAT64");
       return NULL;
    }
    return (PyObject*)indexArray;
