@@ -11,15 +11,15 @@ struct ArrayInfo {
    char*       pData;
 
    // Width in bytes of one row
-   INT64       ItemSize;
+   int64_t       ItemSize;
 
    // total number of items
-   INT64       ArrayLength;
+   int64_t       ArrayLength;
 
-   INT64       NumBytes;
+   int64_t       NumBytes;
 
-   INT32       NumpyDType;
-   INT32       NDim;
+   int32_t       NumpyDType;
+   int32_t       NDim;
 
    // When calling ensure contiguous, we might make a copy
    // if so, pObject is the copy and must be deleted.  pOriginal was passed in
@@ -45,10 +45,10 @@ extern PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args);
 
 extern ArrayInfo* BuildArrayInfo(
    PyObject* listObject,
-   INT64* pTupleSize,
-   INT64* pTotalItemSize,
-   BOOL checkrows = TRUE,
-   BOOL convert = TRUE);
+   int64_t* pTupleSize,
+   int64_t* pTotalItemSize,
+   bool checkrows = TRUE,
+   bool convert = TRUE);
 
 extern void FreeArrayInfo(ArrayInfo* pArrayInfo);
 

@@ -583,7 +583,7 @@ Rolling(PyObject *self, PyObject *args)
    int64_t size = ArrayLength(inArr);
    ROLLING_FUNC pRollingFunc;
 
-   numpyOutType = NPY_int64_t;
+   numpyOutType = NPY_INT64;
 
    if (func >= 100) {
       pRollingFunc = GetRollingFunction2(func, dType);
@@ -602,7 +602,7 @@ Rolling(PyObject *self, PyObject *args)
       pRollingFunc = GetRollingFunction(func, dType);
 
       // Always want some sort of int64 or float
-      numpyOutType = NPY_int64_t;
+      numpyOutType = NPY_INT64;
       if (dType == NPY_FLOAT) {
          numpyOutType = NPY_FLOAT;
       }
@@ -1489,16 +1489,16 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_FLOAT:  *outputType = NPY_FLOAT32; return CumSum<float, float, K>;
       case NPY_DOUBLE: *outputType = NPY_FLOAT64; return CumSum<double, double, K> ;
       case NPY_LONGDOUBLE: *outputType = NPY_FLOAT64; return CumSum<long double, long double, K>;
-      case NPY_BOOL:   *outputType = NPY_int64_t; return CumSum<int8_t, int64_t, K>;
-      case NPY_INT8:   *outputType = NPY_int64_t; return CumSum<int8_t, int64_t, K>;
-      case NPY_INT16:  *outputType = NPY_int64_t; return CumSum<int16_t, int64_t, K>;
-      CASE_NPY_INT32:  *outputType = NPY_int64_t; return CumSum<int32_t, int64_t, K>;
-      CASE_NPY_INT64:  *outputType = NPY_int64_t; return CumSum<int64_t, int64_t, K>;
+      case NPY_BOOL:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
+      case NPY_INT8:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
+      case NPY_INT16:  *outputType = NPY_INT64; return CumSum<int16_t, int64_t, K>;
+      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumSum<int32_t, int64_t, K>;
+      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumSum<int64_t, int64_t, K>;
 
-      case NPY_UINT8:  *outputType = NPY_uint64_t; return CumSum<uint8_t,  uint64_t, K>;
-      case NPY_UINT16: *outputType = NPY_uint64_t; return CumSum<uint16_t, uint64_t, K>;
-      CASE_NPY_UINT32: *outputType = NPY_uint64_t; return CumSum<uint32_t, uint64_t, K>;
-      CASE_NPY_UINT64: *outputType = NPY_uint64_t; return CumSum<uint64_t, uint64_t, K>;
+      case NPY_UINT8:  *outputType = NPY_UINT64; return CumSum<uint8_t,  uint64_t, K>;
+      case NPY_UINT16: *outputType = NPY_UINT64; return CumSum<uint16_t, uint64_t, K>;
+      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumSum<uint32_t, uint64_t, K>;
+      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumSum<uint64_t, uint64_t, K>;
 
       }
       break;
@@ -1508,23 +1508,23 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_FLOAT:  *outputType = NPY_FLOAT32; return CumProd<float, float, K>;
       case NPY_DOUBLE: *outputType = NPY_FLOAT64; return CumProd<double, double, K>;
       case NPY_LONGDOUBLE: *outputType = NPY_FLOAT64; return CumProd<long double, long double, K>;
-      case NPY_BOOL:   *outputType = NPY_int64_t; return CumProd<int8_t, int64_t, K>;
-      case NPY_INT8:   *outputType = NPY_int64_t; return CumProd<int8_t, int64_t, K>;
-      case NPY_INT16:  *outputType = NPY_int64_t; return CumProd<int16_t, int64_t, K>;
-      CASE_NPY_INT32:  *outputType = NPY_int64_t; return CumProd<int32_t, int64_t, K>;
-      CASE_NPY_INT64:  *outputType = NPY_int64_t; return CumProd<int64_t, int64_t, K>;
+      case NPY_BOOL:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
+      case NPY_INT8:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
+      case NPY_INT16:  *outputType = NPY_INT64; return CumProd<int16_t, int64_t, K>;
+      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumProd<int32_t, int64_t, K>;
+      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumProd<int64_t, int64_t, K>;
 
-      case NPY_UINT8:  *outputType = NPY_uint64_t; return CumProd<uint8_t, uint64_t, K>;
-      case NPY_UINT16: *outputType = NPY_uint64_t; return CumProd<uint16_t, uint64_t, K>;
-      CASE_NPY_UINT32: *outputType = NPY_uint64_t; return CumProd<uint32_t, uint64_t, K>;
-      CASE_NPY_UINT64: *outputType = NPY_uint64_t; return CumProd<uint64_t, uint64_t, K>;
+      case NPY_UINT8:  *outputType = NPY_UINT64; return CumProd<uint8_t, uint64_t, K>;
+      case NPY_UINT16: *outputType = NPY_UINT64; return CumProd<uint16_t, uint64_t, K>;
+      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumProd<uint32_t, uint64_t, K>;
+      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumProd<uint64_t, uint64_t, K>;
 
       }
       break;
 
 
    case EMA_FINDNTH:
-      *outputType = NPY_int32_t; return FindNth< int32_t, K>;
+      *outputType = NPY_INT32; return FindNth< int32_t, K>;
       break;
 
    case EMA_NORMAL:
