@@ -21,8 +21,8 @@
 #endif
 
 //found in riptide.h
-extern UINT64 GetUTCNanos();
-extern INT64 SumBooleanMask(const INT8* pIn, INT64 length);
+extern uint64_t GetUTCNanos();
+extern int64_t SumBooleanMask(const int8_t* pIn, int64_t length);
 
 //#define MATLAB_MODE 1
 
@@ -66,37 +66,37 @@ std::vector<std::string>   g_gatewaylist;
 #ifdef MATLAB_MODE
 //-------------------------------------------------------------------------
 // CHANGE TABLE FOR MATLAB
-//INT64 default1 = -9223372036854775808L;
-static INT64  gDefaultInt64 = 0;
-static INT32  gDefaultInt32 = 0;
-static UINT16 gDefaultInt16 = 0;
-static UINT8  gDefaultInt8 = 0;
+//int64_t default1 = -9223372036854775808L;
+static int64_t  gDefaultInt64 = 0;
+static int32_t  gDefaultInt32 = 0;
+static uint16_t gDefaultInt16 = 0;
+static uint8_t  gDefaultInt8 = 0;
 
-static UINT64 gDefaultUInt64 = 0;
-static UINT32 gDefaultUInt32 = 0;
-static UINT16 gDefaultUInt16 = 0;
-static UINT8  gDefaultUInt8 = 0;
+static uint64_t gDefaultUInt64 = 0;
+static uint32_t gDefaultUInt32 = 0;
+static uint16_t gDefaultUInt16 = 0;
+static uint8_t  gDefaultUInt8 = 0;
 
 static float  gDefaultFloat = std::numeric_limits<float>::quiet_NaN();
 static double gDefaultDouble = std::numeric_limits<double>::quiet_NaN();
 static long double gDefaultLongDouble = std::numeric_limits<long double>::quiet_NaN();
-static INT8   gDefaultBool = 0;
+static int8_t   gDefaultBool = 0;
 static char   gString[1024] = { 0,0,0,0 };
 #else
-static INT64  gDefaultInt64 = 0x8000000000000000;
-static INT32  gDefaultInt32 = 0x80000000;
-static UINT16 gDefaultInt16 = 0x8000;
-static UINT8  gDefaultInt8 = 0x80;
+static int64_t  gDefaultInt64 = 0x8000000000000000;
+static int32_t  gDefaultInt32 = 0x80000000;
+static uint16_t gDefaultInt16 = 0x8000;
+static uint8_t  gDefaultInt8 = 0x80;
 
-static UINT64 gDefaultUInt64 = 0xFFFFFFFFFFFFFFFF;
-static UINT32 gDefaultUInt32 = 0xFFFFFFFF;
-static UINT16 gDefaultUInt16 = 0xFFFF;
-static UINT8  gDefaultUInt8 = 0xFF;
+static uint64_t gDefaultUInt64 = 0xFFFFFFFFFFFFFFFF;
+static uint32_t gDefaultUInt32 = 0xFFFFFFFF;
+static uint16_t gDefaultUInt16 = 0xFFFF;
+static uint8_t  gDefaultUInt8 = 0xFF;
 
 static float  gDefaultFloat = std::numeric_limits<float>::quiet_NaN();
 static double gDefaultDouble = std::numeric_limits<double>::quiet_NaN();
 static long double gDefaultLongDouble = std::numeric_limits<long double>::quiet_NaN();
-static INT8   gDefaultBool = 0;
+static int8_t   gDefaultBool = 0;
 static char   gString[1024] = { 0,0,0,0 };
 
 #endif
@@ -104,7 +104,7 @@ static char   gString[1024] = { 0,0,0,0 };
 //----------------------------------------------------
 // returns pointer to a data type (of same size in memory) that holds the invalid value for the type
 // does not yet handle strings
-void* SDSGetDefaultType(int numpyInType) {
+void* SDSGetDefaultType(int32_t numpyInType) {
    void* pgDefault = &gDefaultInt64;
 
    switch (numpyInType) {
@@ -114,7 +114,7 @@ void* SDSGetDefaultType(int numpyInType) {
       break;
    case SDS_LONGDOUBLE: pgDefault = &gDefaultLongDouble;
       break;
-      // BOOL should not really have a default type
+      // bool should not really have a default type
    case SDS_BOOL:   pgDefault = &gDefaultBool;
       break;
    case SDS_BYTE:   pgDefault = &gDefaultInt8;
@@ -151,12 +151,12 @@ void* SDSGetDefaultType(int numpyInType) {
 //===========================================
 // Buffer filled in when there is an error
 char g_errorbuffer[512] = { 0 };
-int  g_lastexception = 0;
+int32_t  g_lastexception = 0;
 
 //-----------------------------------------------------
 // platform independent error storage
 void SetErr_Format(
-   int   exception,
+   int32_t   exception,
    const char *format,
    ...
 ) {
@@ -186,7 +186,7 @@ static void PrintIfErrors() {
 }
 
 //------------------------------------------------------------
-static size_t CompressGetBound(int compMode, size_t srcSize) {
+static size_t CompressGetBound(int32_t compMode, size_t srcSize) {
    if (compMode == COMPRESSION_TYPE_ZSTD) {
       return ZSTD_compressBound(srcSize);
    }
@@ -197,9 +197,9 @@ static size_t CompressGetBound(int compMode, size_t srcSize) {
 
 
 //------------------------------------------------------------
-static size_t CompressData(int compMode, void* dst, size_t dstCapacity,
+static size_t CompressData(int32_t compMode, void* dst, size_t dstCapacity,
    const void* src, size_t srcSize,
-   int compressionLevel) {
+   int32_t compressionLevel) {
 
    if (compMode == COMPRESSION_TYPE_ZSTD) {
       return ZSTD_compress(dst, dstCapacity, src, srcSize, compressionLevel);
@@ -228,7 +228,7 @@ size_t ZSTD_decompress_stackmode(void* dst, size_t dstCapacity, const void* src,
 
 
 //------------------------------------------------------------
-static size_t DecompressData(ZSTD_DCtx* pDecompContext, int compMode, void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
+static size_t DecompressData(ZSTD_DCtx* pDecompContext, int32_t compMode, void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
 
    if (pDecompContext) {
       return ZSTD_decompressDCtx(pDecompContext, dst, dstCapacity, src, srcSize);
@@ -253,7 +253,7 @@ static size_t DecompressData(ZSTD_DCtx* pDecompContext, int compMode, void* dst,
 //------------------------------------------------------------
 // Returns <0 for error
 // else return bytes left
-static size_t DecompressDataPartial(int core, int compMode, void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
+static size_t DecompressDataPartial(int32_t core, int32_t compMode, void* dst, size_t dstCapacity, const void* src, size_t srcSize) {
 
    if (core >= 0 && core < SDS_MAX_CORES) {
       ZSTD_DCtx* const dctx = ZSTD_createDCtx();
@@ -295,7 +295,7 @@ static size_t DecompressDataPartial(int core, int compMode, void* dst, size_t ds
 
 
 //------------------------------------------------------------
-static BOOL CompressIsError(int compMode, size_t code) {
+static bool CompressIsError(int32_t compMode, size_t code) {
    if (ZSTD_isError(code)) {
       SetErr_Format(SDS_VALUE_ERROR, "Decompression error: %s", ZSTD_getErrorName(code));
       return TRUE;
@@ -308,7 +308,7 @@ static BOOL CompressIsError(int compMode, size_t code) {
 
 // check to see if any errors were recorded
 // Returns TRUE if there was an error
-//static BOOL CheckErrors() {
+//static bool CheckErrors() {
 //
 //   if (g_lastexception) {
 //      return TRUE;
@@ -396,7 +396,7 @@ void SDS_DESTROY_EVENTHANDLE(SDS_EVENT_HANDLE handle) {
 
 //---------------------------------------------------
 // returns < 0 if file does not exist or error
-INT64 SDSFileSize(const char* fileName) {
+int64_t SDSFileSize(const char* fileName) {
    WIN32_FILE_ATTRIBUTE_DATA  fileInfo;
 
    if (GetFileAttributesEx(fileName, GetFileExInfoStandard, &fileInfo)) {
@@ -411,13 +411,13 @@ INT64 SDSFileSize(const char* fileName) {
 
 //---------------------------------------------------
 // Returns NULL on failure otherwise valid handle
-SDS_FILE_HANDLE SDSFileOpen(const char* fileName, BOOLEAN writeOption, BOOLEAN overlapped, BOOLEAN directIO, BOOLEAN appendOption)
+SDS_FILE_HANDLE SDSFileOpen(const char* fileName, bool writeOption, bool overlapped, bool directIO, bool appendOption)
 {
-   BOOLEAN WriteOption = writeOption;
-   BOOLEAN Overlapped = true; // overlapped;
-   BOOLEAN DirectIO = directIO;
+   bool WriteOption = writeOption;
+   bool Overlapped = true; // overlapped;
+   bool DirectIO = directIO;
 
-   INT32 filemode = OPEN_EXISTING;
+   int32_t filemode = OPEN_EXISTING;
 
    if (WriteOption) {
       if (appendOption) {
@@ -464,14 +464,14 @@ SDS_FILE_HANDLE SDSFileOpen(const char* fileName, BOOLEAN writeOption, BOOLEAN o
 }
 
 //---------------------------------------------------
-void SDSFileSeek(SDS_FILE_HANDLE handle, INT64 pos) {
+void SDSFileSeek(SDS_FILE_HANDLE handle, int64_t pos) {
 
-   INT64 result = 0;
+   int64_t result = 0;
 
    LARGE_INTEGER temp;
    temp.QuadPart = pos;
 
-   BOOL bResult =
+   bool bResult =
       SetFilePointerEx(handle, temp, (PLARGE_INTEGER)&result, SEEK_SET);
 
    if (!bResult)
@@ -484,17 +484,17 @@ void SDSFileSeek(SDS_FILE_HANDLE handle, INT64 pos) {
 
 //---------------------------------------------------
 // Returns bytes read
-INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, INT64 bufferSize, INT64 BufferPos) {
+int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, int64_t bufferSize, int64_t BufferPos) {
    //LogError("!! Suspicious code path for async read %s %d", FileName, LastError);
    OVERLAPPED OverlappedIO;
 
    OverlappedIO.hEvent = eventHandle;
    OverlappedIO.InternalHigh = 0;
    OverlappedIO.Internal = 0;
-   OverlappedIO.OffsetHigh = (UINT32)(BufferPos >> 32);
-   OverlappedIO.Offset = (UINT32)BufferPos;
+   OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
+   OverlappedIO.Offset = (uint32_t)BufferPos;
 
-   BOOL bReadDone;
+   bool bReadDone;
 
    OVERLAPPED* pos = &OverlappedIO;
    DWORD n;
@@ -503,7 +503,7 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, voi
       //printf("!!!read buffer size too large %lld\n", bufferSize);
       // break it down
 
-      INT64 totalRead = 0;
+      int64_t totalRead = 0;
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
@@ -542,7 +542,7 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, voi
             return 0;
          }
          else {
-            BOOL extraCheck = HasOverlappedIoCompleted(pos);
+            bool extraCheck = HasOverlappedIoCompleted(pos);
             if (!extraCheck) {
                printf("!! internal error reading... complete but not really\n");
             }
@@ -563,21 +563,21 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, voi
 
 //---------------------------------------------------
 // Returns bytes read
-INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, INT64 bufferSize, INT64 BufferPos) {
+int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, int64_t bufferSize, int64_t BufferPos) {
    //LogError("!! Suspicious code path for async read %s %d", FileName, LastError);
    OVERLAPPED OverlappedIO;
 
    OverlappedIO.hEvent = eventHandle;
    OverlappedIO.InternalHigh = 0;
    OverlappedIO.Internal = 0;
-   OverlappedIO.OffsetHigh = (UINT32)(BufferPos >> 32);
-   OverlappedIO.Offset = (UINT32)BufferPos;
+   OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
+   OverlappedIO.Offset = (uint32_t)BufferPos;
 
    OVERLAPPED* pos = &OverlappedIO;
    DWORD n;
 
    if (bufferSize > MAX_READSIZE_ALLOWED) {
-      INT64 totalWritten = 0;
+      int64_t totalWritten = 0;
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
@@ -596,7 +596,7 @@ INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, vo
    }
 
    DWORD count = (DWORD)bufferSize;
-   BOOL bWriteDone = WriteFile(Handle, buffer, count, &n, pos);
+   bool bWriteDone = WriteFile(Handle, buffer, count, &n, pos);
 
    DWORD LastError = GetLastError();
    if (!bWriteDone && LastError == ERROR_IO_PENDING)
@@ -652,7 +652,7 @@ void SDS_DESTROY_EVENTHANDLE(SDS_EVENT_HANDLE handle) {
 #include <sys/stat.h>
 
 // returns < 0 if file does not exist or error
-INT64 SDSFileSize(const char* fileName) {
+int64_t SDSFileSize(const char* fileName) {
    struct stat statbuf;
    if (stat(fileName, &statbuf) < 0) {
       return -1;
@@ -661,13 +661,13 @@ INT64 SDSFileSize(const char* fileName) {
 }
 
 //---------------------------------------------------
-SDS_FILE_HANDLE SDSFileOpen(const char* fileName, BOOLEAN writeOption, BOOLEAN overlapped, BOOLEAN directIO, BOOLEAN appendOption)
+SDS_FILE_HANDLE SDSFileOpen(const char* fileName, bool writeOption, bool overlapped, bool directIO, bool appendOption)
 {
 
    errno = 0;
    SDS_FILE_HANDLE filehandle = 0;
 
-   int createFlags = 0;
+   int32_t createFlags = 0;
    if (writeOption) {
       if (appendOption) {
          // NOTE: possibly try first without O_CREAT
@@ -699,7 +699,7 @@ SDS_FILE_HANDLE SDSFileOpen(const char* fileName, BOOLEAN writeOption, BOOLEAN o
 }
 
 //---------------------------------------------------
-void SDSFileSeek(SDS_FILE_HANDLE handle, INT64 pos) {
+void SDSFileSeek(SDS_FILE_HANDLE handle, int64_t pos) {
 
    // not used
    return;
@@ -707,14 +707,14 @@ void SDSFileSeek(SDS_FILE_HANDLE handle, INT64 pos) {
 
 //---------------------------------------------------
 // Returns bytes read
-INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, INT64 bufferSize, INT64 bufferPos) {
+int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, int64_t bufferSize, int64_t bufferPos) {
 
    if (bufferSize > MAX_READSIZE_ALLOWED) {
       //printf("!!!read buffer size too large %lld\n", bufferSize);
       // break it down
 
-      INT64 totalRead = 0;
-      INT64 origSize = bufferSize;
+      int64_t totalRead = 0;
+      int64_t origSize = bufferSize;
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
@@ -755,11 +755,11 @@ INT64 SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle,
 
 //---------------------------------------------------
 // Returns bytes read
-INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, INT64 bufferSize, INT64 bufferPos) {
+int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, int64_t bufferSize, int64_t bufferPos) {
 
    if (bufferSize > MAX_READSIZE_ALLOWED) {
-      INT64 totalWritten = 0;
-      INT64 origSize = bufferSize;
+      int64_t totalWritten = 0;
+      int64_t origSize = bufferSize;
       char* cbuffer = (char*)buffer;
 
       while (bufferSize > MAX_READSIZE_ALLOWED) {
@@ -803,7 +803,7 @@ INT64 SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle
 //---------------------------------------------------
 void SDSFileClose(SDS_FILE_HANDLE handle) {
    errno = 0;
-   int result = close(handle);
+   int32_t result = close(handle);
    if (result < 0) {
       printf("Error closing file %s\n", strerror(errno));
    }
@@ -841,7 +841,7 @@ void AddSharedMemory(const char* name, PMAPPED_VIEW_STRUCT pmvs, void* pointer) 
 
 //------------------------------------------------------------------------------------------
 //
-void DelSharedMemory(void* pBase, INT64 length) {
+void DelSharedMemory(void* pBase, int64_t length) {
    auto it = g_SMMap.begin();
 
    while (it != g_SMMap.end())
@@ -859,10 +859,10 @@ void DelSharedMemory(void* pBase, INT64 length) {
 
 typedef SDS_EVENT_HANDLE(*SDS_CreateEventHandle)();
 typedef void(*SDS_DestroyEventHandle)(SDS_EVENT_HANDLE handle);
-typedef INT64(*SDS_FileSize)(const char* fileName);
-typedef SDS_FILE_HANDLE(*SDS_FileOpen)(const char* fileName, BOOLEAN writeOption, BOOLEAN overlapped, BOOLEAN directIO, BOOLEAN appendOption);
-typedef INT64(*SDS_FileReadChunk)(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, INT64 bufferSize, INT64 BufferPos);
-typedef INT64(*SDS_FileWriteChunk)(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, INT64 bufferSize, INT64 bufferPos);
+typedef int64_t(*SDS_FileSize)(const char* fileName);
+typedef SDS_FILE_HANDLE(*SDS_FileOpen)(const char* fileName, bool writeOption, bool overlapped, bool directIO, bool appendOption);
+typedef int64_t(*SDS_FileReadChunk)(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, void* buffer, int64_t bufferSize, int64_t BufferPos);
+typedef int64_t(*SDS_FileWriteChunk)(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandle, void* buffer, int64_t bufferSize, int64_t bufferPos);
 typedef void(*SDS_FileClose)(SDS_FILE_HANDLE handle);
 
 class  SDSFileIO {
@@ -878,7 +878,7 @@ public:
 
 typedef HRESULT(*SDS_SharedMemoryBegin)(
    const char*              pMappingName,
-   INT64                Size,
+   int64_t                Size,
    PMAPPED_VIEW_STRUCT *pReturnStruct);
 
 typedef HRESULT(*SDS_SharedMemoryEnd)(
@@ -887,7 +887,7 @@ typedef HRESULT(*SDS_SharedMemoryEnd)(
 typedef HRESULT(*SDS_SharedMemoryCopy)(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   BOOL                 bTest);
+   bool                 bTest);
 
 class SharedMemory {
 
@@ -899,7 +899,7 @@ public:
 
    char                    SharedMemoryName[SDS_MAX_FILENAME] = { 0 };
    PMAPPED_VIEW_STRUCT     pMapStruct = NULL;
-   INT64                   SharedMemorySize = 0;
+   int64_t                   SharedMemorySize = 0;
 
    //---------------------- METHODS ---------------------------
    //----------------------------------------------------------
@@ -913,7 +913,7 @@ public:
 
    //--------------------------------------------------
    //
-   char*   GetMemoryOffset(INT64 offset) {
+   char*   GetMemoryOffset(int64_t offset) {
       if (pMapStruct) {
          return ((char*)pMapStruct->BaseAddress) + offset;
       }
@@ -923,7 +923,7 @@ public:
 
    //--------------------------------------------------
    //
-   SDS_ARRAY_BLOCK*  GetArrayBlock(INT64 arrayNum) {
+   SDS_ARRAY_BLOCK*  GetArrayBlock(int64_t arrayNum) {
       SDS_ARRAY_BLOCK* pArrayBlock = (SDS_ARRAY_BLOCK*)GetMemoryOffset(GetFileHeader()->ArrayBlockOffset);
       return &pArrayBlock[arrayNum];
    }
@@ -931,7 +931,7 @@ public:
    //--------------------------------------------------
    //
    HRESULT Begin(
-      INT64                Size) {
+      int64_t                Size) {
 
       LOGGING("Allocating mem share %s with size %lld\n", SharedMemoryName, Size);
 
@@ -1086,7 +1086,7 @@ public:
    }
 
    // Returns 1 if item included
-   int IsIncluded(const char* stritem) {
+   int32_t IsIncluded(const char* stritem) {
 
       // If we have no inclusion list, then every item is accepted
       if (InclusionList.empty()) return 1;
@@ -1185,14 +1185,14 @@ public:
 
 //-------------------------------------------------------
 // Returns bytesPerRow 
-INT64
+int64_t
 GetBytesPerRow(SDS_ARRAY_BLOCK* pBlockInfo) {
    // calculate how many rows
    // rows based on the first dimension
-   INT64 bytesPerRow = 0;
-   INT64 dim0 = pBlockInfo->Dimensions[0];
-   INT64 arrayLength = dim0;
-   for (int i = 1; i < pBlockInfo->NDim; i++) {
+   int64_t bytesPerRow = 0;
+   int64_t dim0 = pBlockInfo->Dimensions[0];
+   int64_t arrayLength = dim0;
+   for (int32_t i = 1; i < pBlockInfo->NDim; i++) {
       arrayLength *= pBlockInfo->Dimensions[i];
    }
 
@@ -1208,13 +1208,13 @@ GetBytesPerRow(SDS_ARRAY_BLOCK* pBlockInfo) {
 // Returns both bytesPerBand and changes the bandCount
 // May pass in NULL for bandCount
 // ArrayLength is all the dimensions multiplied together
-INT64
-GetBytesPerBand(SDSArrayInfo* pArrayInfo, INT64 bandSize, INT64* bandCount=NULL) {
+int64_t
+GetBytesPerBand(SDSArrayInfo* pArrayInfo, int64_t bandSize, int64_t* bandCount=NULL) {
 
    // calculate how many bands
    // band based on the first dimension
-   INT64 bytesPerBand = 0;
-   INT64 dim0 = pArrayInfo->Dimensions[0];
+   int64_t bytesPerBand = 0;
+   int64_t dim0 = pArrayInfo->Dimensions[0];
 
    if (dim0 > 0) {
       bytesPerBand = (pArrayInfo->ArrayLength / dim0) * bandSize;
@@ -1236,31 +1236,31 @@ GetBytesPerBand(SDSArrayInfo* pArrayInfo, INT64 bandSize, INT64* bandCount=NULL)
 //
 static size_t 
 DecompressWithFilter(
-   INT64    compressedSize,      // pBlockInfo->ArrayCompressedSize
-   INT64    uncompressedSize,
-   INT64    arrayDataOffset,     // pBlockInfo->ArrayDataOffset
-   INT64    bytesPerRow,
+   int64_t    compressedSize,      // pBlockInfo->ArrayCompressedSize
+   int64_t    uncompressedSize,
+   int64_t    arrayDataOffset,     // pBlockInfo->ArrayDataOffset
+   int64_t    bytesPerRow,
    SDS_EVENT_HANDLE eventHandle,
    SDS_FILE_HANDLE fileHandle,
    void* tempBuffer,             // used to decompress
    void* destBuffer,             // the array buffer (final destination of data)
    SDS_FILTER* pFilter, 
-   INT64 rowOffset,              // the original row offset
-   INT64 stackIndex,             // when stacking, the stack #
-   int core,                     // thread # we are on
-   int compMode
+   int64_t rowOffset,              // the original row offset
+   int64_t stackIndex,             // when stacking, the stack #
+   int32_t core,                     // thread # we are on
+   int32_t compMode
 ) {
-   INT64 result = -1;
+   int64_t result = -1;
 
-   INT64 lastRow = pFilter->BoolMaskLength;
-   INT64 lastPossibleRow = (uncompressedSize - bytesPerRow) / bytesPerRow;
-   INT64 lastData = (bytesPerRow * lastRow);
+   int64_t lastRow = pFilter->BoolMaskLength;
+   int64_t lastPossibleRow = (uncompressedSize - bytesPerRow) / bytesPerRow;
+   int64_t lastData = (bytesPerRow * lastRow);
 
    // Check if user just wants the very first bytes
    // All set to TRUE in mask
    if (rowOffset ==0 && lastRow <= lastPossibleRow && lastRow == pFilter->BoolMaskTrueCount && lastData <= uncompressedSize) {
-      INT64 firstBand = 0;
-      INT64 firstData = bytesPerRow * firstBand;
+      int64_t firstBand = 0;
+      int64_t firstData = bytesPerRow * firstBand;
 
       LOGGING("special read: %lld  lastData:%lld\n", lastRow, lastData);
 
@@ -1274,7 +1274,7 @@ DecompressWithFilter(
          // TJD: More work to do here.  We read extra but we do not always have to.
          // Instead we could keep calling the stream decompressor, and if it needed more input, we could then read again
          // tested with 65536, but it was not enough
-         INT64 worstCase = CompressGetBound(compMode, lastData) + (2 * 65536);
+         int64_t worstCase = CompressGetBound(compMode, lastData) + (2 * 65536);
 
          LOGGING("[%d][%lld] worst case %lld v %lld  <-- DecompressWithFilter\n", core, stackIndex, worstCase, compressedSize);
          if (worstCase < compressedSize) {
@@ -1295,7 +1295,7 @@ DecompressWithFilter(
                // reduce the uncompressedSize since we do not need all the data
                uncompressedSize = lastData;
             }
-            INT64 dcSize = DecompressDataPartial(core, compMode, destBuffer, uncompressedSize, tempBuffer, compressedSize);
+            int64_t dcSize = DecompressDataPartial(core, compMode, destBuffer, uncompressedSize, tempBuffer, compressedSize);
 
             if (dcSize != uncompressedSize) {
                printf("[%d][%lld] MTDecompression band error direct size %lld vs %lld\n", core, stackIndex, dcSize, uncompressedSize);
@@ -1305,9 +1305,9 @@ DecompressWithFilter(
       }
    } else {
       //===================================================
-      // BOOLEAN MASK
+      // bool MASK
       //TODO: check for out of bounds lastBand and if found reduce masklength
-      INT64 lastRow = pFilter->BoolMaskLength;
+      int64_t lastRow = pFilter->BoolMaskLength;
 
       if (rowOffset > lastRow) {
          // nothing to do
@@ -1319,7 +1319,7 @@ DecompressWithFilter(
       // Make sure something to read
       //if (pFilter->pFilterInfo && pFilter->pFilterInfo[stackIndex].TrueCount > 0) {
       if (pFilter->BoolMaskTrueCount > 0) {
-         BOOL uncompressedRead = FALSE;
+         bool uncompressedRead = FALSE;
 
          if (compressedSize == uncompressedSize) {
             // this data was saved uncompressed
@@ -1341,7 +1341,7 @@ DecompressWithFilter(
 
             if (pTempBuffer) {
                // Read uncompressed chunk directly into our destination
-               INT64 dcSize = 0;
+               int64_t dcSize = 0;
 
                if (uncompressedRead) {
                   dcSize = DefaultFileIO.FileReadChunk(eventHandle, fileHandle, pTempBuffer, uncompressedSize, arrayDataOffset);
@@ -1352,7 +1352,7 @@ DecompressWithFilter(
 
                if (dcSize == uncompressedSize) {
                   char* pDest = (char*)destBuffer;
-                  INT64 sectionLength = uncompressedSize / bytesPerRow;
+                  int64_t sectionLength = uncompressedSize / bytesPerRow;
 
                   // User may have clipped data
                   if ((rowOffset + sectionLength) > pFilter->BoolMaskLength) {
@@ -1363,7 +1363,7 @@ DecompressWithFilter(
 
                   switch (bytesPerRow) {
                   case 1:
-                     for (INT64 i = 0; i < sectionLength; i++) {
+                     for (int64_t i = 0; i < sectionLength; i++) {
                         if (pMask[i]) {
                            *pDest = pTempBuffer[i];
                            pDest++;
@@ -1372,9 +1372,9 @@ DecompressWithFilter(
                      break;
                   case 2:
                      {
-                        INT16* pOut = (INT16*)pDest;
-                        INT16* pIn = (INT16*)pTempBuffer;
-                        for (INT64 i = 0; i < sectionLength; i++) {
+                        int16_t* pOut = (int16_t*)pDest;
+                        int16_t* pIn = (int16_t*)pTempBuffer;
+                        for (int64_t i = 0; i < sectionLength; i++) {
                            if (pMask[i]) {
                               *pOut++ = pIn[i];
                            }
@@ -1383,9 +1383,9 @@ DecompressWithFilter(
                      break;
                   case 4:
                   {
-                     INT32* pOut = (INT32*)pDest;
-                     INT32* pIn = (INT32*)pTempBuffer;
-                     for (INT64 i = 0; i < sectionLength; i++) {
+                     int32_t* pOut = (int32_t*)pDest;
+                     int32_t* pIn = (int32_t*)pTempBuffer;
+                     for (int64_t i = 0; i < sectionLength; i++) {
                         if (pMask[i]) {
                            *pOut++ = pIn[i];
                         }
@@ -1394,9 +1394,9 @@ DecompressWithFilter(
                   break;
                   case 8:
                   {
-                     INT64* pOut = (INT64*)pDest;
-                     INT64* pIn = (INT64*)pTempBuffer;
-                     for (INT64 i = 0; i < sectionLength; i++) {
+                     int64_t* pOut = (int64_t*)pDest;
+                     int64_t* pIn = (int64_t*)pTempBuffer;
+                     for (int64_t i = 0; i < sectionLength; i++) {
                         if (pMask[i]) {
                            *pOut++ = pIn[i];
                         }
@@ -1405,7 +1405,7 @@ DecompressWithFilter(
                   break;
 
                   default:
-                     for (INT64 i = 0; i < sectionLength; i++) {
+                     for (int64_t i = 0; i < sectionLength; i++) {
                         if (pMask[i]) {
                            memcpy(pDest, pTempBuffer + (i * bytesPerRow), bytesPerRow);
                            pDest += bytesPerRow;
@@ -1427,7 +1427,7 @@ DecompressWithFilter(
 //-----------------------------------------------------
 // Called when a filter is passed in to read
 // The data is banded.
-INT64
+int64_t
 ReadAndDecompressBandWithFilter(
    SDS_ARRAY_BLOCK *pBlockInfo,  // may contain banding information
    SDS_EVENT_HANDLE eventHandle,
@@ -1435,50 +1435,50 @@ ReadAndDecompressBandWithFilter(
    void*             tempBuffer, // used to decompress
    void*          destBuffer,    // the array buffer (final destination of data)
    SDS_FILTER*    pFilter,
-   INT64          rowOffset,             // the array # we are on
-   INT64          stackIndex,
-   int            core,                  // thread # we are on
-   int            compMode,
+   int64_t          rowOffset,             // the array # we are on
+   int64_t          stackIndex,
+   int32_t            core,                  // thread # we are on
+   int32_t            compMode,
 
-   INT64          bandDataSize,
-   INT64*         pBands
+   int64_t          bandDataSize,
+   int64_t*         pBands
 ) {
 
    // Check if all filtered out
    if (pFilter->pFilterInfo && pFilter->pFilterInfo[stackIndex].TrueCount == 0) return 0;
 
-   INT64 arrayDataOffset = pBlockInfo->ArrayDataOffset + bandDataSize;
+   int64_t arrayDataOffset = pBlockInfo->ArrayDataOffset + bandDataSize;
    char* destBandBuffer = (char*)destBuffer;
 
-   INT64 bytesPerRow = GetBytesPerRow(pBlockInfo);
+   int64_t bytesPerRow = GetBytesPerRow(pBlockInfo);
 
-   INT64 previousSize = 0;
+   int64_t previousSize = 0;
 
    // Is it a fancy mask filter?
-//   INT32 firstBand = rowOffset;
-   INT64 boolLength = pFilter->BoolMaskLength;
-   INT64 bandStart = 0;
-   INT64 bandIndex = 0;
-   INT64 result = -1;
-   INT64 runningTrueCount = 0;
+//   int32_t firstBand = rowOffset;
+   int64_t boolLength = pFilter->BoolMaskLength;
+   int64_t bandStart = 0;
+   int64_t bandIndex = 0;
+   int64_t result = -1;
+   int64_t runningTrueCount = 0;
 
    LOGGING("[%lld] seek to %lld  compsz:%lld  uncompsz:%lld  stackIndex:%lld  bytesPerRow:%lld  <-- ReadAndDecompressBandWithFilter\n", rowOffset, pBlockInfo->ArrayDataOffset, pBlockInfo->ArrayCompressedSize, pBlockInfo->ArrayUncompressedSize, stackIndex, bytesPerRow);
    
-   for (int i = 0; i < pBlockInfo->ArrayBandCount; i++) {
-      INT64 compressedSize = pBands[i] - previousSize;
+   for (int32_t i = 0; i < pBlockInfo->ArrayBandCount; i++) {
+      int64_t compressedSize = pBands[i] - previousSize;
       previousSize = pBands[i];
 
-      INT64 bandSize = pBlockInfo->ArrayBandSize;
-      INT64 uncompressedSize = pBlockInfo->ArrayBandSize * bytesPerRow;
+      int64_t bandSize = pBlockInfo->ArrayBandSize;
+      int64_t uncompressedSize = pBlockInfo->ArrayBandSize * bytesPerRow;
 
       // check for last band
       if ((i + 1) == pBlockInfo->ArrayBandCount) {
          uncompressedSize = pBlockInfo->ArrayUncompressedSize - (pBlockInfo->ArrayBandSize * bytesPerRow *i);
          bandSize = uncompressedSize / bytesPerRow;
       }
-      INT64 bandEnd = bandStart + bandSize;
+      int64_t bandEnd = bandStart + bandSize;
 
-      INT64 sectionLength = uncompressedSize / bytesPerRow;
+      int64_t sectionLength = uncompressedSize / bytesPerRow;
 
       // If the rest of the data is masked out, break
       if (rowOffset >= boolLength) {
@@ -1492,7 +1492,7 @@ ReadAndDecompressBandWithFilter(
 
       // Copy all TRUE rows
       bool*    pMask = pFilter->pBoolMask + rowOffset;
-      INT64 trueCount = SumBooleanMask((INT8*)pMask, sectionLength);
+      int64_t trueCount = SumBooleanMask((int8_t*)pMask, sectionLength);
 
       if (trueCount) {
 
@@ -1557,15 +1557,15 @@ ReadAndDecompressArrayBlockWithFilter(
    SDS_FILE_HANDLE fileHandle,
    void* tempBuffer,             // used to decompress
    void* destBuffer,             // the array buffer (final destination of data)
-   INT64 rowOffset,              // when stacking the orig row offset
+   int64_t rowOffset,              // when stacking the orig row offset
    SDS_FILTER* pFilter,
-   INT64 stackIndex,             // the stack # we are on
-   int core,                     // thread # we are on
-   int compMode
+   int64_t stackIndex,             // the stack # we are on
+   int32_t core,                     // thread # we are on
+   int32_t compMode
 ) {
 
-   INT64 result = -1;
-   BOOL didAlloc = FALSE;
+   int64_t result = -1;
+   bool didAlloc = FALSE;
 
    if (!tempBuffer) {
       LOGGING("Allocating tempbuffer of %lld\n", pBlockInfo->ArrayCompressedSize);
@@ -1582,8 +1582,8 @@ ReadAndDecompressArrayBlockWithFilter(
 
          // read in band header
          // allocate memory on the stack
-         INT64  bandDataSize = pBlockInfo->ArrayBandCount * sizeof(INT64);
-         INT64* pBands = (INT64*)alloca(bandDataSize);
+         int64_t  bandDataSize = pBlockInfo->ArrayBandCount * sizeof(int64_t);
+         int64_t* pBands = (int64_t*)alloca(bandDataSize);
          result = DefaultFileIO.FileReadChunk(eventHandle, fileHandle, pBands, bandDataSize, pBlockInfo->ArrayDataOffset);
 
          if (result == bandDataSize) {
@@ -1655,14 +1655,14 @@ ReadAndDecompressArrayBlock(
    SDS_FILE_HANDLE fileHandle, 
    void* tempBuffer,             // used to decompress
    void* destBuffer,             // the array buffer (final destination of data)
-   INT64 arrayIndex,             // the array # we are on
-   int core,                     // thread # we are on
-   int compMode
+   int64_t arrayIndex,             // the array # we are on
+   int32_t core,                     // thread # we are on
+   int32_t compMode
 ) {
 
 
-   INT64 result = -1;
-   INT64 compressedSize = pBlockInfo->ArrayCompressedSize;
+   int64_t result = -1;
+   int64_t compressedSize = pBlockInfo->ArrayCompressedSize;
 
    LOGGING("[%lld] seek to %lld  sz: %lld  <-- ReadAndDecompressArrayBlock\n", arrayIndex, pBlockInfo->ArrayDataOffset, pBlockInfo->ArrayCompressedSize);
 
@@ -1687,23 +1687,23 @@ ReadAndDecompressArrayBlock(
 
          // read in band
          // allocate memory on the stack
-         INT64  bandDataSize = pBlockInfo->ArrayBandCount * sizeof(INT64);
-         INT64* pBands = (INT64*)alloca(bandDataSize);
+         int64_t  bandDataSize = pBlockInfo->ArrayBandCount * sizeof(int64_t);
+         int64_t* pBands = (int64_t*)alloca(bandDataSize);
          result = DefaultFileIO.FileReadChunk(eventHandle, fileHandle, pBands, bandDataSize, pBlockInfo->ArrayDataOffset);
 
-         INT64 arrayDataOffset = pBlockInfo->ArrayDataOffset + bandDataSize;
+         int64_t arrayDataOffset = pBlockInfo->ArrayDataOffset + bandDataSize;
          char* destBandBuffer = (char*)destBuffer;
 
-         INT64 bytesPerRow = GetBytesPerRow(pBlockInfo);
+         int64_t bytesPerRow = GetBytesPerRow(pBlockInfo);
 
          if (result == bandDataSize) {
-            INT64 previousSize = 0;
+            int64_t previousSize = 0;
 
-            for (int i = 0; i < pBlockInfo->ArrayBandCount; i++) {
-               INT64 compressedSize = pBands[i] - previousSize;
+            for (int32_t i = 0; i < pBlockInfo->ArrayBandCount; i++) {
+               int64_t compressedSize = pBands[i] - previousSize;
                previousSize = pBands[i];
 
-               INT64 uncompressedSize = pBlockInfo->ArrayBandSize;
+               int64_t uncompressedSize = pBlockInfo->ArrayBandSize;
                uncompressedSize *= bytesPerRow;
 
                // check for last band
@@ -1723,7 +1723,7 @@ ReadAndDecompressArrayBlock(
 
                   result = DefaultFileIO.FileReadChunk(eventHandle, fileHandle, tempBuffer, compressedSize, arrayDataOffset);
                   //printf("[%d] decompressing  %d  size %lld  uncomp: %lld\n", core, i, compressedSize, uncompressedSize);
-                  INT64 dcSize = DecompressData(NULL, compMode, destBandBuffer, uncompressedSize, tempBuffer, compressedSize);
+                  int64_t dcSize = DecompressData(NULL, compMode, destBandBuffer, uncompressedSize, tempBuffer, compressedSize);
                   if (dcSize != uncompressedSize) {
                      printf("[%d][%lld][%d] MTDecompression band error size %lld vs %lld vs %lld\n", core, arrayIndex, i, dcSize, uncompressedSize, compressedSize);
                      result = -1;
@@ -1753,9 +1753,9 @@ ReadAndDecompressArrayBlock(
          }
          else {
 
-            INT64 uncompressedSize = pBlockInfo->ArrayUncompressedSize;
+            int64_t uncompressedSize = pBlockInfo->ArrayUncompressedSize;
 
-            INT64 dcSize = DecompressData(NULL, compMode, destBuffer, uncompressedSize, tempBuffer, compressedSize);
+            int64_t dcSize = DecompressData(NULL, compMode, destBuffer, uncompressedSize, tempBuffer, compressedSize);
 
             if (CompressIsError(compMode, dcSize)) {
                printf("[%d][%lld] MTDecompression error\n", core, arrayIndex);
@@ -1779,18 +1779,18 @@ ReadAndDecompressArrayBlock(
 // Called when starting a file
 void FillFileHeader(
    SDS_FILE_HEADER *pFileHeader,
-   INT64 fileOffset,
-   INT16 compMode,
-   INT16 compType,
-   INT32 compLevel,
-   INT16 fileType,
-   INT16 stackType,
-   INT32 authorId,
-   INT64 listNameLength,
-   INT64 listNameCount,
-   INT64 metaBlockSize,
-   INT64 arrayCount,
-   INT64 bandSize) {
+   int64_t fileOffset,
+   int16_t compMode,
+   int16_t compType,
+   int32_t compLevel,
+   int16_t fileType,
+   int16_t stackType,
+   int32_t authorId,
+   int64_t listNameLength,
+   int64_t listNameCount,
+   int64_t metaBlockSize,
+   int64_t arrayCount,
+   int64_t bandSize) {
 
    // To help detect old versions or corrupt files
    pFileHeader->SDSHeaderMagic = SDS_MAGIC;
@@ -1843,7 +1843,7 @@ void FillFileHeader(
    pFileHeader->FileOffset = fileOffset;
    pFileHeader->TimeStampUTCNanos = 0;
 
-   for (UINT64 i = 0; i < sizeof(pFileHeader->Reserved); i++) {
+   for (uint64_t i = 0; i < sizeof(pFileHeader->Reserved); i++) {
       pFileHeader->Reserved[i] = 0;  
    }
 }
@@ -1853,7 +1853,7 @@ void FillFileHeader(
 //void FillFileHeaderExtra(
 //   SDS_FILE_HEADER *pFileHeader,
 //   const char* sectionName,
-//   INT64 sectionNameLength) {
+//   int64_t sectionNameLength) {
 //
 //   pFileHeader->SectionBlockSize = 0;
 //   pFileHeader->SectionBlockOffset = 0;  // points to section directory if it exists
@@ -1864,7 +1864,7 @@ void FillFileHeader(
 //----------------------------------------
 // Returns: -1 file will be closed
 // Returns: 0 file is ok
-INT64 ReadFileHeader(SDS_FILE_HANDLE fileHandle, SDS_FILE_HEADER* pFileHeader, INT64 fileOffset, const char* fileName) {
+int64_t ReadFileHeader(SDS_FILE_HANDLE fileHandle, SDS_FILE_HEADER* pFileHeader, int64_t fileOffset, const char* fileName) {
    size_t bytesRead =
       DefaultFileIO.FileReadChunk(NULL, fileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
 
@@ -1896,14 +1896,14 @@ INT64 ReadFileHeader(SDS_FILE_HANDLE fileHandle, SDS_FILE_HEADER* pFileHeader, I
 // Returns sizeof new section
 // Returns pointer in *pListNames
 // NOTE: caller must WORKSPACE_FREE *pListNames
-INT64
+int64_t
    SDSSectionName::BuildSectionNamesAndOffsets(
       char** pListNames,                // Returned
       const char*  pNewSectionName,
-      INT64  newSectionOffset           // 0 Allowed
+      int64_t  newSectionOffset           // 0 Allowed
 ) {
    // alloc worst case scenario
-   INT64 allocSize = SDS_PAD_NUMBER((((SDS_MAX_SECTIONNAME + 8) * (SectionCount + 1)) + 1024));
+   int64_t allocSize = SDS_PAD_NUMBER((((SDS_MAX_SECTIONNAME + 8) * (SectionCount + 1)) + 1024));
 
    *pListNames = (char*)WORKSPACE_ALLOC(allocSize);
 
@@ -1915,7 +1915,7 @@ INT64
    char* pDest = *pListNames;
 
    // For all the section write out the section name and the fileoffset to the SDS_FILE_HEADER for that section
-   for (int i = 0; i < SectionCount; i++) {
+   for (int32_t i = 0; i < SectionCount; i++) {
       const char* pName = pSectionNames[i];
 
       // strcpy the name with a 0 char termination
@@ -1923,16 +1923,16 @@ INT64
 
       // after writing the name, write the new fileheader offset
       // Store the 64 bit offset
-      *(INT64*)pDest = pSectionOffsets[i];
-      pDest += sizeof(INT64);
+      *(int64_t*)pDest = pSectionOffsets[i];
+      pDest += sizeof(int64_t);
    }
 
    // strcpy
    while ((*pDest++ = *pNewSectionName++));
 
    // Store the 64 bit offset
-   *(INT64*)pDest = newSectionOffset;
-   pDest += sizeof(INT64);
+   *(int64_t*)pDest = newSectionOffset;
+   pDest += sizeof(int64_t);
 
    // return the size used
    return pDest - pStart;
@@ -1941,7 +1941,7 @@ INT64
 //--------------------------------------------
 // Also zero out pArrayNames, zero out pArrayEnums
 //
-void SDSSectionName::AllocateSectionData(INT64 sectionBlockCount, INT64 sectionSize) {
+void SDSSectionName::AllocateSectionData(int64_t sectionBlockCount, int64_t sectionSize) {
    SectionCount = sectionBlockCount;
    if (pSectionData != NULL) {
       printf("Double Allocation sectionData!!\n");
@@ -1950,11 +1950,11 @@ void SDSSectionName::AllocateSectionData(INT64 sectionBlockCount, INT64 sectionS
 
    // ZERO OUT
    pSectionNames = (const char**)WORKSPACE_ALLOC(SectionCount * sizeof(void*));
-   for (int i = 0; i < SectionCount; i++) {
+   for (int32_t i = 0; i < SectionCount; i++) {
       pSectionNames[i] = NULL;
    }
-   pSectionOffsets = (INT64*)WORKSPACE_ALLOC(SectionCount * sizeof(INT64));
-   for (int i = 0; i < SectionCount; i++) {
+   pSectionOffsets = (int64_t*)WORKSPACE_ALLOC(SectionCount * sizeof(int64_t));
+   for (int32_t i = 0; i < SectionCount; i++) {
       pSectionOffsets[i] = 0;
    }
 }
@@ -1982,20 +1982,20 @@ void SDSSectionName::DeleteSectionData() {
 // Returns the section names and offsets of sections written
 //
 // Called by DecompressFileIntenral
-void SDSSectionName::MakeListSections(const INT64 sectionBlockCount, const INT64 sectionByteSize) {
+void SDSSectionName::MakeListSections(const int64_t sectionBlockCount, const int64_t sectionByteSize) {
    const char* startSectionData = pSectionData;
    const char* pSections = pSectionData;
 
    // for every section
-   for (int i = 0; i < sectionBlockCount; i++) {
+   for (int32_t i = 0; i < sectionBlockCount; i++) {
       const char* pStart = pSections;
 
       // skip to end (search for 0 terminating char)
       while (*pSections++);
 
       // get the offset
-      INT64 value = *(INT64*)pSections;
-      pSections += sizeof(INT64);
+      int64_t value = *(int64_t*)pSections;
+      pSections += sizeof(int64_t);
 
       LOGGING("makelist section is %s, %d, offset at %lld\n", pStart, i, value);
 
@@ -2035,7 +2035,7 @@ char* SDSSectionName::MakeFirstSectionName() {
 // return list of strings (section names)
 // on success pSectionData is valid
 char* SDSSectionName::ReadListSections(SDS_FILE_HANDLE SDSFile, SDS_FILE_HEADER *pFileHeader) {
-   INT64 sectionSize = pFileHeader->SectionBlockSize;
+   int64_t sectionSize = pFileHeader->SectionBlockSize;
 
    if (sectionSize) {
       LOGGING("Section Block Count %lld,  sectionSize %lld, reserved %lld\n", pFileHeader->SectionBlockCount, sectionSize, pFileHeader->SectionBlockReservedSize);
@@ -2047,7 +2047,7 @@ char* SDSSectionName::ReadListSections(SDS_FILE_HANDLE SDSFile, SDS_FILE_HEADER 
          return NULL;
       }
 
-      INT64 bytesRead =
+      int64_t bytesRead =
          DefaultFileIO.FileReadChunk(NULL, SDSFile, pSectionData, sectionSize, pFileHeader->SectionBlockOffset);
 
       if (bytesRead != sectionSize) {
@@ -2082,25 +2082,25 @@ SDS_FILE_HANDLE StartCompressedFile(
    const char* fileName,
    SDS_FILE_HEADER* pFileHeader,
 
-   INT16 compType,
-   INT32 compLevel,
-   INT16 fileType,
-   INT16 stackType,
-   INT32 authorId,
+   int16_t compType,
+   int32_t compLevel,
+   int16_t fileType,
+   int16_t stackType,
+   int32_t authorId,
 
    const char* listNames,
-   INT64 listNameLength,
-   INT64 listNameCount,
+   int64_t listNameLength,
+   int64_t listNameCount,
 
    const char* strMeta,
-   INT64 strMetaLength,
-   INT64 arrayCount,
-   INT32 mode,       // COMPRESSION_MODE_COMPRESS_APPEND_FILE
+   int64_t strMetaLength,
+   int64_t arrayCount,
+   int32_t mode,       // COMPRESSION_MODE_COMPRESS_APPEND_FILE
    SDS_STRING_LIST* pFolderName,
-   INT64 bandSize,
+   int64_t bandSize,
    SDS_WRITE_INFO* pWriteInfo) {
 
-   INT64    fileOffset=0;
+   int64_t    fileOffset=0;
 
    // TODO: have an override mode for appending?
    if (mode == COMPRESSION_MODE_COMPRESS_APPEND_FILE) {
@@ -2132,7 +2132,7 @@ SDS_FILE_HANDLE StartCompressedFile(
 
    if (mode == COMPRESSION_MODE_COMPRESS_APPEND_FILE) {
       // Check to make sure the fileheader is valid before appending
-      INT64 result =
+      int64_t result =
          ReadFileHeader(fileHandle, pFileHeader, 0, fileName);
 
       if (result != 0) {
@@ -2143,7 +2143,7 @@ SDS_FILE_HANDLE StartCompressedFile(
 
    size_t dest_size = strMetaLength;
    void* dest = (void*)strMeta;
-   INT64 cSize = strMetaLength;
+   int64_t cSize = strMetaLength;
 
    // Check if we compress metadata
    if (compType == COMPRESSION_TYPE_ZSTD) {
@@ -2204,7 +2204,7 @@ SDS_FILE_HANDLE StartCompressedFile(
    //// PAD THE REST OUT
    //char* filler = (char*)WORKSPACE_ALLOC(SDS_PADSIZE);
    //memset(filler, 0, SDS_PADSIZE);
-   //INT64 diff = SDS_PAD_NUMBER(cSize);
+   //int64_t diff = SDS_PAD_NUMBER(cSize);
    //diff = diff - cSize;
    //if (diff > 0) {
    //   fwrite(filler, diff, 1, fileHandle);
@@ -2235,7 +2235,7 @@ void EndCompressedFile(
 
    LOGGING("SDS: Array first offset --- %lld   Total comp size %lld\n",  pFileHeader->ArrayFirstOffset, pFileHeader->TotalArrayCompressedSize);
 
-   INT64 LastFileOffset = pFileHeader->GetEndOfFileOffset();
+   int64_t LastFileOffset = pFileHeader->GetEndOfFileOffset();
 
    // Check if the user is appending to an existing file
    if (pWriteInfo->sectionName) {
@@ -2249,7 +2249,7 @@ void EndCompressedFile(
 
          LOGGING("SDS: Writing first section %s at %lld\n", pWriteInfo->sectionName, LastFileOffset);
 
-         INT64 sectionSize =
+         int64_t sectionSize =
             cSDSSectionName.BuildSectionNamesAndOffsets(
                &pListNames,
                pWriteInfo->sectionName,
@@ -2263,7 +2263,7 @@ void EndCompressedFile(
          pFileHeader->SectionBlockReservedSize = SDS_PAD_NUMBER(sectionSize);
 
          // write first section header
-         INT64 result = DefaultFileIO.FileWriteChunk(NULL, sdsFile, pListNames, pFileHeader->SectionBlockReservedSize, pFileHeader->SectionBlockOffset);
+         int64_t result = DefaultFileIO.FileWriteChunk(NULL, sdsFile, pListNames, pFileHeader->SectionBlockReservedSize, pFileHeader->SectionBlockOffset);
 
          if (result != pFileHeader->SectionBlockReservedSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Compression error cannot append section %lld at %lld", pFileHeader->SectionBlockReservedSize, pFileHeader->SectionBlockOffset);
@@ -2274,7 +2274,7 @@ void EndCompressedFile(
          SDS_FILE_HEADER   fileHeader;
 
          // read in the first file header to get section information since we are appending another section
-         INT64 result =
+         int64_t result =
             ReadFileHeader(sdsFile, &fileHeader, 0, "reread");
 
          if (result == 0) {
@@ -2288,10 +2288,10 @@ void EndCompressedFile(
                fileHeader.SectionBlockCount = 1;
             }
 
-            INT64 blockCount = fileHeader.SectionBlockCount;
+            int64_t blockCount = fileHeader.SectionBlockCount;
 
             LOGGING("SDS: Writing section %s with blockcount:%lld at %lld (%lld) at %lld\n", pWriteInfo->sectionName, blockCount, pFileHeader->FileOffset, fileHeader.FileOffset, LastFileOffset);
-            INT64 sectionSize =
+            int64_t sectionSize =
                cSDSSectionName.BuildSectionNamesAndOffsets(
                   &pListNames,
                   pWriteInfo->sectionName,
@@ -2331,7 +2331,7 @@ void EndCompressedFile(
    //Timestamp
    pFileHeader->TimeStampUTCNanos = GetUTCNanos();
 
-   INT64 result = DefaultFileIO.FileWriteChunk(NULL, sdsFile, pFileHeader, sizeof(SDS_FILE_HEADER), pFileHeader->FileOffset);
+   int64_t result = DefaultFileIO.FileWriteChunk(NULL, sdsFile, pFileHeader, sizeof(SDS_FILE_HEADER), pFileHeader->FileOffset);
    if (result != sizeof(SDS_FILE_HEADER)) {
       SetErr_Format(SDS_VALUE_ERROR, "Compression error cannot write fileheader at offset %lld\n", pFileHeader->FileOffset);
    }
@@ -2356,17 +2356,17 @@ void EndCompressedFile(
 // for normal read: read into pstCompressArrays->ArrayInfo[t].pData
 // size of the READ: pBlockInfo->ArrayCompressedSize
 //
-BOOL DecompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
+bool DecompressFileArray(void* pstCompressArraysV, int32_t core, int64_t t) {
 
    LOGGING("[%lld] Start of decompress array: core %d   compress: %p\n", t, core, pstCompressArraysV);
    SDS_READ_DECOMPRESS_ARRAYS* pstCompressArrays = (SDS_READ_DECOMPRESS_ARRAYS *)pstCompressArraysV;
    SDS_FILE_HANDLE sdsFile = pstCompressArrays->fileHandle;
 
-   // point to blocks
+   // point32_t to blocks
    SDS_ARRAY_BLOCK* pBlockInfo = &pstCompressArrays->pBlockInfo[t];
    //LOGGING("[%lld] Step 2 of decompress array: core %d  blockinfo %p\n", t, core, pBlockInfo);
 
-   INT64 source_size = pBlockInfo->ArrayCompressedSize;
+   int64_t source_size = pBlockInfo->ArrayCompressedSize;
    void* destBuffer = NULL;
 
    // Check if we are reading into memory or reading into a preallocated numpy array
@@ -2407,7 +2407,7 @@ BOOL DecompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
 
       if (pBlockInfo->Flags & SDS_ARRAY_FILTERED) {
          // No stacking but filtering
-         INT64 result =
+         int64_t result =
             ReadAndDecompressArrayBlockWithFilter(
                pBlockInfo,
                pstCompressArrays->eventHandles[core],
@@ -2424,7 +2424,7 @@ BOOL DecompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
       }
       else {
          // No stacking, no filtering
-         INT64 result =
+         int64_t result =
             ReadAndDecompressArrayBlock(
                pBlockInfo,
                pstCompressArrays->eventHandles[core],
@@ -2450,22 +2450,22 @@ BOOL DecompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
 // pstCompressArrays->pArrayInfo must be set
 // pstCompressArrays->pCoreMemory must be set
 // pBlockInfo must be set
-BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
+bool CompressFileArray(void* pstCompressArraysV, int32_t core, int64_t t) {
 
    SDS_WRITE_COMPRESS_ARRAYS* pstCompressArrays = (SDS_WRITE_COMPRESS_ARRAYS *)pstCompressArraysV;
    SDS_FILE_HEADER* pFileHeader = pstCompressArrays->pFileHeader;
 
    SDSArrayInfo* pArrayInfo = &pstCompressArrays->pArrayInfo[t];
 
-   INT64 bandSize = pFileHeader->BandSize;
-   INT64 bandCount = 0;
-   INT64 bytesPerBand = 0;
+   int64_t bandSize = pFileHeader->BandSize;
+   int64_t bandCount = 0;
+   int64_t bytesPerBand = 0;
 
-   INT64 source_size = pArrayInfo->ArrayLength * pArrayInfo->ItemSize;
+   int64_t source_size = pArrayInfo->ArrayLength * pArrayInfo->ItemSize;
 
    // Calculate how much to allocate
-   INT64 dest_size = source_size;
-   INT64 wantedSize = source_size;
+   int64_t dest_size = source_size;
+   int64_t wantedSize = source_size;
    
    if (pstCompressArrays->compType == COMPRESSION_TYPE_ZSTD) {
 
@@ -2484,7 +2484,7 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
       dest_size = CompressGetBound(COMPRESSION_TYPE_ZSTD, source_size);
 
       // If banding is on, we store the last offset upfront
-      wantedSize += bandCount * sizeof(INT64);
+      wantedSize += bandCount * sizeof(int64_t);
    }
 
    if (pstCompressArrays->pCoreMemorySize[core] < wantedSize) {
@@ -2520,14 +2520,14 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
          if (bandCount > 0) {
             LOGGING("[%d] banding bytesperband:%lld   bandcount:%lld\n", (int)t, bytesPerBand, bandCount);
 
-            INT64* pBandOffsets = (INT64*)pTempMemory;
+            int64_t* pBandOffsets = (int64_t*)pTempMemory;
             char* pWriteMemory = (char*)(pBandOffsets + bandCount);
             char* pStartWriteMemory = pWriteMemory;
-            INT64 bytesAvailable = dest_size;
-            INT64 bytesRemaining = source_size;
+            int64_t bytesAvailable = dest_size;
+            int64_t bytesRemaining = source_size;
             char* pReadMemory = pArrayInfo->pData;
 
-            for (INT64 i = 0; i < bandCount;) {
+            for (int64_t i = 0; i < bandCount;) {
 
                i++;
 
@@ -2585,8 +2585,8 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
       // Also race condition for addition total size
       InterlockedAdd64(&pFileHeader->TotalArrayUncompressedSize, source_size);
 
-      INT64 arrayNumber = t;
-      INT64 fileOffset = pFileHeader->AddArrayCompressedSize(cSize);
+      int64_t arrayNumber = t;
+      int64_t fileOffset = pFileHeader->AddArrayCompressedSize(cSize);
 
       //==============================================
       // FILL IN ARRAY BLOCK
@@ -2599,23 +2599,23 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
       pArrayBlock->CompressionType = COMPRESSION_TYPE_ZSTD;
 
       // New version 4.3
-      pArrayBlock->ArrayBandCount = (INT32)bandCount;
-      pArrayBlock->ArrayBandSize = (INT32)bandSize;
+      pArrayBlock->ArrayBandCount = (int32_t)bandCount;
+      pArrayBlock->ArrayBandSize = (int32_t)bandSize;
 
       // record array dimensions
-      INT32 ndim = pArrayInfo->NDim;
+      int32_t ndim = pArrayInfo->NDim;
       if (ndim > SDS_MAX_DIMS) {
          printf("!!!SDS: array dimensions too high: %d\n", ndim);
          ndim = SDS_MAX_DIMS;
       }
 
-      pArrayBlock->NDim = (INT8)ndim;
+      pArrayBlock->NDim = (int8_t)ndim;
 
-      for (int i = 0; i < SDS_MAX_DIMS; i++) {
+      for (int32_t i = 0; i < SDS_MAX_DIMS; i++) {
          pArrayBlock->Dimensions[i] = 0;
          pArrayBlock->Strides[i] = 0;
       }
-      for (int i = 0; i < ndim; i++) {
+      for (int32_t i = 0; i < ndim; i++) {
          pArrayBlock->Dimensions[i] = pArrayInfo->Dimensions[i];
          pArrayBlock->Strides[i] = pArrayInfo->Strides[i];
       }
@@ -2623,7 +2623,7 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
       pArrayBlock->Flags = pArrayInfo->Flags;
 
       pArrayBlock->DType = pArrayInfo->NumpyDType;
-      pArrayBlock->ItemSize = (INT32)pArrayInfo->ItemSize;
+      pArrayBlock->ItemSize = (int32_t)pArrayInfo->ItemSize;
       pArrayBlock->HeaderLength = sizeof(SDS_ARRAY_BLOCK);
       pArrayBlock->Magic = COMPRESSION_MAGIC;
 
@@ -2631,7 +2631,7 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
 
       //===========================
       // Write compressed chunk 
-      INT64 result =
+      int64_t result =
          DefaultFileIO.FileWriteChunk(
             pstCompressArrays->eventHandles[core],
             pstCompressArrays->fileHandle,
@@ -2652,24 +2652,24 @@ BOOL CompressFileArray(void* pstCompressArraysV, int core, INT64 t) {
 //------------------------------------------------------------
 // Return amount of memory needed to allocate
 //
-INT64 CalculateSharedMemorySize(SDS_FILE_HEADER* pFileHeader, SDS_ARRAY_BLOCK* pArrayBlocks) {
+int64_t CalculateSharedMemorySize(SDS_FILE_HEADER* pFileHeader, SDS_ARRAY_BLOCK* pArrayBlocks) {
 
    // Calculate size of shared memory
-   INT64    totalSize = 0;
+   int64_t    totalSize = 0;
    totalSize += sizeof(SDS_FILE_HEADER);
    totalSize += SDS_PAD_NUMBER(pFileHeader->NameBlockSize);
    totalSize += SDS_PAD_NUMBER(pFileHeader->TotalMetaUncompressedSize);
    totalSize += SDS_PAD_NUMBER(pFileHeader->ArrayBlockSize);
 
-   INT64 arrayCount = pFileHeader->ArraysWritten;
+   int64_t arrayCount = pFileHeader->ArraysWritten;
 
    if (pArrayBlocks) {
       // Add all the pNumpyArray pointers
-      for (int t = 0; t < arrayCount; t++) {
+      for (int32_t t = 0; t < arrayCount; t++) {
          totalSize += SDS_PAD_NUMBER(pArrayBlocks[t].ArrayUncompressedSize);
       }
 
-      INT64 arraycount = pFileHeader->ArrayBlockSize / sizeof(SDS_ARRAY_BLOCK);
+      int64_t arraycount = pFileHeader->ArrayBlockSize / sizeof(SDS_ARRAY_BLOCK);
 
       if (arraycount != pFileHeader->ArraysWritten) {
          printf("possibly incomplete file %lld %lld\n", arraycount, pFileHeader->ArraysWritten);
@@ -2693,7 +2693,7 @@ typedef void (*sighandler_t)(int);
 
 sighandler_t sigbus_orighandler;
 
-void sigbus_termination_handler(int signum) {
+void sigbus_termination_handler(int32_t signum) {
    // try to recover
    // NOTE: consider changing to siglongjmp
    longjmp(sigbus_jmp, 1);
@@ -2715,7 +2715,7 @@ void sigbus_termination_handler(int signum) {
 // metaData -- block of bytes to store as metadata
 // metaDataSize -- 
 //
-BOOL SDSWriteFileInternal(
+bool SDSWriteFileInternal(
    const char *            fileName,
    const char *            shareName,  // can be NULL
    SDS_STRING_LIST*        pFolderName,  // can be NULL
@@ -2728,28 +2728,28 @@ BOOL SDSWriteFileInternal(
 
    // arrays to save information
    SDSArrayInfo* aInfo = pWriteInfo->aInfo;
-   INT64 arrayCount = pWriteInfo->arrayCount;
+   int64_t arrayCount = pWriteInfo->arrayCount;
 
    // meta information
    const char *metaData = pWriteInfo->metaData;
-   UINT32 metaDataSize = pWriteInfo->metaDataSize;
+   uint32_t metaDataSize = pWriteInfo->metaDataSize;
 
    // names of arrays information
    char* pListNames = pWriteInfo->pListNames;
-   INT64 listNameSize = pWriteInfo->listNameSize;    // total byte size (store in memory)
-   INT64 listNameCount = pWriteInfo->listNameCount;   // number of names
+   int64_t listNameSize = pWriteInfo->listNameSize;    // total byte size (store in memory)
+   int64_t listNameCount = pWriteInfo->listNameCount;   // number of names
 
                                                       // compressed or uncompressed
-   INT32 mode = pWriteInfo->mode;            // = COMPRESSION_MODE_COMPRESS_FILE, COMPRESSION_MODE_COMPRESS_APPEND_FILE
-   INT32 compType = pWriteInfo->compType;    // = COMPRESSION_TYPE_ZSTD,
-   INT32 level = pWriteInfo->level;          // = ZSTD_CLEVEL_DEFAULT;
+   int32_t mode = pWriteInfo->mode;            // = COMPRESSION_MODE_COMPRESS_FILE, COMPRESSION_MODE_COMPRESS_APPEND_FILE
+   int32_t compType = pWriteInfo->compType;    // = COMPRESSION_TYPE_ZSTD,
+   int32_t level = pWriteInfo->level;          // = ZSTD_CLEVEL_DEFAULT;
 
-   INT32 sdsFileType = pWriteInfo->sdsFileType;
-   INT32 authorId = pWriteInfo->sdsAuthorId;
+   int32_t sdsFileType = pWriteInfo->sdsFileType;
+   int32_t authorId = pWriteInfo->sdsAuthorId;
 
-   BOOL bAppendHeader = pWriteInfo->appendRowsMode;
+   bool bAppendHeader = pWriteInfo->appendRowsMode;
 
-   INT64 bandSize = pWriteInfo->bandSize;
+   int64_t bandSize = pWriteInfo->bandSize;
 
    // clamp bandsize to 10K min
    if (bandSize < 10000 && bandSize > 0) bandSize = 10000;
@@ -2776,10 +2776,10 @@ BOOL SDSWriteFileInternal(
          DefaultMemoryIO.MakeShareName(fileName, shareName);
 
          // Calculate size of shared memory
-         INT64 totalSize = CalculateSharedMemorySize(pFileHeader, NULL);
+         int64_t totalSize = CalculateSharedMemorySize(pFileHeader, NULL);
 
          // Add all the pNumpyArray pointers
-         for (int t = 0; t < arrayCount; t++) {
+         for (int32_t t = 0; t < arrayCount; t++) {
             totalSize += SDS_PAD_NUMBER(aInfo[t].ArrayLength * aInfo[t].ItemSize);
          }
 
@@ -2826,10 +2826,10 @@ BOOL SDSWriteFileInternal(
                SDS_ARRAY_BLOCK* pDestArrayBlock = DefaultMemoryIO.GetArrayBlock(0);
 
                // offset to first location of array data
-               INT64 startOffset = pMemoryFileHeader->ArrayFirstOffset;
+               int64_t startOffset = pMemoryFileHeader->ArrayFirstOffset;
 
                // Step 4: have to fill in arrayblocks
-               for (int arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++) {
+               for (int32_t arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++) {
 
                   LOGGING("start offset %d %lld\n", arrayNumber, startOffset);
 
@@ -2841,23 +2841,23 @@ BOOL SDSWriteFileInternal(
                   pDestArrayBlock[arrayNumber].CompressionType = COMPRESSION_TYPE_NONE;
 
                   // record array dimensions
-                  INT32 ndim = aInfo[arrayNumber].NDim;
+                  int32_t ndim = aInfo[arrayNumber].NDim;
                   if (ndim > SDS_MAX_DIMS) ndim = SDS_MAX_DIMS;
                   if (ndim < 1) ndim = 1;
 
-                  pDestArrayBlock[arrayNumber].NDim = (INT8)ndim;
+                  pDestArrayBlock[arrayNumber].NDim = (int8_t)ndim;
 
-                  for (int j = 0; j < SDS_MAX_DIMS; j++) {
+                  for (int32_t j = 0; j < SDS_MAX_DIMS; j++) {
                      pDestArrayBlock[arrayNumber].Dimensions[j] = 0;
                      pDestArrayBlock[arrayNumber].Strides[j] = 0;
                   }
-                  for (int j = 0; j < ndim; j++) {
+                  for (int32_t j = 0; j < ndim; j++) {
                      pDestArrayBlock[arrayNumber].Dimensions[j] = aInfo[arrayNumber].Dimensions[j];
                      pDestArrayBlock[arrayNumber].Strides[j] = aInfo[arrayNumber].Strides[j];
                   }
                   pDestArrayBlock[arrayNumber].Flags = aInfo[arrayNumber].Flags;
                   pDestArrayBlock[arrayNumber].DType = aInfo[arrayNumber].NumpyDType;
-                  pDestArrayBlock[arrayNumber].ItemSize = (INT32)aInfo[arrayNumber].ItemSize;
+                  pDestArrayBlock[arrayNumber].ItemSize = (int32_t)aInfo[arrayNumber].ItemSize;
                   pDestArrayBlock[arrayNumber].HeaderLength = sizeof(SDS_ARRAY_BLOCK);
                   pDestArrayBlock[arrayNumber].Magic = COMPRESSION_MAGIC;
 
@@ -2868,7 +2868,7 @@ BOOL SDSWriteFileInternal(
                LOGGING("Copying array data  %lld\n", arrayCount);
 
                // Step 5 (can make multithreaded) -- copy array blocks
-               for (int arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++) {
+               for (int32_t arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++) {
                   //LOGGING("Writing to offset %lld, length %lld, memptr %p\n", pDestArrayBlock[arrayNumber].ArrayDataOffset, pDestArrayBlock[arrayNumber].ArrayUncompressedSize, DefaultMemoryIO.GetMemoryOffset(pDestArrayBlock[arrayNumber].ArrayDataOffset));
 
                   memcpy(
@@ -2912,7 +2912,7 @@ BOOL SDSWriteFileInternal(
             StartCompressedFile(
                fileName,
                pFileHeader,
-               (INT16)compType,
+               (int16_t)compType,
                level,
                sdsFileType,
                0,                   // stackType
@@ -2947,7 +2947,7 @@ BOOL SDSWriteFileInternal(
 
             pstCompressArrays->compLevel = level;
             pstCompressArrays->compType = compType;
-            pstCompressArrays->compMode = (INT16)mode;
+            pstCompressArrays->compMode = (int16_t)mode;
 
             pstCompressArrays->pArrayInfo = aInfo;
             pstCompressArrays->fileHandle = sdsFile;
@@ -2956,9 +2956,9 @@ BOOL SDSWriteFileInternal(
 
             // Make sure there are arrays to write
             if (arrayCount > 0) {
-               INT numCores = g_cMathWorker->GetNumCores();
+               int32_t numCores = g_cMathWorker->GetNumCores();
 
-               for (int j = 0; j < numCores; j++) {
+               for (int32_t j = 0; j < numCores; j++) {
                   pstCompressArrays->pCoreMemory[j] = NULL;
                   pstCompressArrays->pCoreMemorySize[j] = 0;
                   pstCompressArrays->eventHandles[j] = DefaultFileIO.CreateEventHandle();
@@ -2971,7 +2971,7 @@ BOOL SDSWriteFileInternal(
 
                LOGGING("End of compressing\n");
 
-               for (int j = 0; j < numCores; j++) {
+               for (int32_t j = 0; j < numCores; j++) {
                   if (pstCompressArrays->pCoreMemory[j]) {
                      WORKSPACE_FREE(pstCompressArrays->pCoreMemory[j]);
                   }
@@ -3001,7 +3001,7 @@ BOOL SDSWriteFileInternal(
 //---------------------------------------------------------
 // Linux: long = 64 bits
 // Windows: long = 32 bits
-static int FixupDType(int dtype, INT64 itemsize) {
+static int32_t FixupDType(int32_t dtype, int64_t itemsize) {
 
    if (dtype == SDS_LONG) {
       // types 7 and 8 are ambiguous because of different compilers
@@ -3030,7 +3030,7 @@ static int FixupDType(int dtype, INT64 itemsize) {
 //
 void CopyFromBlockToInfo(SDS_ARRAY_BLOCK*  pBlock, SDSArrayInfo* pDestInfo) {
 
-   int dtype = FixupDType(pBlock->DType, pBlock->ItemSize);
+   int32_t dtype = FixupDType(pBlock->DType, pBlock->ItemSize);
 
    // IS THIS EVER USED??
    pDestInfo->NDim = pBlock->NDim;
@@ -3038,13 +3038,13 @@ void CopyFromBlockToInfo(SDS_ARRAY_BLOCK*  pBlock, SDSArrayInfo* pDestInfo) {
    pDestInfo->ItemSize = pBlock->ItemSize;
    pDestInfo->Flags = pBlock->Flags;
 
-   int ndim = pBlock->NDim;
+   int32_t ndim = pBlock->NDim;
    if (ndim > SDS_MAX_DIMS) { ndim = SDS_MAX_DIMS; }
 
    pDestInfo->ArrayLength = 1;
 
    // Fill in strides, dims, and calc arraylength
-   for (int i = 0; i < ndim; i++) {
+   for (int32_t i = 0; i < ndim; i++) {
       pDestInfo->ArrayLength *= pBlock->Dimensions[i];
       pDestInfo->Dimensions[i] = pBlock->Dimensions[i];
       pDestInfo->Strides[i] = pBlock->Strides[i];
@@ -3062,10 +3062,10 @@ void CopyFromBlockToInfo(SDS_ARRAY_BLOCK*  pBlock, SDSArrayInfo* pDestInfo) {
 
 
 struct SDS_COMPATIBLE {
-   INT8                 IsCompatible;  // set to FALSE if conversion required
-   INT8                 NeedsStringFixup;  // set to 1 if conversion required, or in 2 for mtlab conversion
-   INT8                 NeedsConversion;  // if flag set, dtype conversion called
-   INT8                 NeedsRotation;
+   int8_t                 IsCompatible;  // set to FALSE if conversion required
+   int8_t                 NeedsStringFixup;  // set to 1 if conversion required, or in 2 for mtlab conversion
+   int8_t                 NeedsConversion;  // if flag set, dtype conversion called
+   int8_t                 NeedsRotation;
 };
 
 //=============================================================
@@ -3084,22 +3084,22 @@ struct SDS_IO_PACKET {
    // Used when going to shared memory
    class SharedMemory*  pMemoryIO;
 
-   INT16                CompMode;
-   INT8                 ReservedMode1;
-   INT8                 ReservedMode2;
+   int16_t                CompMode;
+   int8_t                 ReservedMode1;
+   int8_t                 ReservedMode2;
    SDS_COMPATIBLE       Compatible;
 
    // Used in matlab string rotation
-   INT64                ArrayOffset;
-   INT64                OriginalArrayOffset;
-   INT64                StackPosition;
+   int64_t                ArrayOffset;
+   int64_t                OriginalArrayOffset;
+   int64_t                StackPosition;
    const char*          ColName;
 };
 
 struct SDS_MULTI_IO_PACKETS {
    // Per core allocations
    void*                pCoreMemory[SDS_MAX_CORES];
-   INT64                pCoreMemorySize[SDS_MAX_CORES];
+   int64_t                pCoreMemorySize[SDS_MAX_CORES];
    SDS_EVENT_HANDLE     eventHandles[SDS_MAX_CORES];
 
    SDSArrayInfo*        pDestInfo;
@@ -3118,20 +3118,20 @@ struct SDS_MULTI_IO_PACKETS {
    //--------------------------------------
    // Allocates pMultiIOPackets->pDestInfo
    // Allocates event handles
-   static SDS_MULTI_IO_PACKETS* Allocate(INT64 tupleSize, SDS_FILTER*  pFilter) {
-      INT64 allocSize = sizeof(SDS_MULTI_IO_PACKETS) + ((sizeof(SDS_IO_PACKET) * tupleSize));
+   static SDS_MULTI_IO_PACKETS* Allocate(int64_t tupleSize, SDS_FILTER*  pFilter) {
+      int64_t allocSize = sizeof(SDS_MULTI_IO_PACKETS) + ((sizeof(SDS_IO_PACKET) * tupleSize));
       SDS_MULTI_IO_PACKETS* pMultiIOPackets = (SDS_MULTI_IO_PACKETS*)WORKSPACE_ALLOC(allocSize);
       memset(pMultiIOPackets, 0, allocSize);
 
       pMultiIOPackets->pFilter = pFilter;
 
-      INT64 allocSizeDestInfo = tupleSize * sizeof(SDSArrayInfo);
+      int64_t allocSizeDestInfo = tupleSize * sizeof(SDSArrayInfo);
       pMultiIOPackets->pDestInfo = (SDSArrayInfo*)WORKSPACE_ALLOC(allocSizeDestInfo);
       memset(pMultiIOPackets->pDestInfo, 0, allocSizeDestInfo);
 
       // Set all the cores working memory to zero
-      INT numCores = g_cMathWorker->WorkerThreadCount + 1;
-      for (int j = 0; j < numCores; j++) {
+      int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
+      for (int32_t j = 0; j < numCores; j++) {
          pMultiIOPackets->eventHandles[j] = DefaultFileIO.CreateEventHandle();
       }
       return pMultiIOPackets;
@@ -3143,8 +3143,8 @@ struct SDS_MULTI_IO_PACKETS {
       //---------- CLEAN UP MEMORY AND HANDLES ---------
       // check if any cores allocated any memory
       // Set all the cores working memory to zero
-      INT numCores = g_cMathWorker->WorkerThreadCount + 1;
-      for (int j = 0; j < numCores; j++) {
+      int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
+      for (int32_t j = 0; j < numCores; j++) {
          if (pMultiIOPackets->pCoreMemory[j]) {
             WORKSPACE_FREE(pMultiIOPackets->pCoreMemory[j]);
             pMultiIOPackets->pCoreMemory[j] = NULL;
@@ -3161,11 +3161,11 @@ struct SDS_MULTI_IO_PACKETS {
 
 //-----------------------------------------------------------
 // Check both folder and column names
-BOOL IsNameIncluded(
+bool IsNameIncluded(
    SDSIncludeExclude*    pInclude,
    SDSIncludeExclude*    pFolderName,
    const char*           nameToCheck,
-   BOOL                  isOneFile) {
+   bool                  isOneFile) {
 
    if (isOneFile) {
       // Only OneFile can have folders
@@ -3222,22 +3222,22 @@ BOOL IsNameIncluded(
 
 //===================================
 // Returns True if array was shrunk or had a mask
-BOOL PossiblyShrinkArray(
+bool PossiblyShrinkArray(
    SDS_ALLOCATE_ARRAY*  pArrayCallback,
    SDS_READ_CALLBACKS*  pReadCallbacks,
-   BOOL                 isStackable
+   bool                 isStackable
 ) {
-   BOOL wasFiltered = FALSE;
+   bool wasFiltered = FALSE;
 
    // Categoricals will not be in original container
-   INT32 mask = SDS_FLAGS_ORIGINAL_CONTAINER;
+   int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
    if ((pArrayCallback->sdsFlags & (SDS_FLAGS_SCALAR | SDS_FLAGS_META | SDS_FLAGS_NESTED)) == 0) {
       if (pArrayCallback->sdsFlags & mask) {
          // Did they pass a fancy index or a bool index?
          if (pReadCallbacks->Filter.pBoolMask && pReadCallbacks->Filter.BoolMaskTrueCount >= 0 && isStackable) {
             wasFiltered = TRUE;
-            INT64 dim0Length = pArrayCallback->dims[0];
-            INT64 newLength = pReadCallbacks->Filter.BoolMaskTrueCount;
+            int64_t dim0Length = pArrayCallback->dims[0];
+            int64_t newLength = pReadCallbacks->Filter.BoolMaskTrueCount;
 
             // If the array allocation is too large, we reduce it
             if (newLength > dim0Length) {
@@ -3250,7 +3250,7 @@ BOOL PossiblyShrinkArray(
       }
       else {
          // Could be a categorical
-         //INT64 dim0Length = pArrayCallback->dims[0];
+         //int64_t dim0Length = pArrayCallback->dims[0];
          //if (pReadCallbacks->Filter.pBoolMask) {
          //   LOGGING("-->Allocation no reduction for %s  len:%lld  fancy:%lld  bool:%lld  flags:%d\n", pArrayCallback->pArrayName, dim0Length, pReadCallbacks->Filter.FancyLength, pReadCallbacks->Filter.BoolMaskTrueCount, pArrayCallback->sdsFlags);
          //}
@@ -3273,9 +3273,9 @@ public:
    // These three are required
    const char*      FileName;       // Fully qualified file path
    const char*      ShareName;      // May be NULL
-   INT64            InstanceIndex;  // 0 if just one instance (for multiday)
-   INT32            Mode;
-   INT64            FileSize;       // only valid when concat
+   int64_t            InstanceIndex;  // 0 if just one instance (for multiday)
+   int32_t            Mode;
+   int64_t            FileSize;       // only valid when concat
 
    SDSIncludeExclude*    pInclude;    // Inclusion list
    SDSIncludeExclude*    pFolderName; // Folder inclusion
@@ -3293,21 +3293,21 @@ public:
    SDS_ARRAY_BLOCK* pArrayBlocks = NULL;
 
    // Meta data
-   INT64 MetaSize = 0;
+   int64_t MetaSize = 0;
    char* MetaData = NULL;
 
    // Name data
    char*          pNameData = NULL;
    const char**   pArrayNames = NULL;
-   INT32*         pArrayEnums = NULL;
-   INT64          NameCount = 0;
+   int32_t*         pArrayEnums = NULL;
+   int64_t          NameCount = 0;
 
    // Section data
    SDSSectionName cSectionName;
 
    // Set to true when file header is read (does not work for shared memory file)
-   BOOL           IsFileValid = FALSE;
-   BOOL           IsFileValidAndNotFilteredOut = FALSE;
+   bool           IsFileValid = FALSE;
+   bool           IsFileValidAndNotFilteredOut = FALSE;
 
    //------------------------------------------------
    // constructor
@@ -3316,11 +3316,11 @@ public:
    SDSDecompressFile(
       const char*          fileName, 
       SDSIncludeExclude*   pInclude = NULL,
-      INT64                instanceIndex=0, 
+      int64_t                instanceIndex=0, 
       const char*          shareName=NULL,
       SDSIncludeExclude*   pFolderName=NULL,
       SDSIncludeExclude*   pSectionsName = NULL,
-      INT32                mode = COMPRESSION_MODE_INFO) {
+      int32_t                mode = COMPRESSION_MODE_INFO) {
 
       this->FileName = fileName;
       this->pInclude = pInclude;
@@ -3335,7 +3335,7 @@ public:
    //-----------------------------------------------------------
    // Caller must fill in pDestInfo->pData because memory will be read into
    //// returns TRUE if array allocated
-   //BOOL CallAllocateArray(SDS_READ_CALLBACKS* pReadCallbacks, SDS_ALLOCATE_ARRAY *pAllocateArray) {
+   //bool CallAllocateArray(SDS_READ_CALLBACKS* pReadCallbacks, SDS_ALLOCATE_ARRAY *pAllocateArray) {
 
    //   if (pReadCallbacks->AllocateArrayCallback) {
    //      pReadCallbacks->AllocateArrayCallback(pAllocateArray);
@@ -3353,18 +3353,18 @@ public:
    // Callee must return:
    // pDestInfo filled in with pData (location of first element in array)
    void AllocateOneArray(
-      int                  colPos,          // which array index (which column in the file)
+      int32_t                  colPos,          // which array index (which column in the file)
       SDS_READ_CALLBACKS*  pReadCallbacks,
       SDSArrayInfo*        pDestInfo,
-      BOOL                 isSharedMemory,
-      BOOL                 isOneFile,
-      BOOL                 isStackable) {
+      bool                 isSharedMemory,
+      bool                 isOneFile,
+      bool                 isStackable) {
 
       SDS_ARRAY_BLOCK*  pBlock = &pArrayBlocks[colPos];
 
       // Allocate all the arrays before multithreading
       // NOTE: do we care about flags -- what if Fortran mode when saved?
-      int dtype = FixupDType(pBlock->DType, pBlock->ItemSize);
+      int32_t dtype = FixupDType(pBlock->DType, pBlock->ItemSize);
 
       // Build array callback block
       SDS_ALLOCATE_ARRAY sdsArrayCallback;
@@ -3396,7 +3396,7 @@ public:
       pDestInfo->pArrayObject = NULL;
       pDestInfo->pData = NULL;
 
-      BOOL wasFiltered = FALSE;
+      bool wasFiltered = FALSE;
 
       //LOGGING("Checking to allocate name %s\n", pAllocateArray->pArrayName);
       // Include exclude check
@@ -3435,14 +3435,14 @@ public:
       SDS_IO_PACKET*       pIOPacket,
       SDSArrayInfo*        pDestInfo,
       SDS_READ_CALLBACKS*  pReadCallbacks,
-      INT64                tupleSize,
-      BOOL                 isSharedMemory
+      int64_t                tupleSize,
+      bool                 isSharedMemory
    ) {
 
-      BOOL oneFile = (pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE);
+      bool oneFile = (pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE);
 
       // Init all the pNumpyArray pointers
-      for (int t = 0; t < tupleSize; t++) {
+      for (int32_t t = 0; t < tupleSize; t++) {
 
          pIOPacket->pReadCallbacks = pReadCallbacks;
          pIOPacket->pBlockInfo = &pArrayBlocks[t];
@@ -3466,8 +3466,8 @@ public:
             pIOPacket->CompMode = COMPRESSION_MODE_DECOMPRESS;
          }
 
-         INT fileType = pFileHeader->FileType;
-         INT fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
+         int32_t fileType = pFileHeader->FileType;
+         int32_t fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
             fileType == SDS_FILE_TYPE_TABLE ||
             fileType == SDS_FILE_TYPE_ARRAY);
 
@@ -3493,10 +3493,10 @@ public:
    // RETURNS SDS_READ_DECOMPRESS_ARRAYS + SDSArrayInfo*tupleSize
    SDS_READ_DECOMPRESS_ARRAYS* AllocDecompressArrays(
       SDS_READ_CALLBACKS*  pReadCallbacks,
-      INT64                tupleSize,
-      BOOL                 isSharedMemory,
-      BOOL                 isOneFile,
-      BOOL                 isStackable) {
+      int64_t                tupleSize,
+      bool                 isSharedMemory,
+      bool                 isOneFile,
+      bool                 isStackable) {
 
       // TJD
       // NOTE: TODO, should check isincluded up front
@@ -3505,7 +3505,7 @@ public:
       pstDecompressArrays->totalHeaders = tupleSize;
 
       // Init all the pNumpyArray pointers
-      for (int t = 0; t < tupleSize; t++) {
+      for (int32_t t = 0; t < tupleSize; t++) {
 
          SDSArrayInfo*     pDestInfo = &pstDecompressArrays->ArrayInfo[t];
 
@@ -3524,7 +3524,7 @@ public:
       pstDecompressArrays->pFileHeader = NULL;
 
       pstDecompressArrays->pMemoryIO = NULL;
-      pstDecompressArrays->compMode = (INT16)COMPRESSION_MODE_DECOMPRESS;
+      pstDecompressArrays->compMode = (int16_t)COMPRESSION_MODE_DECOMPRESS;
 
       return pstDecompressArrays;
    }
@@ -3557,7 +3557,7 @@ public:
 
    //--------------------------------------------
    //
-   char* AllocateMetaData(INT64 size) {
+   char* AllocateMetaData(int64_t size) {
       if (MetaData != NULL) {
          printf("Double Allocation meta data!!\n");
       }
@@ -3581,7 +3581,7 @@ public:
    //--------------------------------------------
    // Also zero out pArrayNames, zero out pArrayEnums
    //
-   void AllocateNameData(INT64 nameBlockCount, INT64 nameSize) {
+   void AllocateNameData(int64_t nameBlockCount, int64_t nameSize) {
       NameCount = nameBlockCount;
       if (pNameData != NULL) {
          printf("Double Allocation nameData!!\n");
@@ -3590,11 +3590,11 @@ public:
 
       // ZERO OUT
       pArrayNames = (const char**)WORKSPACE_ALLOC(NameCount * sizeof(void*));
-      for (int i = 0; i < NameCount; i++) {
+      for (int32_t i = 0; i < NameCount; i++) {
          pArrayNames[i] = NULL;
       }
-      pArrayEnums = (INT32*)WORKSPACE_ALLOC(NameCount * sizeof(INT32));
-      for (int i = 0; i < NameCount; i++) {
+      pArrayEnums = (int32_t*)WORKSPACE_ALLOC(NameCount * sizeof(int32_t));
+      for (int32_t i = 0; i < NameCount; i++) {
          pArrayEnums[i] = 0;
       }
    }
@@ -3640,7 +3640,7 @@ public:
 
    //------------------------------------------
    // Understand how to get to sections
-   INT64 GetTotalArraysWritten() {
+   int64_t GetTotalArraysWritten() {
       // todo:
       LOGGING("Section offsets %p   psectiondata %p   sectioncount: %lld\n", cSectionName.pSectionOffsets, cSectionName.pSectionData, cSectionName.SectionCount);
 
@@ -3663,7 +3663,7 @@ public:
    // Output: reads into pFileHeader and returns a good file handle
    //         or returns BAD_SDS_HANDLE on failure
    SDS_FILE_HANDLE
-   StartDecompressedFile(const char* fileName, INT64 fileOffset) {
+   StartDecompressedFile(const char* fileName, int64_t fileOffset) {
 
       SDS_FILE_HANDLE  fileHandle =
          DefaultFileIO.FileOpen(fileName, false, true, false, false);
@@ -3673,7 +3673,7 @@ public:
          return BAD_SDS_HANDLE;
       }
 
-      INT64 result =
+      int64_t result =
          ReadFileHeader(fileHandle, pFileHeader, fileOffset, fileName);
 
       if (result != 0) {
@@ -3700,16 +3700,16 @@ public:
    //   TRUE or FALSE.  if TRUE and NULL passed in then can call GetMetaData()
    //   
    //
-   BOOL DecompressMetaData(
+   bool DecompressMetaData(
       SDS_FILE_HEADER*  pFileHeader,
       char*             metaDataUncompressed,
-      int               core) {
+      int32_t               core) {
 
-      INT64 metaCompressedSize = pFileHeader->TotalMetaCompressedSize;
+      int64_t metaCompressedSize = pFileHeader->TotalMetaCompressedSize;
       char* metaData = NULL;
 
       // Read in metadata from disk/network
-      INT64 bytesRead = 0;
+      int64_t bytesRead = 0;
 
       LOGGING("in decompress meta %lld vs %lld  offset:%lld  handle:%p\n", metaCompressedSize, pFileHeader->TotalMetaUncompressedSize, pFileHeader->MetaBlockOffset, SDSFile);
 
@@ -3734,7 +3734,7 @@ public:
             return FALSE;
          }
 
-         INT64 metaUncompressedSize = pFileHeader->TotalMetaUncompressedSize;
+         int64_t metaUncompressedSize = pFileHeader->TotalMetaUncompressedSize;
 
          // check if user passed in buffer to copy into
          if (!metaDataUncompressed) {
@@ -3753,19 +3753,19 @@ public:
          }
 
          // decompress meta data into metaDataUncompressed
-         INT64 cSize = DecompressData(NULL, COMPRESSION_TYPE_ZSTD, metaDataUncompressed, pFileHeader->TotalMetaUncompressedSize, metaDataCompressed, pFileHeader->TotalMetaCompressedSize);
+         int64_t cSize = DecompressData(NULL, COMPRESSION_TYPE_ZSTD, metaDataUncompressed, pFileHeader->TotalMetaUncompressedSize, metaDataCompressed, pFileHeader->TotalMetaCompressedSize);
 
          WORKSPACE_FREE(metaDataCompressed);
          metaDataCompressed = NULL;
 
          if (CompressIsError(COMPRESSION_TYPE_ZSTD, cSize) || cSize != metaUncompressedSize) {
-            SetErr_Format(SDS_VALUE_ERROR, "Decompression error meta: length mismatch -> decomp %llu != %llu [header]", (UINT64)cSize, metaUncompressedSize);
+            SetErr_Format(SDS_VALUE_ERROR, "Decompression error meta: length mismatch -> decomp %llu != %llu [header]", (uint64_t)cSize, metaUncompressedSize);
             return FALSE;
          }
 
       }
       else {
-         INT64 metaUncompressedSize = metaCompressedSize;
+         int64_t metaUncompressedSize = metaCompressedSize;
 
          // meta was never compressed
          LOGGING("meta was not compressed\n");
@@ -3797,13 +3797,13 @@ public:
    // 
    // Reads from File and decompresses into shared memory
    // Call EndDecompressedFile() when done
-   BOOL
-   CopyIntoSharedMemoryInternal(SDS_READ_CALLBACKS* pReadCallbacks, int core) {
+   bool
+   CopyIntoSharedMemoryInternal(SDS_READ_CALLBACKS* pReadCallbacks, int32_t core) {
 
       if (SDSFile) {
 
-         INT64 nameSize = pFileHeader->NameBlockSize;
-         INT64 metaSize = pFileHeader->TotalMetaCompressedSize;
+         int64_t nameSize = pFileHeader->NameBlockSize;
+         int64_t metaSize = pFileHeader->TotalMetaCompressedSize;
 
          // This will allocate pArrayBlocks
          if (!AllocateArrayBlocks()) {
@@ -3811,15 +3811,15 @@ public:
             return FALSE;
          }
 
-         INT64 bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
+         int64_t bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
          if (bytesRead != pFileHeader->ArrayBlockSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in ArrayBlockSize: %lld", pFileHeader->ArrayBlockSize);
             return FALSE;
          }
 
          // Calculate size of shared memory
-         INT64 totalSize = CalculateSharedMemorySize(pFileHeader, pArrayBlocks);
-         INT64 arrayCount = pFileHeader->ArraysWritten;
+         int64_t totalSize = CalculateSharedMemorySize(pFileHeader, pArrayBlocks);
+         int64_t arrayCount = pFileHeader->ArraysWritten;
 
          LOGGING("CopyIntoSharedMem: trying to allocate %lld\n", totalSize);
 
@@ -3865,7 +3865,7 @@ public:
             LOGGING("Fill meta block\n");
 
             // Read from file and write to shared memory
-            BOOL bResult =
+            bool bResult =
                DecompressMetaData(pFileHeader, DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->MetaBlockOffset), core);
 
             if (bResult) {
@@ -3877,10 +3877,10 @@ public:
                DefaultFileIO.FileReadChunk(NULL, SDSFile, pDestArrayBlock, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
 
                // offset to first location of array data
-               INT64 startOffset = pMemoryFileHeader->ArrayFirstOffset;
+               int64_t startOffset = pMemoryFileHeader->ArrayFirstOffset;
 
                // NOTE: have to fixup arrayblocks
-               for (int i = 0; i < arrayCount; i++) {
+               for (int32_t i = 0; i < arrayCount; i++) {
 
                   LOGGING("start offset %d %lld\n", i, startOffset);
 
@@ -3890,7 +3890,7 @@ public:
 
                   // TJD ADDDED CODE
                   // Not sure if shared memroy needs the offset
-                  //pDestArrayBlock[i].Reserved1 = (INT64)DefaultMemoryIO.GetMemoryOffset(startOffset);
+                  //pDestArrayBlock[i].Reserved1 = (int64_t)DefaultMemoryIO.GetMemoryOffset(startOffset);
                   pDestArrayBlock[i].ArrayBandCount = 0;
                   pDestArrayBlock[i].ArrayBandSize = 0;
 
@@ -3902,9 +3902,9 @@ public:
 
                LOGGING("last offset %lld\n", startOffset);
 
-               BOOL oneFile = (pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE);
-               INT fileType = pFileHeader->FileType;
-               BOOL fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
+               bool oneFile = (pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE);
+               int32_t fileType = pFileHeader->FileType;
+               bool fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
                   fileType == SDS_FILE_TYPE_TABLE ||
                   fileType == SDS_FILE_TYPE_ARRAY);
 
@@ -3913,8 +3913,8 @@ public:
                   AllocDecompressArrays(pReadCallbacks, arrayCount, TRUE, oneFile, fileTypeStackable);
 
                // Set all the cores working memory to zero
-               INT numCores = g_cMathWorker->WorkerThreadCount + 1;
-               for (int j = 0; j < numCores; j++) {
+               int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
+               for (int32_t j = 0; j < numCores; j++) {
                   pstCompressArrays->pCoreMemory[j] = NULL;
                   pstCompressArrays->pCoreMemorySize[j] = 0;
                   pstCompressArrays->eventHandles[j] = DefaultFileIO.CreateEventHandle();
@@ -3935,7 +3935,7 @@ public:
 
                //---------- CLEAN UP MEMORY AND HANDLES ---------
                // check if any cores allocated any memory
-               for (int j = 0; j < numCores; j++) {
+               for (int32_t j = 0; j < numCores; j++) {
                   if (pstCompressArrays->pCoreMemory[j]) {
                      WORKSPACE_FREE(pstCompressArrays->pCoreMemory[j]);
                   }
@@ -3960,13 +3960,13 @@ public:
    // Returns TRUE on success
    // 
    // Calls EndDecompressedFile() when done
-   BOOL CopyIntoSharedMemory(SDS_READ_CALLBACKS* pReadCallbacks, const char* fileName, SDSIncludeExclude* pFolderName, int core) {
+   bool CopyIntoSharedMemory(SDS_READ_CALLBACKS* pReadCallbacks, const char* fileName, SDSIncludeExclude* pFolderName, int32_t core) {
 
       // open normal file first
       SDSFile = StartDecompressedFile(fileName, 0);
 
       if (SDSFile) {
-         BOOL bResult = CopyIntoSharedMemoryInternal(pReadCallbacks, core);
+         bool bResult = CopyIntoSharedMemoryInternal(pReadCallbacks, core);
 
          // Shut down the normal file
          EndDecompressedFile();
@@ -3979,19 +3979,19 @@ public:
    //--------------------------------------------------------
    // Returns the names and enum flags of everything written
    // Called by DecompressFileIntenral
-   void MakeListNames(const INT64 nameBlockCount, const INT64 nameByteSize) {
+   void MakeListNames(const int64_t nameBlockCount, const int64_t nameByteSize) {
       const char* startNameData = pNameData;
       const char* pNames = pNameData;
 
       // for every name
-      for (int i = 0; i < nameBlockCount; i++) {
+      for (int32_t i = 0; i < nameBlockCount; i++) {
          const char* pStart = pNames;
 
          // skip to end (search for 0 terminating char)
          while (*pNames++);
 
          // get the enum
-         UINT8 value = *pNames++;
+         uint8_t value = *pNames++;
 
          //LOGGING("makelist name is %s, %d\n", pStart, i);
 
@@ -4011,7 +4011,7 @@ public:
    // return list of strings (column names)
    // on success pNameData is valid
    char* ReadListNames() {
-      INT64 nameSize = pFileHeader->NameBlockSize;
+      int64_t nameSize = pFileHeader->NameBlockSize;
 
       if (nameSize) {
          LOGGING("Name Block Count %lld,  namesize %lld\n", pFileHeader->NameBlockCount, nameSize);
@@ -4023,7 +4023,7 @@ public:
             return NULL;
          }
 
-         INT64 bytesRead =
+         int64_t bytesRead =
             DefaultFileIO.FileReadChunk(NULL, SDSFile, pNameData, nameSize, pFileHeader->NameBlockOffset);
 
          if (bytesRead != nameSize) {
@@ -4043,7 +4043,7 @@ public:
    // returns TRUE/FALSE
    // stops early if Mode == COMPRESSION_MODE_INFO
    // new ver 4.3: handles filter=
-   BOOL DecompressFileInternal(SDS_READ_CALLBACKS* pReadCallbacks, int core, INT64 startOffset) {
+   bool DecompressFileInternal(SDS_READ_CALLBACKS* pReadCallbacks, int32_t core, int64_t startOffset) {
 
       LOGGING("Reading filename %s normally.  Offset: %lld\n", FileName, startOffset);
 
@@ -4084,13 +4084,13 @@ public:
          }
 
          LOGGING("Reading array block at offset:%lld   size: %lld \n", pFileHeader->ArrayBlockOffset, pFileHeader->ArrayBlockSize);
-         INT64 bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
+         int64_t bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
          if (bytesRead != pFileHeader->ArrayBlockSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in ArrayBlockSize: %lld", pFileHeader->ArrayBlockSize);
             goto EXIT_DECOMPRESS;
          }
 
-         INT64 tupleSize = pFileHeader->ArraysWritten;
+         int64_t tupleSize = pFileHeader->ArraysWritten;
          LOGGING("Arrays to read %lld  %p\n", tupleSize, pArrayBlocks);
 
          // If we got this far, the file is good
@@ -4103,8 +4103,8 @@ public:
             return TRUE;
          }
 
-         INT fileType = pFileHeader->FileType;
-         BOOL fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
+         int32_t fileType = pFileHeader->FileType;
+         bool fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
             fileType == SDS_FILE_TYPE_TABLE ||
             fileType == SDS_FILE_TYPE_ARRAY);
 
@@ -4123,9 +4123,9 @@ public:
          LOGGING("Done allocating arrays %lld\n", tupleSize);
 
          // ---- ALLOCATE EVENT HANDLES
-         INT numCores = g_cMathWorker->GetNumCores();
+         int32_t numCores = g_cMathWorker->GetNumCores();
 
-         for (int j = 0; j < numCores; j++) {
+         for (int32_t j = 0; j < numCores; j++) {
             pstCompressArrays->pCoreMemory[j] = NULL;
             pstCompressArrays->pCoreMemorySize[j] = 0;
             pstCompressArrays->eventHandles[j] = DefaultFileIO.CreateEventHandle();
@@ -4143,7 +4143,7 @@ public:
 
          //---------- CLEAN UP MEMORY AND HANDLES ---------
          // check if any cores allocated any memory
-         for (int j = 0; j < numCores; j++) {
+         for (int32_t j = 0; j < numCores; j++) {
             if (pstCompressArrays->pCoreMemory[j]) {
                WORKSPACE_FREE(pstCompressArrays->pCoreMemory[j]);
             }
@@ -4178,7 +4178,7 @@ public:
    //
    // Returns NULL or result of what user returned in ReadFinalCallback
    //
-   void* DecompressFile(SDS_READ_CALLBACKS* pReadCallbacks, int core, INT64 fileOffset) {
+   void* DecompressFile(SDS_READ_CALLBACKS* pReadCallbacks, int32_t core, int64_t fileOffset) {
 
       LOGGING("Start of DCF %s [%lld]  %s\n", FileName, InstanceIndex, ShareName);
 
@@ -4191,7 +4191,7 @@ public:
 
          // Check for previous existence first
          HRESULT result = DefaultMemoryIO.MapExisting();
-         BOOL bResult = TRUE;
+         bool bResult = TRUE;
 
          if (result < 0) {
             LOGGING("Failed to find existing share name %s\n", DefaultMemoryIO.SharedMemoryName);
@@ -4233,7 +4233,7 @@ public:
          // Drop into normal file reading
       }
 
-      BOOL bResult;
+      bool bResult;
       bResult = DecompressFileInternal(pReadCallbacks, core, fileOffset);
 
       // Make sure final callback is ok to call as well
@@ -4284,8 +4284,8 @@ public:
 //   SDS_VOID
 //};
 
-static INT32 SDS_ITEMSIZE_TABLE[22] = {
-   1,         // BOOL
+static int32_t SDS_ITEMSIZE_TABLE[22] = {
+   1,         // bool
    1,   1,    // BYTE
    2,   2,    // SHORT
    4,   4,    // SDS_INT
@@ -4301,9 +4301,9 @@ static INT32 SDS_ITEMSIZE_TABLE[22] = {
 };
 
 
-void UpgradeType(SDS_ARRAY_BLOCK*  pMasterArrayBlock, int newdtype, INT64 itemsize) {
+void UpgradeType(SDS_ARRAY_BLOCK*  pMasterArrayBlock, int32_t newdtype, int64_t itemsize) {
 
-   int isize = 4;
+   int32_t isize = 4;
 
    // avoid the ambiguous type
    //newdtype = FixupDType(newdtype, itemsize);
@@ -4339,13 +4339,13 @@ void UpgradeType(SDS_ARRAY_BLOCK*  pMasterArrayBlock, int newdtype, INT64 itemsi
 typedef void(*CONVERT_INPLACE)(
    void* pDataIn,
    void* pDataOut,
-   INT64 dataOutSize,
-   int dtypein,
-   int dtypeout);
+   int64_t dataOutSize,
+   int32_t dtypein,
+   int32_t dtypeout);
 
 
 template<typename T, typename U>
-static void ConvertInplace(void* pDataIn, void* pDataOut, INT64 dataInSize, int dtypein, int dtypeout) {
+static void ConvertInplace(void* pDataIn, void* pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout) {
 
    LOGGING("**conversion %p %p   inLenSize: %lld   inItemSize:%lld  outItemSize:%lld\n", pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
    T* pIn = (T*)pDataIn;
@@ -4353,8 +4353,8 @@ static void ConvertInplace(void* pDataIn, void* pDataOut, INT64 dataInSize, int 
    T pBadValueIn = *(T*)SDSGetDefaultType(dtypein);
    U pBadValueOut = *(U*)SDSGetDefaultType(dtypeout);
 
-   INT64 len = dataInSize / sizeof(T);
-   INT64 dataOutSize = len * sizeof(U);
+   int64_t len = dataInSize / sizeof(T);
+   int64_t dataOutSize = len * sizeof(U);
 
    if (dataInSize > dataOutSize) {
       printf("!! internal error in convertinplace\n");
@@ -4366,10 +4366,10 @@ static void ConvertInplace(void* pDataIn, void* pDataOut, INT64 dataInSize, int 
    pIn--;
    pOut--;
 
-   // NAN converts to MININT (for float --> int conversion)
-   // then the reverse, MIININT converts to NAN (for int --> float conversion)
-   // convert from int --> float
-   for (INT64 i = 0; i < len; i++) {
+   // NAN converts to MINint32_t (for float --> int32_t conversion)
+   // then the reverse, MIINint32_t converts to NAN (for int32_t --> float conversion)
+   // convert from int32_t --> float
+   for (int64_t i = 0; i < len; i++) {
       //printf("[%lld]converted %lf -> %lf\n", i, (double)*pIn, (double)*pOut);
       if (*pIn != pBadValueIn) {
          U temp = (U)*pIn;
@@ -4388,15 +4388,15 @@ static void ConvertInplace(void* pDataIn, void* pDataOut, INT64 dataInSize, int 
 //----------------------------------------
 // Assumes input is a float/double
 template<typename T, typename U>
-static void ConvertInplaceFloat(void* pDataIn, void* pDataOut, INT64 dataInSize, int dtypein, int dtypeout) {
+static void ConvertInplaceFloat(void* pDataIn, void* pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout) {
 
    LOGGING("**conversionf %p %p   inLenSize: %lld   inItemSize:%lld  outItemSize:%lld\n", pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
    T* pIn = (T*)pDataIn;
    U* pOut = (U*)pDataOut;
    U pBadValueOut = *(U*)SDSGetDefaultType(dtypeout);
 
-   INT64 len = dataInSize / sizeof(T);
-   INT64 dataOutSize = len * sizeof(U);
+   int64_t len = dataInSize / sizeof(T);
+   int64_t dataOutSize = len * sizeof(U);
 
    if (dataInSize > dataOutSize) {
       printf("!! internal error in convertinplace\n");
@@ -4408,10 +4408,10 @@ static void ConvertInplaceFloat(void* pDataIn, void* pDataOut, INT64 dataInSize,
    pIn--;
    pOut--;
 
-   // NAN converts to MININT (for float --> int conversion)
-   // then the reverse, MIININT converts to NAN (for int --> float conversion)
-   // convert from int --> float
-   for (INT64 i = 0; i < len; i++) {
+   // NAN converts to MINint32_t (for float --> int32_t conversion)
+   // then the reverse, MIINint32_t converts to NAN (for int32_t --> float conversion)
+   // convert from int32_t --> float
+   for (int64_t i = 0; i < len; i++) {
       if (*pIn == *pIn) {
          *pOut = (U)*pIn;
       }
@@ -4429,14 +4429,14 @@ static void ConvertInplaceFloat(void* pDataIn, void* pDataOut, INT64 dataInSize,
 //----------------------------------------
 // Assumes input is uint8 out is uint32
 template<typename T, typename U>
-static void ConvertInplaceString(void* pDataIn, void* pDataOut, INT64 dataInSize, int dtypein, int dtypeout) {
+static void ConvertInplaceString(void* pDataIn, void* pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout) {
 
    LOGGING("**conversions %p %p   inLenSize: %lld   inItemSize:%lld  outItemSize:%lld\n", pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
    T* pIn = (T*)pDataIn;
    U* pOut = (U*)pDataOut;
 
-   INT64 len = dataInSize / sizeof(T);
-   INT64 dataOutSize = len * sizeof(U);
+   int64_t len = dataInSize / sizeof(T);
+   int64_t dataOutSize = len * sizeof(U);
 
    if (dataInSize > dataOutSize) {
       printf("!! internal error in convertinplace\n");
@@ -4449,7 +4449,7 @@ static void ConvertInplaceString(void* pDataIn, void* pDataOut, INT64 dataInSize
    pOut--;
 
    // convert from utf8 to utf32
-   for (INT64 i = 0; i < len; i++) {
+   for (int64_t i = 0; i < len; i++) {
       *pOut = (U)*pIn;
       pIn--;
       pOut--;
@@ -4459,20 +4459,20 @@ static void ConvertInplaceString(void* pDataIn, void* pDataOut, INT64 dataInSize
 
 
 template<typename T>
-static CONVERT_INPLACE GetInplaceConversionStep2Float(int outputType) {
+static CONVERT_INPLACE GetInplaceConversionStep2Float(int32_t outputType) {
    switch (outputType) {
       //case SDS_BOOL:     return ConvertInplace<T, bool>;
    case SDS_FLOAT:    return ConvertInplaceFloat<T, float>;
    case SDS_DOUBLE:   return ConvertInplaceFloat<T, double>;
    case SDS_LONGDOUBLE: return ConvertInplaceFloat<T, long double>;
-   case SDS_BYTE:     return ConvertInplaceFloat<T, INT8>;
-   case SDS_SHORT:    return ConvertInplaceFloat<T, INT16>;
-   case SDS_INT:      return ConvertInplaceFloat<T, INT32>;
-   case SDS_LONGLONG: return ConvertInplaceFloat<T, INT64>;
-   case SDS_UBYTE:    return ConvertInplaceFloat<T, UINT8>;
-   case SDS_USHORT:   return ConvertInplaceFloat<T, UINT16>;
-   case SDS_UINT:     return ConvertInplaceFloat<T, UINT32>;
-   case SDS_ULONGLONG:return ConvertInplaceFloat<T, UINT64>;
+   case SDS_BYTE:     return ConvertInplaceFloat<T, int8_t>;
+   case SDS_SHORT:    return ConvertInplaceFloat<T, int16_t>;
+   case SDS_INT:      return ConvertInplaceFloat<T, int32_t>;
+   case SDS_LONGLONG: return ConvertInplaceFloat<T, int64_t>;
+   case SDS_UBYTE:    return ConvertInplaceFloat<T, uint8_t>;
+   case SDS_USHORT:   return ConvertInplaceFloat<T, uint16_t>;
+   case SDS_UINT:     return ConvertInplaceFloat<T, uint32_t>;
+   case SDS_ULONGLONG:return ConvertInplaceFloat<T, uint64_t>;
    }
    return NULL;
 
@@ -4480,41 +4480,41 @@ static CONVERT_INPLACE GetInplaceConversionStep2Float(int outputType) {
 
 
 template<typename T>
-static CONVERT_INPLACE GetInplaceConversionStep2(int outputType) {
+static CONVERT_INPLACE GetInplaceConversionStep2(int32_t outputType) {
    switch (outputType) {
       //case SDS_BOOL:     return ConvertInplace<T, bool>;
    case SDS_FLOAT:    return ConvertInplace<T, float>;
    case SDS_DOUBLE:   return ConvertInplace<T, double>;
    case SDS_LONGDOUBLE: return ConvertInplace<T, long double>;
-   case SDS_BYTE:     return ConvertInplace<T, INT8>;
-   case SDS_SHORT:    return ConvertInplace<T, INT16>;
-   case SDS_INT:      return ConvertInplace<T, INT32>;
-   case SDS_LONGLONG: return ConvertInplace<T, INT64>;
-   case SDS_UBYTE:    return ConvertInplace<T, UINT8>;
-   case SDS_USHORT:   return ConvertInplace<T, UINT16>;
-   case SDS_UINT:     return ConvertInplace<T, UINT32>;
-   case SDS_ULONGLONG:return ConvertInplace<T, UINT64>;
+   case SDS_BYTE:     return ConvertInplace<T, int8_t>;
+   case SDS_SHORT:    return ConvertInplace<T, int16_t>;
+   case SDS_INT:      return ConvertInplace<T, int32_t>;
+   case SDS_LONGLONG: return ConvertInplace<T, int64_t>;
+   case SDS_UBYTE:    return ConvertInplace<T, uint8_t>;
+   case SDS_USHORT:   return ConvertInplace<T, uint16_t>;
+   case SDS_UINT:     return ConvertInplace<T, uint32_t>;
+   case SDS_ULONGLONG:return ConvertInplace<T, uint64_t>;
    }
    return NULL;
 
 }
 
-static CONVERT_INPLACE GetInplaceConversionFunction(int inputType, int outputType) {
+static CONVERT_INPLACE GetInplaceConversionFunction(int32_t inputType, int32_t outputType) {
 
    switch (inputType) {
    case SDS_BOOL:      return GetInplaceConversionStep2<bool>(outputType);
    case SDS_FLOAT:     return GetInplaceConversionStep2Float<float>(outputType);
    case SDS_DOUBLE:    return GetInplaceConversionStep2Float<double>(outputType);
    case SDS_LONGDOUBLE: return GetInplaceConversionStep2Float<long double>(outputType);
-   case SDS_BYTE:      return GetInplaceConversionStep2<INT8>(outputType);
-   case SDS_SHORT:     return GetInplaceConversionStep2<INT16>(outputType);
-   case SDS_INT:       return GetInplaceConversionStep2<INT32>(outputType);
-   case SDS_LONGLONG:  return GetInplaceConversionStep2<INT64>(outputType);
-   case SDS_UBYTE:     return GetInplaceConversionStep2<UINT8>(outputType);
-   case SDS_USHORT:    return GetInplaceConversionStep2<UINT16>(outputType);
-   case SDS_UINT:      return GetInplaceConversionStep2<UINT32>(outputType);
-   case SDS_ULONGLONG: return GetInplaceConversionStep2<UINT64>(outputType);
-   case SDS_STRING: if (outputType == SDS_UNICODE) return ConvertInplaceString<UINT8, UINT32>; else break;
+   case SDS_BYTE:      return GetInplaceConversionStep2<int8_t>(outputType);
+   case SDS_SHORT:     return GetInplaceConversionStep2<int16_t>(outputType);
+   case SDS_INT:       return GetInplaceConversionStep2<int32_t>(outputType);
+   case SDS_LONGLONG:  return GetInplaceConversionStep2<int64_t>(outputType);
+   case SDS_UBYTE:     return GetInplaceConversionStep2<uint8_t>(outputType);
+   case SDS_USHORT:    return GetInplaceConversionStep2<uint16_t>(outputType);
+   case SDS_UINT:      return GetInplaceConversionStep2<uint32_t>(outputType);
+   case SDS_ULONGLONG: return GetInplaceConversionStep2<uint64_t>(outputType);
+   case SDS_STRING: if (outputType == SDS_UNICODE) return ConvertInplaceString<uint8_t, uint32_t>; else break;
    }
    return NULL;
 }
@@ -4526,52 +4526,52 @@ void GapFill(void* destBuffer, SDSArrayInfo* pDestInfo) {
    LOGGING(">>> gap fill in decompress multi array  length:%lld   dtype:%d  %p\n", pDestInfo->ArrayLength, pDestInfo->NumpyDType, destBuffer);
    LOGGING(">>> more gap dims: %d  itemsz:%d  dim0:%lld  strides0:%lld\n", pDestInfo->NDim, pDestInfo->ItemSize, pDestInfo->Dimensions[0], pDestInfo->Strides[0]);
 
-   INT64 oneRowSize = pDestInfo->ItemSize;
+   int64_t oneRowSize = pDestInfo->ItemSize;
    // Calc oneRowSize for multidimensional
-   for (int j = 1; j < pDestInfo->NDim; j++) {
+   for (int32_t j = 1; j < pDestInfo->NDim; j++) {
       oneRowSize *= pDestInfo->Dimensions[j];
    }
 
    // Get the invalid fill type
    void* pDefaultType = SDSGetDefaultType(pDestInfo->NumpyDType);
-   INT64 bytesToFill = oneRowSize * pDestInfo->ArrayLength;
+   int64_t bytesToFill = oneRowSize * pDestInfo->ArrayLength;
 
    switch (pDestInfo->ItemSize) {
    case 1:
    {
-      INT8* pDestBuffer = (INT8*)destBuffer;
-      INT8 invalid = *(INT8*)pDefaultType;
-      for (int j = 0; j < bytesToFill; j++) {
+      int8_t* pDestBuffer = (int8_t*)destBuffer;
+      int8_t invalid = *(int8_t*)pDefaultType;
+      for (int32_t j = 0; j < bytesToFill; j++) {
          pDestBuffer[j] = invalid;
       }
    }
    break;
    case 2:
    {
-      INT16* pDestBuffer = (INT16*)destBuffer;
-      INT16 invalid = *(INT16*)pDefaultType;
+      int16_t* pDestBuffer = (int16_t*)destBuffer;
+      int16_t invalid = *(int16_t*)pDefaultType;
       bytesToFill /= 2;
-      for (int j = 0; j < bytesToFill; j++) {
+      for (int32_t j = 0; j < bytesToFill; j++) {
          pDestBuffer[j] = invalid;
       }
    }
    break;
    case 4:
    {
-      INT32* pDestBuffer = (INT32*)destBuffer;
-      INT32 invalid = *(INT32*)pDefaultType;
+      int32_t* pDestBuffer = (int32_t*)destBuffer;
+      int32_t invalid = *(int32_t*)pDefaultType;
       bytesToFill /= 4;
-      for (int j = 0; j < bytesToFill; j++) {
+      for (int32_t j = 0; j < bytesToFill; j++) {
          pDestBuffer[j] = invalid;
       }
    }
    break;
    case 8:
    {
-      INT64* pDestBuffer = (INT64*)destBuffer;
-      INT64 invalid = *(INT64*)pDefaultType;
+      int64_t* pDestBuffer = (int64_t*)destBuffer;
+      int64_t invalid = *(int64_t*)pDefaultType;
       bytesToFill /= 8;
-      for (int j = 0; j < bytesToFill; j++) {
+      for (int32_t j = 0; j < bytesToFill; j++) {
          pDestBuffer[j] = invalid;
       }
    }
@@ -4589,27 +4589,27 @@ void GapFill(void* destBuffer, SDSArrayInfo* pDestInfo) {
 //---------------------------------------------------------
 //
 struct _SDS_WHICH_DTYPE {
-   INT8 isFloat;
-   INT8 isInt;
-   INT8 isUInt;
-   INT8 isString;
+   int8_t isFloat;
+   int8_t isInt;
+   int8_t isUInt;
+   int8_t isString;
 
-   INT8 isVoid;
-   INT8 isObject;
-   INT8 isUnknown;
-   INT8 reserved;
+   int8_t isVoid;
+   int8_t isObject;
+   int8_t isUnknown;
+   int8_t reserved;
 };
 
 struct SDS_WHICH_DTYPE {
    union {
       _SDS_WHICH_DTYPE  w;
-      INT64             whole;
+      int64_t             whole;
    };
 };
 
 //----------------------------------------------------------
 // returns with one of the dtype flags set
-SDS_WHICH_DTYPE WhichDType(int dtype)
+SDS_WHICH_DTYPE WhichDType(int32_t dtype)
 {
 
    SDS_WHICH_DTYPE retVal;
@@ -4643,7 +4643,7 @@ SDS_WHICH_DTYPE WhichDType(int dtype)
 
 //----------------------------------------------------------
 // Multithreaded call when stacking
-// int to float, int16 to int32, uint8 to int32 types of conversion
+// int32_t to float, int16 to int32, uint8 to int32 types of conversion
 // the master is the correct dtype
 // the slave must convert and the slave's itemsize is the <= master's itemsize
 // destSize MUST be recalculated if filtering
@@ -4651,12 +4651,12 @@ void  ConvertDType(
    char* destBuffer,
    SDS_ARRAY_BLOCK*  pMasterBlock,
    SDS_ARRAY_BLOCK*  pSlaveBlock,
-   INT64 slaveRows,
-   INT64 slaveItemSize)
+   int64_t slaveRows,
+   int64_t slaveItemSize)
 {
 
-   int sdtype = FixupDType(pSlaveBlock->DType, pSlaveBlock->ItemSize);
-   int mdtype = FixupDType(pMasterBlock->DType, pMasterBlock->ItemSize);
+   int32_t sdtype = FixupDType(pSlaveBlock->DType, pSlaveBlock->ItemSize);
+   int32_t mdtype = FixupDType(pMasterBlock->DType, pMasterBlock->ItemSize);
 
    LOGGING("Convert dtype from:%d  to: %d  buffer:%p  size: %lld   %d vs %d\n", sdtype, mdtype, destBuffer, slaveRows * slaveItemSize, pSlaveBlock->NDim, pMasterBlock->NDim);
    CONVERT_INPLACE pConvert = GetInplaceConversionFunction(
@@ -4665,8 +4665,8 @@ void  ConvertDType(
 
    // Code below to be deleted when bugs in filtering while loading are gone
    //// Calculate length
-   //INT64 dataInLen = pSlaveBlock->Dimensions[0] * pSlaveBlock->ItemSize;
-   //for (int j = 1; j < pSlaveBlock->NDim; j++) {
+   //int64_t dataInLen = pSlaveBlock->Dimensions[0] * pSlaveBlock->ItemSize;
+   //for (int32_t j = 1; j < pSlaveBlock->NDim; j++) {
    //   dataInLen *= pSlaveBlock->Dimensions[j];
    //}
    //
@@ -4688,10 +4688,10 @@ void  ConvertDType(
 typedef void(*SDS_COPY_FORTRAN)(
    void* pDest,        // (upper left corner of array)
    void* pSrc,         // the value to fill each element with
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 colSize);
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t colSize);
 
 //-----------------------------------------
 //---------------------------------------------------------------
@@ -4710,20 +4710,20 @@ template<typename T>
 void CopyFortran(
    void* pDestT,        // (upper left corner of array)
    void* pSrcT,         // the value to fill each element with
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 colSize) {
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t colSize) {
 
    T* pDest = (T*)pDestT;
    T* pOriginalDest = pDest;
    T* pSrc = (T*)pSrcT;
 
    // change all 0s to spaces
-   for (INT64 col = 0; col < colSize; col++) {
+   for (int64_t col = 0; col < colSize; col++) {
       // Advance to correct slot
       pDest = pOriginalDest + arrayOffset + (col*totalRowsize);
-      for (INT64 i = 0; i < arrayRowsize; i++) {
+      for (int64_t i = 0; i < arrayRowsize; i++) {
          *pDest++ = *pSrc++;
       }
    }
@@ -4731,20 +4731,20 @@ void CopyFortran(
 
 
 //-----------------------------------------
-SDS_COPY_FORTRAN GetCopyFortran(int dtype) {
+SDS_COPY_FORTRAN GetCopyFortran(int32_t dtype) {
    switch (dtype) {
-   case SDS_BOOL:      return CopyFortran<INT8>;
-   case SDS_FLOAT:     return CopyFortran<INT32>;
-   case SDS_DOUBLE:    return CopyFortran<INT64>;
+   case SDS_BOOL:      return CopyFortran<int8_t>;
+   case SDS_FLOAT:     return CopyFortran<int32_t>;
+   case SDS_DOUBLE:    return CopyFortran<int64_t>;
    case SDS_LONGDOUBLE: return CopyFortran<long double>;
-   case SDS_BYTE:      return CopyFortran<INT8>;
-   case SDS_SHORT:     return CopyFortran<INT16>;
-   case SDS_INT:       return CopyFortran<INT32>;
-   case SDS_LONGLONG:  return CopyFortran<INT64>;
-   case SDS_UBYTE:     return CopyFortran<INT8>;
-   case SDS_USHORT:    return CopyFortran<INT16>;
-   case SDS_UINT:      return CopyFortran<INT32>;
-   case SDS_ULONGLONG: return CopyFortran<INT64>;
+   case SDS_BYTE:      return CopyFortran<int8_t>;
+   case SDS_SHORT:     return CopyFortran<int16_t>;
+   case SDS_INT:       return CopyFortran<int32_t>;
+   case SDS_LONGLONG:  return CopyFortran<int64_t>;
+   case SDS_UBYTE:     return CopyFortran<int8_t>;
+   case SDS_USHORT:    return CopyFortran<int16_t>;
+   case SDS_UINT:      return CopyFortran<int32_t>;
+   case SDS_ULONGLONG: return CopyFortran<int64_t>;
    }
    return NULL;
 }
@@ -4753,10 +4753,10 @@ SDS_COPY_FORTRAN GetCopyFortran(int dtype) {
 //-----------------------------------------
 typedef void(*SDS_GAP_FILL_SPECIAL)(
    void* pDest,        // (upper left corner of array)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 colSize);
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t colSize);
 
 //-----------------------------------------
 // Used to fill 2 dim rotated arrays
@@ -4765,10 +4765,10 @@ typedef void(*SDS_GAP_FILL_SPECIAL)(
 template<typename T>
 void GapFillSpecial(
    void* pDestT,        // (upper left corner of array)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 colSize) {
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t colSize) {
 
    T* pDest = (T*)pDestT;
    T* pOriginalDest = pDest;
@@ -4779,13 +4779,13 @@ void GapFillSpecial(
 
    // Read horizontally (contiguous)
    // Write vertical (skip around)
-   for (INT64 i = 0; i < arrayRowsize; i++) {
+   for (int64_t i = 0; i < arrayRowsize; i++) {
 
       // Advance to correct slot
       pDest = pOriginalDest + arrayOffset + i;
 
       // change all 0s to spaces
-      for (INT64 col = 0; col < colSize; col++) {
+      for (int64_t col = 0; col < colSize; col++) {
          // replace 0 with space for matlab
          *pDest = fill;
 
@@ -4803,10 +4803,10 @@ void GapFillSpecial(
 template<typename T>
 void GapFillSpecialRowMajor(
    void* pDestT,        // (upper left corner of array)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 colSize) {
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t colSize) {
 
    T* pDest = (T*)pDestT;
    T* pOriginalDest = pDest;
@@ -4819,7 +4819,7 @@ void GapFillSpecialRowMajor(
 
    // Read horizontally (contiguous)
    // Write vertical (skip around)
-   for (INT64 i = 0; i < (arrayRowsize * colSize); i++) {
+   for (int64_t i = 0; i < (arrayRowsize * colSize); i++) {
       *pDest++ = fill;
    }
 }
@@ -4844,15 +4844,15 @@ void GapFillSpecialRowMajor(
 //                  arrayRowSize: per file (3)
 //                  itemSize:     3
 // T is char for string
-// T is UINT32 for UNICODE
+// T is uint32_t for UNICODE
 //
 template<typename T>
 void MatlabStringFill(
-   UINT16* pDest,      // 2 byte unicode (see note on location)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 itemSizeMaster) {
+   uint16_t* pDest,      // 2 byte unicode (see note on location)
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t itemSizeMaster) {
 
    // NOTE:
    // the pDest is not top left corner.. rather it is 
@@ -4862,7 +4862,7 @@ void MatlabStringFill(
    char* pCurrentDest = (char*)pDest;
    pCurrentDest = pCurrentDest - (arrayOffset*itemSizeMaster);
 
-   UINT16* pOriginalDest = (UINT16*)pCurrentDest;
+   uint16_t* pOriginalDest = (uint16_t*)pCurrentDest;
 
    pOriginalDest += arrayOffset;
    // the itemsize is correct as save as 1byte char then matlab wants 2byte char
@@ -4872,13 +4872,13 @@ void MatlabStringFill(
 
    // Read horizontally (contiguous)
    // Write vertical (skip around)
-   for (INT64 i = 0; i < arrayRowsize; i++) {
+   for (int64_t i = 0; i < arrayRowsize; i++) {
 
       // Advance to correct slot
       pDest = pOriginalDest + i;
 
       // matlab wants gapfill with spaces
-      for (INT64 col = 0; col < itemSizeMaster; col++) {
+      for (int64_t col = 0; col < itemSizeMaster; col++) {
          *pDest = 32;
          pDest += totalRowsize;
       }
@@ -4887,11 +4887,11 @@ void MatlabStringFill(
 
 template<typename T>
 void MatlabStringFillFromUnicode(
-   UINT16* pDest,      // 2 byte unicode (see note on location)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 itemSizeMaster) {
+   uint16_t* pDest,      // 2 byte unicode (see note on location)
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t itemSizeMaster) {
 
    // NOTE:
    // the pDest is not top left corner.. rather it is 
@@ -4903,7 +4903,7 @@ void MatlabStringFillFromUnicode(
    pCurrentDest = pCurrentDest - (arrayOffset*itemSizeMaster);
    itemSizeMaster = itemSizeMaster / 4;
 
-   UINT16* pOriginalDest = (UINT16*)pCurrentDest;
+   uint16_t* pOriginalDest = (uint16_t*)pCurrentDest;
 
    pOriginalDest += arrayOffset;
 
@@ -4911,13 +4911,13 @@ void MatlabStringFillFromUnicode(
 
    // Read horizontally (contiguous)
    // Write vertical (skip around)
-   for (INT64 i = 0; i < arrayRowsize; i++) {
+   for (int64_t i = 0; i < arrayRowsize; i++) {
 
       // Advance to correct slot
       pDest = pOriginalDest + i;
 
       // matlab wants gapfill with spaces
-      for (INT64 col = 0; col < itemSizeMaster; col++) {
+      for (int64_t col = 0; col < itemSizeMaster; col++) {
          *pDest = 32;
          pDest += totalRowsize;
       }
@@ -4927,20 +4927,20 @@ void MatlabStringFillFromUnicode(
 
 
 //-----------------------------------------
-SDS_GAP_FILL_SPECIAL GetGapFillSpecial(int dtype) {
+SDS_GAP_FILL_SPECIAL GetGapFillSpecial(int32_t dtype) {
    switch (dtype) {
    case SDS_BOOL:      return GapFillSpecial<bool>;
    case SDS_FLOAT:     return GapFillSpecial<float>;
    case SDS_DOUBLE:    return GapFillSpecial<double>;
    case SDS_LONGDOUBLE: return GapFillSpecial<long double>;
-   case SDS_BYTE:      return GapFillSpecial<INT8>;
-   case SDS_SHORT:     return GapFillSpecial<INT16>;
-   case SDS_INT:       return GapFillSpecial<INT32>;
-   case SDS_LONGLONG:  return GapFillSpecial<INT64>;
-   case SDS_UBYTE:     return GapFillSpecial<UINT8>;
-   case SDS_USHORT:    return GapFillSpecial<UINT16>;
-   case SDS_UINT:      return GapFillSpecial<UINT32>;
-   case SDS_ULONGLONG: return GapFillSpecial<UINT64>;
+   case SDS_BYTE:      return GapFillSpecial<int8_t>;
+   case SDS_SHORT:     return GapFillSpecial<int16_t>;
+   case SDS_INT:       return GapFillSpecial<int32_t>;
+   case SDS_LONGLONG:  return GapFillSpecial<int64_t>;
+   case SDS_UBYTE:     return GapFillSpecial<uint8_t>;
+   case SDS_USHORT:    return GapFillSpecial<uint16_t>;
+   case SDS_UINT:      return GapFillSpecial<uint32_t>;
+   case SDS_ULONGLONG: return GapFillSpecial<uint64_t>;
    }
    return NULL;
 }
@@ -4961,13 +4961,13 @@ void GapFillAny(
    // TODO: matlab string fill is different
    // Fortran >= 2d arrays gap fill is different
    if (pMasterBlock->NDim >= 2 && pMasterBlock->Flags & SDS_ARRAY_F_CONTIGUOUS) {
-      INT64 totalRowLength = pMasterBlock->Dimensions[0];
+      int64_t totalRowLength = pMasterBlock->Dimensions[0];
 
       // rows for this file only
-      INT64 rowLength = pDestInfo->Dimensions[0];
+      int64_t rowLength = pDestInfo->Dimensions[0];
 
-      INT64 colSize = 1;
-      for (int j = 1; j < pMasterBlock->NDim; j++) {
+      int64_t colSize = 1;
+      for (int32_t j = 1; j < pMasterBlock->NDim; j++) {
          colSize *= pMasterBlock->Dimensions[j];
       }
 
@@ -4987,14 +4987,14 @@ void GapFillAny(
 
 #ifdef MATLAB_MODE
       if (pMasterBlock->DType == SDS_UNICODE || pMasterBlock->DType == SDS_STRING) {
-         INT64 totalRowLength = pMasterBlock->Dimensions[0];
-         INT64 rowLength = pDestInfo->Dimensions[0];
+         int64_t totalRowLength = pMasterBlock->Dimensions[0];
+         int64_t rowLength = pDestInfo->Dimensions[0];
 
          // fill with spaces for matlab
          if (pMasterBlock->DType == SDS_STRING) {
             // fill with spaces for matlab
-            MatlabStringFill<UINT16>(
-               (UINT16*)destBuffer,    // upper left corner of src
+            MatlabStringFill<uint16_t>(
+               (uint16_t*)destBuffer,    // upper left corner of src
                totalRowLength,
                pIOPacket->ArrayOffset, // array offset (start row)
                rowLength,              // rows for this file only
@@ -5002,8 +5002,8 @@ void GapFillAny(
          }
          else {
             // fill with spaces for matlab
-            MatlabStringFillFromUnicode<UINT16>(
-               (UINT16*)destBuffer,    // upper left corner of src
+            MatlabStringFillFromUnicode<uint16_t>(
+               (uint16_t*)destBuffer,    // upper left corner of src
                totalRowLength,
                pIOPacket->ArrayOffset, // array offset (start row)
                rowLength,              // rows for this file only
@@ -5042,16 +5042,16 @@ void GapFillAny(
 void RotationalFixup(
    char*      pDest,      // 
    char*      pSrc,       // 
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 arrayColsize, // colSize of the current file
-   INT64 itemSize) {
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t arrayColsize, // colSize of the current file
+   int64_t itemSize) {
 
    LOG_THREAD("Rotational2 fix off:%lld  totlrow:%lld  filerow:%lld  col:%lld  itemsz:%lld  dest:%p  %p\n", arrayOffset, totalRowsize, arrayRowsize, arrayColsize, itemSize, pDest, pSrc);
    char* pOriginalDest = pDest + (arrayOffset * itemSize);
 
-   for (INT64 i = 0; i < arrayColsize; i++) {
+   for (int64_t i = 0; i < arrayColsize; i++) {
 
       // Advance to correct slot
       pDest = pOriginalDest + (i*totalRowsize*itemSize);
@@ -5080,22 +5080,22 @@ void RotationalFixup(
 //                  arrayRowSize: per file (3)
 //                  itemSize:     3
 // T is char for string
-// T is UINT32 for UNICODE
+// T is uint32_t for UNICODE
 //
 template<typename T>
 void MatlabStringFixup(
-   UINT16* pDest,      // 2 byte unicode (upper left corner of array)
+   uint16_t* pDest,      // 2 byte unicode (upper left corner of array)
    T*      pSrc,       // 1 or 4 byte unicode (file upper left corner)
-   INT64 totalRowsize, // all the rows of all the files  
-   INT64 arrayOffset,  // start row for the current file
-   INT64 arrayRowsize, // rowLength for the current file
-   INT64 itemSize,
-   INT64 itemSizeMaster) {
+   int64_t totalRowsize, // all the rows of all the files  
+   int64_t arrayOffset,  // start row for the current file
+   int64_t arrayRowsize, // rowLength for the current file
+   int64_t itemSize,
+   int64_t itemSizeMaster) {
 
-   UINT16* pOriginalDest = pDest + arrayOffset;
+   uint16_t* pOriginalDest = pDest + arrayOffset;
    itemSize = itemSize / sizeof(T);
    itemSizeMaster = itemSizeMaster / sizeof(T);
-   INT64 itemSizeDelta = itemSizeMaster - itemSize;
+   int64_t itemSizeDelta = itemSizeMaster - itemSize;
 
    if (itemSizeDelta < 0) {
       // internal bug
@@ -5105,14 +5105,14 @@ void MatlabStringFixup(
 
    // Read horizontally (contiguous)
    // Write vertical (skip around)
-   for (INT64 i = 0; i < arrayRowsize; i++) {
+   for (int64_t i = 0; i < arrayRowsize; i++) {
 
       // Advance to correct slot
       pDest = pOriginalDest + i;
 
       // change all 0s to spaces
-      for (INT64 col = 0; col < itemSize; col++) {
-         UINT16 c = *pSrc++;
+      for (int64_t col = 0; col < itemSize; col++) {
+         uint16_t c = *pSrc++;
          if (c == 0) {
             // replace 0 with space for matlab
             *pDest = ' ';
@@ -5123,7 +5123,7 @@ void MatlabStringFixup(
          // skip horizontally
          pDest += totalRowsize;
       }
-      for (INT64 col = 0; col < itemSizeDelta; col++) {
+      for (int64_t col = 0; col < itemSizeDelta; col++) {
          *pDest = ' ';
          pDest += totalRowsize;
       }
@@ -5141,24 +5141,24 @@ void  StringFixup(
    char* destBuffer,
    SDS_ARRAY_BLOCK*  pMasterBlock,
    SDS_ARRAY_BLOCK*  pSlaveBlock,
-   INT64 slaveRowLength,
-   INT64 slaveItemSize)
+   int64_t slaveRowLength,
+   int64_t slaveItemSize)
 {
 
    // Only the itemsize for master is correct
    // The other dimensions are correct in the pSlaveBlock
-   INT64 oneRowSize = pMasterBlock->ItemSize;
-   for (int j = 1; j < pSlaveBlock->NDim; j++) {
+   int64_t oneRowSize = pMasterBlock->ItemSize;
+   for (int32_t j = 1; j < pSlaveBlock->NDim; j++) {
       oneRowSize *= pSlaveBlock->Dimensions[j];
    }
 
-   INT64 gap = oneRowSize - slaveItemSize;
+   int64_t gap = oneRowSize - slaveItemSize;
 
    // Code below to be deleted when ugs in filtering gone
-   //INT64 rows = pSlaveBlock->Dimensions[0];
+   //int64_t rows = pSlaveBlock->Dimensions[0];
    
    // new code for filtering..
-   INT64 rows = slaveRowLength;
+   int64_t rows = slaveRowLength;
 
    if (gap > 0 && rows > 0) {
       if (pMasterBlock->DType == SDS_STRING) {
@@ -5169,7 +5169,7 @@ void  StringFixup(
          pEndString1--;
          pEndString2--;
 
-         for (int i = 0; i < rows; i++) {
+         for (int32_t i = 0; i < rows; i++) {
             char* pFront = pEndString2 - gap;
             while (pEndString2 > pFront) {
                // zero pad backwards
@@ -5192,19 +5192,19 @@ void  StringFixup(
          slaveItemSize /= 4;
          gap /= 4;
 
-         UINT32* pEndString1 = (UINT32*)destBuffer + (slaveItemSize * rows);
-         UINT32* pEndString2 = (UINT32*)destBuffer + (oneRowSize * rows);
+         uint32_t* pEndString1 = (uint32_t*)destBuffer + (slaveItemSize * rows);
+         uint32_t* pEndString2 = (uint32_t*)destBuffer + (oneRowSize * rows);
          pEndString1--;
          pEndString2--;
 
-         for (int i = 0; i < rows; i++) {
+         for (int32_t i = 0; i < rows; i++) {
             // first copy the gap
-            for (int j = 0; j < gap; j++) {
+            for (int32_t j = 0; j < gap; j++) {
                // zero pad backwards
                *pEndString2-- = 0;
             }
             //then copy the string
-            for (int j = 0; j < slaveItemSize; j++) {
+            for (int32_t j = 0; j < slaveItemSize; j++) {
                // zero pad backwards
                *pEndString2-- = *pEndString1--;
             }
@@ -5221,11 +5221,11 @@ SDS_COMPATIBLE IsArrayCompatible(
    const char* colName,
    SDS_ARRAY_BLOCK* pMasterArrayBlock,
    SDS_ARRAY_BLOCK* pArrayBlock,
-   BOOL     doFixup) {
+   bool     doFixup) {
 
    // Fixup for int32 linux vs windows
-   int mdtype = FixupDType(pMasterArrayBlock->DType, pMasterArrayBlock->ItemSize);
-   int odtype = FixupDType(pArrayBlock->DType, pArrayBlock->ItemSize);
+   int32_t mdtype = FixupDType(pMasterArrayBlock->DType, pMasterArrayBlock->ItemSize);
+   int32_t odtype = FixupDType(pArrayBlock->DType, pArrayBlock->ItemSize);
 
    SDS_COMPATIBLE  c;
    c.IsCompatible = TRUE;
@@ -5263,20 +5263,20 @@ SDS_COMPATIBLE IsArrayCompatible(
          }
       }
       else {
-         // Some issue here... float vs int or similar
-         // int vs uint
+         // Some issue here... float vs int32_t or similar
+         // int32_t vs uint
          SDS_WHICH_DTYPE cwhole;
          cwhole.whole = (wmdtype.whole | wodtype.whole);
 
-         // Float to int or uint?
+         // Float to int32_t or uint?
          if (cwhole.w.isFloat && (cwhole.w.isInt || cwhole.w.isUInt)) {
             c.NeedsConversion = TRUE;
-            LOGGING("Conversion: possible upgrade to float32/64 from int/uint for col %s  %d to %d\n", colName, mdtype, odtype);
+            LOGGING("Conversion: possible upgrade to float32/64 from int/uint32_t for col %s  %d to %d\n", colName, mdtype, odtype);
 
             if (doFixup) {
                // does the master have the float?
                if (mdtype > odtype) {
-                  if (odtype >= SDS_INT && mdtype < SDS_DOUBLE) {
+                  if (odtype >= SDS_int32_t && mdtype < SDS_DOUBLE) {
                      // MUST BE ATLEAST FLOAT64!! (auto upgrade)
                      // upgrade the dtype
                      UpgradeType(pMasterArrayBlock, SDS_DOUBLE, 0);
@@ -5288,7 +5288,7 @@ SDS_COMPATIBLE IsArrayCompatible(
                }
                else {
 
-                  if (mdtype >= SDS_INT && odtype < SDS_DOUBLE) {
+                  if (mdtype >= SDS_int32_t && odtype < SDS_DOUBLE) {
                      // MUST BE ATLEAST FLOAT64!! (auto upgrade)
                      // upgrade the dtype
                      UpgradeType(pMasterArrayBlock, SDS_DOUBLE, 0);
@@ -5304,13 +5304,13 @@ SDS_COMPATIBLE IsArrayCompatible(
          }
          else
             if (cwhole.w.isUInt && cwhole.w.isInt) {
-               BOOL handleInt64ToUInt64 = TRUE;
+               bool handleInt64ToUInt64 = TRUE;
                c.NeedsConversion = TRUE;
-               LOGGING("Conversion: int /  uint for col %s  %d to %d  fixup: %d\n", colName, mdtype, odtype, doFixup);
+               LOGGING("Conversion: int32_t /  uint32_t for col %s  %d to %d  fixup: %d\n", colName, mdtype, odtype, doFixup);
 
                if (doFixup) {
-                  int hightype = mdtype;
-                  int lowtype = odtype;
+                  int32_t hightype = mdtype;
+                  int32_t lowtype = odtype;
                   if (lowtype > hightype) {
                      lowtype = mdtype;
                      hightype = odtype;
@@ -5332,7 +5332,7 @@ SDS_COMPATIBLE IsArrayCompatible(
                   }
                   else {
                      // newtype must be an int, so or 1
-                     int newtype = hightype | 1;
+                     int32_t newtype = hightype | 1;
 
                      // if we bumped up to the ambiguous type, (going from 6 to 7)
                      if (newtype == SDS_LONG) newtype = SDS_LONGLONG;
@@ -5384,14 +5384,14 @@ SDS_COMPATIBLE IsArrayCompatible(
       c.IsCompatible = FALSE;
    }
    if (pMasterArrayBlock->NDim > 1) {
-      for (int i = 1; i < pMasterArrayBlock->NDim; i++) {
+      for (int32_t i = 1; i < pMasterArrayBlock->NDim; i++) {
          if (pMasterArrayBlock->Dimensions[i] != pArrayBlock->Dimensions[i]) {
             LOGGING("!!!Incompat due to dim %d not macthing\n", i);
             c.IsCompatible = FALSE;
          }
       }
-      int mflag = (pMasterArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
-      int oflag = (pArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
+      int32_t mflag = (pMasterArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
+      int32_t oflag = (pArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
 
       if (mflag != oflag) {
          // possibly incompatible
@@ -5419,8 +5419,8 @@ void* CheckRotationalFixup(SDS_IO_PACKET* pIOPacket) {
          if (pMasterBlock->NDim > 2) {
             printf("!!! error cannot rotate above two dimensions\n");
          }
-         INT64 allocSize = pBlockInfo->ItemSize;
-         for (int j = 0; j < pBlockInfo->NDim; j++) {
+         int64_t allocSize = pBlockInfo->ItemSize;
+         for (int32_t j = 0; j < pBlockInfo->NDim; j++) {
             allocSize *= pBlockInfo->Dimensions[j];
          }
          return WORKSPACE_ALLOC(allocSize);
@@ -5428,7 +5428,7 @@ void* CheckRotationalFixup(SDS_IO_PACKET* pIOPacket) {
       }
       else {
          if (pIOPacket->Compatible.NeedsStringFixup & 2) {
-            INT64 allocSize = pBlockInfo->ItemSize * pBlockInfo->Dimensions[0];
+            int64_t allocSize = pBlockInfo->ItemSize * pBlockInfo->Dimensions[0];
             // pick up more string dimensions
             if (pBlockInfo->NDim > 1) {
                printf("!!! error cannot handle multid strings\n");
@@ -5447,7 +5447,7 @@ void* CheckRotationalFixup(SDS_IO_PACKET* pIOPacket) {
 //----------------------------------------------------------
 // Called from multiple threads
 // Frees the buffer allocated from CheckRotationalFixup
-BOOL FinishRotationalFixup(
+bool FinishRotationalFixup(
    SDS_IO_PACKET* pIOPacket,
    void*          origBuffer,
    void*          tempBuffer) {
@@ -5460,9 +5460,9 @@ BOOL FinishRotationalFixup(
    SDS_ARRAY_BLOCK*        pBlockInfo = pIOPacket->pBlockInfo;
 
    if (pMasterBlock->NDim >= 2 && pMasterBlock->Flags & SDS_ARRAY_F_CONTIGUOUS) {
-      INT64 totalRowLength = pMasterBlock->Dimensions[0];
-      INT64 rowLength = pBlockInfo->Dimensions[0];
-      INT64 colLength = pMasterBlock->Dimensions[1];
+      int64_t totalRowLength = pMasterBlock->Dimensions[0];
+      int64_t rowLength = pBlockInfo->Dimensions[0];
+      int64_t colLength = pMasterBlock->Dimensions[1];
 
       RotationalFixup(
          (char*)origBuffer,  // original buffer (upper left of final destination)
@@ -5476,14 +5476,14 @@ BOOL FinishRotationalFixup(
    }
    else
       if (pIOPacket->Compatible.NeedsStringFixup & 2) {
-         INT64 totalRowLength = pMasterBlock->Dimensions[0];
-         INT64 rowLength = pBlockInfo->Dimensions[0];
+         int64_t totalRowLength = pMasterBlock->Dimensions[0];
+         int64_t rowLength = pBlockInfo->Dimensions[0];
 
          if (pMasterBlock->DType == SDS_UNICODE) {
             //rotate and convert data from 1 byte to 2 bytes
-            MatlabStringFixup<UINT32>(
-               (UINT16*)origBuffer,  // original buffer (upper left of final destination)
-               (UINT32*)tempBuffer,  // upper left corner of src
+            MatlabStringFixup<uint32_t>(
+               (uint16_t*)origBuffer,  // original buffer (upper left of final destination)
+               (uint32_t*)tempBuffer,  // upper left corner of src
                totalRowLength,
                pIOPacket->ArrayOffset, // array offset (start row)
                rowLength,              // rows for this file only
@@ -5493,7 +5493,7 @@ BOOL FinishRotationalFixup(
          else {
 
             MatlabStringFixup<char>(
-               (UINT16*)origBuffer,  // original buffer (upper left of final destination)
+               (uint16_t*)origBuffer,  // original buffer (upper left of final destination)
                (char*)tempBuffer,    // upper left corner of src
                totalRowLength,
                pIOPacket->ArrayOffset, // array offset (start row)
@@ -5518,10 +5518,10 @@ BOOL FinishRotationalFixup(
 // for normal read: read into pstCompressArrays->ArrayInfo[t].pData
 // size of the READ: pBlockInfo->ArrayCompressedSize
 //
-BOOL DecompressMultiArray(
+bool DecompressMultiArray(
    void* pstCompressArraysV,
-   int   core,    // which thread running on
-   INT64 t)       // t=task count from 0 - # of iopackets
+   int32_t   core,    // which thread running on
+   int64_t t)       // t=task count from 0 - # of iopackets
 {
    LOG_THREAD("[%lld] Start of decompress multi array: core %d   compress: %p\n", t, core, pstCompressArraysV);
 
@@ -5529,7 +5529,7 @@ BOOL DecompressMultiArray(
    SDS_IO_PACKET*          pIOPacket = &pMultiIOPackets->pIOPacket[t];
    SDS_FILE_HANDLE         sdsFile = pIOPacket->FileHandle;
 
-   // point to block (different from single)
+   // point32_t to block (different from single)
    SDS_ARRAY_BLOCK*        pBlockInfo = pIOPacket->pBlockInfo;
 
    // Master block only exists when stacking
@@ -5564,7 +5564,7 @@ BOOL DecompressMultiArray(
 
    // Make sure we have a valid buffer
    if (destBuffer) {
-      INT64 source_size = pBlockInfo->ArrayCompressedSize;
+      int64_t source_size = pBlockInfo->ArrayCompressedSize;
 
       // Check for matlab strings which are 2 byte
       // If so, allocate another buffer
@@ -5601,12 +5601,12 @@ BOOL DecompressMultiArray(
       void* tempFileBuffer = pMultiIOPackets->pCoreMemory[core];
 
       // NEW ROUTINE...
-      INT64 result = 0;
+      int64_t result = 0;
       if (pIOPacket->StackPosition >= 0) {
 
          // If there is no filtering, the array length in bytes is the uncompressed size
-         INT64 slaveRowLength = 0;
-         INT64 slaveItemSize = GetBytesPerRow(pBlockInfo);
+         int64_t slaveRowLength = 0;
+         int64_t slaveItemSize = GetBytesPerRow(pBlockInfo);
 
          //  If no bytes to read..
          if (slaveItemSize == 0) return TRUE;
@@ -5707,7 +5707,7 @@ public:
    SDSIncludeExclude*   pSectionsList = NULL;
 
    // how many files (include both valid and invalid)
-   INT64                FileCount = 0;
+   int64_t                FileCount = 0;
 
    // user callbacks
    SDS_READ_CALLBACKS*  pReadCallbacks = NULL;
@@ -5716,7 +5716,7 @@ public:
    // Length of all valid filenames
    // Uee for stacking only
    struct SDS_DATASET {
-      INT64                Length;
+      int64_t                Length;
       // pointer to bands
       // which bands are valid?
    };
@@ -5729,22 +5729,22 @@ public:
    //                           lower 32 => column index
    struct SDS_COLUMN_KING {
       const char*       ColName;
-      INT64             ColPos;     // matches the ColumnVector
+      int64_t             ColPos;     // matches the ColumnVector
 
-      INT32             FileRow;    // first file that had this column
-      INT32             ArrayEnum;  // enum of first file that had this column
+      int32_t             FileRow;    // first file that had this column
+      int32_t             ArrayEnum;  // enum of first file that had this column
 
       SDS_ARRAY_BLOCK   KingBlock;          // the king block (master block that determines array dtype)
       SDS_ARRAY_BLOCK** ppArrayBlocks;      // allocate array of these
-      INT64*            pArrayOffsets;      // must be deleted separately 0:5:10:15:20
-      INT64*            pOriginalArrayOffsets;      // must be deleted separately 0:5:10:15:20
-      INT64*            pOriginalLengths;   // must be deleted separately 5:5:5:5:5 -- 0 if needs invalid filling
+      int64_t*            pArrayOffsets;      // must be deleted separately 0:5:10:15:20
+      int64_t*            pOriginalArrayOffsets;      // must be deleted separately 0:5:10:15:20
+      int64_t*            pOriginalLengths;   // must be deleted separately 5:5:5:5:5 -- 0 if needs invalid filling
 
-      INT64             TotalRowLength;      // valid when done tallying
+      int64_t             TotalRowLength;      // valid when done tallying
    };
 
    // check for existence (store column position which can be used in SDS_COLUMN_ORDER)
-   typedef std::unordered_map<std::string, INT64>  SDS_COLUMN_HASH;
+   typedef std::unordered_map<std::string, int64_t>  SDS_COLUMN_HASH;
 
    // insert in order.  TotalUniqueColumns is how many vectors.
    typedef std::vector<SDS_COLUMN_KING>   SDS_COLUMN_ORDER;
@@ -5752,21 +5752,21 @@ public:
    // warning: not concurrent multithread safe
    SDS_COLUMN_HASH      ColumnExists;
    SDS_COLUMN_ORDER     ColumnVector;
-   INT                  TotalUniqueColumns = 0;
-   INT                  TotalStringFixups = 0;
-   INT                  TotalConversions = 0;
-   INT                  TotalDimensionProblems = 0;
-   INT                  TotalColumnGaps = 0;
-   INT                  TotalFirstColumns = 0;
-   INT                  LastRow = -1;
+   int32_t                  TotalUniqueColumns = 0;
+   int32_t                  TotalStringFixups = 0;
+   int32_t                  TotalConversions = 0;
+   int32_t                  TotalDimensionProblems = 0;
+   int32_t                  TotalColumnGaps = 0;
+   int32_t                  TotalFirstColumns = 0;
+   int32_t                  LastRow = -1;
 
 
    //------------------------------------------------
    // input validCount (number of files and thus number of Datasets)
    void AllocateDatasetLengths(
-      INT64 validCount) {
+      int64_t validCount) {
 
-      INT64 allocSize = sizeof(SDS_DATASET)*(validCount);
+      int64_t allocSize = sizeof(SDS_DATASET)*(validCount);
       pDatasets = (SDS_DATASET*)WORKSPACE_ALLOC(allocSize);
       memset(pDatasets, 0, allocSize);
    }
@@ -5778,22 +5778,22 @@ public:
    // returns pArrayLengths
    // returns ppArrayBlocks
    void AllocateVectorList(
-      INT64 validCount,
-      INT64* &pArrayOffsets,
-      INT64* &pOriginalArrayOffsets,
-      INT64* &pOriginalLengths,
+      int64_t validCount,
+      int64_t* &pArrayOffsets,
+      int64_t* &pOriginalArrayOffsets,
+      int64_t* &pOriginalLengths,
       SDS_ARRAY_BLOCK** &ppArrayBlocks) {
 
       // for only valid files
       // arrayoffsets has onemore entry for the final total
-      INT64 allocSize = sizeof(INT64)*(validCount + 1);
-      pArrayOffsets = (INT64*)WORKSPACE_ALLOC(allocSize);
+      int64_t allocSize = sizeof(int64_t)*(validCount + 1);
+      pArrayOffsets = (int64_t*)WORKSPACE_ALLOC(allocSize);
       //memset(pArrayOffsets, 0, allocSize);
 
-      pOriginalArrayOffsets = (INT64*)WORKSPACE_ALLOC(allocSize);
+      pOriginalArrayOffsets = (int64_t*)WORKSPACE_ALLOC(allocSize);
       //memset(pOriginalArrayOffsets, 0, allocSize);
 
-      pOriginalLengths = (INT64*)WORKSPACE_ALLOC(allocSize);
+      pOriginalLengths = (int64_t*)WORKSPACE_ALLOC(allocSize);
       memset(pOriginalLengths, 0, allocSize);
 
       allocSize = sizeof(SDS_ARRAY_BLOCK*)*(validCount);
@@ -5805,7 +5805,7 @@ public:
    // Cleans up the additional allocation that go with each unique column
    void ClearVectorList() {
       // TODO delete this better
-      for (int i = 0; i < TotalUniqueColumns; i++) {
+      for (int32_t i = 0; i < TotalUniqueColumns; i++) {
          WORKSPACE_FREE(ColumnVector[i].ppArrayBlocks);
          WORKSPACE_FREE(ColumnVector[i].pArrayOffsets);
          WORKSPACE_FREE(ColumnVector[i].pOriginalArrayOffsets);
@@ -5845,18 +5845,18 @@ public:
    // 
    // if the name is not found, the unique count goes up
    void AddColumnList(
-      INT64 validPos,
-      INT64 validCount,
+      int64_t validPos,
+      int64_t validCount,
       const char* columnName,
-      INT32 arrayEnum,  // DATASET, OTHER
-      INT32 fileRow,
-      INT64 column,
+      int32_t arrayEnum,  // DATASET, OTHER
+      int32_t fileRow,
+      int64_t column,
       SDS_ARRAY_BLOCK* pArrayBlock) {
 
       SDS_ARRAY_BLOCK**  ppArrayBlocks = NULL;
-      INT64* pArrayOffsets = NULL;
-      INT64* pOriginalArrayOffsets = NULL;
-      INT64* pOriginalLengths = NULL;
+      int64_t* pArrayOffsets = NULL;
+      int64_t* pOriginalArrayOffsets = NULL;
+      int64_t* pOriginalLengths = NULL;
 
       std::string item = std::string(columnName);
       auto columnFind = ColumnExists.find(item);
@@ -5900,7 +5900,7 @@ public:
       else {
 
          // Get the master column
-         INT64 colPos = columnFind->second;
+         int64_t colPos = columnFind->second;
          ppArrayBlocks = ColumnVector[colPos].ppArrayBlocks;
          pArrayOffsets = ColumnVector[colPos].pArrayOffsets;
          pOriginalArrayOffsets = ColumnVector[colPos].pOriginalArrayOffsets;
@@ -5933,7 +5933,7 @@ public:
 
       // If we have 1 or more dimensions, the length is the first dimension
       if (pArrayBlock->NDim > 0) {
-         INT64 rowLength = pArrayBlock->Dimensions[0];
+         int64_t rowLength = pArrayBlock->Dimensions[0];
          pOriginalLengths[validPos] = rowLength;
       }
 
@@ -5950,7 +5950,7 @@ public:
       SDSIncludeExclude*   pIncludeList,
       SDSIncludeExclude*   pFolderList,
       SDSIncludeExclude*   pSectionsList,
-      INT64                fileCount,
+      int64_t                fileCount,
       SDS_READ_CALLBACKS*  pReadCallbacks) {
 
       this->pSDSDecompressFile = pSDSDecompressFile;
@@ -5966,7 +5966,7 @@ public:
    //=================================================
    // Multithreaded callback
    // passes a pointer to itself since static function
-   static BOOL DecompressManyFiles(void* pstManyV, int core, INT64 t) {
+   static bool DecompressManyFiles(void* pstManyV, int32_t core, int64_t t) {
 
       SDSDecompressManyFiles* pSDSDecompressMany = (SDSDecompressManyFiles*)pstManyV;
       SDSDecompressFile* pSDSDecompressFile = pSDSDecompressMany->pSDSDecompressFile[t];
@@ -5982,7 +5982,7 @@ public:
 
    //===========================================
    // multithreaded kick off  (NOTE: do not use non-thread safe calls here)
-   void GetFileInfo(int multiMode) {
+   void GetFileInfo(int32_t multiMode) {
       //printf("Calling... %lld %p\n", i, pSDSDecompressFile[i]);
       // Multithreaded work and we tell caller when we started/stopped
       void* saveState = pReadCallbacks->BeginAllowThreads();
@@ -5998,10 +5998,10 @@ public:
    void* ReadIOPackets(SDS_FINAL_CALLBACK* pReadFinalCallback, SDS_READ_CALLBACKS* pReadCallbacks) {
       // Build IO LIST
       //Allocate all the arrays
-      INT64 totalIOPackets = 0;
+      int64_t totalIOPackets = 0;
 
       // First pass, calculate what we need
-      for (INT64 f = 0; f < FileCount; f++) {
+      for (int64_t f = 0; f < FileCount; f++) {
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
          if (pSDSDecompress->IsFileValid) {
             totalIOPackets += pSDSDecompress->GetTotalArraysWritten();
@@ -6012,14 +6012,14 @@ public:
 
       // Allocate MultiIO PACKETS!!
       SDS_MULTI_IO_PACKETS* pMultiIOPackets = SDS_MULTI_IO_PACKETS::Allocate(totalIOPackets, &pReadCallbacks->Filter);
-      INT64 currentPos = 0;
+      int64_t currentPos = 0;
 
       // Fill in all the IOPACKETs
       // Skip over invalid files
-      for (INT64 f = 0; f < FileCount; f++) {
+      for (int64_t f = 0; f < FileCount; f++) {
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
          if (pSDSDecompress->IsFileValid) {
-            INT64 tupleSize = pSDSDecompress->pFileHeader->ArraysWritten;
+            int64_t tupleSize = pSDSDecompress->pFileHeader->ArraysWritten;
 
             LOGGING("Allocating %lld arrays\n", tupleSize);
 
@@ -6059,14 +6059,14 @@ public:
 
    static void UpdateSectionData(
       char* pSectionData,
-      INT64 currentSection,
-      INT64 currentOffset) {
+      int64_t currentSection,
+      int64_t currentOffset) {
 
       // again very hackish
       char* pEntry = pSectionData + (currentSection * 10);
       pEntry[0] = '0';
       pEntry[1] = 0;
-      *(INT64*)(pEntry + 2) = currentOffset;
+      *(int64_t*)(pEntry + 2) = currentOffset;
 
    }
    //=====================================================
@@ -6075,22 +6075,22 @@ public:
    // fileOffset is the offset in the output file to start writing at
    // fileSize is the size of the input file
    // set localOffset to non-zero to indicate a section copy
-   static INT64 AppendToFile(
+   static int64_t AppendToFile(
       SDS_FILE_HANDLE  outFileHandle, 
       SDSDecompressFile* pSDSDecompress,
-      INT64 fileOffset, 
-      INT64 fileSize,
+      int64_t fileOffset, 
+      int64_t fileSize,
       char* pSectionData,
-      INT64 &currentSection) {
+      int64_t &currentSection) {
 
       LOGGING("files %s has size %lld\n", pSDSDecompress->FileName, fileSize);
       SDS_FILE_HEADER *pFileHeader = &pSDSDecompress->FileHeader;
-      INT64 currentOffset = fileOffset;
+      int64_t currentOffset = fileOffset;
 
-      INT64 origArrayBlockOffset = pFileHeader->ArrayBlockOffset;
+      int64_t origArrayBlockOffset = pFileHeader->ArrayBlockOffset;
       SDS_FILE_HANDLE inFile = pSDSDecompress->SDSFile;
-      BOOL hasSections = FALSE;
-      INT64 localOffset = 0;
+      bool hasSections = FALSE;
+      int64_t localOffset = 0;
 
       if (pFileHeader->SectionBlockOffset) {
          LOGGING("!!warning file %s has section within section when concat\n", pSDSDecompress->FileName);
@@ -6098,7 +6098,7 @@ public:
       }
 
       // end of file might be larger due to padding... when it is, cap to filesize
-      //INT64 calculatedSize = pFileHeader->GetEndOfFileOffset();
+      //int64_t calculatedSize = pFileHeader->GetEndOfFileOffset();
       //
       //if (calculatedSize < fileSize) {
       //   printf("reducing size %lld!\n", fileSize);
@@ -6118,7 +6118,7 @@ public:
       pFileHeader->FileOffset += fileOffset;
 
       // append the file header to the output file at fileOffset
-      INT64 bytesXfer = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
+      int64_t bytesXfer = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
       if (bytesXfer != sizeof(SDS_FILE_HEADER)) {
          LOGGING("!!warning file %s failed to write header at offset %lld\n", pSDSDecompress->FileName, fileOffset);
       }
@@ -6131,19 +6131,19 @@ public:
       localOffset += sizeof(SDS_FILE_HEADER);
 
       // Use a 1 MB buffer
-      const INT64 BUFFER_SIZE = 1024 * 1024;
+      const int64_t BUFFER_SIZE = 1024 * 1024;
       char* pBuffer = (char*)WORKSPACE_ALLOC(BUFFER_SIZE);
       if (!pBuffer) return 0;
 
       // Read from source at localoffset and copy to output at currentOffset (which starts at fileOffset)
       while (fileSize > 0) {
-         INT64 copySize = fileSize;
+         int64_t copySize = fileSize;
          if (fileSize > BUFFER_SIZE) {
             copySize = BUFFER_SIZE;
          }
          // read and write
-         INT64 sizeRead = DefaultFileIO.FileReadChunk(NULL, inFile, pBuffer, copySize, localOffset);
-         INT64 sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pBuffer, copySize, currentOffset);
+         int64_t sizeRead = DefaultFileIO.FileReadChunk(NULL, inFile, pBuffer, copySize, localOffset);
+         int64_t sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pBuffer, copySize, currentOffset);
          if (sizeRead != sizeWritten || sizeRead != copySize) {
             printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, currentOffset, localOffset);
          }
@@ -6164,7 +6164,7 @@ public:
       }
 
       // fixup arrayblocks
-      for (int i = 0; i < pFileHeader->ArraysWritten; i++) {
+      for (int32_t i = 0; i < pFileHeader->ArraysWritten; i++) {
          //printf("start offset %d %lld\n", i, pDestArrayBlock[i].ArrayDataOffset);
          pDestArrayBlock[i].ArrayDataOffset += fileOffset;
       }
@@ -6176,14 +6176,14 @@ public:
       //------------
       // Check if sections.. if so read back in each section and fix it up
       if (hasSections) {
-         INT64 sections = pSDSDecompress->cSectionName.SectionCount;
+         int64_t sections = pSDSDecompress->cSectionName.SectionCount;
 
-         for (INT64 section = 1; section < sections; section++) {
-            INT64 sectionOffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
+         for (int64_t section = 1; section < sections; section++) {
+            int64_t sectionOffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
             // section within a section
             // read in a new fileheader
             SDS_FILE_HEADER tempFileHeader;
-            INT64 bytesRead = DefaultFileIO.FileReadChunk(NULL, inFile, &tempFileHeader, sizeof(SDS_FILE_HEADER), sectionOffset);
+            int64_t bytesRead = DefaultFileIO.FileReadChunk(NULL, inFile, &tempFileHeader, sizeof(SDS_FILE_HEADER), sectionOffset);
 
             LOGGING("concat: reading section at %lld for output fileoffset %lld\n", sectionOffset, fileOffset);
 
@@ -6205,12 +6205,12 @@ public:
             tempFileHeader.SectionBlockOffset = 0;
             tempFileHeader.FileOffset += fileOffset;
 
-            INT64 newOffset = fileOffset + sectionOffset;
+            int64_t newOffset = fileOffset + sectionOffset;
 
             LOGGING("concat: newoffset: %lld   %lld + %lld\n", newOffset, fileOffset, sectionOffset);
             UpdateSectionData(pSectionData, currentSection++, newOffset);
 
-            INT64 sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, &tempFileHeader, sizeof(SDS_FILE_HEADER), newOffset);
+            int64_t sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, &tempFileHeader, sizeof(SDS_FILE_HEADER), newOffset);
             LOGGING("Wrote subsect fileheader %lld bytes at offset %lld\n", sizeof(SDS_FILE_HEADER), newOffset);
             if (sizeof(SDS_FILE_HEADER) != sizeWritten) {
                printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, newOffset, sectionOffset);
@@ -6229,7 +6229,7 @@ public:
             }
 
             // fixup arrayblocks
-            for (int i = 0; i < tempFileHeader.ArraysWritten; i++) {
+            for (int32_t i = 0; i < tempFileHeader.ArraysWritten; i++) {
                 //printf("start offset %d %lld\n", i, pDestArrayBlock2[i].ArrayDataOffset);
                 pDestArrayBlock2[i].ArrayDataOffset += fileOffset;
             }
@@ -6252,7 +6252,7 @@ public:
    // In: strOutputFilename: full path filename to create
    // Uses pSDSDecompressFile
    //
-   void* SDSConcatFiles(const char* strOutputFilename, INT64 validCount) {
+   void* SDSConcatFiles(const char* strOutputFilename, int64_t validCount) {
       LOGGING("concat mode!  found %lld files\n", FileCount);
 
       if (validCount == 0) {
@@ -6271,12 +6271,12 @@ public:
       // The very first valid file is copied as is
       // Keep track of section offsets (section offset rewritten)
       //
-      INT64 fileOffset = 0;
+      int64_t fileOffset = 0;
       SDS_FILE_HEADER*  pFileHeader = NULL;
-      INT64 sectionCount = 0;
+      int64_t sectionCount = 0;
 
       // Pass 1 count sections
-      for (INT64 t = 0; t < FileCount; t++) {
+      for (int64_t t = 0; t < FileCount; t++) {
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
          if (pSDSDecompress->IsFileValid) {
             if (!pFileHeader) pFileHeader = &pSDSDecompress->FileHeader;
@@ -6296,26 +6296,26 @@ public:
       if (pFileHeader) {
 
          // Allocate section data
-         INT64 sectionSize = sectionCount * 10;
-         INT64 sectionTotalSize = SDS_PAD_NUMBER(sectionSize);
-         INT64 currentSection = 0;
+         int64_t sectionSize = sectionCount * 10;
+         int64_t sectionTotalSize = SDS_PAD_NUMBER(sectionSize);
+         int64_t currentSection = 0;
          char* pSectionData = (char*)WORKSPACE_ALLOC(sectionTotalSize);
 
          // Pass 2 append to file
-         for (INT64 t = 0; t < FileCount; t++) {
+         for (int64_t t = 0; t < FileCount; t++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
             if (pSDSDecompress->IsFileValid) {
 
-               INT64 nextOffset =
+               int64_t nextOffset =
                   AppendToFile(fileHandle, pSDSDecompress, fileOffset, pSDSDecompress->FileSize, pSectionData, currentSection);
 
-               INT64 padFileSize = SDS_PAD_NUMBER(nextOffset);
+               int64_t padFileSize = SDS_PAD_NUMBER(nextOffset);
                fileOffset = padFileSize;
             }
          }
 
          // write section header
-         INT64 result = DefaultFileIO.FileWriteChunk(NULL, fileHandle, pSectionData, sectionTotalSize, fileOffset);
+         int64_t result = DefaultFileIO.FileWriteChunk(NULL, fileHandle, pSectionData, sectionTotalSize, fileOffset);
 
          if (result != sectionTotalSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Compression error cannot append section %lld at %lld", pFileHeader->SectionBlockReservedSize, pFileHeader->SectionBlockOffset);
@@ -6342,7 +6342,7 @@ public:
    // this routine does NOT stack
    // may return NULL if not all files exist
    // 
-   void* ReadManyFiles(SDS_READ_CALLBACKS*  pReadCallbacks, int multiMode) {
+   void* ReadManyFiles(SDS_READ_CALLBACKS*  pReadCallbacks, int32_t multiMode) {
       // Open what might be 100+ files
       GetFileInfo(multiMode);
 
@@ -6354,12 +6354,12 @@ public:
          pSDSDecompressFileExtra = ScanForSections();
       }
 
-      INT64 validCount = 0;
+      int64_t validCount = 0;
       void* result = NULL;
-      INT32 missingfile = -1;
+      int32_t missingfile = -1;
 
       // Get valid count
-      for (INT32 t = 0; t < FileCount; t++) {
+      for (int32_t t = 0; t < FileCount; t++) {
          if (pSDSDecompressFile[t]->IsFileValid) validCount++;
          else missingfile = t;
       }
@@ -6380,8 +6380,8 @@ public:
       else {
          // TJD new code for ver 4.4... check for sections
          // To be completed when we support nested structs within the same file
-         //INT64   FileWithSectionsCount = 0;
-         //for (INT64 t = 0; t < FileCount; t++) {
+         //int64_t   FileWithSectionsCount = 0;
+         //for (int64_t t = 0; t < FileCount; t++) {
          //   SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
 
          //   if (pSDSDecompress->IsFileValid && pSDSDecompress->pFileHeader->SectionBlockCount > 1) {
@@ -6397,7 +6397,7 @@ public:
 
          //if (pReadCallbacks->MustExist) {
          //   // check if all files valid
-         //   for (INT64 t = 0; t < FileCount; t++) {
+         //   for (int64_t t = 0; t < FileCount; t++) {
          //      SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
 
          //      if (!pSDSDecompress->IsFileValid) {
@@ -6413,7 +6413,7 @@ public:
 
          // Now build a hash of all the valid filenames
          // Also.. how homogenous are the files... all datasets?  all structs?
-         for (INT64 t = 0; t < FileCount; t++) {
+         for (int64_t t = 0; t < FileCount; t++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
 
             // 
@@ -6488,7 +6488,7 @@ public:
 
       // Check if we expanded becaue we found extra sections
       if (pSDSDecompressFileExtra) {
-         for (INT64 i = 0; i < FileCount; i++) {
+         for (int64_t i = 0; i < FileCount; i++) {
             delete pSDSDecompressFileExtra[i];
          }
          WORKSPACE_FREE(pSDSDecompressFileExtra);
@@ -6498,7 +6498,7 @@ public:
    }
 
    //========================================
-   SDSDecompressFile* CopyDecompressFileFrom(SDSDecompressFile* pSDSDecompress, INT64 instance) {
+   SDSDecompressFile* CopyDecompressFileFrom(SDSDecompressFile* pSDSDecompress, int64_t instance) {
       return new SDSDecompressFile(
          pSDSDecompress->FileName,
          pSDSDecompress->pInclude,
@@ -6515,10 +6515,10 @@ public:
    SDSDecompressFile**  ScanForSections() {
       SDSDecompressFile** pSDSDecompressFileExtra = NULL;
 
-      INT64   FileWithSectionsCount = 0;
+      int64_t   FileWithSectionsCount = 0;
 
       // First pass, count up how many sections total
-      for (INT64 t = 0; t < FileCount; t++) {
+      for (int64_t t = 0; t < FileCount; t++) {
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
 
          if (pSDSDecompress->IsFileValid && pSDSDecompress->pFileHeader->SectionBlockCount > 0) {
@@ -6541,24 +6541,24 @@ public:
          FileWithSectionsCount = 0;
 
          // TODO: multithread since we know at least one file has a section
-         for (INT64 t = 0; t < FileCount; t++) {
+         for (int64_t t = 0; t < FileCount; t++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
 
             if (pSDSDecompress->IsFileValid && pSDSDecompress->pFileHeader->SectionBlockCount > 1) {
 
                // blockcount is how many sections (files within a file) this file has
-               INT64 blockcount = pSDSDecompress->pFileHeader->SectionBlockCount;
+               int64_t blockcount = pSDSDecompress->pFileHeader->SectionBlockCount;
 
                // Read in all the sections (new for ver 4.4)
-               for (INT64 section = 0; section < blockcount; section++) {
-                  INT64 instance = FileWithSectionsCount + section;
+               for (int64_t section = 0; section < blockcount; section++) {
+                  int64_t instance = FileWithSectionsCount + section;
                   SDSDecompressFile* pSDSDecompressExtra = CopyDecompressFileFrom(pSDSDecompress, instance);
 
                   pSDSDecompressFileExtra[instance] = pSDSDecompressExtra;
                   
                   // read in header for section (note if this is the first header (i.e. section ==0), we are reading it again)
                   // TODO: optimization here
-                  INT64 fileoffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
+                  int64_t fileoffset = pSDSDecompress->cSectionName.pSectionOffsets[section];
                   pSDSDecompressExtra->DecompressFileInternal(pReadCallbacks, 0, fileoffset);
                }
                FileWithSectionsCount += blockcount;
@@ -6588,15 +6588,15 @@ public:
    // more complex routine that makes multiple passes
    // note: pSDSDecompressFile allocated up to FileCount
    // may return NULL when all files do not exist
-   void* ReadAndStackFiles(SDS_READ_CALLBACKS*  pReadCallbacks, int multiMode) {
+   void* ReadAndStackFiles(SDS_READ_CALLBACKS*  pReadCallbacks, int32_t multiMode) {
       // Open what might be 100+ files
       GetFileInfo(multiMode);
 
       SDSDecompressFile** pSDSDecompressFileExtra = ScanForSections();
 
       void* result = NULL;
-      INT64 validPos = 0;
-      INT64 validCount = 0;
+      int64_t validPos = 0;
+      int64_t validCount = 0;
 
       // Capture and clip percent of space to reserve
       double reserveSpace = pReadCallbacks->ReserveSpace;
@@ -6605,10 +6605,10 @@ public:
 
       // NOTE: back into single threaded mode here...
       //ClearColumnList();
-      INT32 missingfile = -1;
+      int32_t missingfile = -1;
 
       // Get valid count
-      for (INT32 t = 0; t < FileCount; t++) {
+      for (int32_t t = 0; t < FileCount; t++) {
          if (pSDSDecompressFile[t]->IsFileValid) validCount++;
          else missingfile = t;
       }
@@ -6627,11 +6627,11 @@ public:
 
       // Now build a hash of all the valid filenames
       // Also.. how homogenous are the files... all datasets?  all structs?
-      for (INT32 t = 0; t < FileCount; t++) {
-         BOOL isStruct = FALSE;
-         BOOL isDataset = FALSE;
-         BOOL isArray = FALSE;
-         BOOL isOneFile = FALSE;
+      for (int32_t t = 0; t < FileCount; t++) {
+         bool isStruct = FALSE;
+         bool isDataset = FALSE;
+         bool isArray = FALSE;
+         bool isOneFile = FALSE;
 
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
          if (pSDSDecompress->IsFileValid) {
@@ -6644,7 +6644,7 @@ public:
             isOneFile |= (fileType == SDS_FILE_TYPE_ONEFILE);
 
             // Try to find out how many valid columns
-            for (INT64 c = 0; c < pSDSDecompress->NameCount; c++) {
+            for (int64_t c = 0; c < pSDSDecompress->NameCount; c++) {
                const char* columnName = pSDSDecompress->pArrayNames[c];
 
                // Include exclude check
@@ -6660,7 +6660,7 @@ public:
                   LOGGING("[%d][%lld] %s", t, c, columnName);
 
                   SDS_ARRAY_BLOCK *pArrayBlock = &pSDSDecompress->pArrayBlocks[c];
-                  INT32 arrayEnum = pSDSDecompress->pArrayEnums[c];
+                  int32_t arrayEnum = pSDSDecompress->pArrayEnums[c];
 
                   // If the column is new, SDS_COLUMN_KING will be allocated
                   AddColumnList(
@@ -6676,11 +6676,11 @@ public:
                   if (isDataset) {
 
                      // Check if we have a stackable dataset
-                     INT32 mask = SDS_FLAGS_ORIGINAL_CONTAINER;
+                     int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
                      if ((arrayEnum & mask) == mask) {
                         if (pArrayBlock && pArrayBlock->NDim > 0) {
 
-                           INT64 dlength = pArrayBlock->Dimensions[0];
+                           int64_t dlength = pArrayBlock->Dimensions[0];
 
                            // Get the dataset size
                            if (pDatasets[validPos].Length != 0) {
@@ -6729,14 +6729,14 @@ public:
       //===========================================================================
       // final tally
       // array offset has one more entry for the last entry
-      INT64 rowLengthToAlloc = 0;
+      int64_t rowLengthToAlloc = 0;
 
 
       //if ((isStruct + isDataset + isArray) != 1) {
       //   SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- all the filetypes must be the same type (struct or dataset or array)\nFilename: %s\n", pFirstFileName);
       //   goto EXIT_EARLY;
       //}
-      BOOL isGood = FALSE;
+      bool isGood = FALSE;
 
       if (validCount == 0) {
          SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- none of the files were valid: %s\n", pFirstFileName);
@@ -6766,7 +6766,7 @@ public:
          PrintIfErrors();
          ClearErrors();
 
-         INT64 totalIOPackets = TotalUniqueColumns * validCount;
+         int64_t totalIOPackets = TotalUniqueColumns * validCount;
 
          // Allocate MultiIO PACKETS -- worst case assuming every col * rows
          SDS_MULTI_IO_PACKETS* pMultiIOPackets = SDS_MULTI_IO_PACKETS::Allocate(totalIOPackets, &pReadCallbacks->Filter);
@@ -6787,16 +6787,16 @@ public:
          validPos = 0;
 
          // for calculating boolean filter mask
-         int     hasFilter = 0;
-         INT64   filterTrueCount = 0;
-         INT64   boolMaskLength = pReadCallbacks->Filter.BoolMaskLength;
-         INT     fileTypeStackable = 0;
+         int32_t     hasFilter = 0;
+         int64_t   filterTrueCount = 0;
+         int64_t   boolMaskLength = pReadCallbacks->Filter.BoolMaskLength;
+         int32_t     fileTypeStackable = 0;
 
          // The first valid file determines the filetype when stacking
-         for (int f = 0; f < FileCount; f++) {
+         for (int32_t f = 0; f < FileCount; f++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
             if (pSDSDecompress->IsFileValid) {
-               INT fileType = pSDSDecompress->FileHeader.FileType;
+               int32_t fileType = pSDSDecompress->FileHeader.FileType;
                fileTypeStackable = (fileType == SDS_FILE_TYPE_DATASET ||
                   fileType == SDS_FILE_TYPE_TABLE ||
                   fileType == SDS_FILE_TYPE_ARRAY);
@@ -6808,29 +6808,29 @@ public:
 
          // Fill in all the IOPACKETs
          // Skip over invalid files, loop over all valid filenames
-         for (INT64 col = 0; col < TotalUniqueColumns; col++) {
+         for (int64_t col = 0; col < TotalUniqueColumns; col++) {
 
             // Only one king
             SDS_COLUMN_KING*  pKing = &ColumnVector[col];
             // Appears to be a save bug
             // When saving a Dataset, the categories have STACKABLE set but the bin array on has ORIGINAL_CONTAINER
             // When saving a Struct, the categories do not have STACKABLE set
-            //INT32 mask = SDS_FLAGS_ORIGINAL_CONTAINER;
+            //int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
             LOGGING("[%lld]Col: %s -- ColPos:%lld  FileRow:%d pBlock:%p Enum:%d  ftype:%d\n", col, pKing->ColName, pKing->ColPos, pKing->FileRow, pKing->ppArrayBlocks, pKing->ArrayEnum, fileTypeStackable);
 
-            INT64    currentOffset = 0;
-            INT64    currentUnfilteredOffset = 0;
-            INT64    row = 0;
-            INT64    filteredOut = 0;
-            INT64*   pArrayOffsets = pKing->pArrayOffsets;
-            INT64*   pOriginalArrayOffsets = pKing->pOriginalArrayOffsets;
-            INT64*   pOriginalLengths = pKing->pOriginalLengths;
+            int64_t    currentOffset = 0;
+            int64_t    currentUnfilteredOffset = 0;
+            int64_t    row = 0;
+            int64_t    filteredOut = 0;
+            int64_t*   pArrayOffsets = pKing->pArrayOffsets;
+            int64_t*   pOriginalArrayOffsets = pKing->pOriginalArrayOffsets;
+            int64_t*   pOriginalLengths = pKing->pOriginalLengths;
 
             SDS_ARRAY_BLOCK* pMasterBlock = &pKing->KingBlock;
             //LOGGING("master %p ", pMasterBlock);
 
-            INT32 mask = SDS_FLAGS_ORIGINAL_CONTAINER;
-            BOOL  isFilterable = FALSE;           
+            int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
+            bool  isFilterable = FALSE;           
 
             if (pFilterInfo && 
                (pKing->ArrayEnum & mask) == mask &&
@@ -6846,7 +6846,7 @@ public:
             // These create gaps that are often filled in with invalids
             // For every valid file there is SDS_ARRAY_BLOCK
             // If the filetype is 2 and the enum is 1 (SDS_FLAGS_STACKABLE)
-            for (int f = 0; f < FileCount; f++) {
+            for (int32_t f = 0; f < FileCount; f++) {
                SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
                if (pSDSDecompress->IsFileValid) {
 
@@ -6866,7 +6866,7 @@ public:
                      isCompatible = IsArrayCompatible(pKing->ColName, pMasterBlock, pArrayBlock, FALSE);
                   }
 
-                  INT64 calcLength = 0;
+                  int64_t calcLength = 0;
                   if (!pArrayBlock || pOriginalLengths[row] == 0) {
                      // NO IO PACKET (GAP)
                      LOGGING(">>> gap fill for row: %lld   col: %lld  name: %s\n", row, col, pKing->ColName);
@@ -6883,7 +6883,7 @@ public:
                   if (isFilterable) {
                      filterTrueCount = 0;
                      if (currentUnfilteredOffset < boolMaskLength) {
-                        INT64 bLength = calcLength;
+                        int64_t bLength = calcLength;
                         if (currentUnfilteredOffset + calcLength > boolMaskLength)
                            bLength = boolMaskLength - currentUnfilteredOffset;
 
@@ -6894,7 +6894,7 @@ public:
                         else {
                            // First pass calculate how many true values in bool mask
                            filterTrueCount =
-                              SumBooleanMask((INT8*)pReadCallbacks->Filter.pBoolMask + currentUnfilteredOffset, bLength);
+                              SumBooleanMask((int8_t*)pReadCallbacks->Filter.pBoolMask + currentUnfilteredOffset, bLength);
                         }
                      }
                      pFilterInfo[row].TrueCount = filterTrueCount;
@@ -6943,7 +6943,7 @@ public:
             // Calculate how many rows to allocate based on all the stacking
             rowLengthToAlloc = currentOffset;
             if (reserveSpace > 0.0) {
-               rowLengthToAlloc += (INT64)(currentOffset * reserveSpace);
+               rowLengthToAlloc += (int64_t)(currentOffset * reserveSpace);
             }
 
             //CreateFilter(row, pReadCallbacks->Filter);
@@ -6958,15 +6958,15 @@ public:
             // TODO: -- allocate one big array and fixup IO PACKETS
 
             SDS_ALLOCATE_ARRAY   sdsArrayCallback;
-            INT64                dimensions[SDS_MAX_DIMS];
-            INT64                strides[SDS_MAX_DIMS];
-            INT64                oneRowSize = pMasterBlock->ItemSize;
+            int64_t                dimensions[SDS_MAX_DIMS];
+            int64_t                strides[SDS_MAX_DIMS];
+            int64_t                oneRowSize = pMasterBlock->ItemSize;
 
             // Use a destination info we allocated
             sdsArrayCallback.pDestInfo = &pManyDestInfo[col];
             sdsArrayCallback.ndim = pMasterBlock->NDim;
 
-            for (int j = 0; j < SDS_MAX_DIMS; j++) {
+            for (int32_t j = 0; j < SDS_MAX_DIMS; j++) {
                dimensions[j] = pMasterBlock->Dimensions[j];
                strides[j] = pMasterBlock->Strides[j];
             }
@@ -6985,11 +6985,11 @@ public:
             sdsArrayCallback.pDestInfo->pArrayObject = NULL;
 
             // TODO: oneRowSize not correct for multidimensional
-            for (int j = 1; j < pMasterBlock->NDim; j++) {
+            for (int32_t j = 1; j < pMasterBlock->NDim; j++) {
                oneRowSize *= dimensions[j];
             }
 
-            BOOL wasFiltered = FALSE;
+            bool wasFiltered = FALSE;
 
             // Caller will fill info pArrayObject and pData
             // pData is valid for shared memory
@@ -7000,9 +7000,9 @@ public:
                // NOTE: use absolute value of last stride vs first stride to determine C or F
                if (pMasterBlock->NDim > 1 && pMasterBlock->Flags  &  SDS_ARRAY_F_CONTIGUOUS) {
                   //printf("!!!likely internal error with fortran array > dim 1 and upgrading dtype!\n");
-                  INT64 isize = pMasterBlock->ItemSize;
+                  int64_t isize = pMasterBlock->ItemSize;
                   strides[0] = isize;
-                  for (int j = 1; j < pMasterBlock->NDim; j++) {
+                  for (int32_t j = 1; j < pMasterBlock->NDim; j++) {
                      strides[j] = dimensions[j - 1] * strides[j - 1];
                   }
                }
@@ -7032,7 +7032,7 @@ public:
 
             // PASS #2... build IOPackets
             // Loop over all files
-            for (int f = 0; f < FileCount; f++) {
+            for (int32_t f = 0; f < FileCount; f++) {
                SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
                if (pSDSDecompress->IsFileValid) {
 
@@ -7077,7 +7077,7 @@ public:
 
                   //printf("array offset %lld\n", pArrayOffsets[row]);
 
-                  INT64 gapLength = pArrayOffsets[row + 1] - pArrayOffsets[row];
+                  int64_t gapLength = pArrayOffsets[row + 1] - pArrayOffsets[row];
 
                   // Check for gap
                   if (!pArrayBlock || pOriginalLengths[row] == 0) {
@@ -7143,12 +7143,12 @@ public:
 
          // Now build a hash of all the valid filenames
          // Also.. how homogenous are the files... all datasets?  all structs?
-         for (INT64 col = 0; col < TotalUniqueColumns; col++) {
+         for (int64_t col = 0; col < TotalUniqueColumns; col++) {
             // Only one king, get the first file that had this column
             SDS_COLUMN_KING*     pKing = &ColumnVector[col];
             SDSDecompressFile*   pSDSDecompress = pSDSDecompressFile[pKing->FileRow];
             SDSArrayInfo*        pDestInfo = &pManyDestInfo[col];
-            INT64*               pArrayOffsets = pKing->pArrayOffsets;
+            int64_t*               pArrayOffsets = pKing->pArrayOffsets;
 
             if (pSDSDecompress == NULL) {
                printf("!!!internal error in final multistack loop\n");
@@ -7173,8 +7173,8 @@ public:
             }
          }
 
-         INT64 vrow = 0;
-         for (int f = 0; f < FileCount; f++) {
+         int64_t vrow = 0;
+         for (int32_t f = 0; f < FileCount; f++) {
             SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[f];
             if (pSDSDecompress->IsFileValid) {
                pMultiCallbackFileInfo[vrow].Filename = pSDSDecompress->FileName;
@@ -7200,7 +7200,7 @@ public:
 
          // Check if we expanded becaue we found extra sections
          if (pSDSDecompressFileExtra) {
-            for (INT64 i = 0; i < FileCount; i++) {
+            for (int64_t i = 0; i < FileCount; i++) {
                delete pSDSDecompressFileExtra[i];
             }
             WORKSPACE_FREE(pSDSDecompressFileExtra);
@@ -7230,7 +7230,7 @@ extern "C" {
    // metaData -- block of bytes to store as metadata
    // metaDataSize -- 
    //
-   DllExport BOOL SDSWriteFile(
+   DllExport int32_t SDSWriteFile(
       const char *fileName,
       const char *shareName,   // can be NULL
       SDS_STRING_LIST *folderName,  // can be NULL
@@ -7304,8 +7304,8 @@ extern "C" {
       SDS_STRING_LIST*     pInclusionList,      // may be set to NULL
       SDS_STRING_LIST*     pFolderInclusionList,      // may be set to NULL
       SDS_STRING_LIST*     pSectionInclusionList,      // may be set to NULL
-      INT64                fileCount,
-      int                  multiMode,
+      int64_t                fileCount,
+      int32_t                  multiMode,
       SDS_READ_CALLBACKS*  pReadCallbacks)
    {
       void* result = NULL;
@@ -7341,7 +7341,7 @@ extern "C" {
             else {
                // Read file header
                SDS_FILE_HEADER tempFileHeader;
-               INT64 result =
+               int64_t result =
                   ReadFileHeader(fileHandle, &tempFileHeader, 0, pMultiRead[0].pFileName);
 
                if (result != 0) {
@@ -7366,7 +7366,7 @@ extern "C" {
          // Allocate an array of all the files we need to open
          SDSDecompressFile** pSDSDecompressFile = (SDSDecompressFile**)WORKSPACE_ALLOC(sizeof(void*) * fileCount);
 
-         for (INT64 i = 0; i < fileCount; i++) {
+         for (int64_t i = 0; i < fileCount; i++) {
             LOGGING("...%s\n", pMultiRead[i].pFileName);
             pSDSDecompressFile[i] = new SDSDecompressFile(pMultiRead[i].pFileName, &includeList, i, NULL, &folderList, &sectionsList, multiMode == SDS_MULTI_MODE_CONCAT_MANY ? SDS_MULTI_MODE_CONCAT_MANY : COMPRESSION_MODE_INFO);
          }
@@ -7381,7 +7381,7 @@ extern "C" {
          }
 
          // Shut it down
-         for (INT64 i = 0; i < fileCount; i++) {
+         for (int64_t i = 0; i < fileCount; i++) {
             delete pSDSDecompressFile[i];
          }
 
@@ -7397,7 +7397,7 @@ extern "C" {
       return g_errorbuffer;
    }
 
-   DllExport BOOL CloseSharedMemory(void* pMapStruct) {
+   DllExport int32_t CloseSharedMemory(void* pMapStruct) {
       PMAPPED_VIEW_STRUCT pMappedStruct = (PMAPPED_VIEW_STRUCT)pMapStruct;
       if (pMappedStruct) {
          UtilSharedMemoryEnd(pMappedStruct);
@@ -7406,14 +7406,14 @@ extern "C" {
       return FALSE;
    }
 
-   DllExport BOOL CloseDecompressFile(void* pInput) {      
+   DllExport int32_t CloseDecompressFile(void* pInput) {      
       SDSDecompressFile* pSDSDecompressFile = (SDSDecompressFile * )pInput;
       delete pSDSDecompressFile;
       return TRUE;
    }
 
    //DllExport void SDSClearBuffers() {
-   //   for (int i = 0; i < SDS_MAX_CORES; i++) {
+   //   for (int32_t i = 0; i < SDS_MAX_CORES; i++) {
    //      if (g_DecompressContext[i] != NULL) {
    //         ZSTD_freeDCtx(g_DecompressContext[i]);
    //         g_DecompressContext[i] = NULL;

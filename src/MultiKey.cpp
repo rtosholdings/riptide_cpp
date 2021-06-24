@@ -10,17 +10,17 @@
 
 //---------------------------------------------------------------------
 //
-char* RotateArrays(INT64 tupleSize, ArrayInfo* aInfo) {
+char* RotateArrays(int64_t tupleSize, ArrayInfo* aInfo) {
 
    // TODO: Is it fast to calculate the hash here?
-   //UINT32* pHashArray = (UINT32*)malloc(sizeof(UINT32) * totalRows);
+   //uint32_t* pHashArray = (uint32_t*)malloc(sizeof(uint32_t) * totalRows);
 
-   INT64 totalItemSize = 0;
-   INT64 totalRows = 0;
+   int64_t totalItemSize = 0;
+   int64_t totalRows = 0;
 
    totalRows = aInfo[0].ArrayLength;
 
-   for (INT64 i = 0; i < tupleSize; i++) {
+   for (int64_t i = 0; i < tupleSize; i++) {
       if (aInfo[i].ArrayLength != totalRows) {
          PyErr_Format(PyExc_ValueError, "MultiKeyHash all arrays must be same number of rows %llu", totalRows);
          return NULL;
@@ -37,14 +37,14 @@ char* RotateArrays(INT64 tupleSize, ArrayInfo* aInfo) {
 
       // THIS CAN BE PARALLELIZED
 
-      INT64 currentRow = 0;
+      int64_t currentRow = 0;
       char* pDest = pSuperArray;
 
       // We need to build this
-      for (INT64 i = 0; i < totalRows; i++) {
+      for (int64_t i = 0; i < totalRows; i++) {
 
-         for (INT64 j = 0; j < tupleSize; j++) {
-            INT64 itemSize = aInfo[j].ItemSize;
+         for (int64_t j = 0; j < tupleSize; j++) {
+            int64_t itemSize = aInfo[j].ItemSize;
             char* pSrc = aInfo[j].pData;
 
             // Get to current row
@@ -52,15 +52,15 @@ char* RotateArrays(INT64 tupleSize, ArrayInfo* aInfo) {
 
             switch (itemSize) {
             case 8:
-               *(UINT64*)pDest = *(UINT64*)pSrc;
+               *(uint64_t*)pDest = *(uint64_t*)pSrc;
                pDest += 8;
                break;
             case 4:
-               *(UINT32*)pDest = *(UINT32*)pSrc;
+               *(uint32_t*)pDest = *(uint32_t*)pSrc;
                pDest += 4;
                break;
             case 2:
-               *(UINT16*)pDest = *(UINT16*)pSrc;
+               *(uint16_t*)pDest = *(uint16_t*)pSrc;
                pDest += 2;
                break;
             case 1:
@@ -91,15 +91,15 @@ char* RotateArrays(INT64 tupleSize, ArrayInfo* aInfo) {
 void
 FreeArrayInfo(ArrayInfo* pAlloc) {
    if (pAlloc) {
-      INT64* pRawAlloc = (INT64*)pAlloc;
+      int64_t* pRawAlloc = (int64_t*)pAlloc;
 
       // go back one to find where we stuffed the array size
       --pRawAlloc;
 
-      INT64 tupleSize = *pRawAlloc;
+      int64_t tupleSize = *pRawAlloc;
       // The next entry is the arrayInfo
       ArrayInfo* aInfo = (ArrayInfo*)&pRawAlloc[1];
-      for (INT64 i = 0; i < tupleSize; i++) {
+      for (int64_t i = 0; i < tupleSize; i++) {
          if (aInfo[i].pOriginalObject) {
             Py_DecRef((PyObject*)aInfo[i].pObject);
          }
@@ -111,8 +111,8 @@ FreeArrayInfo(ArrayInfo* pAlloc) {
 //---------------------------------------------------------
 // Allocate array info object we can free laater
 ArrayInfo*
-AllocArrayInfo(INT64 tupleSize) {
-   INT64* pRawAlloc = (INT64*)WORKSPACE_ALLOC((sizeof(ArrayInfo)*tupleSize) + sizeof(INT64));
+AllocArrayInfo(int64_t tupleSize) {
+   int64_t* pRawAlloc = (int64_t*)WORKSPACE_ALLOC((sizeof(ArrayInfo)*tupleSize) + sizeof(int64_t));
    if (pRawAlloc) {
       // store in first 8 bytes the count
       *pRawAlloc = tupleSize;
@@ -121,7 +121,7 @@ AllocArrayInfo(INT64 tupleSize) {
       ArrayInfo* aInfo = (ArrayInfo*)&pRawAlloc[1];
 
       // make sure we clear out pOriginalObject
-      for (INT64 i = 0; i < tupleSize; i++) {
+      for (int64_t i = 0; i < tupleSize; i++) {
          aInfo[i].pOriginalObject = NULL;
       }
       return aInfo;
@@ -135,15 +135,15 @@ AllocArrayInfo(INT64 tupleSize) {
 // convert: whether or not to convert non-contiguous arrays
 ArrayInfo* BuildArrayInfo(
    PyObject* listObject,
-   INT64* pTupleSize,
-   INT64* pTotalItemSize,
-   BOOL checkrows,
-   BOOL convert) {
+   int64_t* pTupleSize,
+   int64_t* pTotalItemSize,
+   bool checkrows,
+   bool convert) {
 
    bool isTuple = false;
    bool isArray = false;
    bool isList = false;
-   INT64 tupleSize = 0;
+   int64_t tupleSize = 0;
 
 
    if (PyArray_Check(listObject)) {
@@ -170,10 +170,10 @@ ArrayInfo* BuildArrayInfo(
    // NOTE: If the list is empty, this will allocate 0 memory (which C99 says can return NULL
    ArrayInfo* aInfo = AllocArrayInfo(tupleSize);
 
-   INT64 totalItemSize = 0;
+   int64_t totalItemSize = 0;
 
    // Build a list of array information so we can rotate it
-   for (INT64 i = 0; i < tupleSize; i++) {
+   for (int64_t i = 0; i < tupleSize; i++) {
       PyObject* inObject=NULL;
 
       if (isTuple) {
@@ -229,8 +229,8 @@ ArrayInfo* BuildArrayInfo(
             goto EXIT_ROUTINE;
          }
 
-         INT64 stride0 = PyArray_STRIDE((PyArrayObject*)inObject, 0);
-         INT64 itemSize = aInfo[i].ItemSize;
+         int64_t stride0 = PyArray_STRIDE((PyArrayObject*)inObject, 0);
+         int64_t itemSize = aInfo[i].ItemSize;
 
          if (checkrows) {
             if (aInfo[i].NDim != 1) {
@@ -275,9 +275,9 @@ ArrayInfo* BuildArrayInfo(
    // Don't perform checks for an empty list of arrays;
    // otherwise we'll dereference an empty 'aInfo'.
    if (checkrows && tupleSize > 0) {
-      const INT64 totalRows = aInfo[0].ArrayLength;
+      const int64_t totalRows = aInfo[0].ArrayLength;
 
-      for (INT64 i = 0; i < tupleSize; i++) {
+      for (int64_t i = 0; i < tupleSize; i++) {
          if (aInfo[i].ArrayLength != totalRows) {
             PyErr_Format(PyExc_ValueError, "BuildArrayInfo all arrays must be same number of rows %llu", totalRows);
             goto EXIT_ROUTINE;
@@ -306,10 +306,10 @@ public:
 
    Py_ssize_t tupleSize;
    ArrayInfo* aInfo;
-   INT64 totalItemSize;
-   INT64 totalRows;
-   INT64 hintSize;
-   INT64 listSize; // 1 when only one array, > 1 otherwise
+   int64_t totalItemSize;
+   int64_t totalRows;
+   int64_t hintSize;
+   int64_t listSize; // 1 when only one array, > 1 otherwise
    PyArrayObject* pBoolFilterObject;
    bool* pBoolFilter;
 
@@ -368,7 +368,7 @@ public:
 
          totalRows = aInfo[0].ArrayLength;
 
-         for (INT64 i = 0; i < listSize; i++) {
+         for (int64_t i = 0; i < listSize; i++) {
             if (aInfo[i].ArrayLength != totalRows) {
                PyErr_Format(PyExc_ValueError, "MultiKeyHash all arrays must be same number of rows %llu", totalRows);
                totalRows = 0;
@@ -422,9 +422,9 @@ public:
 // if there is no next it will be the invalid
 template<typename KEYTYPE>
 void MakeNextKey(
-   INT64       mode,
-   INT64       numUnique,
-   INT64       totalRows,
+   int64_t       mode,
+   int64_t       numUnique,
+   int64_t       totalRows,
    void*       pIndexArrayK,
    void*       pNextArrayK)
 {
@@ -438,18 +438,18 @@ void MakeNextKey(
    // get the invalid for int8/16/32/64
    KEYTYPE invalid = *(KEYTYPE*)GetInvalid<KEYTYPE>();
 
-   INT64 size = sizeof(KEYTYPE) * numUnique;
+   int64_t size = sizeof(KEYTYPE) * numUnique;
    KEYTYPE* pGroupArray = (KEYTYPE*)WORKSPACE_ALLOC(size);
 
    if (pGroupArray) {
       // mark all invalid
-      for (INT64 i = 0; i < numUnique; i++) {
+      for (int64_t i = 0; i < numUnique; i++) {
          pGroupArray[i] = invalid;
       }
 
       if (mode == 0) {
          // Go backwards to calc next
-         for (INT64 i = totalRows - 1; i >= 0; i--) {
+         for (int64_t i = totalRows - 1; i >= 0; i--) {
             KEYTYPE group = pIndexArray[i];
             if (group >= 0 && group < numUnique) {
                pNextArray[i] = pGroupArray[group];
@@ -459,7 +459,7 @@ void MakeNextKey(
       }
       else {
          // Go forward to calc previous
-         for (INT64 i = 0; i < totalRows; i++) {
+         for (int64_t i = 0; i < totalRows; i++) {
             KEYTYPE group = pIndexArray[i];
             if (group >= 0 && group < numUnique) {
                pNextArray[i] = pGroupArray[group];
@@ -488,8 +488,8 @@ PyObject *
 MakeiNext(PyObject *self, PyObject *args)
 {
    PyArrayObject *ikey = NULL;
-   INT64 unique_rows = 0;
-   INT64 mode = 0;
+   int64_t unique_rows = 0;
+   int64_t mode = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!LL",
@@ -511,22 +511,22 @@ MakeiNext(PyObject *self, PyObject *args)
    PyArrayObject *pReturnArray = AllocateLikeNumpyArray(ikey, dtype);
 
    if (pReturnArray) {
-      INT64 arrlength = ArrayLength(ikey);
+      int64_t arrlength = ArrayLength(ikey);
       void* pIKey = PyArray_BYTES(ikey);
       void* pOutKey = PyArray_BYTES(pReturnArray);
 
       switch (PyArray_ITEMSIZE(ikey)) {
       case 1:
-         MakeNextKey<INT8>(mode, unique_rows, arrlength, pIKey, pOutKey);
+         MakeNextKey<int8_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
          break;
       case 2:
-         MakeNextKey<INT16>(mode, unique_rows, arrlength, pIKey, pOutKey);
+         MakeNextKey<int16_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
          break;
       case 4:
-         MakeNextKey<INT32>(mode, unique_rows, arrlength, pIKey, pOutKey);
+         MakeNextKey<int32_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
          break;
       case 8:
-         MakeNextKey<INT64>(mode, unique_rows, arrlength, pIKey, pOutKey);
+         MakeNextKey<int64_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
          break;
 
       default:
@@ -545,17 +545,17 @@ MakeiNext(PyObject *self, PyObject *args)
 //-------------------------------------------------------
 // When next was not calculated
 template<typename K>
-INT32* GroupByPackFixup32(
-   INT64 numUnique,
-   INT64 totalRows,
+int32_t* GroupByPackFixup32(
+   int64_t numUnique,
+   int64_t totalRows,
    void* pIndexArrayK,
-   INT32* pGroupArray)
+   int32_t* pGroupArray)
 {
 
    K* pIndexArray = (K*)pIndexArrayK;
 
    //printf("%lld %lld\n", numUnique, totalRows);
-   //for (INT64 i = 0; i < totalRows; i++) {
+   //for (int64_t i = 0; i < totalRows; i++) {
    //   printf("%d ", (int)pIndexArray[i]);
    //}
    //printf("\n");
@@ -563,16 +563,16 @@ INT32* GroupByPackFixup32(
    // reserve for invalid bin
    numUnique += GB_BASE_INDEX;
 
-   INT64 size = sizeof(INT32) * totalRows;
-   INT32* pNextArray = (INT32*)WORKSPACE_ALLOC(size);
+   int64_t size = sizeof(int32_t) * totalRows;
+   int32_t* pNextArray = (int32_t*)WORKSPACE_ALLOC(size);
 
    // mark all invalid
-   for (INT32 i = 0; i < numUnique; i++) {
+   for (int32_t i = 0; i < numUnique; i++) {
       pGroupArray[i] = GB_INVALID_INDEX;
    }
 
    // Go backwards
-   for (INT32 i = (INT32)totalRows - 1; i >= 0; i--) {
+   for (int32_t i = (int32_t)totalRows - 1; i >= 0; i--) {
       K group = pIndexArray[i];
 
       pNextArray[i] = pGroupArray[group];
@@ -591,7 +591,7 @@ INT32* GroupByPackFixup32(
 // Used for custom function
 // Input from return values of MultiKeyGroupBy32
 //
-// Input: pIndexArrayK (templatized allowed INT8/16/32/64)
+// Input: pIndexArrayK (templatized allowed int8_t/16/32/64)
 //
 // Returns:
 //   pSortArray  [totalRows]- array where the groupings are next to eachother
@@ -599,12 +599,12 @@ INT32* GroupByPackFixup32(
 //   pFirstArray [numUnique]- an index into pSortArray where the grouping starts for the unique key
 //   pCountArray [numUnique]- paired with pFirstArray -- the count for that unique key
 template<typename K>
-BOOL GroupByPackFinal32(
-   INT64 numUnique,
-   INT64 totalRows,
+bool GroupByPackFinal32(
+   int64_t numUnique,
+   int64_t totalRows,
    void* pIndexArrayK,
-   INT32* pNextArray,
-   INT32* pGroupArray,
+   int32_t* pNextArray,
+   int32_t* pGroupArray,
    PyObject** ppSortArray,
    PyObject** ppFirstArray,
    PyObject** ppCountArray)
@@ -625,11 +625,11 @@ BOOL GroupByPackFinal32(
    if (sortArray && firstArray && countArray) {
 
       // Build the first and count array
-      INT32* pSortArray = (INT32*)PyArray_BYTES(sortArray);
-      INT32* pFirstArray = (INT32*)PyArray_BYTES(firstArray);
-      INT32* pCountArray = (INT32*)PyArray_BYTES(countArray);
+      int32_t* pSortArray = (int32_t*)PyArray_BYTES(sortArray);
+      int32_t* pFirstArray = (int32_t*)PyArray_BYTES(firstArray);
+      int32_t* pCountArray = (int32_t*)PyArray_BYTES(countArray);
 
-      INT32 i = (INT32)totalRows;
+      int32_t i = (int32_t)totalRows;
 
       // TODO -- how to handle empty?
       pSortArray[0] = GB_INVALID_INDEX;
@@ -637,22 +637,22 @@ BOOL GroupByPackFinal32(
       pCountArray[0] = 0;
 
       // fills up sort array
-      INT32 runningCount = 0;
+      int32_t runningCount = 0;
 
       // Check if caller knows the first
       if (pGroupArray) {
          // Next unique id to look for
-         INT32 lookfor = GB_BASE_INDEX;
+         int32_t lookfor = GB_BASE_INDEX;
 
          // Second pass thru array
-         for (INT32 lookfor = 0; lookfor < numUnique; lookfor++) {
+         for (int32_t lookfor = 0; lookfor < numUnique; lookfor++) {
 
             // Get head of the unique id (the key)
-            INT32 j = pGroupArray[lookfor];
+            int32_t j = pGroupArray[lookfor];
 
             //printf("%d head is at %d\n", lookfor, j);
 
-            INT32 count = runningCount;
+            int32_t count = runningCount;
 
             // Keep track of sorting
             pFirstArray[lookfor] = runningCount;
@@ -673,13 +673,13 @@ BOOL GroupByPackFinal32(
          // Check if first item is filtered out
          // If so, go ahead and chain this now
          if (pIndexArray[0] == 0) {
-            INT32 count = runningCount;
+            int32_t count = runningCount;
 
             // Keep track of sorting
             pFirstArray[0] = runningCount;
             pSortArray[runningCount++] = 0;
 
-            INT32 j = pNextArray[0];
+            int32_t j = pNextArray[0];
 
             // We are at the head of the list, now count up how many
             while (j != GB_INVALID_INDEX) {
@@ -693,20 +693,20 @@ BOOL GroupByPackFinal32(
          }
 
          // Next unique id to look for
-         INT32 lookfor = GB_BASE_INDEX;
+         int32_t lookfor = GB_BASE_INDEX;
 
          // Second pass thru array
-         for (INT32 i = 0; i < totalRows; i++) {
+         for (int32_t i = 0; i < totalRows; i++) {
 
             // Check if we found the head of the unique id (the key)
             if (pIndexArray[i] == lookfor) {
-               INT32 count = runningCount;
+               int32_t count = runningCount;
 
                // Keep track of sorting
                pFirstArray[lookfor] = runningCount;
                pSortArray[runningCount++] = i;
 
-               INT32 j = pNextArray[i];
+               int32_t j = pNextArray[i];
 
                // We are at the head of the list, now count up how many
                while (j != GB_INVALID_INDEX) {
@@ -727,11 +727,11 @@ BOOL GroupByPackFinal32(
          if (pIndexArray[0] != 0) {
 
             // Have to search for invalid bins
-            for (INT32 i = 0; i < totalRows; i++) {
+            for (int32_t i = 0; i < totalRows; i++) {
 
                // Check if we found the head of the invalid unique id (the key)
                if (pIndexArray[i] == 0) {
-                  INT32 count = runningCount;
+                  int32_t count = runningCount;
 
                   LOGGING("first invalid found at %d, current count %d\n", i, runningCount);
 
@@ -739,7 +739,7 @@ BOOL GroupByPackFinal32(
                   pFirstArray[0] = runningCount;
                   pSortArray[runningCount++] = i;
 
-                  INT32 j = pNextArray[i];
+                  int32_t j = pNextArray[i];
 
                   // We are at the head of the list, now count up how many
                   while (j != GB_INVALID_INDEX) {
@@ -788,7 +788,7 @@ GroupByPack32(PyObject* self, PyObject* args) {
    PyArrayObject *indexArray = NULL;
    PyObject *nextArray = NULL;
 
-   INT64 numUnique = 0;
+   int64_t numUnique = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!OL",
@@ -800,35 +800,35 @@ GroupByPack32(PyObject* self, PyObject* args) {
    }
 
    try {
-      INT64 totalRows = ArrayLength(indexArray);
-      INT32 numpyIndexType = PyArray_TYPE(indexArray);
+      int64_t totalRows = ArrayLength(indexArray);
+      int32_t numpyIndexType = PyArray_TYPE(indexArray);
       void* pIndexArray = (void*)PyArray_BYTES(indexArray);
 
-      INT32* pNextArray = NULL;
+      int32_t* pNextArray = NULL;
 
-      BOOL bMustFree = FALSE;
+      bool bMustFree = FALSE;
 
-      INT32* pGroupArray = NULL;
+      int32_t* pGroupArray = NULL;
 
       if (!PyArray_Check(nextArray)) {
          // Next was not supplied and must be calculated
          bMustFree = TRUE;
 
-         INT64 allocsize = sizeof(INT32) * (numUnique + GB_BASE_INDEX);
-         pGroupArray = (INT32*)WORKSPACE_ALLOC(allocsize);
+         int64_t allocsize = sizeof(int32_t) * (numUnique + GB_BASE_INDEX);
+         pGroupArray = (int32_t*)WORKSPACE_ALLOC(allocsize);
 
          switch (numpyIndexType) {
          case NPY_INT8:
-            pNextArray = GroupByPackFixup32<INT8>(numUnique, totalRows, pIndexArray, pGroupArray);
+            pNextArray = GroupByPackFixup32<int8_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          case NPY_INT16:
-            pNextArray = GroupByPackFixup32<INT16>(numUnique, totalRows, pIndexArray, pGroupArray);
+            pNextArray = GroupByPackFixup32<int16_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          CASE_NPY_INT32:
-            pNextArray = GroupByPackFixup32<INT32>(numUnique, totalRows, pIndexArray, pGroupArray);
+            pNextArray = GroupByPackFixup32<int32_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          CASE_NPY_INT64:
-            pNextArray = GroupByPackFixup32<INT64>(numUnique, totalRows, pIndexArray, pGroupArray);
+            pNextArray = GroupByPackFixup32<int64_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          default:
             PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64");
@@ -840,27 +840,27 @@ GroupByPack32(PyObject* self, PyObject* args) {
             PyErr_Format(PyExc_ValueError, "GroupByPack32 array length does not match %llu", totalRows);
             return NULL;
          }
-         pNextArray = (INT32*)PyArray_BYTES((PyArrayObject*)nextArray);
+         pNextArray = (int32_t*)PyArray_BYTES((PyArrayObject*)nextArray);
       }
 
       PyObject* sortGroupArray = NULL;
       PyObject* firstArray = NULL;
       PyObject* countArray = NULL;
 
-      BOOL bResult = FALSE;
+      bool bResult = FALSE;
 
       switch (numpyIndexType) {
       case NPY_INT8:
-         bResult = GroupByPackFinal32<INT8>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
+         bResult = GroupByPackFinal32<int8_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       case NPY_INT16:
-         bResult = GroupByPackFinal32<INT16>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
+         bResult = GroupByPackFinal32<int16_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       CASE_NPY_INT32:
-         bResult = GroupByPackFinal32<INT32>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
+         bResult = GroupByPackFinal32<int32_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       CASE_NPY_INT64:
-         bResult = GroupByPackFinal32<INT64>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
+         bResult = GroupByPackFinal32<int64_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       default:
          PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64");
@@ -900,7 +900,7 @@ GroupByPack32(PyObject* self, PyObject* args) {
 //     Arg3: <optional> set to Py_None for default, a BOOLEAN array of what to filter out
 //     Arg4: <optional> hash mode (defaults to 2 which is hash mask)
 //
-// kwarg: cutoffs  INT64 cutoff array for parallel mode
+// kwarg: cutoffs  int64_t cutoff array for parallel mode
 // Return 1 numpy array + 1 long
 // iKey -- unique group that each row belongs to
 // nCount -- number of unique groups
@@ -909,7 +909,7 @@ PyObject *
 MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
 
    long hashMode = HASH_MODE::HASH_MODE_MASK;
-   BOOL parallelMode = FALSE;
+   bool parallelMode = FALSE;
 
    if (!PyTuple_Check(args)) {
       PyErr_Format(PyExc_ValueError, "MultiKeyGroupBy32 arguments needs to be a tuple");
@@ -934,7 +934,7 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
 
    try {
 
-      INT32 numpyIndexType = NPY_INT32;
+      int32_t numpyIndexType = NPY_INT32;
 
       // Rotate the arrays
       CMultiKeyPrepare mkp(args);
@@ -944,15 +944,15 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
          LOGGING("gb 64bit mode  hintsize:%lld\n", mkp.hintSize);
       }
 
-      INT64    cutOffLength = 0;
-      INT64*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
+      int64_t    cutOffLength = 0;
+      int64_t*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
 
       if (pCutOffs && pCutOffs[cutOffLength - 1] != mkp.totalRows) {
          PyErr_Format(PyExc_ValueError, "MultiKeyGroupBy32 last cutoff length does not match array length %lld", mkp.totalRows);
          return NULL;
       }
       if (cutOffLength == -1) {
-         PyErr_Format(PyExc_ValueError, "MultiKeyGroupBy32 'cutoffs' must be an array of type INT64");
+         PyErr_Format(PyExc_ValueError, "MultiKeyGroupBy32 'cutoffs' must be an array of type int64_t");
          return NULL;
       }
 
@@ -971,7 +971,7 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
             // TODO: use recycled memory?
             PyArrayObject* firstArray = NULL;
 
-            INT64 numUnique = 0;
+            int64_t numUnique = 0;
 
             // default to unknown core type
             int coreType = -1;
@@ -993,7 +993,7 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
                pGroupByCall = GroupBy64;
             }
 
-            numUnique = (INT64)
+            numUnique = (int64_t)
                pGroupByCall(
                   cutOffLength,
                   pCutOffs,
@@ -1073,7 +1073,7 @@ MultiKeyGroupBy32Super(PyObject *self, PyObject *args) {
 
    try {
 
-      INT32 numpyIndexType = NPY_INT32;
+      int32_t numpyIndexType = NPY_INT32;
 
       CMultiKeyPrepare mkp(args);
 
@@ -1095,14 +1095,14 @@ MultiKeyGroupBy32Super(PyObject *self, PyObject *args) {
 
             //printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
 
-            INT32* pIndexArray = (INT32*)PyArray_BYTES(indexArray);
-            INT32* pNextArray = (INT32*)PyArray_BYTES(nextArray);
+            int32_t* pIndexArray = (int32_t*)PyArray_BYTES(indexArray);
+            int32_t* pNextArray = (int32_t*)PyArray_BYTES(nextArray);
 
             // now one based, so zero reserved
-            INT32* pUniqueArray = (INT32*)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(INT32));
-            INT32* pUniqueCountArray = (INT32*)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(INT32));
+            int32_t* pUniqueArray = (int32_t*)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(int32_t));
+            int32_t* pUniqueCountArray = (int32_t*)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(int32_t));
 
-            INT64 numUnique = 0;
+            int64_t numUnique = 0;
 
             // default to unknown core type
             int coreType = -1;
@@ -1114,7 +1114,7 @@ MultiKeyGroupBy32Super(PyObject *self, PyObject *args) {
 
             Py_BEGIN_ALLOW_THREADS
 
-               numUnique = (INT64)
+               numUnique = (int64_t)
                GroupBy32Super(
                   mkp.totalRows, mkp.totalItemSize, (const char*)mkp.pSuperArray,
                   coreType,
@@ -1139,10 +1139,10 @@ MultiKeyGroupBy32Super(PyObject *self, PyObject *args) {
             CHECK_MEMORY_ERROR(uniqueCountArray);
 
             if (uniqueArray != NULL && uniqueCountArray != NULL) {
-               INT32* pUniqueArrayDest = (INT32*)PyArray_BYTES(uniqueArray);
-               memcpy(pUniqueArrayDest, pUniqueArray, numUnique * sizeof(INT32));
-               INT32* pUniqueCountArrayDest = (INT32*)PyArray_BYTES(uniqueCountArray);
-               memcpy(pUniqueCountArrayDest, pUniqueCountArray, numUnique * sizeof(INT32));
+               int32_t* pUniqueArrayDest = (int32_t*)PyArray_BYTES(uniqueArray);
+               memcpy(pUniqueArrayDest, pUniqueArray, numUnique * sizeof(int32_t));
+               int32_t* pUniqueCountArrayDest = (int32_t*)PyArray_BYTES(uniqueCountArray);
+               memcpy(pUniqueCountArrayDest, pUniqueCountArray, numUnique * sizeof(int32_t));
             }
             WORKSPACE_FREE(pUniqueArray);
             WORKSPACE_FREE(pUniqueCountArray);
@@ -1210,10 +1210,10 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
 
          if (mkp.totalRows < 2100000000) {
             // worst case alloc
-            INT32* pIndexArray = (INT32*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(INT32));
+            int32_t* pIndexArray = (int32_t*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int32_t));
 
             // worst case alloc
-            INT32* pCountArray = (INT32*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(INT32));
+            int32_t* pCountArray = (int32_t*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int32_t));
 
             if (pIndexArray == NULL || pCountArray == NULL) {
                PyErr_Format(PyExc_ValueError, "MultiKeyUnique32 out of memory    %llu", mkp.totalRows);
@@ -1224,7 +1224,7 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
 
                LOGGING("Starting hash unique\n");
 
-               INT64 numUnique = (INT64)
+               int64_t numUnique = (int64_t)
                   Unique32(
                      mkp.totalRows, mkp.totalItemSize, (const char*)mkp.pSuperArray,
                      pIndexArray,
@@ -1238,16 +1238,16 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
                CHECK_MEMORY_ERROR(indexArray2);
 
                if (indexArray2 != NULL) {
-                  INT32* pIndexArray2 = (INT32*)PyArray_BYTES(indexArray2);
-                  memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(INT32));
+                  int32_t* pIndexArray2 = (int32_t*)PyArray_BYTES(indexArray2);
+                  memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(int32_t));
                }
 
                PyArrayObject* countArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
                CHECK_MEMORY_ERROR(countArray2);
 
                if (countArray2 != NULL) {
-                  INT32* pCountArray2 = (INT32*)PyArray_BYTES(countArray2);
-                  memcpy(pCountArray2, pCountArray, numUnique * sizeof(INT32));
+                  int32_t* pCountArray2 = (int32_t*)PyArray_BYTES(countArray2);
+                  memcpy(pCountArray2, pCountArray, numUnique * sizeof(int32_t));
                }
 
                // free the side array
@@ -1262,10 +1262,10 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
          }
          else {
             // worst case alloc
-            INT64* pIndexArray = (INT64*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(INT64));
+            int64_t* pIndexArray = (int64_t*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int64_t));
 
             // worst case alloc
-            INT64* pCountArray = (INT64*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(INT64));
+            int64_t* pCountArray = (int64_t*)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int64_t));
 
             if (pIndexArray == NULL || pCountArray == NULL) {
                PyErr_Format(PyExc_ValueError, "MultiKeyUnique64 out of memory    %llu", mkp.totalRows);
@@ -1276,7 +1276,7 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
 
                LOGGING("Starting hash64 unique\n");
 
-               INT64 numUnique = (INT64)
+               int64_t numUnique = (int64_t)
                   Unique64(
                      mkp.totalRows, mkp.totalItemSize, (const char*)mkp.pSuperArray,
                      pIndexArray,
@@ -1290,16 +1290,16 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
                CHECK_MEMORY_ERROR(indexArray2);
 
                if (indexArray2 != NULL) {
-                  INT64* pIndexArray2 = (INT64*)PyArray_BYTES(indexArray2);
-                  memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(INT64));
+                  int64_t* pIndexArray2 = (int64_t*)PyArray_BYTES(indexArray2);
+                  memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(int64_t));
                }
 
                PyArrayObject* countArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT64);
                CHECK_MEMORY_ERROR(countArray2);
 
                if (countArray2 != NULL) {
-                  INT64* pCountArray2 = (INT64*)PyArray_BYTES(countArray2);
-                  memcpy(pCountArray2, pCountArray, numUnique * sizeof(INT64));
+                  int64_t* pCountArray2 = (int64_t*)PyArray_BYTES(countArray2);
+                  memcpy(pCountArray2, pCountArray, numUnique * sizeof(int64_t));
                }
 
                // free the side array
@@ -1345,9 +1345,9 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
 PyObject *
 MultiKeyRolling(PyObject *self, PyObject *args)
 {
-   INT64 hintSize = 1000000;
-   INT64 memPointer = 0;
-   UINT64 numUnique = 0;
+   int64_t hintSize = 1000000;
+   int64_t memPointer = 0;
+   uint64_t numUnique = 0;
 
    Py_ssize_t tupleSize = PyTuple_GET_SIZE(args);
 
@@ -1384,11 +1384,11 @@ MultiKeyRolling(PyObject *self, PyObject *args)
       PyArrayObject* indexArray = AllocateLikeNumpyArray(firstObject, NPY_INT64);
       PyArrayObject* runningCountArray = AllocateLikeNumpyArray(firstObject, NPY_INT64);
 
-      INT64* pIndexArray = (INT64*)PyArray_BYTES(indexArray);
-      INT64* pRunningCountArray = (INT64*)PyArray_BYTES(runningCountArray);
+      int64_t* pIndexArray = (int64_t*)PyArray_BYTES(indexArray);
+      int64_t* pRunningCountArray = (int64_t*)PyArray_BYTES(runningCountArray);
 
       // Turn off caching because we want this to remain
-      BOOL prevValue = g_cMathWorker->NoCaching;
+      bool prevValue = g_cMathWorker->NoCaching;
       g_cMathWorker->NoCaching = TRUE;
 
       void* pKeepRolling = 
@@ -1404,7 +1404,7 @@ MultiKeyRolling(PyObject *self, PyObject *args)
       g_cMathWorker->NoCaching = prevValue;
 
       // Build tuple to return
-      PyObject* retObject = Py_BuildValue("(OOLL)", indexArray, runningCountArray, (INT64)numUnique, (INT64)pKeepRolling);
+      PyObject* retObject = Py_BuildValue("(OOLL)", indexArray, runningCountArray, (int64_t)numUnique, (int64_t)pKeepRolling);
 
       Py_DECREF((PyObject*)indexArray);
       Py_DECREF((PyObject*)runningCountArray);
@@ -1452,15 +1452,15 @@ MultiKeyHash(PyObject *self, PyObject *args)
 
          //printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
 
-         INT32* pIndexArray = (INT32*)PyArray_BYTES(indexArray);
-         INT32* pRunningCountArray = (INT32*)PyArray_BYTES(runningCountArray);
-         INT32* pPrevArray = (INT32*)PyArray_BYTES(prevArray);
-         INT32* pNextArray = (INT32*)PyArray_BYTES(nextArray);
+         int32_t* pIndexArray = (int32_t*)PyArray_BYTES(indexArray);
+         int32_t* pRunningCountArray = (int32_t*)PyArray_BYTES(runningCountArray);
+         int32_t* pPrevArray = (int32_t*)PyArray_BYTES(prevArray);
+         int32_t* pNextArray = (int32_t*)PyArray_BYTES(nextArray);
 
 
-         INT32* pFirstArray = (INT32*)PyArray_BYTES(firstArray);
-         INT32* pBktSize = (INT32*)PyArray_BYTES(bktSizeArray);
-         INT32* pLastArray = (INT32*)PyArray_BYTES(lastArray);
+         int32_t* pFirstArray = (int32_t*)PyArray_BYTES(firstArray);
+         int32_t* pBktSize = (int32_t*)PyArray_BYTES(bktSizeArray);
+         int32_t* pLastArray = (int32_t*)PyArray_BYTES(lastArray);
 
          MultiKeyHash32(
             mkp.totalRows, mkp.totalItemSize, (const char*)mkp.pSuperArray,
@@ -1475,7 +1475,7 @@ MultiKeyHash(PyObject *self, PyObject *args)
          
          assert(mkp.totalRows < 2100000000);
 
-         INT32 i = (INT32)mkp.totalRows;
+         int32_t i = (int32_t)mkp.totalRows;
 
          while (i > 0) {
             --i;
@@ -1483,11 +1483,11 @@ MultiKeyHash(PyObject *self, PyObject *args)
             if (pNextArray[i] == GB_INVALID_INDEX) {
 
                // now we now last and total
-               INT32 count = pRunningCountArray[i];
+               int32_t count = pRunningCountArray[i];
                pBktSize[i] = count;
                pLastArray[i] = i;
 
-               INT64 j = i;
+               int64_t j = i;
 
                while (pPrevArray[j] != GB_INVALID_INDEX) {
                   // walk the previous link until we reach the end
@@ -1543,7 +1543,7 @@ MultiKeyIsMember32(PyObject *self, PyObject *args)
    // Check if they passed in a list
    PyObject* tupleObject1 = PyTuple_GetItem(args, 0);
    PyObject* tupleObject2 = PyTuple_GetItem(args, 1);
-   INT64 hintSize = 0;
+   int64_t hintSize = 0;
 
    if (!PyTuple_CheckExact(tupleObject1) || !PyTuple_CheckExact(tupleObject2)) {
       PyErr_Format(PyExc_ValueError, "MultiKeyIsMember32 first two args must be tuple");
@@ -1583,7 +1583,7 @@ MultiKeyIsMember32(PyObject *self, PyObject *args)
          PyArrayObject* boolArray = AllocateLikeNumpyArray(mkp1.aInfo[0].pObject, NPY_BOOL);
 
          if (boolArray) {
-            INT8* pDataOut1 = (INT8*)PyArray_BYTES(boolArray);
+            int8_t* pDataOut1 = (int8_t*)PyArray_BYTES(boolArray);
 
             PyArrayObject* indexArray = NULL;
 
@@ -1675,8 +1675,8 @@ PyObject *MultiKeyAlign32(PyObject *self, PyObject *args)
    //}
 
    //TODO: better handling of input types
-   INT32 dtype1 = ObjectToDtype((PyArrayObject*)pvalArray1);
-   INT32 dtype2 = ObjectToDtype((PyArrayObject*)pvalArray2);
+   int32_t dtype1 = ObjectToDtype((PyArrayObject*)pvalArray1);
+   int32_t dtype2 = ObjectToDtype((PyArrayObject*)pvalArray2);
 
    if (dtype1 < 0) {
       PyErr_Format(PyExc_ValueError, "MultiKeyAlign32 data types are not understood dtype.num: %d vs %d", dtype1, dtype2);
@@ -1711,7 +1711,7 @@ PyObject *MultiKeyAlign32(PyObject *self, PyObject *args)
       void* pVal2 = PyArray_BYTES(pvalArray2);
       PyArrayObject* indexArray = (PyArrayObject*)Py_None;
       bool isIndex32 = TRUE;
-      BOOL success = FALSE;
+      bool success = FALSE;
       if (mkp1.totalRows > 2000000000 || mkp2.totalRows > 2000000000) {
          isIndex32 = FALSE;
       }
@@ -1720,18 +1720,18 @@ PyObject *MultiKeyAlign32(PyObject *self, PyObject *args)
          if (isIndex32) {
             indexArray = AllocateLikeNumpyArray(mkp1.aInfo[0].pObject, NPY_INT32);
             if (!indexArray) return PyErr_Format(PyExc_BufferError, "MultiKeyAlign32");
-            INT32* pDataOut2 = (INT32*)PyArray_BYTES(indexArray);
+            int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(indexArray);
             success = AlignHashMK32(mkp1.totalRows, mkp1.pSuperArray, pVal1, mkp2.totalRows, mkp2.pSuperArray, pVal2, pDataOut2, mkp1.totalItemSize, HASH_MODE_MASK, dtype1, isForward, allowExact);
          }
          else {
             indexArray = AllocateLikeNumpyArray(mkp1.aInfo[0].pObject, NPY_INT64);
             if (!indexArray) return PyErr_Format(PyExc_BufferError, "MultiKeyAlign32");
-            INT64* pDataOut2 = (INT64*)PyArray_BYTES(indexArray);
+            int64_t* pDataOut2 = (int64_t*)PyArray_BYTES(indexArray);
             success = AlignHashMK64(mkp1.totalRows, mkp1.pSuperArray, pVal1, mkp2.totalRows, mkp2.pSuperArray, pVal2, pDataOut2, mkp1.totalItemSize, HASH_MODE_MASK, dtype1, isForward, allowExact);
          }
 
          if (!success) {
-            PyErr_Format(PyExc_ValueError, "MultiKeyAlign failed.  Only accepts INT32,INT64,FLOAT32,FLOAT64");
+            PyErr_Format(PyExc_ValueError, "MultiKeyAlign failed.  Only accepts int32_t,int64_t,FLOAT32,FLOAT64");
          }
 
       }
@@ -1753,9 +1753,9 @@ typedef void(*MAKE_I_GROUP2)(
    void* piKeyT,
    void* piFirstGroupT,
    void* piGroupT,
-   INT64 totalRows,
-   INT64 offset,
-   INT64 unique_count);
+   int64_t totalRows,
+   int64_t offset,
+   int64_t unique_count);
 
 //-------------------------------------------------------------------
 // Parameters
@@ -1774,9 +1774,9 @@ void MakeiGroup2(
    void* piKeyT,
    void* piFirstGroupT,
    void* piGroupT,
-   INT64 totalRows,
-   INT64 offset,
-   INT64 unique_count) {
+   int64_t totalRows,
+   int64_t offset,
+   int64_t unique_count) {
 
    KEYTYPE* piKey = (KEYTYPE*)piKeyT;
    OUTDTYPE* piFirstGroup = (OUTDTYPE*)piFirstGroupT;
@@ -1789,11 +1789,11 @@ void MakeiGroup2(
    // in this routine we own all bins
    // keep taking the scattered groups and putting them together in a fancy index for piGroup
    // as a result, piFirstGroup keeps creeping 
-   for (INT64 i = 0; i < totalRows; i++) {
-      INT64 key = (INT64)piKey[i];
+   for (int64_t i = 0; i < totalRows; i++) {
+      int64_t key = (int64_t)piKey[i];
       if (key >= 0 && key < unique_count) {
          OUTDTYPE nextloc = piFirstGroup[key];
-         //printf("[%lld] key: %lld   nextloc: %lld -- offset %lld -- %p %p\n", i, (INT64)key, (INT64)nextloc, offset, piFirstGroup, piGroup );
+         //printf("[%lld] key: %lld   nextloc: %lld -- offset %lld -- %p %p\n", i, (int64_t)key, (int64_t)nextloc, offset, piFirstGroup, piGroup );
          piGroup[nextloc] = (OUTDTYPE)(i + offset);
          piFirstGroup[key] = nextloc + 1;
       } // else data intergrity issue
@@ -1814,16 +1814,16 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
    if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = MakeiGroup2<INT8, INT32>;
+         pBinFunc = MakeiGroup2<int8_t, int32_t>;
          break;
       case NPY_INT16:
-         pBinFunc = MakeiGroup2<INT16, INT32>;
+         pBinFunc = MakeiGroup2<int16_t, int32_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = MakeiGroup2<INT32, INT32>;
+         pBinFunc = MakeiGroup2<int32_t, int32_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = MakeiGroup2<INT64, INT32>;
+         pBinFunc = MakeiGroup2<int64_t, int32_t>;
          break;
       default:
          printf("!!!internal error in MakeiGroup\n");
@@ -1832,16 +1832,16 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
    else {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = MakeiGroup2<INT8, INT64>;
+         pBinFunc = MakeiGroup2<int8_t, int64_t>;
          break;
       case NPY_INT16:
-         pBinFunc = MakeiGroup2<INT16, INT64>;
+         pBinFunc = MakeiGroup2<int16_t, int64_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = MakeiGroup2<INT32, INT64>;
+         pBinFunc = MakeiGroup2<int32_t, int64_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = MakeiGroup2<INT64, INT64>;
+         pBinFunc = MakeiGroup2<int64_t, int64_t>;
          break;
       default:
          printf("!!!internal error in MakeiGroup\n");
@@ -1860,9 +1860,9 @@ typedef void(*MAKE_I_GROUP)(
    void* pnCountGroupT,
    void* piFirstGroupT,
    void* piGroupT,
-   INT64 totalRows,
-   INT64 binLow,
-   INT64 binHigh);
+   int64_t totalRows,
+   int64_t binLow,
+   int64_t binHigh);
 
 //-------------------------------------------------------------------
 // Parameters
@@ -1881,9 +1881,9 @@ void MakeiGroup(
    void* pnCountGroupT,
    void* piFirstGroupT,
    void* piGroupT,
-   INT64 totalRows,
-   INT64 binLow,
-   INT64 binHigh) {
+   int64_t totalRows,
+   int64_t binLow,
+   int64_t binHigh) {
 
    KEYTYPE* piKey = (KEYTYPE*)piKeyT;
    OUTDTYPE* pnCountGroup = (OUTDTYPE*)pnCountGroupT;
@@ -1894,18 +1894,18 @@ void MakeiGroup(
    // if so, keep taking the scattered groups and putting them together
    // in a fancy index for piGroup
    // as a result, piFirstGroup keeps creeping and we have to subtract it back at the very end
-   for (INT64 i = 0; i < totalRows; i++) {
-      INT64 key = (INT64)piKey[i];
+   for (int64_t i = 0; i < totalRows; i++) {
+      int64_t key = (int64_t)piKey[i];
       if (key >= binLow && key < binHigh) {
          OUTDTYPE nextloc = piFirstGroup[key];
-         //printf("%lld %lld -- %p %p\n", (INT64)key, (INT64)nextloc, piFirstGroup, piGroup );
+         //printf("%lld %lld -- %p %p\n", (int64_t)key, (int64_t)nextloc, piFirstGroup, piGroup );
          piGroup[nextloc] = (OUTDTYPE)i;
          piFirstGroup[key] = nextloc + 1;
       }
    }
 
    // Fixup iFirstGroup by subtracting what we added
-   for (INT64 i = binLow; i < binHigh; i++) {
+   for (int64_t i = binLow; i < binHigh; i++) {
       piFirstGroup[i] -= pnCountGroup[i];
    }
 }
@@ -1923,16 +1923,16 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
    if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = MakeiGroup<INT8, INT32>;
+         pBinFunc = MakeiGroup<int8_t, int32_t>;
          break;
       case NPY_INT16:
-         pBinFunc = MakeiGroup<INT16, INT32>;
+         pBinFunc = MakeiGroup<int16_t, int32_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = MakeiGroup<INT32, INT32>;
+         pBinFunc = MakeiGroup<int32_t, int32_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = MakeiGroup<INT64, INT32>;
+         pBinFunc = MakeiGroup<int64_t, int32_t>;
          break;
       default:
          printf("!!!internal error in MakeiGroup\n");
@@ -1941,16 +1941,16 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
    else {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = MakeiGroup<INT8, INT64>;
+         pBinFunc = MakeiGroup<int8_t, int64_t>;
          break;
       case NPY_INT16:
-         pBinFunc = MakeiGroup<INT16, INT64>;
+         pBinFunc = MakeiGroup<int16_t, int64_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = MakeiGroup<INT32, INT64>;
+         pBinFunc = MakeiGroup<int32_t, int64_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = MakeiGroup<INT64, INT64>;
+         pBinFunc = MakeiGroup<int64_t, int64_t>;
          break;
       default:
          printf("!!!internal error in MakeiGroup\n");
@@ -1985,14 +1985,14 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 iKeyType = PyArray_TYPE(iKey);
-   INT64 totalRows = ArrayLength(iKey);
-   INT64 totalUnique = ArrayLength(nCountGroup);
+   int32_t iKeyType = PyArray_TYPE(iKey);
+   int64_t totalRows = ArrayLength(iKey);
+   int64_t totalUnique = ArrayLength(nCountGroup);
 
    PyArrayObject* outiGroup = NULL;
    PyArrayObject* outiFirstGroup = NULL;
 
-   // Check for totalRows > 2100000000 and switch to INT64
+   // Check for totalRows > 2100000000 and switch to int64_t
    int outdtype = NPY_INT32;
 
    if (totalRows > 2000000000) {
@@ -2019,10 +2019,10 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       switch (outdtype) {
       case NPY_INT32:
       {
-         INT32* pCount = (INT32*)pnCountGroup;
-         INT32* pCumSum = (INT32*)piFirstGroup;
-         INT32 currentSum = 0;
-         for (INT64 i = 0; i < totalUnique; i++) {
+         int32_t* pCount = (int32_t*)pnCountGroup;
+         int32_t* pCumSum = (int32_t*)piFirstGroup;
+         int32_t currentSum = 0;
+         for (int64_t i = 0; i < totalUnique; i++) {
             *pCumSum++ = currentSum;
             currentSum += *pCount++;
          }
@@ -2030,10 +2030,10 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       break;
       case NPY_INT64:
       {
-         INT64* pCount = (INT64*)pnCountGroup;
-         INT64* pCumSum = (INT64*)piFirstGroup;
-         INT64 currentSum = 0;
-         for (INT64 i = 0; i < totalUnique; i++) {
+         int64_t* pCount = (int64_t*)pnCountGroup;
+         int64_t* pCumSum = (int64_t*)piFirstGroup;
+         int64_t currentSum = 0;
+         for (int64_t i = 0; i < totalUnique; i++) {
             *pCumSum++ = currentSum;
             currentSum += *pCount++;
          }
@@ -2047,7 +2047,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       MAKE_I_GROUP pMakeIGroup = GetMakeIGroup(iKeyType, outdtype);
 
       if (!g_cMathWorker->NoThreading && totalRows > 32000) {
-         INT64 cores = 0;
+         int64_t cores = 0;
          stBinCount* pstBinCount = NULL;
 
          // Allocate worker segments -- low high bins to work on
@@ -2058,7 +2058,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
             void* pnCountGroup;
             void* piFirstGroup;
             void* piGroup;
-            INT64 totalRows;
+            int64_t totalRows;
             stBinCount* pstBinCount;
             MAKE_I_GROUP pMakeIGroup;
          } stMaster;
@@ -2072,9 +2072,9 @@ GroupFromBinCount(PyObject *self, PyObject *args)
          stMaster.pstBinCount = pstBinCount;
          stMaster.pMakeIGroup = pMakeIGroup;
 
-         auto lambdaBinCountCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+         auto lambdaBinCountCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
             stBinMaster* callbackArg = (stBinMaster*)callbackArgT;
-            INT64 t = workIndex;
+            int64_t t = workIndex;
 
             LOGGING("[%d] %lld low %lld  high %lld\n", core, workIndex, callbackArg->pstBinCount[t].BinLow, callbackArg->pstBinCount[t].BinHigh);
 
@@ -2115,7 +2115,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
 
 
 
-typedef void(*BIN_COUNT)(void* pKeysT, void* pOutCount, INT64 startRow, INT64 totalRows, INT64 highbin);
+typedef void(*BIN_COUNT)(void* pKeysT, void* pOutCount, int64_t startRow, int64_t totalRows, int64_t highbin);
 
 //==================================================================
 //-------------------------------------------------------------------
@@ -2125,9 +2125,9 @@ template<typename T, typename U>
 static void BinCountAlgo(
    void*    pKeysT,    // input the binned keys
    void*    pCountT,   // zero fill and then count
-   INT64    startRow,  // ikey start position
-   INT64    stopRow,   // ikey stop position
-   INT64    total_unique)   // total_unique
+   int64_t    startRow,  // ikey start position
+   int64_t    stopRow,   // ikey stop position
+   int64_t    total_unique)   // total_unique
 {
    T*    pKeys = (T*)pKeysT;
    U*    pCount= (U*)pCountT;
@@ -2142,7 +2142,7 @@ static void BinCountAlgo(
 
    // count the bins
    // NOT: should we unroll this?
-   for (INT64 i = 0; i < stopRow; i++) {
+   for (int64_t i = 0; i < stopRow; i++) {
       T key = pKeys[i];
       if (key >= 0 && key < total_unique) {
          pCount[key]++;
@@ -2155,26 +2155,26 @@ static void BinCountAlgo(
 // ----------
 // Return the binning routine
 //
-BIN_COUNT InternalGetBinFunc(INT32 iKeyType, int outdtype) {
+BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
    BIN_COUNT pBinFunc = NULL;
 
    //------------------------------
    // Pick one of 8 bincount routines based on
-   // ikey size and INT32 vs INT64 output
+   // ikey size and int32_t vs int64_t output
    //
    if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = BinCountAlgo<INT8, INT32>;
+         pBinFunc = BinCountAlgo<int8_t, int32_t>;
          break;
       case NPY_INT16:
-         pBinFunc = BinCountAlgo<INT16, INT32>;
+         pBinFunc = BinCountAlgo<int16_t, int32_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = BinCountAlgo<INT32, INT32>;
+         pBinFunc = BinCountAlgo<int32_t, int32_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = BinCountAlgo<INT64, INT32>;
+         pBinFunc = BinCountAlgo<int64_t, int32_t>;
          break;
       default:
          printf("!!!internal error in BinCount\n");
@@ -2183,16 +2183,16 @@ BIN_COUNT InternalGetBinFunc(INT32 iKeyType, int outdtype) {
    else {
       switch (iKeyType) {
       case NPY_INT8:
-         pBinFunc = BinCountAlgo<INT8, INT64>;
+         pBinFunc = BinCountAlgo<int8_t, int64_t>;
          break;
       case NPY_INT16:
-         pBinFunc = BinCountAlgo<INT16, INT64>;
+         pBinFunc = BinCountAlgo<int16_t, int64_t>;
          break;
       CASE_NPY_INT32:
-         pBinFunc = BinCountAlgo<INT32, INT64>;
+         pBinFunc = BinCountAlgo<int32_t, int64_t>;
          break;
       CASE_NPY_INT64:
-         pBinFunc = BinCountAlgo<INT64, INT64>;
+         pBinFunc = BinCountAlgo<int64_t, int64_t>;
          break;
       default:
          printf("!!!internal error in BinCount\n");
@@ -2206,17 +2206,17 @@ BIN_COUNT InternalGetBinFunc(INT32 iKeyType, int outdtype) {
 // Multithread counts the bins
 // Calls: BinCountAlgo
 //
-INT64 InternalBinCount(
+int64_t InternalBinCount(
    BIN_COUNT pBinFunc,
    stBinCount** ppstBinCount,      // TO BE FREED LATER
    char** ppMemoryForBins,         // TO BE FREED LATER
    void* piKey,
-   INT64 unique_rows,
-   INT64 totalRows, 
-   INT64 coresRequested,
-   INT64 itemSize) {
+   int64_t unique_rows,
+   int64_t totalRows, 
+   int64_t coresRequested,
+   int64_t itemSize) {
 
-   INT64 cores = 0;
+   int64_t cores = 0;
 
    // Allocate a low high
    // Using more than 8 cores does not seem to help, we cap at 8
@@ -2243,8 +2243,8 @@ INT64 InternalBinCount(
    struct stBinCountMaster {
       BIN_COUNT pBinFunc;
       void* piKey;
-      INT64 totalRows;
-      INT64 uniqueRows;
+      int64_t totalRows;
+      int64_t uniqueRows;
       stBinCount* pstBinCount;
    } stMaster;
 
@@ -2257,9 +2257,9 @@ INT64 InternalBinCount(
    stMaster.pstBinCount = pstBinCount;
    stMaster.pBinFunc = pBinFunc;
 
-   auto lambdaBinCountCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+   auto lambdaBinCountCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
       stBinCountMaster* callbackArg = (stBinCountMaster*)callbackArgT;
-      INT64 t = workIndex;
+      int64_t t = workIndex;
 
       LOGGING("[%d] %lld low %lld  high %lld\n", core, workIndex, callbackArg->pstBinCount[t].BinLow, callbackArg->pstBinCount[t].BinHigh);
 
@@ -2287,7 +2287,7 @@ INT64 InternalBinCount(
 //----------------------------------------------------
 // check for "pack=" 
 // returns 0 if pack is not True
-INT64 GetPack(PyObject *kwargs) {
+int64_t GetPack(PyObject *kwargs) {
    if (!kwargs) return 0;
 
    PyObject* packObject = PyDict_GetItemString(kwargs, "pack");
@@ -2318,7 +2318,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
 {
    PyArrayObject *iKey = NULL;
 
-   INT64 unique_rows = 0;
+   int64_t unique_rows = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!L",
@@ -2328,15 +2328,15 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
       return NULL;
    }
 
-   INT32 iKeyType = PyArray_TYPE(iKey);
-   INT64 totalRows = ArrayLength(iKey);
-   INT64 pack = GetPack(kwargs);
+   int32_t iKeyType = PyArray_TYPE(iKey);
+   int64_t totalRows = ArrayLength(iKey);
+   int64_t pack = GetPack(kwargs);
 
    PyArrayObject* outArray = NULL;
    PyArrayObject* outiGroup = NULL;
    PyArrayObject* outiFirstGroup = NULL;
 
-   // Check for totalRows > 2100000000 and switch to INT64
+   // Check for totalRows > 2100000000 and switch to int64_t
    int outdtype = NPY_INT32;
 
    if (unique_rows == 0 || totalRows <=0) {
@@ -2344,7 +2344,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
       return NULL;
    }
 
-   // Check to flip to INT64 based on array length
+   // Check to flip to int64_t based on array length
    if (totalRows > 2000000000) {
       outdtype = NPY_INT64;
    } 
@@ -2355,7 +2355,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
    if (outArray) {
       void*    piKey = PyArray_BYTES(iKey);
       void*    pnCountGroup = PyArray_BYTES(outArray);
-      INT64    itemSize = PyArray_ITEMSIZE(outArray);
+      int64_t    itemSize = PyArray_ITEMSIZE(outArray);
 
       // Get the binning function
       BIN_COUNT pBinFunc = InternalGetBinFunc(iKeyType, outdtype);
@@ -2371,7 +2371,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
          char*       pMemoryForBins = NULL;
 
          // Multithread count the bins and allocate
-         INT64 cores =
+         int64_t cores =
             InternalBinCount(
                pBinFunc,
                &pstBinCount,
@@ -2394,20 +2394,20 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                // This will produce nCountGroup
                // TODO: Could be counted in parallel for large uniques
                if (outdtype == NPY_INT32) {
-                  INT32* pMaster = (INT32*)pnCountGroup;
-                  INT32* pCount = (INT32*)pMem;
+                  int32_t* pMaster = (int32_t*)pnCountGroup;
+                  int32_t* pCount = (int32_t*)pMem;
 
                   // NOTE: this routine can be faster
                   // This is a horizontal add
-                  for (INT64 i = 0; i < unique_rows; i++) {
+                  for (int64_t i = 0; i < unique_rows; i++) {
                      pMaster[i] += pCount[i];
                   }
                }
                else {
 
-                  INT64* pMaster = (INT64*)pnCountGroup;
-                  INT64* pCount = (INT64*)pMem;
-                  for (INT64 i = 0; i < unique_rows; i++) {
+                  int64_t* pMaster = (int64_t*)pnCountGroup;
+                  int64_t* pCount = (int64_t*)pMem;
+                  for (int64_t i = 0; i < unique_rows; i++) {
                      pMaster[i] += pCount[i];
                   }
                }
@@ -2430,42 +2430,42 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
 
                   if (outdtype == NPY_INT32) {
                      // Should be all ZEROS
-                     INT32 lastvalue = 0;
-                     INT32* pCountArray2d = (INT32*)pstBinCount[0].pUserMemory;
+                     int32_t lastvalue = 0;
+                     int32_t* pCountArray2d = (int32_t*)pstBinCount[0].pUserMemory;
 
                      // To get the final counts, we need to add each of the individual counts
                      // This is a cumsum on axis=1
-                     for (INT64 i = 0; i < unique_rows; i++) {
-                        for (INT64 t = 0; t < cores; t++) {
-                           INT32* pMem = &pCountArray2d[t*unique_rows + i];
+                     for (int64_t i = 0; i < unique_rows; i++) {
+                        for (int64_t t = 0; t < cores; t++) {
+                           int32_t* pMem = &pCountArray2d[t*unique_rows + i];
                            // this is is horizontal cumsum
-                           INT32 temp = lastvalue;
+                           int32_t temp = lastvalue;
                            lastvalue += pMem[0];
                            pMem[0] = temp;
                         }
                      }
 
                      //// Debug printout of [core][group]  first place to write
-                     //for (INT64 t = 0; t < cores; t++) {
-                     //   INT32 *pMem = (INT32*)pstBinCount[t].pUserMemory;
-                     //   for (INT64 i = 0; i < unique_rows; i++) {
+                     //for (int64_t t = 0; t < cores; t++) {
+                     //   int32_t *pMem = (int32_t*)pstBinCount[t].pUserMemory;
+                     //   for (int64_t i = 0; i < unique_rows; i++) {
                      //      printf("[%lld][%lld]  -- %d \n", t, i, pMem[i]);
                      //   }
                      //}
 
                   }
                   else {
-                     // INT64 routine
+                     // int64_t routine
                      // Should be all ZEROS
-                     INT64 lastvalue = 0;
-                     INT64* pCountArray2d = (INT64*)pstBinCount[0].pUserMemory;
+                     int64_t lastvalue = 0;
+                     int64_t* pCountArray2d = (int64_t*)pstBinCount[0].pUserMemory;
 
                      // To get the final counts, we need to add each of the individual counts
-                     for (INT64 i = 0; i < unique_rows; i++) {
-                        for (INT64 t = 0; t < cores; t++) {
-                           INT64* pMem = &pCountArray2d[t*unique_rows + i];
+                     for (int64_t i = 0; i < unique_rows; i++) {
+                        for (int64_t t = 0; t < cores; t++) {
+                           int64_t* pMem = &pCountArray2d[t*unique_rows + i];
                            // this is is horizontal cumsum
-                           INT64 temp = lastvalue;
+                           int64_t temp = lastvalue;
                            lastvalue += pMem[0];
                            pMem[0] = temp;
                         }
@@ -2480,8 +2480,8 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                   struct stBinMaster {
                      void* piKey;
                      void* piGroup;
-                     INT64 totalRows;
-                     INT64 unique_rows;
+                     int64_t totalRows;
+                     int64_t unique_rows;
                      stBinCount* pstBinCount;
                      MAKE_I_GROUP2 pMakeIGroup2;
                   } stMaster;
@@ -2494,15 +2494,15 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                   stMaster.pstBinCount = pstBinCount;
                   stMaster.pMakeIGroup2 = pMakeIGroup2;
 
-                  auto lambdaBinCountCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+                  auto lambdaBinCountCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
                      stBinMaster* callbackArg = (stBinMaster*)callbackArgT;
-                     INT64 t = workIndex;
+                     int64_t t = workIndex;
 
                      LOGGING("[%d] %lld low %lld  high %lld\n", core, workIndex, callbackArg->pstBinCount[t].BinLow, callbackArg->pstBinCount[t].BinHigh);
 
                      // Get our ikey data range
-                     INT64 start = callbackArg->pstBinCount[t].BinLow;
-                     INT64 stop = callbackArg->pstBinCount[t].BinHigh;
+                     int64_t start = callbackArg->pstBinCount[t].BinLow;
+                     int64_t stop = callbackArg->pstBinCount[t].BinHigh;
 
                      // call routine to fill in a certain section
                      // 
@@ -2524,9 +2524,9 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
 
                   // Debug printout of [core][group]  first place to write
                   //printf("------------- AFTER COMPUTING ---------------\n");
-                  //for (INT64 t = 0; t < cores; t++) {
-                  //   INT32 *pMem = (INT32*)pstBinCount[t].pUserMemory;
-                  //   for (INT64 i = 0; i < unique_rows; i++) {
+                  //for (int64_t t = 0; t < cores; t++) {
+                  //   int32_t *pMem = (int32_t*)pstBinCount[t].pUserMemory;
+                  //   for (int64_t i = 0; i < unique_rows; i++) {
                   //      printf("[%lld][%lld]  -- %d \n", t, i, pMem[i]);
                   //   }
                   //}

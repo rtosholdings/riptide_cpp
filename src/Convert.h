@@ -4,10 +4,10 @@
 
 
 PyObject *
-ConvertSafeInternal( PyArrayObject *inArr1, INT64 out_dtype);
+ConvertSafeInternal( PyArrayObject *inArr1, int64_t out_dtype);
 
 PyObject *
-ConvertUnsafeInternal(PyArrayObject *inArr1, INT64 out_dtype);
+ConvertUnsafeInternal(PyArrayObject *inArr1, int64_t out_dtype);
 
 PyObject *
 ConvertSafe(PyObject *self, PyObject *args);
@@ -44,4 +44,4 @@ PyObject *ApplyRows(PyObject* self, PyObject *args, PyObject* kwargs);
 
 PyObject *ShiftArrays(PyObject* self, PyObject *args);
 
-INT64 SumBooleanMask(const INT8* pIn, INT64 length);
+int64_t SumBooleanMask(const int8_t* pIn, int64_t length);

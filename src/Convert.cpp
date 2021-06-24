@@ -36,11 +36,11 @@
 //extern __m256i __cdecl _mm256_cvtepu16_epi32(__m128i);
 //extern __m256i __cdecl _mm256_cvtepu16_epi64(__m128i);
 //extern __m256i __cdecl _mm256_cvtepu32_epi64(__m128i);
-typedef void(*CONVERT_SAFE)(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut);
-typedef void(*MASK_CONVERT_SAFE)(void* pDataIn, void* pDataOut, INT8* pMask, INT64 len, void* pBadInput1, void* pBadOutput1);
-typedef void(*CONVERT_SAFE_STRING)(void* pDataIn, void* pDataOut, INT64 len, INT64 inputItemSize, INT64 outputItemSize);
+typedef void(*CONVERT_SAFE)(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut);
+typedef void(*MASK_CONVERT_SAFE)(void* pDataIn, void* pDataOut, int8_t* pMask, int64_t len, void* pBadInput1, void* pBadOutput1);
+typedef void(*CONVERT_SAFE_STRING)(void* pDataIn, void* pDataOut, int64_t len, int64_t inputItemSize, int64_t outputItemSize);
 
-static void ConvertSafeStringCopy(void* pDataIn, void* pDataOut, INT64 len, INT64 inputItemSize, INT64 outputItemSize) {
+static void ConvertSafeStringCopy(void* pDataIn, void* pDataOut, int64_t len, int64_t inputItemSize, int64_t outputItemSize) {
    LOGGING("String convert %lld %lld\n", inputItemSize, outputItemSize);
    if (inputItemSize == outputItemSize) {
       // straight memcpy
@@ -50,13 +50,13 @@ static void ConvertSafeStringCopy(void* pDataIn, void* pDataOut, INT64 len, INT6
       if (inputItemSize < outputItemSize) {
          char* pOut = (char*)pDataOut;
          char* pIn = (char*)pDataIn;
-         INT64 remain = outputItemSize - inputItemSize;
+         int64_t remain = outputItemSize - inputItemSize;
 
          if (inputItemSize >= 8) {
-            for (INT64 i = 0; i < len; i++) {
+            for (int64_t i = 0; i < len; i++) {
                memcpy(pOut, pIn, inputItemSize);
                pOut += inputItemSize;
-               for (INT64 j = 0; j < remain; j++) {
+               for (int64_t j = 0; j < remain; j++) {
                   pOut[j] = 0;
                }
 
@@ -66,14 +66,14 @@ static void ConvertSafeStringCopy(void* pDataIn, void* pDataOut, INT64 len, INT6
 
          }
          else {
-            for (INT64 i = 0; i < len; i++) {
-               for (INT64 j = 0; j < inputItemSize; j++) {
+            for (int64_t i = 0; i < len; i++) {
+               for (int64_t j = 0; j < inputItemSize; j++) {
                   pOut[j] = pIn[j];
                }
                pOut += inputItemSize;
 
                // consider memset
-               for (INT64 j = 0; j < remain; j++) {
+               for (int64_t j = 0; j < remain; j++) {
                   pOut[j] = 0;
                }
 
@@ -88,7 +88,7 @@ static void ConvertSafeStringCopy(void* pDataIn, void* pDataOut, INT64 len, INT6
          char* pOut = (char*)pDataOut;
          char* pIn = (char*)pDataIn;
 
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             memcpy(pOut, pIn, outputItemSize);
             pOut += outputItemSize;
             pIn += inputItemSize;
@@ -108,7 +108,7 @@ public:
    ConvertBase() {};
    ~ConvertBase() {};
 
-   static void PutMaskFast(void* pDataIn, void* pDataOut, INT8* pMask, INT64 len, void* pBadInput1, void* pBadOutput1) {
+   static void PutMaskFast(void* pDataIn, void* pDataOut, int8_t* pMask, int64_t len, void* pBadInput1, void* pBadOutput1) {
       T* pIn = (T*)pDataIn;
       T* pOut = (T*)pDataOut;
 
@@ -120,7 +120,7 @@ public:
       }
    }
 
-   static void PutMaskCopy(void* pDataIn, void* pDataOut, INT8* pMask, INT64 len, void* pBadInput1, void* pBadOutput1) {
+   static void PutMaskCopy(void* pDataIn, void* pDataOut, int8_t* pMask, int64_t len, void* pBadInput1, void* pBadOutput1) {
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
       T pBadValueIn = *(T*)pBadInput1;
@@ -138,7 +138,7 @@ public:
       }
    }
 
-   static void PutMaskCopyBool(void* pDataIn, void* pDataOut, INT8* pMask, INT64 len, void* pBadInput1, void* pBadOutput1) {
+   static void PutMaskCopyBool(void* pDataIn, void* pDataOut, int8_t* pMask, int64_t len, void* pBadInput1, void* pBadOutput1) {
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
       T pBadValueIn = *(T*)pBadInput1;
@@ -152,7 +152,7 @@ public:
    }
 
 
-   static void PutMaskCopyFloat(void* pDataIn, void* pDataOut, INT8* pMask, INT64 len, void* pBadInput1, void* pBadOutput1) {
+   static void PutMaskCopyFloat(void* pDataIn, void* pDataOut, int8_t* pMask, int64_t len, void* pBadInput1, void* pBadOutput1) {
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
       U pBadValueOut = *(U*)pBadOutput1;
@@ -171,9 +171,9 @@ public:
 
    // Pass in one vector and returns converted vector
    // Used for operations like C = A + B
-   //typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode);
-   //typedef void(*ANY_ONE_FUNC)(void* pDataIn, void* pDataOut, INT64 len);
-   static void OneStubConvert(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+   //typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode);
+   //typedef void(*ANY_ONE_FUNC)(void* pDataIn, void* pDataOut, int64_t len);
+   static void OneStubConvert(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -184,8 +184,8 @@ public:
          // NAN converts to MININT (for float --> int conversion)
          // then the reverse, MIININT converts to NAN (for int --> float conversion)
          // convert from int --> float
-         // check for NPY_MIN_INT64
-         for (INT64 i = 0; i < len; i++) {
+         // check for NPY_MIN_INT64_t
+         for (int64_t i = 0; i < len; i++) {
             pOut[i] = (U)pIn[i];
          }
       }
@@ -201,7 +201,7 @@ public:
    }
 
 
-   static void OneStubConvertSafeCopy(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertSafeCopy(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
       // include memcpy with stride
       if (strideIn == sizeof(T) && strideOut == sizeof(U)) {
          memcpy(pDataOut, pDataIn, len * sizeof(U));
@@ -222,13 +222,13 @@ public:
 
    //------------------------------------------------------------------------
    // Designed NOT to preserve sentinels
-   static void OneStubConvertUnsafe(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertUnsafe(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
 
       if (strideIn == sizeof(T) && strideOut == sizeof(U)) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             pOut[i] = (U)pIn[i];
          }
       }
@@ -246,8 +246,8 @@ public:
 
    //------------------------------------------------------------------------
    // Designed to preserve sentinels
-   // NOTE: discussion on on what happens with UINT8 conversion (may or may not ignore 0xFF on conversion since so common)
-   static void OneStubConvertSafe(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   // NOTE: discussion on on what happens with uint8_t conversion (may or may not ignore 0xFF on conversion since so common)
+   static void OneStubConvertSafe(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -258,9 +258,9 @@ public:
       // NAN converts to MININT (for float --> int conversion)
       // then the reverse, MIININT converts to NAN (for int --> float conversion)
       // convert from int --> float
-      // check for NPY_MIN_INT64
+      // check for NPY_MIN_INT64_t
       if (strideIn == sizeof(T) && strideOut == sizeof(U)) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             if (pIn[i] != pBadValueIn) {
                pOut[i] = (U)pIn[i];
             }
@@ -286,7 +286,7 @@ public:
    }
 
 
-   static void OneStubConvertSafeFloatToDouble(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertSafeFloatToDouble(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       float* pIn = (float*)pDataIn;
       double* pOut = (double*)pDataOut;
@@ -317,13 +317,13 @@ public:
    }
 
 
-   static void OneStubConvertSafeDoubleToFloat(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertSafeDoubleToFloat(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       double* pIn = (double*)pDataIn;
       float* pOut = (float*)pDataOut;
 
       if (strideIn == sizeof(double) && strideOut == sizeof(float)) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             pOut[i] = (float)pIn[i];
          }
       }
@@ -339,7 +339,7 @@ public:
    }
 
 
-   static void OneStubConvertSafeFloat(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertSafeFloat(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -350,9 +350,9 @@ public:
       // NAN converts to MININT (for float --> int conversion)
       // then the reverse, MIININT converts to NAN (for int --> float conversion)
       // convert from int --> float
-      // check for NPY_MIN_INT64
+      // check for NPY_MIN_INT64_t
       if (strideIn == sizeof(T) && strideOut == sizeof(U)) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
 
             if (std::isfinite(pIn[i]) && (pIn[i] != pBadValueIn)) {
                pOut[i] = (U)pIn[i];
@@ -379,7 +379,7 @@ public:
    }
 
 
-   static void OneStubConvertSafeBool(void* pDataIn, void* pDataOut, INT64 len, void* pBadInput1, void* pBadOutput1, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertSafeBool(void* pDataIn, void* pDataOut, int64_t len, void* pBadInput1, void* pBadOutput1, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -389,7 +389,7 @@ public:
       // then the reverse, MIININT converts to NAN (for int --> float conversion)
       // convet from float --> int
       if (strideIn == sizeof(T) && strideOut == sizeof(U)) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             pOut[i] = (U)(pIn[i] != 0);
          }
       }
@@ -405,7 +405,7 @@ public:
    }
 
 
-   static void OneStubConvertBool(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut) {
+   static void OneStubConvertBool(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -415,7 +415,7 @@ public:
          // NAN converts to MININT (for float --> int conversion)
          // then the reverse, MIININT converts to NAN (for int --> float conversion)
          // convet from float --> int
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             pOut[i] = (U)(pIn[i] != 0);
          }
       }
@@ -440,14 +440,14 @@ static UNARY_FUNC GetConversionStep2(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvert;
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvert;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvert;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvert;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvert;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvert;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvert;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvert;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvert;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvert;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvert;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvert;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvert;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvert;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvert;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvert;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvert;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvert;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvert;
    }
    return NULL;
 
@@ -460,21 +460,21 @@ static CONVERT_SAFE GetConversionStep2Safe(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvertSafe;
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafe;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafe;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvertSafe;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvertSafe;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvertSafe;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvertSafe;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvertSafe;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvertSafe;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvertSafe;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvertSafe;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafe;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafe;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafe;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafe;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafe;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafe;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafe;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafe;
    }
    return NULL;
 
 }
 
 //-----------------------------------------------------------
-// Used when converting from a UINT8 which has no sentinel (discussion point)
+// Used when converting from a uint8_t which has no sentinel (discussion point)
 template<typename T>
 static CONVERT_SAFE GetConversionStep2Unsafe(int outputType) {
    switch (outputType) {
@@ -482,14 +482,14 @@ static CONVERT_SAFE GetConversionStep2Unsafe(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvertUnsafe;
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertUnsafe;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertUnsafe;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvertUnsafe;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvertUnsafe;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvertUnsafe;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvertUnsafe;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvertUnsafe;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvertUnsafe;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvertUnsafe;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvertUnsafe;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertUnsafe;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertUnsafe;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertUnsafe;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertUnsafe;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertUnsafe;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertUnsafe;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertUnsafe;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertUnsafe;
    }
    return NULL;
 
@@ -503,14 +503,14 @@ static CONVERT_SAFE GetConversionStep2SafeFromFloat(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvertSafeFloat;
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloatToDouble;  // very common
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvertSafeFloat;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvertSafeFloat;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvertSafeFloat;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvertSafeFloat;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -523,14 +523,14 @@ static CONVERT_SAFE GetConversionStep2SafeFromDouble(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvertSafeDoubleToFloat;   // very common
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloat;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvertSafeFloat;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvertSafeFloat;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvertSafeFloat;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvertSafeFloat;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -544,14 +544,14 @@ static CONVERT_SAFE GetConversionStep2SafeFloat(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::OneStubConvertSafeFloat;
    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloat;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::OneStubConvertSafeFloat;
-   case NPY_INT16:  return ConvertBase<T, INT16>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::OneStubConvertSafeFloat;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::OneStubConvertSafeFloat;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::OneStubConvertSafeFloat;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -563,18 +563,18 @@ static CONVERT_SAFE GetConversionFunctionSafeCopy(int inputType) {
    switch (inputType) {
    case NPY_BYTE:
    case NPY_UBYTE:
-   case NPY_BOOL:   return ConvertBase<INT8, INT8>::OneStubConvertSafeCopy;
+   case NPY_BOOL:   return ConvertBase<int8_t, int8_t>::OneStubConvertSafeCopy;
 
    case NPY_INT16:
-   case NPY_UINT16:  return ConvertBase<INT16, INT16>::OneStubConvertSafeCopy;
+   case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::OneStubConvertSafeCopy;
 
    CASE_NPY_INT32:
    CASE_NPY_UINT32:
-   case NPY_FLOAT:  return ConvertBase<INT32, INT32>::OneStubConvertSafeCopy;
+   case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::OneStubConvertSafeCopy;
 
    CASE_NPY_INT64:
    CASE_NPY_UINT64:
-   case NPY_DOUBLE: return ConvertBase<INT64, INT64>::OneStubConvertSafeCopy;
+   case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::OneStubConvertSafeCopy;
 
    case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::OneStubConvertSafeCopy;
 
@@ -592,22 +592,22 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType) {
 
    switch (inputType) {
    //case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-   case NPY_BOOL:   return GetConversionStep2Safe<INT8>(outputType);
+   case NPY_BOOL:   return GetConversionStep2Safe<int8_t>(outputType);
    case NPY_FLOAT:  return GetConversionStep2SafeFromFloat<float>(outputType);
    case NPY_DOUBLE: return GetConversionStep2SafeFromDouble<double>(outputType);
    case NPY_LONGDOUBLE: return GetConversionStep2SafeFloat<long double>(outputType);
-   case NPY_BYTE:   return GetConversionStep2Safe<INT8>(outputType);
-   case NPY_INT16:  return GetConversionStep2Safe<INT16>(outputType);
-   CASE_NPY_INT32:  return GetConversionStep2Safe<INT32>(outputType);
-   CASE_NPY_INT64:  return GetConversionStep2Safe<INT64>(outputType);
+   case NPY_BYTE:   return GetConversionStep2Safe<int8_t>(outputType);
+   case NPY_INT16:  return GetConversionStep2Safe<int16_t>(outputType);
+   CASE_NPY_INT32:  return GetConversionStep2Safe<int32_t>(outputType);
+   CASE_NPY_INT64:  return GetConversionStep2Safe<int64_t>(outputType);
 
-   // DISCUSSION -- UINT8 and the value 255 or 0xFF will not be a sentinel
-   //case NPY_UBYTE:  return GetConversionStep2Unsafe<UINT8>(outputType);
-   case NPY_UBYTE:  return GetConversionStep2Safe<UINT8>(outputType);
+   // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
+   //case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
+   case NPY_UBYTE:  return GetConversionStep2Safe<uint8_t>(outputType);
 
-   case NPY_UINT16: return GetConversionStep2Safe<UINT16>(outputType);
-   CASE_NPY_UINT32: return GetConversionStep2Safe<UINT32>(outputType);
-   CASE_NPY_UINT64: return GetConversionStep2Safe<UINT64>(outputType);
+   case NPY_UINT16: return GetConversionStep2Safe<uint16_t>(outputType);
+   CASE_NPY_UINT32: return GetConversionStep2Safe<uint32_t>(outputType);
+   CASE_NPY_UINT64: return GetConversionStep2Safe<uint64_t>(outputType);
 
    }
    return NULL;
@@ -623,18 +623,18 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType) {
 
    switch (inputType) {
       //case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-   case NPY_BOOL:   return GetConversionStep2Unsafe<INT8>(outputType);
+   case NPY_BOOL:   return GetConversionStep2Unsafe<int8_t>(outputType);
    case NPY_FLOAT:  return GetConversionStep2Unsafe<float>(outputType);
    case NPY_DOUBLE: return GetConversionStep2Unsafe<double>(outputType);
    case NPY_LONGDOUBLE: return GetConversionStep2Unsafe<long double>(outputType);
-   case NPY_BYTE:   return GetConversionStep2Unsafe<INT8>(outputType);
-   case NPY_INT16:  return GetConversionStep2Unsafe<INT16>(outputType);
-   CASE_NPY_INT32:  return GetConversionStep2Unsafe<INT32>(outputType);
-   CASE_NPY_INT64:  return GetConversionStep2Unsafe<INT64>(outputType);
-   case NPY_UBYTE:  return GetConversionStep2Unsafe<UINT8>(outputType);
-   case NPY_UINT16: return GetConversionStep2Unsafe<UINT16>(outputType);
-   CASE_NPY_UINT32: return GetConversionStep2Unsafe<UINT32>(outputType);
-   CASE_NPY_UINT64: return GetConversionStep2Unsafe<UINT64>(outputType);
+   case NPY_BYTE:   return GetConversionStep2Unsafe<int8_t>(outputType);
+   case NPY_INT16:  return GetConversionStep2Unsafe<int16_t>(outputType);
+   CASE_NPY_INT32:  return GetConversionStep2Unsafe<int32_t>(outputType);
+   CASE_NPY_INT64:  return GetConversionStep2Unsafe<int64_t>(outputType);
+   case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
+   case NPY_UINT16: return GetConversionStep2Unsafe<uint16_t>(outputType);
+   CASE_NPY_UINT32: return GetConversionStep2Unsafe<uint32_t>(outputType);
+   CASE_NPY_UINT64: return GetConversionStep2Unsafe<uint64_t>(outputType);
 
    }
    return NULL;
@@ -649,14 +649,14 @@ static MASK_CONVERT_SAFE GetConversionPutMask2Float(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::PutMaskCopyFloat;
    case NPY_DOUBLE: return ConvertBase<T, double>::PutMaskCopyFloat;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopyFloat;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::PutMaskCopyFloat;
-   case NPY_INT16:  return ConvertBase<T, INT16>::PutMaskCopyFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::PutMaskCopyFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::PutMaskCopyFloat;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::PutMaskCopyFloat;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::PutMaskCopyFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::PutMaskCopyFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::PutMaskCopyFloat;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopyFloat;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopyFloat;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopyFloat;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::PutMaskCopyFloat;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopyFloat;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopyFloat;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopyFloat;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::PutMaskCopyFloat;
    }
    return NULL;
 
@@ -670,14 +670,14 @@ static MASK_CONVERT_SAFE GetConversionPutMask2(int outputType) {
    case NPY_FLOAT:  return ConvertBase<T, float>::PutMaskCopy;
    case NPY_DOUBLE: return ConvertBase<T, double>::PutMaskCopy;
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopy;
-   case NPY_BYTE:   return ConvertBase<T, INT8>::PutMaskCopy;
-   case NPY_INT16:  return ConvertBase<T, INT16>::PutMaskCopy;
-   CASE_NPY_INT32:  return ConvertBase<T, INT32>::PutMaskCopy;
-   CASE_NPY_INT64:  return ConvertBase<T, INT64>::PutMaskCopy;
-   case NPY_UBYTE:  return ConvertBase<T, UINT8>::PutMaskCopy;
-   case NPY_UINT16: return ConvertBase<T, UINT16>::PutMaskCopy;
-   CASE_NPY_UINT32: return ConvertBase<T, UINT32>::PutMaskCopy;
-   CASE_NPY_UINT64: return ConvertBase<T, UINT64>::PutMaskCopy;
+   case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopy;
+   case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopy;
+   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopy;
+   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::PutMaskCopy;
+   case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopy;
+   case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopy;
+   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopy;
+   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::PutMaskCopy;
    }
    return NULL;
 
@@ -690,18 +690,18 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
       switch (inputType) {
       case NPY_BYTE:
       case NPY_UBYTE:
-      case NPY_BOOL:   return ConvertBase<INT8, INT8>::PutMaskFast;
+      case NPY_BOOL:   return ConvertBase<int8_t, int8_t>::PutMaskFast;
 
       case NPY_INT16:
-      case NPY_UINT16:  return ConvertBase<INT16, INT16>::PutMaskFast;
+      case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::PutMaskFast;
 
       CASE_NPY_INT32:
       CASE_NPY_UINT32:
-      case NPY_FLOAT:  return ConvertBase<INT32, INT32>::PutMaskFast;
+      case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::PutMaskFast;
 
       CASE_NPY_INT64:
       CASE_NPY_UINT64:
-      case NPY_DOUBLE: return ConvertBase<INT64, INT64>::PutMaskFast;
+      case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::PutMaskFast;
 
       case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::PutMaskFast;
 
@@ -710,22 +710,22 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
 
    switch (inputType) {
       //case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-   case NPY_BOOL:   return GetConversionPutMask2<INT8>(outputType);
+   case NPY_BOOL:   return GetConversionPutMask2<int8_t>(outputType);
    case NPY_FLOAT:  return GetConversionPutMask2Float<float>(outputType);
    case NPY_DOUBLE: return GetConversionPutMask2Float<double>(outputType);
    case NPY_LONGDOUBLE: return GetConversionPutMask2Float<long double>(outputType);
-   case NPY_BYTE:   return GetConversionPutMask2<INT8>(outputType);
-   case NPY_INT16:  return GetConversionPutMask2<INT16>(outputType);
-   CASE_NPY_INT32:  return GetConversionPutMask2<INT32>(outputType);
-   CASE_NPY_INT64:  return GetConversionPutMask2<INT64>(outputType);
+   case NPY_BYTE:   return GetConversionPutMask2<int8_t>(outputType);
+   case NPY_INT16:  return GetConversionPutMask2<int16_t>(outputType);
+   CASE_NPY_INT32:  return GetConversionPutMask2<int32_t>(outputType);
+   CASE_NPY_INT64:  return GetConversionPutMask2<int64_t>(outputType);
 
-      // DISCUSSION -- UINT8 and the value 255 or 0xFF will not be a sentinel
-      //case NPY_UBYTE:  return GetConversionStep2Unsafe<UINT8>(outputType);
-   case NPY_UBYTE:  return GetConversionPutMask2<UINT8>(outputType);
+      // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
+      //case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
+   case NPY_UBYTE:  return GetConversionPutMask2<uint8_t>(outputType);
 
-   case NPY_UINT16: return GetConversionPutMask2<UINT16>(outputType);
-   CASE_NPY_UINT32: return GetConversionPutMask2<UINT32>(outputType);
-   CASE_NPY_UINT64: return GetConversionPutMask2<UINT64>(outputType);
+   case NPY_UINT16: return GetConversionPutMask2<uint16_t>(outputType);
+   CASE_NPY_UINT32: return GetConversionPutMask2<uint32_t>(outputType);
+   CASE_NPY_UINT64: return GetConversionPutMask2<uint64_t>(outputType);
 
    }
    return NULL;
@@ -741,27 +741,27 @@ struct CONVERT_CALLBACK {
    void* pBadInput1;
    void* pBadOutput1;
 
-   INT64 typeSizeIn;
-   INT64 typeSizeOut;
+   int64_t typeSizeIn;
+   int64_t typeSizeOut;
 
 } stConvertCallback;
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+static BOOL ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
    BOOL didSomeWork = FALSE;
    CONVERT_CALLBACK* Callback = (CONVERT_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)Callback->pDataIn;
    char* pDataOut = (char*)Callback->pDataOut;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
 
       Callback->anyConvertCallback(pDataIn + inputAdj, pDataOut + outputAdj, lenX, Callback->pBadInput1, Callback->pBadOutput1, Callback->typeSizeIn, Callback->typeSizeOut);
 
@@ -802,10 +802,10 @@ void* GetInvalid(int dtype) {
 PyObject *
 ConvertSafeInternal(
    PyArrayObject* const inArr1,
-   const INT64 out_dtype) {
+   const int64_t out_dtype) {
 
-   const INT32 numpyOutType = (INT32)out_dtype;
-   const INT32 numpyInType = PyArray_TYPE(inArr1);
+   const int32_t numpyOutType = (int32_t)out_dtype;
+   const int32_t numpyInType = PyArray_TYPE(inArr1);
 
    if (numpyOutType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE) {
       return PyErr_Format(PyExc_ValueError, "ConvertSafe: Don't know how to convert these types %d %d", numpyInType, numpyOutType);
@@ -825,8 +825,8 @@ ConvertSafeInternal(
    npy_intp* const dims = PyArray_DIMS(inArr1);
 
    // Make sure array lengths match
-   const INT64 arraySize1 = CalcArrayLength(ndim, dims);
-   const INT64 len = arraySize1;
+   const int64_t arraySize1 = CalcArrayLength(ndim, dims);
+   const int64_t len = arraySize1;
 
    // Allocate the output array.
    // TODO: Consider using AllocateLikeNumpyArray here instead for simplicity.
@@ -846,11 +846,11 @@ ConvertSafeInternal(
    void* pBadOutput1 = GetDefaultForType(numpyOutType);
 
    // Check the strides of both the input and output to make sure we can handle
-   INT64 strideIn;
+   int64_t strideIn;
    int directionIn = GetStridesAndContig(inArr1, ndim, strideIn);
 
    int ndimOut;
-   INT64 strideOut;
+   int64_t strideOut;
    int directionOut = GetStridesAndContig(outArray, ndimOut, strideOut);
 
    // If the input is C and/or F-contiguous, the output should have
@@ -862,35 +862,35 @@ ConvertSafeInternal(
       // Check if we can process, else punt to numpy
       if (directionIn == 1 && directionOut == 0) {
          // Row Major 2dim like array with output being fully contiguous
-         INT64 innerLen = 1;
+         int64_t innerLen = 1;
          for (int i = directionIn; i < ndim; i++) {
             innerLen *= PyArray_DIM(inArr1, i);
          }
          // TODO: consider dividing the work over multiple threads if innerLen is large enough
-         const INT64 outerLen = PyArray_DIM(inArr1, 0);
-         const INT64 outerStride = PyArray_STRIDE(inArr1, 0);
+         const int64_t outerLen = PyArray_DIM(inArr1, 0);
+         const int64_t outerStride = PyArray_STRIDE(inArr1, 0);
 
          LOGGING("Row Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-         for (INT64 j = 0; j < outerLen; j++) {
+         for (int64_t j = 0; j < outerLen; j++) {
             pFunction((char*)pDataIn + (j * outerStride), (char*)pDataOut + (j * innerLen * strideOut), innerLen, pBadInput1, pBadOutput1, strideIn, strideOut);
          }
 
       }
       else if (directionIn == -1 && directionOut == 0) {
          // Col Major 2dim like array with output being fully contiguous
-         INT64 innerLen = 1;
+         int64_t innerLen = 1;
          directionIn = -directionIn;
          for (int i = 0; i < directionIn; i++) {
             innerLen *= PyArray_DIM(inArr1, i);
          }
          // TODO: consider dividing the work over multiple threads if innerLen is large enough
-         const INT64 outerLen = PyArray_DIM(inArr1, (ndim - 1));
-         const INT64 outerStride = PyArray_STRIDE(inArr1, (ndim - 1));
+         const int64_t outerLen = PyArray_DIM(inArr1, (ndim - 1));
+         const int64_t outerStride = PyArray_STRIDE(inArr1, (ndim - 1));
 
          LOGGING("Col Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-         for (INT64 j = 0; j < outerLen; j++) {
+         for (int64_t j = 0; j < outerLen; j++) {
             pFunction((char*)pDataIn + (j * outerStride), (char*)pDataOut + (j * innerLen * strideOut), innerLen, pBadInput1, pBadOutput1, strideIn, strideOut);
          }
       }
@@ -939,13 +939,13 @@ PyObject *
 ConvertSafe(PyObject *self, PyObject *args)
 {
    PyArrayObject *inArr1 = NULL;
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (Py_SIZE(args) > 1) {
       PyArrayObject* inObject = (PyArrayObject*)PyTuple_GET_ITEM(args, 0);
       PyObject* inNumber = PyTuple_GET_ITEM(args, 1);
       if (PyLong_CheckExact(inNumber)) {
-         INT64 dtypeNum = PyLong_AsLongLong(inNumber);
+         int64_t dtypeNum = PyLong_AsLongLong(inNumber);
 
          if (IsFastArrayOrNumpy(inObject)) {
             PyObject* result =
@@ -982,10 +982,10 @@ ConvertSafe(PyObject *self, PyObject *args)
 PyObject *
 ConvertUnsafeInternal(
    PyArrayObject *inArr1,
-   INT64 out_dtype) {
+   int64_t out_dtype) {
 
-   const INT32 numpyOutType = (INT32)out_dtype;
-   const INT32 numpyInType = ObjectToDtype(inArr1);
+   const int32_t numpyOutType = (int32_t)out_dtype;
+   const int32_t numpyInType = ObjectToDtype(inArr1);
 
    if (numpyOutType < 0 || numpyInType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE) {
       return PyErr_Format(PyExc_ValueError, "ConvertUnsafe: Don't know how to convert these types %d %d", numpyInType, numpyOutType);
@@ -1006,8 +1006,8 @@ ConvertUnsafeInternal(
    npy_intp* const dims = PyArray_DIMS(inArr1);
    //auto* const inArr1_strides = PyArray_STRIDES(inArr1);
    // TODO: CalcArrayLength probably needs to be fixed to account for any non-default striding
-   const INT64 arraySize1 = CalcArrayLength(ndim, dims);
-   const INT64 len = arraySize1;
+   const int64_t arraySize1 = CalcArrayLength(ndim, dims);
+   const int64_t len = arraySize1;
 
    // Allocate the output array.
    // TODO: Consider using AllocateLikeNumpyArray here instead for simplicity.
@@ -1065,7 +1065,7 @@ PyObject *
 ConvertUnsafe(PyObject *self, PyObject *args)
 {
    PyArrayObject *inArr1 = NULL;
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!L:ConvertUnsafe",
@@ -1081,14 +1081,14 @@ ConvertUnsafe(PyObject *self, PyObject *args)
 //=====================================================================================
 // COMBINE MASK------------------------------------------------------------------------
 //=====================================================================================
-typedef void(*COMBINE_MASK)(void* pDataIn, void* pDataOut, INT64 len, INT8* pFilter);
+typedef void(*COMBINE_MASK)(void* pDataIn, void* pDataOut, int64_t len, int8_t* pFilter);
 
 template<typename T>
-static void CombineMask(void* pDataInT, void* pDataOutT, INT64 len, INT8* pFilter) {
+static void CombineMask(void* pDataInT, void* pDataOutT, int64_t len, int8_t* pFilter) {
    T*    pDataIn = (T*)pDataInT;
    T*    pDataOut = (T*)pDataOutT;
 
-   for (INT64 i = 0; i < len; i++) {
+   for (int64_t i = 0; i < len; i++) {
       pDataOut[i] = pDataIn[i] * (T)pFilter[i];
    }
 
@@ -1097,10 +1097,10 @@ static void CombineMask(void* pDataInT, void* pDataOutT, INT64 len, INT8* pFilte
 
 static COMBINE_MASK GetCombineFunction(int outputType) {
    switch (outputType) {
-   case NPY_INT8:   return CombineMask<INT8>;
-   case NPY_INT16:  return CombineMask<INT16>;
-   CASE_NPY_INT32:  return CombineMask<INT32>;
-   CASE_NPY_INT64:  return CombineMask<INT64>;
+   case NPY_INT8:   return CombineMask<int8_t>;
+   case NPY_INT16:  return CombineMask<int16_t>;
+   CASE_NPY_INT32:  return CombineMask<int32_t>;
+   CASE_NPY_INT64:  return CombineMask<int64_t>;
    }
    return NULL;
 
@@ -1114,28 +1114,28 @@ struct COMBINE_CALLBACK {
    COMBINE_MASK anyCombineCallback;
    char* pDataIn;
    char* pDataOut;
-   INT8* pFilter;
+   int8_t* pFilter;
 
-   INT64 typeSizeOut;
+   int64_t typeSizeOut;
 
 } stCombineCallback;
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL CombineThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+static BOOL CombineThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
    BOOL didSomeWork = FALSE;
    COMBINE_CALLBACK* Callback = (COMBINE_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)Callback->pDataIn;
    char* pDataOut = (char*)Callback->pDataOut;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
-      INT64 filterAdj = pstWorkerItem->BlockSize * workBlock;
+      int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t filterAdj = pstWorkerItem->BlockSize * workBlock;
 
       Callback->anyCombineCallback(pDataIn + inputAdj, pDataOut + inputAdj, lenX, Callback->pFilter + filterAdj);
 
@@ -1165,7 +1165,7 @@ CombineFilter(PyObject *self, PyObject *args)
    PyArrayObject *inArr1 = NULL;
    PyArrayObject *inFilter = NULL;
 
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!O!:CombineFilter",
@@ -1175,12 +1175,12 @@ CombineFilter(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 numpyOutType = PyArray_TYPE(inArr1);
+   int32_t numpyOutType = PyArray_TYPE(inArr1);
    void* pDataIn = PyArray_BYTES(inArr1);
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
-   INT64 len = arraySize1;
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t len = arraySize1;
 
    if (arraySize1 != ArrayLength(inFilter)) {
       PyErr_Format(PyExc_ValueError, "CombineFilter: Filter size not the same %lld", arraySize1);
@@ -1220,7 +1220,7 @@ CombineFilter(PyObject *self, PyObject *args)
 
       if (outArray) {
          void* pDataOut = PyArray_BYTES(outArray);
-         INT8* pFilter = (INT8*)PyArray_BYTES(inFilter);
+         int8_t* pFilter = (int8_t*)PyArray_BYTES(inFilter);
 
          stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(len);
 
@@ -1259,10 +1259,10 @@ CombineFilter(PyObject *self, PyObject *args)
 //=====================================================================================
 // COMBINE ACCUM 2 MASK----------------------------------------------------------------
 //=====================================================================================
-typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const INT64 multiplier, const INT64 maxbin, INT64 len, void* pCountOut2, INT8* pFilter);
+typedef void(*COMBINE_ACCUM2_MASK)(void* pDataIn1, void* pDataIn2, void* pDataOut, const int64_t multiplier, const int64_t maxbin, int64_t len, void* pCountOut2, int8_t* pFilter);
 
 template<typename T, typename U, typename V>
-static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const INT64 multiplier, const INT64 maxbinT, INT64 len, void* pCountOut2, INT8* pFilter) {
+static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT, const int64_t multiplier, const int64_t maxbinT, int64_t len, void* pCountOut2, int8_t* pFilter) {
    T*    pDataIn1 = (T*)pDataIn1T;
    U*    pDataIn2 = (U*)pDataIn2T;
    V*    pDataOut = (V*)pDataOutT;
@@ -1270,11 +1270,11 @@ static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT,
    const V maxbin = (V)maxbinT;
 
    if (pCountOut2) {
-      // TODO: handle INT64 also
-      INT32* pCountOut = (INT32*)pCountOut2;
+      // TODO: handle int64_t also
+      int32_t* pCountOut = (int32_t*)pCountOut2;
 
       if (pFilter) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             if (pFilter[i]) {
                V bin = (V)(pDataIn2[i] * multiplier + pDataIn1[i]);
                if (bin >= 0 && bin < maxbin) {
@@ -1293,7 +1293,7 @@ static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT,
          }
       }
       else {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             V bin = (V)(pDataIn2[i] * multiplier + pDataIn1[i]);
             if (bin >= 0 && bin < maxbin) {
                pCountOut[bin]++;
@@ -1310,7 +1310,7 @@ static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT,
    else {
       // NO COUNT
       if (pFilter) {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             if (pFilter[i]) {
                V bin = (V)(pDataIn2[i] * multiplier + pDataIn1[i]);
                if (bin >= 0 && bin < maxbin) {
@@ -1326,7 +1326,7 @@ static void CombineAccum2Mask(void* pDataIn1T, void* pDataIn2T, void* pDataOutT,
          }
       }
       else {
-         for (INT64 i = 0; i < len; i++) {
+         for (int64_t i = 0; i < len; i++) {
             V bin = (V)(pDataIn2[i] * multiplier + pDataIn1[i]);
             pDataOut[i] = bin;
             //if (bin >= 0 && bin < maxbin) {
@@ -1349,10 +1349,10 @@ static COMBINE_ACCUM2_MASK GetCombineAccum2Function(int outputType) {
    //printf("GetCombine -- %lld %lld\n", sizeof(T), sizeof(U));
 
    switch (outputType) {
-   case NPY_INT8:   return CombineAccum2Mask<T,U,INT8>;
-   case NPY_INT16:  return CombineAccum2Mask<T,U,INT16>;
-   CASE_NPY_INT32:  return CombineAccum2Mask<T,U,INT32>;
-   CASE_NPY_INT64:  return CombineAccum2Mask<T,U,INT64>;
+   case NPY_INT8:   return CombineAccum2Mask<T,U,int8_t>;
+   case NPY_INT16:  return CombineAccum2Mask<T,U,int16_t>;
+   CASE_NPY_INT32:  return CombineAccum2Mask<T,U,int32_t>;
+   CASE_NPY_INT64:  return CombineAccum2Mask<T,U,int64_t>;
    }
    return NULL;
 
@@ -1365,14 +1365,14 @@ struct COMBINE_ACCUM2_CALLBACK {
    char* pDataIn1;
    char* pDataIn2;
    char* pDataOut;
-   INT8* pFilter;
+   int8_t* pFilter;
 
    void* pCountOut; // int32 or int64
-   INT64 typeSizeIn1;
-   INT64 typeSizeIn2;
-   INT64 typeSizeOut;
-   INT64 multiplier;
-   INT64 maxbin;
+   int64_t typeSizeIn1;
+   int64_t typeSizeIn2;
+   int64_t typeSizeOut;
+   int64_t multiplier;
+   int64_t maxbin;
    void* pCountWorkSpace; //int32 or int64
 
 } stCombineAccum2Callback;
@@ -1380,24 +1380,24 @@ struct COMBINE_ACCUM2_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
    BOOL didSomeWork = FALSE;
    COMBINE_ACCUM2_CALLBACK* Callback = (COMBINE_ACCUM2_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn1 = (char *)Callback->pDataIn1;
    char* pDataIn2 = (char *)Callback->pDataIn2;
    char* pDataOut = (char*)Callback->pDataOut;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 inputAdj1 = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn1;
-      INT64 inputAdj2 = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn2;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
-      INT64 filterAdj = pstWorkerItem->BlockSize * workBlock;
+      int64_t inputAdj1 = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn1;
+      int64_t inputAdj2 = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeIn2;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->typeSizeOut;
+      int64_t filterAdj = pstWorkerItem->BlockSize * workBlock;
 
       //pFunction(pDataIn1, pDataIn2, pDataOut, inArr1Max, hashSize, arraySize1, pCountArray, pFilterIn);
 
@@ -1410,7 +1410,7 @@ static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem
          lenX,
          // based on core, pick a counter
          // TODO: 64bit code also
-         Callback->pCountWorkSpace ? & ((INT32*)(Callback->pCountWorkSpace))[(core+1) * Callback->maxbin] : NULL,
+         Callback->pCountWorkSpace ? & ((int32_t*)(Callback->pCountWorkSpace))[(core+1) * Callback->maxbin] : NULL,
          Callback->pFilter ? (Callback->pFilter + filterAdj) : NULL);
 
       // Indicate we completed a block
@@ -1442,11 +1442,11 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 {
    PyArrayObject *inArr1 = NULL;
    PyArrayObject *inArr2 = NULL;
-   INT64 inArr1Max = 0;
-   INT64 inArr2Max = 0;
+   int64_t inArr1Max = 0;
+   int64_t inArr2Max = 0;
    PyObject *inFilter = NULL;
 
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!O!LLO:CombineAccum2Filter",
@@ -1463,16 +1463,16 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
    inArr1Max++;
    inArr2Max++;
 
-   INT64 hashSize = inArr1Max * inArr2Max ;
+   int64_t hashSize = inArr1Max * inArr2Max ;
    //printf("Combine hashsize is %lld     %lld x %lld\n", hashSize, inArr1Max, inArr2Max);
 
    void* pDataIn1 = PyArray_BYTES(inArr1);
    void* pDataIn2 = PyArray_BYTES(inArr2);
-   INT8* pFilterIn = NULL;
+   int8_t* pFilterIn = NULL;
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
-   INT64 arraySize2 = ArrayLength(inArr2);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize2 = ArrayLength(inArr2);
 
    if (arraySize1 != arraySize2) {
       PyErr_Format(PyExc_ValueError, "CombineAccum2Filter: array sizes not the same %lld", arraySize1);
@@ -1488,7 +1488,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
          PyErr_Format(PyExc_ValueError, "CombineAccum2Filter: Filter is not type NPY_BOOL");
          return NULL;
       }
-      pFilterIn = (INT8*)PyArray_BYTES((PyArrayObject*)inFilter);
+      pFilterIn = (int8_t*)PyArray_BYTES((PyArrayObject*)inFilter);
    }
 
    if (hashSize < 0) {
@@ -1496,8 +1496,8 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 numpyOutType = NPY_INT64;
-   INT64 typeSizeOut = 8;
+   int32_t numpyOutType = NPY_INT64;
+   int64_t typeSizeOut = 8;
 
    if (hashSize < 2000000000) {
       numpyOutType = NPY_INT32;
@@ -1520,37 +1520,37 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
    switch (PyArray_TYPE(inArr1)) {
    case NPY_INT8:
       switch (type2) {
-      case NPY_INT8:   pFunction = GetCombineAccum2Function<INT8, INT8>(numpyOutType);  break;
-      case NPY_INT16:  pFunction = GetCombineAccum2Function<INT8, INT16>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<INT8, INT32>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<INT8, INT64>(numpyOutType);  break;
+      case NPY_INT8:   pFunction = GetCombineAccum2Function<int8_t, int8_t>(numpyOutType);  break;
+      case NPY_INT16:  pFunction = GetCombineAccum2Function<int8_t, int16_t>(numpyOutType);  break;
+      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int8_t, int32_t>(numpyOutType);  break;
+      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int8_t, int64_t>(numpyOutType);  break;
       }
       break;
 
    case NPY_INT16:
       switch (type2) {
-      case NPY_INT8:   pFunction = GetCombineAccum2Function<INT16, INT8>(numpyOutType);  break;
-      case NPY_INT16:  pFunction = GetCombineAccum2Function<INT16, INT16>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<INT16, INT32>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<INT16, INT64>(numpyOutType);  break;
+      case NPY_INT8:   pFunction = GetCombineAccum2Function<int16_t, int8_t>(numpyOutType);  break;
+      case NPY_INT16:  pFunction = GetCombineAccum2Function<int16_t, int16_t>(numpyOutType);  break;
+      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int16_t, int32_t>(numpyOutType);  break;
+      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int16_t, int64_t>(numpyOutType);  break;
       }
       break;
 
    CASE_NPY_INT32:
       switch (type2) {
-      case NPY_INT8:   pFunction = GetCombineAccum2Function<INT32, INT8>(numpyOutType);  break;
-      case NPY_INT16:  pFunction = GetCombineAccum2Function<INT32, INT16>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<INT32, INT32>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<INT32, INT64>(numpyOutType);  break;
+      case NPY_INT8:   pFunction = GetCombineAccum2Function<int32_t, int8_t>(numpyOutType);  break;
+      case NPY_INT16:  pFunction = GetCombineAccum2Function<int32_t, int16_t>(numpyOutType);  break;
+      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int32_t, int32_t>(numpyOutType);  break;
+      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int32_t, int64_t>(numpyOutType);  break;
       }
       break;
 
    CASE_NPY_INT64:
       switch (type2) {
-      case NPY_INT8:   pFunction = GetCombineAccum2Function<INT64, INT8>(numpyOutType);  break;
-      case NPY_INT16:  pFunction = GetCombineAccum2Function<INT64, INT16>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<INT64, INT32>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<INT64, INT64>(numpyOutType);  break;
+      case NPY_INT8:   pFunction = GetCombineAccum2Function<int64_t, int8_t>(numpyOutType);  break;
+      case NPY_INT16:  pFunction = GetCombineAccum2Function<int64_t, int16_t>(numpyOutType);  break;
+      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int64_t, int32_t>(numpyOutType);  break;
+      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int64_t, int64_t>(numpyOutType);  break;
       }
       break;
    }
@@ -1564,7 +1564,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       if (outArray) {
          void* pDataOut = PyArray_BYTES(outArray);
          BOOL is64bithash = FALSE;
-         INT64 sizeofhash = 4;
+         int64_t sizeofhash = 4;
 
          // 32 bit count limitation here
          PyArrayObject* countArray = NULL;
@@ -1580,7 +1580,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
             countArray = AllocateNumpyArray(1, (npy_intp*)&hashSize, is64bithash ? NPY_INT64 : NPY_INT32);
             CHECK_MEMORY_ERROR(countArray);
             if (countArray) {
-               pCountArray = (INT64*)PyArray_BYTES(countArray);
+               pCountArray = (int64_t*)PyArray_BYTES(countArray);
                memset(pCountArray, 0, hashSize * sizeofhash);
             }
          }
@@ -1596,7 +1596,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 
             // TODO: steal from hash
             INT numCores = g_cMathWorker->WorkerThreadCount + 1;
-            INT64 sizeToAlloc = numCores * hashSize * sizeofhash;
+            int64_t sizeToAlloc = numCores * hashSize * sizeofhash;
             PVOID pWorkSpace = 0;
 
             if (bWantCount) {
@@ -1632,8 +1632,8 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
                if (is64bithash) {
 
                   // Collect the results
-                  INT64* pCoreCountArray = (INT64*)pWorkSpace;
-                  INT64* pCountArray2 = (INT64*)pCountArray;
+                  int64_t* pCoreCountArray = (int64_t*)pWorkSpace;
+                  int64_t* pCountArray2 = (int64_t*)pCountArray;
 
                   for (int j = 0; j < numCores; j++) {
 
@@ -1647,8 +1647,8 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
                }
                else {
                   // Collect the results
-                  INT32* pCoreCountArray = (INT32*)pWorkSpace;
-                  INT32* pCountArray2 = (INT32*)pCountArray;
+                  int32_t* pCoreCountArray = (int32_t*)pWorkSpace;
+                  int32_t* pCountArray2 = (int32_t*)pCountArray;
 
                   for (int j = 0; j < numCores; j++) {
 
@@ -1685,7 +1685,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   PyErr_Format(PyExc_ValueError, "Dont know how to combine filter these types %d.  Please make sure all bins are INT8, INT16, INT32, or INT64.", numpyOutType);
+   PyErr_Format(PyExc_ValueError, "Dont know how to combine filter these types %d.  Please make sure all bins are int8_t, int16_t, int32_t, or int64_t.", numpyOutType);
    return NULL;
 }
 
@@ -1704,47 +1704,47 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 //         NewFirst    (the new iFirstKey)
 //
 //
-typedef INT64(*COMBINE_1_FILTER)(
+typedef int64_t(*COMBINE_1_FILTER)(
    void*    pInputIndex,
    void*    pOutputIndex,  // newly allocated
-   INT32*   pNewFirst,     // newly allocated
-   INT8*    pFilter,       // may be null
-   INT64    arrayLength,   // index array size
-   INT64    hashLength);   // max uniques + 1 (for 0 bin)
+   int32_t*   pNewFirst,     // newly allocated
+   int8_t*    pFilter,       // may be null
+   int64_t    arrayLength,   // index array size
+   int64_t    hashLength);   // max uniques + 1 (for 0 bin)
 
 template<typename INDEX>
-INT64 Combine1Filter(
+int64_t Combine1Filter(
    void*    pInputIndex,
    void*    pOutputIndex,  // newly allocated
-   INT32*   pNewFirst,     // newly allocated NOTE: for > 2e9 should be INT64
-   INT8*    pFilter,       // may be null
-   INT64    arrayLength,
-   INT64    hashLength) {
+   int32_t*   pNewFirst,     // newly allocated NOTE: for > 2e9 should be int64_t
+   int8_t*    pFilter,       // may be null
+   int64_t    arrayLength,
+   int64_t    hashLength) {
 
    INDEX*      pInput = (INDEX*)pInputIndex;
    INDEX*      pOutput = (INDEX*)pOutputIndex;
 
    //WORKSPACE_ALLOC
-   INT64 allocSize = hashLength * sizeof(INT32);
+   int64_t allocSize = hashLength * sizeof(int32_t);
 
-   INT32* pHash = (INT32*)WorkSpaceAllocLarge(allocSize);
+   int32_t* pHash = (int32_t*)WorkSpaceAllocLarge(allocSize);
    memset(pHash, 0, allocSize);
 
-   INT32       uniquecount = 0;
+   int32_t       uniquecount = 0;
    if (pFilter) {
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (pFilter[i]) {
             INDEX index = pInput[i];
-            //printf("[%lld] got index for %lld\n", (INT64)index, i);
+            //printf("[%lld] got index for %lld\n", (int64_t)index, i);
 
             if (index != 0) {
                // Check hash
                if (pHash[index] == 0) {
                   // First time, assign FirstKey
-                  pNewFirst[uniquecount] = (INT32)i;
+                  pNewFirst[uniquecount] = (int32_t)i;
                   uniquecount++;
 
-                  //printf("reassign index:%lld to bin:%d\n", (INT64)index, uniquecount);
+                  //printf("reassign index:%lld to bin:%d\n", (int64_t)index, uniquecount);
 
                   // ReassignKey
                   pHash[index] = uniquecount;
@@ -1752,7 +1752,7 @@ INT64 Combine1Filter(
                }
                else {
                   // Get reassigned key
-                  //printf("exiting  index:%lld to bin:%d\n", (INT64)index, (INT32)pHash[index]);
+                  //printf("exiting  index:%lld to bin:%d\n", (int64_t)index, (int32_t)pHash[index]);
                   pOutput[i] = (INDEX)pHash[index];
                }
             }
@@ -1769,15 +1769,15 @@ INT64 Combine1Filter(
    }
    else {
       // When no filter provided
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          INDEX index = pInput[i];
-         //printf("[%lld] got index\n", (INT64)index);
+         //printf("[%lld] got index\n", (int64_t)index);
 
          if (index != 0) {
             // Check hash
             if (pHash[index] == 0) {
                // First time, assign FirstKey
-               pNewFirst[uniquecount] = (INT32)i;
+               pNewFirst[uniquecount] = (int32_t)i;
                uniquecount++;
 
                // ReassignKey
@@ -1816,10 +1816,10 @@ PyObject *
 CombineAccum1Filter(PyObject *self, PyObject *args)
 {
    PyArrayObject *inArr1 = NULL;
-   INT64 inArr1Max = 0;
+   int64_t inArr1Max = 0;
    PyObject *inFilter = NULL;
 
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!LO:CombineAccum1Filter",
@@ -1832,11 +1832,11 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
    }
 
    void* pDataIn1 = PyArray_BYTES(inArr1);
-   INT8* pFilterIn = NULL;
+   int8_t* pFilterIn = NULL;
 
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
 
    if (PyArray_Check(inFilter)) {
       if (arraySize1 != ArrayLength((PyArrayObject*)inFilter)) {
@@ -1847,11 +1847,11 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
          PyErr_Format(PyExc_ValueError, "CombineAccum1Filter: Filter is not type NPY_BOOL");
          return NULL;
       }
-      pFilterIn = (INT8*)PyArray_BYTES((PyArrayObject*)inFilter);
+      pFilterIn = (int8_t*)PyArray_BYTES((PyArrayObject*)inFilter);
    }
 
    inArr1Max++;
-   INT64 hashSize = inArr1Max;
+   int64_t hashSize = inArr1Max;
    //printf("Combine hashsize is %lld     %lld\n", hashSize, inArr1Max);
    if (hashSize < 0 || hashSize > 2000000000) {
       PyErr_Format(PyExc_ValueError, "CombineAccum1Filter: Index sizes are either 0, negative, or produce more than 2 billion results %lld", hashSize);
@@ -1863,16 +1863,16 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
    COMBINE_1_FILTER pFunction = NULL;
    switch (dtype) {
    case NPY_INT8:
-      pFunction = Combine1Filter<INT8>;
+      pFunction = Combine1Filter<int8_t>;
       break;
    case NPY_INT16:
-      pFunction = Combine1Filter<INT16>;
+      pFunction = Combine1Filter<int16_t>;
       break;
    CASE_NPY_INT32:
-      pFunction = Combine1Filter<INT32>;
+      pFunction = Combine1Filter<int32_t>;
       break;
    CASE_NPY_INT64:
-      pFunction = Combine1Filter<INT64>;
+      pFunction = Combine1Filter<int64_t>;
       break;
    }
 
@@ -1880,13 +1880,13 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
       PyArrayObject* outArray = AllocateNumpyArray(ndim, dims, dtype, 0, PyArray_IS_F_CONTIGUOUS(inArr1));
       CHECK_MEMORY_ERROR(outArray);
 
-      PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&arraySize1, NPY_INT32);  // TODO: bump up to INT64 for large arrays
+      PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&arraySize1, NPY_INT32);  // TODO: bump up to int64_t for large arrays
       CHECK_MEMORY_ERROR(firstArray);
 
       if (outArray && firstArray) {
-         INT32* pFirst = (INT32*)PyArray_BYTES(firstArray);
+         int32_t* pFirst = (int32_t*)PyArray_BYTES(firstArray);
 
-         INT64 uniqueCount =
+         int64_t uniqueCount =
             pFunction(
                pDataIn1,
                PyArray_BYTES(outArray),
@@ -1897,13 +1897,13 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
 
          if (uniqueCount < arraySize1) {
             // fixup first to hold only the uniques
-            PyArrayObject* firstArrayReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, NPY_INT32);  // TODO: bump up to INT64 for large arrays
+            PyArrayObject* firstArrayReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, NPY_INT32);  // TODO: bump up to int64_t for large arrays
             CHECK_MEMORY_ERROR(firstArrayReduced);
 
             if (firstArrayReduced) {
-               INT32* pFirstReduced = (INT32*)PyArray_BYTES(firstArrayReduced);
+               int32_t* pFirstReduced = (int32_t*)PyArray_BYTES(firstArrayReduced);
 
-               memcpy(pFirstReduced, pFirst, uniqueCount * sizeof(INT32));
+               memcpy(pFirstReduced, pFirst, uniqueCount * sizeof(int32_t));
             }
             Py_DecRef((PyObject*)firstArray);
             firstArray = firstArrayReduced;
@@ -1928,37 +1928,37 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
 
 
 
-typedef INT64(*IFIRST_FILTER)(
+typedef int64_t(*IFIRST_FILTER)(
    void*    pInputIndex,
    void*    pNewFirstIndex,     // newly allocated
-   INT8*    pFilter,       // may be null
-   INT64    arrayLength,   // index array size
-   INT64    hashLength);   // max uniques + 1 (for 0 bin)
+   int8_t*    pFilter,       // may be null
+   int64_t    arrayLength,   // index array size
+   int64_t    hashLength);   // max uniques + 1 (for 0 bin)
 
 template<typename INDEX>
-INT64 iFirstFilter(
+int64_t iFirstFilter(
    void*    pInputIndex,
-   void*    pNewFirstIndex,     // newly allocated NOTE: for > 2e9 should be INT64
-   INT8*    pFilter,       // may be null
-   INT64    arrayLength,
-   INT64    hashLength) {
+   void*    pNewFirstIndex,     // newly allocated NOTE: for > 2e9 should be int64_t
+   int8_t*    pFilter,       // may be null
+   int64_t    arrayLength,
+   int64_t    hashLength) {
 
    INDEX*      pInput = (INDEX*)pInputIndex;
-   INT64*      pNewFirst = (INT64*)pNewFirstIndex;
-   INT64       invalid = (INT64)(1LL <<  (sizeof(INT64) * 8 - 1));
+   int64_t*      pNewFirst = (int64_t*)pNewFirstIndex;
+   int64_t       invalid = (int64_t)(1LL <<  (sizeof(int64_t) * 8 - 1));
 
    // Fill with invalid
-   for (INT64 i = 0; i < hashLength; i++) {
+   for (int64_t i = 0; i < hashLength; i++) {
       pNewFirst[i] = invalid;
    }
 
    // NOTE: the uniquecount is currently not used
-   INT32       uniquecount = 0;
+   int32_t       uniquecount = 0;
    if (pFilter) {
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (pFilter[i]) {
             INDEX index = pInput[i];
-            //printf("[%lld] got index for %lld\n", (INT64)index, i);
+            //printf("[%lld] got index for %lld\n", (int64_t)index, i);
 
             if (index > 0 && index < hashLength) {
                // Check hash
@@ -1974,7 +1974,7 @@ INT64 iFirstFilter(
    }
    else {
       // When no filter provided
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          INDEX index = pInput[i];
 
          if (index > 0 && index < hashLength) {
@@ -1992,24 +1992,24 @@ INT64 iFirstFilter(
 }
 
 template<typename INDEX>
-INT64 iLastFilter(
+int64_t iLastFilter(
    void*    pInputIndex,
-   void*    pNewLastIndex,     // newly allocated NOTE: for > 2e9 should be INT64
-   INT8*    pFilter,           // may be null
-   INT64    arrayLength,
-   INT64    hashLength) {
+   void*    pNewLastIndex,     // newly allocated NOTE: for > 2e9 should be int64_t
+   int8_t*    pFilter,           // may be null
+   int64_t    arrayLength,
+   int64_t    hashLength) {
 
    INDEX*      pInput = (INDEX*)pInputIndex;
-   INT64*      pNewLast = (INT64*)pNewLastIndex;
-   INT64       invalid = (INT64)(1LL << (sizeof(INT64) * 8 - 1));
+   int64_t*      pNewLast = (int64_t*)pNewLastIndex;
+   int64_t       invalid = (int64_t)(1LL << (sizeof(int64_t) * 8 - 1));
 
    // Fill with invalid
-   for (INT64 i = 0; i < hashLength; i++) {
+   for (int64_t i = 0; i < hashLength; i++) {
       pNewLast[i] = invalid;
    }
 
    if (pFilter) {
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (pFilter[i]) {
             INDEX index = pInput[i];
             if (index > 0 && index < hashLength) {
@@ -2021,7 +2021,7 @@ INT64 iLastFilter(
    }
    else {
       // When no filter provided
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          INDEX index = pInput[i];
 
          if (index > 0 && index < hashLength) {
@@ -2048,11 +2048,11 @@ INT64 iLastFilter(
 PyObject *
 MakeiFirst(PyObject *self, PyObject *args) {
    PyArrayObject *inArr1 = NULL;
-   INT64 inArr1Max = 0;
+   int64_t inArr1Max = 0;
    PyObject *inFilter = NULL;
-   INT64 isLast = 0;
+   int64_t isLast = 0;
 
-   INT64 out_dtype = 0;
+   int64_t out_dtype = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!LOL:MakeiFirst",
@@ -2066,11 +2066,11 @@ MakeiFirst(PyObject *self, PyObject *args) {
    }
 
    void* pDataIn1 = PyArray_BYTES(inArr1);
-   INT8* pFilterIn = NULL;
+   int8_t* pFilterIn = NULL;
 
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
 
    if (PyArray_Check(inFilter)) {
       if (arraySize1 != ArrayLength((PyArrayObject*)inFilter)) {
@@ -2081,11 +2081,11 @@ MakeiFirst(PyObject *self, PyObject *args) {
          PyErr_Format(PyExc_ValueError, "MakeiFirst: Filter is not type NPY_BOOL");
          return NULL;
       }
-      pFilterIn = (INT8*)PyArray_BYTES((PyArrayObject*)inFilter);
+      pFilterIn = (int8_t*)PyArray_BYTES((PyArrayObject*)inFilter);
    }
 
    inArr1Max++;
-   INT64 hashSize = inArr1Max;
+   int64_t hashSize = inArr1Max;
    //printf("Combine hashsize is %lld     %lld\n", hashSize, inArr1Max);
    if (hashSize < 0 || hashSize > 20000000000LL) {
       PyErr_Format(PyExc_ValueError, "MakeiFirst: Index sizes are either 0, negative, or produce more than 20 billion results %lld", hashSize);
@@ -2099,16 +2099,16 @@ MakeiFirst(PyObject *self, PyObject *args) {
    if (isLast) {
       switch (dtype) {
       case NPY_INT8:
-         pFunction = iLastFilter<INT8>;
+         pFunction = iLastFilter<int8_t>;
          break;
       case NPY_INT16:
-         pFunction = iLastFilter<INT16>;
+         pFunction = iLastFilter<int16_t>;
          break;
       case NPY_INT32:
-         pFunction = iLastFilter<INT32>;
+         pFunction = iLastFilter<int32_t>;
          break;
       case NPY_INT64:
-         pFunction = iLastFilter<INT64>;
+         pFunction = iLastFilter<int64_t>;
          break;
       }
 
@@ -2116,16 +2116,16 @@ MakeiFirst(PyObject *self, PyObject *args) {
    else {
       switch (dtype) {
       case NPY_INT8:
-         pFunction = iFirstFilter<INT8>;
+         pFunction = iFirstFilter<int8_t>;
          break;
       case NPY_INT16:
-         pFunction = iFirstFilter<INT16>;
+         pFunction = iFirstFilter<int16_t>;
          break;
       case NPY_INT32:
-         pFunction = iFirstFilter<INT32>;
+         pFunction = iFirstFilter<int32_t>;
          break;
       case NPY_INT64:
-         pFunction = iFirstFilter<INT64>;
+         pFunction = iFirstFilter<int64_t>;
          break;
       }
    }
@@ -2137,7 +2137,7 @@ MakeiFirst(PyObject *self, PyObject *args) {
       if (firstArray) {
          void* pFirst = PyArray_BYTES(firstArray);
 
-         INT64 uniqueCount =
+         int64_t uniqueCount =
             pFunction(
                pDataIn1,
                pFirst,
@@ -2160,8 +2160,8 @@ MakeiFirst(PyObject *self, PyObject *args) {
 
 //=====================================================================================
 //
-void TrailingSpaces(char* pStringArray, INT64 length, INT64 itemSize) {
-   for (INT64 i = 0; i < length; i++) {
+void TrailingSpaces(char* pStringArray, int64_t length, int64_t itemSize) {
+   for (int64_t i = 0; i < length; i++) {
       char* pStart = pStringArray + (i * itemSize);
       char* pEnd = pStart + itemSize - 1;
       while (pEnd >= pStart && (*pEnd == ' ' || *pEnd == 0)) {
@@ -2172,12 +2172,12 @@ void TrailingSpaces(char* pStringArray, INT64 length, INT64 itemSize) {
 
 //=====================================================================================
 //
-void TrailingSpacesUnicode(UINT32* pUnicodeArray, INT64 length, INT64 itemSize) {
+void TrailingSpacesUnicode(uint32_t* pUnicodeArray, int64_t length, int64_t itemSize) {
    itemSize = itemSize / 4;
 
-   for (INT64 i = 0; i < length; i++) {
-      UINT32* pStart = pUnicodeArray + (i * itemSize);
-      UINT32* pEnd = pStart + itemSize - 1;
+   for (int64_t i = 0; i < length; i++) {
+      uint32_t* pStart = pUnicodeArray + (i * itemSize);
+      uint32_t* pEnd = pStart + itemSize - 1;
       while (pEnd >= pStart && (*pEnd == 32 || *pEnd == 0)) {
          *pEnd-- = 0;
       }
@@ -2204,14 +2204,14 @@ RemoveTrailingSpaces(PyObject *self, PyObject *args)
 
    if (dtype == NPY_STRING || dtype == NPY_UNICODE) {
       void* pDataIn1 = PyArray_BYTES(inArr1);
-      INT64 arraySize1 = ArrayLength(inArr1);
-      INT64 itemSize = PyArray_ITEMSIZE(inArr1);
+      int64_t arraySize1 = ArrayLength(inArr1);
+      int64_t itemSize = PyArray_ITEMSIZE(inArr1);
 
       if (dtype == NPY_STRING) {
          TrailingSpaces((char *)pDataIn1, arraySize1, itemSize);
       }
       else {
-         TrailingSpacesUnicode((UINT32 *)pDataIn1, arraySize1, itemSize);
+         TrailingSpacesUnicode((uint32_t *)pDataIn1, arraySize1, itemSize);
       }
 
       Py_IncRef((PyObject*)inArr1);
@@ -2224,7 +2224,7 @@ RemoveTrailingSpaces(PyObject *self, PyObject *args)
 }
 
 
-int GetUpcastDtype(ArrayInfo* aInfo, INT64 tupleSize) {
+int GetUpcastDtype(ArrayInfo* aInfo, int64_t tupleSize) {
    int maxfloat = -1;
    int maxint = -1;
    int maxuint = -1;
@@ -2368,8 +2368,8 @@ PyObject *GetUpcastNum(PyObject* self, PyObject *args)
       return NULL;
    }
 
-   INT64 totalItemSize = 0;
-   INT64 tupleSize = 0;
+   int64_t totalItemSize = 0;
+   int64_t tupleSize = 0;
 
    // Allow jagged rows
    // Do not copy
@@ -2391,7 +2391,7 @@ PyObject *GetUpcastNum(PyObject* self, PyObject *args)
 PyObject *HStack(PyObject* self, PyObject *args)
 {
    PyObject *inList1 = NULL;
-   INT32 dtype = -1;
+   int32_t dtype = -1;
 
    if (!PyArg_ParseTuple(
       args, "O|i",
@@ -2408,16 +2408,16 @@ PyObject *HStack(PyObject* self, PyObject *args)
       }
    }
 
-   INT64 totalItemSize = 0;
-   INT64 tupleSize = 0;
+   int64_t totalItemSize = 0;
+   int64_t tupleSize = 0;
 
    // Allow jagged rows
    ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, FALSE);
 
    if (aInfo) {
 
-      INT64 totalLength = 0;
-      INT64 maxItemSize = 0;
+      int64_t totalLength = 0;
+      int64_t maxItemSize = 0;
       PyArrayObject* outputArray = NULL;
 
       if (dtype == -1) {
@@ -2458,8 +2458,8 @@ PyObject *HStack(PyObject* self, PyObject *args)
          // Path for strings
          //
          struct stHSTACK_STRING {
-            INT64                   Offset;
-            INT64                   ItemSize;
+            int64_t                   Offset;
+            int64_t                   ItemSize;
             CONVERT_SAFE_STRING     ConvertSafeString;
          };
 
@@ -2484,7 +2484,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
          CHECK_MEMORY_ERROR(outputArray);
          if (outputArray) {
-            INT64 itemSize = PyArray_ITEMSIZE(outputArray);
+            int64_t itemSize = PyArray_ITEMSIZE(outputArray);
             char* pOutput = (char*)PyArray_BYTES(outputArray);
 
             if (tupleSize < 2 || totalLength <= g_cMathWorker->WORK_ITEM_CHUNK) {
@@ -2496,12 +2496,12 @@ PyObject *HStack(PyObject* self, PyObject *args)
             else {
 
                // Callback routine from multithreaded worker thread (items just count up from 0,1,2,...)
-               //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, INT64 workIndex);
+               //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, int64_t workIndex);
                struct stSHSTACK {
                   stHSTACK_STRING*  pHStack;
                   ArrayInfo*        aInfo;
                   char*             pOutput;
-                  INT64             ItemSizeOutput;
+                  int64_t             ItemSizeOutput;
                } myhstack;
 
                myhstack.pHStack = pHStack;
@@ -2511,9 +2511,9 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
                LOGGING("MT string hstack work on %lld\n", tupleSize);
 
-               auto lambdaHSCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
                   stSHSTACK* callbackArg = (stSHSTACK*)callbackArgT;
-                  INT64 t = workIndex;
+                  int64_t t = workIndex;
                   callbackArg->pHStack[t].ConvertSafeString(
                      callbackArg->aInfo[t].pData,
                      callbackArg->pOutput + (callbackArg->pHStack[t].Offset * callbackArg->ItemSizeOutput),
@@ -2535,7 +2535,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
          // Path for non-strings
          struct stHSTACK {
-            INT64          Offset;
+            int64_t          Offset;
             void*          pBadInput1;
             CONVERT_SAFE   ConvertSafe;
          };
@@ -2566,7 +2566,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
             // if output is boolean, bad means FALSE
             void* pBadOutput1 = GetDefaultForType(dtype);
 
-            INT64 strideOut = PyArray_STRIDE(outputArray, 0);
+            int64_t strideOut = PyArray_STRIDE(outputArray, 0);
             char* pOutput = (char*)PyArray_BYTES(outputArray);
 
             if (tupleSize < 2 || totalLength <= g_cMathWorker->WORK_ITEM_CHUNK) {
@@ -2584,12 +2584,12 @@ PyObject *HStack(PyObject* self, PyObject *args)
             else {
 
                // Callback routine from multithreaded worker thread (items just count up from 0,1,2,...)
-               //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, INT64 workIndex);
+               //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, int64_t workIndex);
                struct stSHSTACK {
                   stHSTACK*      pHStack;
                   ArrayInfo*     aInfo;
                   char*          pOutput;
-                  INT64          StrideOut;
+                  int64_t          StrideOut;
                   void*          pBadOutput1;
                } myhstack;
 
@@ -2601,9 +2601,9 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
                LOGGING("MT hstack work on %lld\n", tupleSize);
 
-               auto lambdaHSCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
                   stSHSTACK* callbackArg = (stSHSTACK*)callbackArgT;
-                  INT64 t = workIndex;
+                  int64_t t = workIndex;
                   callbackArg->pHStack[t].ConvertSafe(
                      callbackArg->aInfo[t].pData,
                      callbackArg->pOutput + (callbackArg->pHStack[t].Offset * callbackArg->StrideOut),
@@ -2646,7 +2646,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 PyObject *ShiftArrays(PyObject* self, PyObject *args)
 {
    PyObject *inList1 = NULL;
-   INT64 shiftAmount = 0;
+   int64_t shiftAmount = 0;
 
    if (!PyArg_ParseTuple(
       args, "OL",
@@ -2656,29 +2656,29 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
       return NULL;
    }
 
-   INT64 totalItemSize = 0;
-   INT64 tupleSize = 0;
+   int64_t totalItemSize = 0;
+   int64_t tupleSize = 0;
 
    // Allow jagged rows
    ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, FALSE);
 
    if (aInfo) {
 
-      INT64 totalLength = 0;
+      int64_t totalLength = 0;
 
       // Callback routine from multithreaded worker thread (items just count up from 0,1,2,...)
-      //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, INT64 workIndex);
+      //typedef BOOL(*MTWORK_CALLBACK)(void* callbackArg, int core, int64_t workIndex);
       struct stSHIFT {
          ArrayInfo*     aInfo;
-         INT64          shiftAmount;
+         int64_t          shiftAmount;
       } myshift;
 
       myshift.aInfo = aInfo;
       myshift.shiftAmount = shiftAmount;
 
-      auto lambdaShiftCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+      auto lambdaShiftCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
          stSHIFT* pShift = (stSHIFT*)callbackArgT;
-         INT64 t = workIndex;
+         int64_t t = workIndex;
 
          ArrayInfo* pArrayInfo = &pShift->aInfo[t];
 
@@ -2700,8 +2700,8 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
                // h k n x x   5  6  7  8  9
                // i l o x x  10 11 12 13 14
                //
-               INT64 rows = pDims[0];
-               INT64 cols = pDims[1];
+               int64_t rows = pDims[0];
+               int64_t cols = pDims[1];
 
                LOGGING("!! encountered fortran array while shifting! %lld x %lld\n", rows, cols);
 
@@ -2713,7 +2713,7 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
                   char* pDst = pArrayInfo->pData;
                   char* pSrc = pDst + (pShift->shiftAmount * pArrayInfo->ItemSize);
 
-                  INT64 rowsToMove = rows - pShift->shiftAmount;
+                  int64_t rowsToMove = rows - pShift->shiftAmount;
 
                   // Check for negative shift value
                   if (pShift->shiftAmount < 0) {
@@ -2723,11 +2723,11 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
                   }
 
                   if (rowsToMove > 0) {
-                     INT64 rowsToMoveSize = rowsToMove * pArrayInfo->ItemSize;
-                     INT64 rowSize = rows * pArrayInfo->ItemSize;
+                     int64_t rowsToMoveSize = rowsToMove * pArrayInfo->ItemSize;
+                     int64_t rowSize = rows * pArrayInfo->ItemSize;
 
                      // 2d shift
-                     for (INT64 i = 0; i < cols; i++) {
+                     for (int64_t i = 0; i < cols; i++) {
                         memmove(pDst, pSrc, rowsToMoveSize);
                         pDst += rowSize;
                         pSrc += rowSize;
@@ -2741,7 +2741,7 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
                // shiftAmount:  1000
                // deltaShift:   9000 items to move
                //
-               INT64 deltaShift = pArrayInfo->ArrayLength - pShift->shiftAmount;
+               int64_t deltaShift = pArrayInfo->ArrayLength - pShift->shiftAmount;
                if (pShift->shiftAmount < 0) {
                   deltaShift = pArrayInfo->ArrayLength + pShift->shiftAmount;
                }
@@ -2802,14 +2802,14 @@ PyObject *HomogenizeArrays(PyObject* self, PyObject *args) {
    PyObject* inList1 = PyTuple_GetItem(args, 0);
    PyObject* dtypeObject = PyTuple_GetItem(args, 1);
 
-   INT64 totalItemSize = 0;
-   INT64 tupleSize = 0;
+   int64_t totalItemSize = 0;
+   int64_t tupleSize = 0;
 
    // Do not allow jagged rows
    ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, TRUE);
 
    if (aInfo) {
-      INT32 dtype = (INT32)PyLong_AsLong(dtypeObject);
+      int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
 
       if (dtype != -1) {
          if (dtype < 0 || dtype > NPY_LONGDOUBLE) {
@@ -2881,8 +2881,8 @@ PyObject *HomogenizeArrays(PyObject* self, PyObject *args) {
 // TODO: When we support runtime CPU detection/dispatching, bring back the original popcnt-based implementation
 //       of this function for systems that don't support AVX2. Also consider implementing an SSE-based version
 //       of this function for the same reason (logic will be very similar, just using __m128i instead).
-// TODO: Consider changing `length` to UINT64 here so it agrees better with the result of sizeof().
-INT64 SumBooleanMask(const INT8* const pData, const INT64 length) {
+// TODO: Consider changing `length` to uint64_t here so it agrees better with the result of sizeof().
+int64_t SumBooleanMask(const int8_t* const pData, const int64_t length) {
    // Basic input validation.
    if (!pData)
    {
@@ -2900,7 +2900,7 @@ INT64 SumBooleanMask(const INT8* const pData, const INT64 length) {
    const auto ulength = static_cast<size_t>(length);
 
    // Holds the accumulated result value.
-   INT64 result = 0;
+   int64_t result = 0;
 
    // YMM (32-byte) vector packed with 32 byte values, each set to 1.
    // NOTE: The obvious thing here would be to use _mm256_set1_epi8(1),
@@ -2998,15 +2998,15 @@ INT64 SumBooleanMask(const INT8* const pData, const INT64 length) {
 
 //--------------------------------------------------------------------------
 // Array copy from one to another using boolean mask
-void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 arrayLength, INT64 itemsize) {
+void CopyItemBooleanMask(void* pSrcV, void* pDestV, int8_t* pBoolMask, int64_t arrayLength, int64_t itemsize) {
    switch (itemsize) {
 
    case 1:
    {
-      INT8* pSrc = (INT8*)pSrcV;
-      INT8* pDest = (INT8*)pDestV;
+      int8_t* pSrc = (int8_t*)pSrcV;
+      int8_t* pDest = (int8_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc++;
          }
@@ -3015,10 +3015,10 @@ void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 array
    }
    case 2:
    {
-      INT16* pSrc = (INT16*)pSrcV;
-      INT16* pDest = (INT16*)pDestV;
+      int16_t* pSrc = (int16_t*)pSrcV;
+      int16_t* pDest = (int16_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc++;
          }
@@ -3027,10 +3027,10 @@ void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 array
    }
    case 4:
    {
-      INT32* pSrc = (INT32*)pSrcV;
-      INT32* pDest = (INT32*)pDestV;
+      int32_t* pSrc = (int32_t*)pSrcV;
+      int32_t* pDest = (int32_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc++;
          }
@@ -3039,10 +3039,10 @@ void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 array
    }
    case 8:
    {
-      INT64* pSrc = (INT64*)pSrcV;
-      INT64* pDest = (INT64*)pDestV;
+      int64_t* pSrc = (int64_t*)pSrcV;
+      int64_t* pDest = (int64_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc++;
          }
@@ -3054,7 +3054,7 @@ void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 array
       char* pSrc = (char*)pSrcV;
       char* pDest = (char*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             memcpy(pDest + (itemsize* i), pSrc, itemsize);
             pSrc += itemsize;
@@ -3069,15 +3069,15 @@ void CopyItemBooleanMask(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 array
 
 //--------------------------------------------------------------------------
 // Copying scalars to array with boolean mask
-void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64 arrayLength, INT64 itemsize) {
+void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, int8_t* pBoolMask, int64_t arrayLength, int64_t itemsize) {
    switch (itemsize) {
 
    case 1:
    {
-      INT8* pSrc = (INT8*)pSrcV;
-      INT8* pDest = (INT8*)pDestV;
+      int8_t* pSrc = (int8_t*)pSrcV;
+      int8_t* pDest = (int8_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc;
          }
@@ -3086,10 +3086,10 @@ void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64
    }
    case 2:
    {
-      INT16* pSrc = (INT16*)pSrcV;
-      INT16* pDest = (INT16*)pDestV;
+      int16_t* pSrc = (int16_t*)pSrcV;
+      int16_t* pDest = (int16_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc;
          }
@@ -3098,10 +3098,10 @@ void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64
    }
    case 4:
    {
-      INT32* pSrc = (INT32*)pSrcV;
-      INT32* pDest = (INT32*)pDestV;
+      int32_t* pSrc = (int32_t*)pSrcV;
+      int32_t* pDest = (int32_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc;
          }
@@ -3110,10 +3110,10 @@ void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64
    }
    case 8:
    {
-      INT64* pSrc = (INT64*)pSrcV;
-      INT64* pDest = (INT64*)pDestV;
+      int64_t* pSrc = (int64_t*)pSrcV;
+      int64_t* pDest = (int64_t*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             pDest[i] = *pSrc;
          }
@@ -3125,7 +3125,7 @@ void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64
       char* pSrc = (char*)pSrcV;
       char* pDest = (char*)pDestV;
 
-      for (INT64 i = 0; i < arrayLength; i++) {
+      for (int64_t i = 0; i < arrayLength; i++) {
          if (*pBoolMask++) {
             memcpy(pDest + (itemsize* i), pSrc, itemsize);
          }
@@ -3140,12 +3140,12 @@ void CopyItemBooleanMaskScalar(void* pSrcV, void* pDestV, INT8* pBoolMask, INT64
 
 //--------------------------------------------------------------------------
 //
-PyObject* SetItemBooleanMask(PyArrayObject* arr, PyArrayObject* mask, PyArrayObject* inValues, INT64 arrayLength) {
+PyObject* SetItemBooleanMask(PyArrayObject* arr, PyArrayObject* mask, PyArrayObject* inValues, int64_t arrayLength) {
 
    //PyObject* boolsum =
    //   ReduceInternal(mask, REDUCE_SUM);
-   INT8* pBoolMask = (INT8*)PyArray_BYTES(mask);
-   INT64 bsum = SumBooleanMask(pBoolMask, ArrayLength(mask));
+   int8_t* pBoolMask = (int8_t*)PyArray_BYTES(mask);
+   int64_t bsum = SumBooleanMask(pBoolMask, ArrayLength(mask));
 
    // Sum the boolean array
    if (bsum > 0 && bsum == ArrayLength(inValues)) {
@@ -3171,15 +3171,15 @@ PyObject* SetItemBooleanMask(PyArrayObject* arr, PyArrayObject* mask, PyArrayObj
 
 //--------------------------------------------------------------------------
 // TODO: Refactor this method and SetItemBooleanMask
-PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArrayObject* inValues, INT64 arrayLength) {
+PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArrayObject* inValues, int64_t arrayLength) {
    struct ST_BOOLCOUNTER {
-      INT8*    pBoolMask;
-      INT64*   pCounts;
-      INT64    sections;
-      INT64    maskLength;
+      int8_t*    pBoolMask;
+      int64_t*   pCounts;
+      int64_t    sections;
+      int64_t    maskLength;
       char*    pSrc;
       char*    pDest;
-      INT64    itemSize;
+      int64_t    itemSize;
 
    } stBoolCounter;
 
@@ -3190,23 +3190,23 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
    stBoolCounter.maskLength = ArrayLength(mask);
    stBoolCounter.sections = (stBoolCounter.maskLength + (SETITEM_PARTITION_SIZE-1)) / SETITEM_PARTITION_SIZE;
 
-   INT64 allocSize = stBoolCounter.sections * sizeof(INT64);
-   const INT64 maxStackAlloc = 1024 * 1024;  // 1 MB
+   int64_t allocSize = stBoolCounter.sections * sizeof(int64_t);
+   const int64_t maxStackAlloc = 1024 * 1024;  // 1 MB
 
    if (allocSize > maxStackAlloc) {
-      stBoolCounter.pCounts = (INT64*)WORKSPACE_ALLOC(allocSize);
+      stBoolCounter.pCounts = (int64_t*)WORKSPACE_ALLOC(allocSize);
    }
    else {
-      stBoolCounter.pCounts = (INT64*)alloca(allocSize);
+      stBoolCounter.pCounts = (int64_t*)alloca(allocSize);
    }
    if (stBoolCounter.pCounts) {
-      stBoolCounter.pBoolMask = (INT8*)PyArray_BYTES(mask);
+      stBoolCounter.pBoolMask = (int8_t*)PyArray_BYTES(mask);
 
-      auto lambdaCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+      auto lambdaCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
          ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
-         INT64 t = workIndex;
+         int64_t t = workIndex;
 
-         INT64 lastCount = SETITEM_PARTITION_SIZE;
+         int64_t lastCount = SETITEM_PARTITION_SIZE;
          if (t == pstBoolCounter->sections - 1) {
             lastCount = pstBoolCounter->maskLength & (SETITEM_PARTITION_SIZE - 1);
             if (lastCount == 0) lastCount = SETITEM_PARTITION_SIZE;
@@ -3220,27 +3220,27 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
       g_cMathWorker->DoMultiThreadedWork((int)stBoolCounter.sections, lambdaCallback, &stBoolCounter);
 
       // calculate the sum for each section
-      INT64 bsum = 0;
+      int64_t bsum = 0;
       for (int i = 0; i < stBoolCounter.sections; i++) {
-         INT64 temp = bsum;
+         int64_t temp = bsum;
          bsum += stBoolCounter.pCounts[i];
          stBoolCounter.pCounts[i] = temp;
       }
 
-      INT64 arrlength = ArrayLength(inValues);
+      int64_t arrlength = ArrayLength(inValues);
 
       if (bsum > 0 && bsum == arrlength) {
 
-         auto lambda2Callback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
             ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
-            INT64 t = workIndex;
+            int64_t t = workIndex;
 
-            INT64 lastCount = SETITEM_PARTITION_SIZE;
+            int64_t lastCount = SETITEM_PARTITION_SIZE;
             if (t == pstBoolCounter->sections - 1) {
                lastCount = pstBoolCounter->maskLength & (SETITEM_PARTITION_SIZE - 1);
                if (lastCount == 0) lastCount = SETITEM_PARTITION_SIZE;
             }
-            INT64 adjustment = (SETITEM_PARTITION_SIZE * workIndex * pstBoolCounter->itemSize);
+            int64_t adjustment = (SETITEM_PARTITION_SIZE * workIndex * pstBoolCounter->itemSize);
             CopyItemBooleanMask(
                pstBoolCounter->pSrc + (pstBoolCounter->pCounts[workIndex] * pstBoolCounter->itemSize),
                pstBoolCounter->pDest + adjustment,
@@ -3261,16 +3261,16 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
 
       if (bsum > 0 && arrlength == 1) {
 
-         auto lambda2Callback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
             ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
-            INT64 t = workIndex;
+            int64_t t = workIndex;
 
-            INT64 lastCount = SETITEM_PARTITION_SIZE;
+            int64_t lastCount = SETITEM_PARTITION_SIZE;
             if (t == pstBoolCounter->sections - 1) {
                lastCount = pstBoolCounter->maskLength & (SETITEM_PARTITION_SIZE - 1);
                if (lastCount == 0) lastCount = SETITEM_PARTITION_SIZE;
             }
-            INT64 adjustment = (SETITEM_PARTITION_SIZE * workIndex * pstBoolCounter->itemSize);
+            int64_t adjustment = (SETITEM_PARTITION_SIZE * workIndex * pstBoolCounter->itemSize);
             CopyItemBooleanMaskScalar(
                pstBoolCounter->pSrc,
                pstBoolCounter->pDest + adjustment,
@@ -3344,7 +3344,7 @@ PyObject *SetItem(PyObject* self, PyObject *args)
             int arrType = PyArray_TYPE(mask);
 
             if (arrType == NPY_BOOL) {
-               INT64 arrayLength = ArrayLength(arr);
+               int64_t arrayLength = ArrayLength(arr);
 
                if (arrayLength == ArrayLength(mask)) {
 
@@ -3413,13 +3413,13 @@ PyObject *PutMask(PyObject* self, PyObject *args)
 
       if (PyArray_TYPE(mask) == NPY_BOOL) {
 
-         INT64 itemSizeOut = PyArray_ITEMSIZE(arr);
-         INT64 itemSizeIn = PyArray_ITEMSIZE(inValues);
+         int64_t itemSizeOut = PyArray_ITEMSIZE(arr);
+         int64_t itemSizeIn = PyArray_ITEMSIZE(inValues);
 
          // check for strides... ?
-         INT64 arrayLength = ArrayLength(arr);
+         int64_t arrayLength = ArrayLength(arr);
          if (arrayLength == ArrayLength(mask) && itemSizeOut == PyArray_STRIDE(arr,0)) {
-            INT64 valLength = ArrayLength(inValues);
+            int64_t valLength = ArrayLength(inValues);
 
             if (arrayLength == valLength) {
                int outDType = PyArray_TYPE(arr);
@@ -3433,9 +3433,9 @@ PyObject *PutMask(PyObject* self, PyObject *args)
                      MASK_CONVERT_SAFE maskSafe;
                      char* pIn;
                      char* pOut;
-                     INT64 itemSizeOut;
-                     INT64 itemSizeIn;
-                     INT8* pMask;
+                     int64_t itemSizeOut;
+                     int64_t itemSizeIn;
+                     int8_t* pMask;
                      void* pBadInput1;
                      void* pBadOutput1;
 
@@ -3444,11 +3444,11 @@ PyObject *PutMask(PyObject* self, PyObject *args)
                   MASK_CALLBACK_STRUCT stMask;
 
                   // This is the routine that will be called back from multiple threads
-                  auto lambdaMaskCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+                  auto lambdaMaskCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
                      MASK_CALLBACK_STRUCT* callbackArg = (MASK_CALLBACK_STRUCT*)callbackArgT;
 
                      //printf("[%d] Mask %lld %lld\n", core, start, length);
-                     //maskSafe(pIn, pOut, (INT8*)pMask, length, pBadInput1, pBadOutput1);
+                     //maskSafe(pIn, pOut, (int8_t*)pMask, length, pBadInput1, pBadOutput1);
                      // Auto adjust pointers
                      callbackArg->maskSafe(
                         callbackArg->pIn + (start * callbackArg->itemSizeIn),
@@ -3468,7 +3468,7 @@ PyObject *PutMask(PyObject* self, PyObject *args)
 
                   stMask.pIn = (char*)PyArray_BYTES(inValues);
                   stMask.pOut = (char*)PyArray_BYTES(arr);
-                  stMask.pMask = (INT8*)PyArray_BYTES(mask);
+                  stMask.pMask = (int8_t*)PyArray_BYTES(mask);
                   stMask.maskSafe = maskSafe;
 
                   g_cMathWorker->DoMultiThreadedChunkWork(arrayLength, lambdaMaskCallback, &stMask);
@@ -3524,14 +3524,14 @@ PyObject *ApplyRows(PyObject* self, PyObject *args, PyObject* kwargs)
       PyObject* inList1 = PyTuple_GetItem(args, 0);
       PyObject* dtypeObject= PyTuple_GetItem(args, 1);
 
-      INT64 totalItemSize = 0;
-      INT64 tupleSize = 0;
+      int64_t totalItemSize = 0;
+      int64_t tupleSize = 0;
 
       // Do not allow jagged rows
       ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, TRUE);
 
       if (aInfo) {
-         INT32 dtype = (INT32)PyLong_AsLong(dtypeObject);
+         int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
 
          if (dtype != -1) {
             if (dtype < 0 || dtype > NPY_LONGDOUBLE) {

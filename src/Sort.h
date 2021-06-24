@@ -11,7 +11,7 @@ enum SORT_MODE {
 };
 
 
-INT64* GetCutOffs(PyObject* kwargs, INT64& cutoffLength);
+int64_t* GetCutOffs(PyObject* kwargs, int64_t& cutoffLength);
 PyObject* GroupFromLexSort(PyObject* self, PyObject* args, PyObject* kwargs);
 
 PyObject* IsSorted(PyObject* self, PyObject* args);
@@ -27,16 +27,16 @@ PyObject* SortInPlaceIndirect(PyObject *self, PyObject *args);
 
 //-----------------------------------------------------------------------------------------------
 template <typename T>
-int heapsort_(T *start, INT64 n);
+int heapsort_(T *start, int64_t n);
 
 template <typename T>
-int quicksort_(T *start, INT64 num);
+int quicksort_(T *start, int64_t num);
 
 template <typename T>
 void mergesort0_(T *pl, T *pr, T *pw);
 
 template <typename T>
-int mergesort_(T *start, INT64 num);
+int mergesort_(T *start, int64_t num);
 
 
 //===============================================================================
@@ -47,8 +47,8 @@ public:
 
    Py_ssize_t tupleSize;  // or number of arrays
    ArrayInfo* aInfo;
-   INT64 totalItemSize;
-   INT64 totalRows;
+   int64_t totalItemSize;
+   int64_t totalRows;
 
    CMultiListPrepare(PyObject* args) {
       aInfo = NULL;
@@ -69,14 +69,14 @@ public:
          }
       }
 
-      INT64 listSize = 0;
+      int64_t listSize = 0;
       aInfo = BuildArrayInfo(args, &listSize, &totalItemSize);
 
       if (aInfo) {
 
          totalRows = aInfo[0].ArrayLength;
 
-         for (INT64 i = 0; i < listSize; i++) {
+         for (int64_t i = 0; i < listSize; i++) {
             if (aInfo[i].ArrayLength != totalRows) {
                PyErr_Format(PyExc_ValueError, "MultiListPrepare all arrays must be same number of rows %llu", totalRows);
                totalRows = 0;
