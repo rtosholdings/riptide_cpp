@@ -574,7 +574,7 @@ PyObject* LedgerFunction(PyObject *self, PyObject *args, PyObject *kwargs)
 int64_t g_TotalAllocs = 0;
 
 //-----------------------------------------------------------------------------------
-PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, BOOL fortran_array, npy_intp* strides) {
+PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, bool fortran_array, npy_intp* strides) {
 
    PyArrayObject* returnObject = nullptr;
    const int64_t    len = CalcArrayLength(ndim, dims);
@@ -907,7 +907,7 @@ int32_t GetArrDType(PyArrayObject* inArr) {
 // pDest: to be filled in
 // numpyOutType: type to convert to
 //
-// Returns TRUE on success, FALSE otherwise
+// Returns true on success, false otherwise
 // On Return fills in pDest with int
 //
 // NOTE: Does not handle strings yet
@@ -925,7 +925,7 @@ int32_t GetArrDType(PyArrayObject* inArr) {
 // NPY_FLOAT      11
 // NPY_DOUBLE     12
 // NPY_LONGDOUBLE 13
-BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyOutType) {
+bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyOutType) {
 
    int64_t value = 0;
    double fvalue=0;
@@ -933,7 +933,7 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
    switch (numpyInType) {
 
    case NPY_BOOL:
-      value = (int64_t)*(BOOL*)pInput;
+      value = (int64_t)*(bool*)pInput;
       fvalue =(double) value;
       break;
    case NPY_INT8:
@@ -952,19 +952,23 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       value = (int64_t)*(uint16_t*)pInput;
       fvalue = (double)value;
       break;
-   CASE_NPY_UINT32:
+   case NPY_UINT32:
+   case NPY_UINT:
       value = (int64_t)*(uint32_t*)pInput;
       fvalue = (double)value;
       break;
-   CASE_NPY_INT32:
+   case NPY_INT32:
+   case NPY_INT:
       value = (int64_t)*(int32_t*)pInput;
       fvalue = (double)value;
       break;
-   CASE_NPY_UINT64:
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
       value = (int64_t)*(uint64_t*)pInput;
       fvalue = (double)value;
       break;
-   CASE_NPY_INT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       value = (int64_t)*(int64_t*)pInput;
       fvalue = (double)value;
       break;
@@ -977,7 +981,7 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       value = (int64_t)fvalue;
       break;
    default:
-      return FALSE;
+      return false;
 
    }
 
@@ -991,12 +995,16 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
    case NPY_UINT16:
       pDest->i = _mm256_set1_epi16((int16_t)value);
       break;
-   CASE_NPY_UINT32:
-   CASE_NPY_INT32:
+   case NPY_UINT32:
+   case NPY_UINT:
+   case NPY_INT32:
+   case NPY_INT:
       pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
-   CASE_NPY_UINT64:
-   CASE_NPY_INT64:
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       pDest->ci.i1 = _mm_set1_epi64x(value);
       pDest->ci.i2 = _mm_set1_epi64x(value);
       break;
@@ -1009,11 +1017,11 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       break;
    default:
       printf("unknown scalar type in convertScalarObject %d\n", numpyOutType);
-      return FALSE;
+      return false;
       break;
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -1023,7 +1031,7 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
 // The output of pDest holds the value represented in a 256bit AVX2 register
 //
 // RETURNS:
-// TRUE on success
+// true on success
 // *ppDataIn points to scalar object
 // pItemSize set to 0 unless a string or unicode
 //
@@ -1031,12 +1039,12 @@ BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
 // If inObject1 is a string or unicode, then ppDataIn is filled in with the itemsize
 //
 // NOTE: Cannot handle numpy scalar types like numpy.int32
-BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutType, void** ppDataIn, int64_t *pItemSize) {
+bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutType, void** ppDataIn, int64_t *pItemSize) {
 
    *pItemSize = 0;
    *ppDataIn = pDest;
 
-   BOOL isNumpyScalarInteger = PyArray_IsScalar((inObject1), Integer);
+   bool isNumpyScalarInteger = PyArray_IsScalar((inObject1), Integer);
    bool isPyBool = PyBool_Check(inObject1);
    LOGGING("In convert scalar object!  %d %d %d\n", numpyOutType, isNumpyScalarInteger, isPyBool);
 
@@ -1062,12 +1070,16 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
       case NPY_UINT16:
          pDest->i = _mm256_set1_epi16((int16_t)value);
          break;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:
+      case NPY_UINT32:
+      case  NPY_UINT:
+      case NPY_INT32:
+      case NPY_INT:
          pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
-      CASE_NPY_UINT64:
-      CASE_NPY_INT64:
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case  NPY_LONGLONG:
          pDest->ci.i1 = _mm_set1_epi64x(value);
          pDest->ci.i2 = _mm_set1_epi64x(value);
          break;
@@ -1079,7 +1091,7 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          break;
       default:
          printf("unknown bool scalar type in convertScalarObject %d\n", numpyOutType);
-         return FALSE;
+         return false;
       }
    }
    else
@@ -1120,7 +1132,7 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             else {
                // datetime64 falls into here
                LOGGING("!!punting on scalar type is %d\n", dtype->type_num);
-               return FALSE;
+               return false;
             }
          }
 
@@ -1138,17 +1150,21 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value2);
             break;
-         CASE_NPY_INT32:
+         case NPY_INT32:
+         case NPY_INT:
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
-         CASE_NPY_UINT32:
+         case NPY_UINT32:
+         case NPY_UINT:
             pDest->i = _mm256_set1_epi32((uint32_t)value2);
             break;
-         CASE_NPY_INT64:
+         case NPY_INT64:
+         case NPY_LONGLONG:
             pDest->ci.i1 = _mm_set1_epi64x(value);
             pDest->ci.i2 = _mm_set1_epi64x(value);
             break;
-         CASE_NPY_UINT64:
+         case NPY_UINT64:
+         case NPY_ULONGLONG:
             pDest->ci.i1 = _mm_set1_epi64x(value2);
             pDest->ci.i2 = _mm_set1_epi64x(value2);
             break;
@@ -1160,7 +1176,7 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             break;
          default:
             printf("unknown long scalar type in convertScalarObject %d\n", numpyOutType);
-            return FALSE;
+            return false;
          }
       }
       else if (PyFloat_Check(inObject1) || PyArray_IsScalar((inObject1), Floating)) {
@@ -1181,17 +1197,21 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value);
             break;
-         CASE_NPY_UINT32:
+         case NPY_UINT32:
+         case NPY_UINT:
             pDest->i = _mm256_set1_epi32((uint32_t)value);
             break;
-         CASE_NPY_INT32:
+         case NPY_INT32:
+         case NPY_INT:
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
-         CASE_NPY_UINT64:
+         case NPY_UINT64:
+         case NPY_ULONGLONG:
             pDest->ci.i1 = _mm_set1_epi64x((uint64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((uint64_t)value);
             break;
-         CASE_NPY_INT64:
+         case NPY_INT64:
+         case NPY_LONGLONG:
             pDest->ci.i1 = _mm_set1_epi64x((int64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((int64_t)value);
             break;
@@ -1206,7 +1226,7 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             break;
          default:
             printf("unknown float scalar type in convertScalarObject %d\n", numpyOutType);
-            return FALSE;
+            return false;
          }
 
       }
@@ -1214,14 +1234,14 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          // happens when pass in b'test'
          *pItemSize = PyBytes_GET_SIZE(inObject1);
          *ppDataIn = PyBytes_AS_STRING(inObject1);
-         return TRUE;
+         return true;
       }
       else if (PyUnicode_Check(inObject1)) {
          // happens when pass in 'test'
          *pItemSize = PyUnicode_GET_SIZE(inObject1) * 4;
          // memory leak needs to be deleted
          *ppDataIn = PyUnicode_AsUCS4Copy(inObject1);
-         return TRUE;
+         return true;
       }
       else if (PyArray_IsScalar(inObject1, Generic)) {
 
@@ -1231,11 +1251,11 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
 
             // NOTE: memory leak here?
             printf("!!integer scalar type is %d\n", dtype->type_num);
-            return FALSE;
+            return false;
          }
          else {
             printf("!!unknown numpy scalar type in convertScalarObject %d --", numpyOutType);
-            return FALSE;
+            return false;
          }
 
       }
@@ -1245,11 +1265,11 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          LOGGING("!!unknown scalar type in convertScalarObject %d --", numpyOutType);
          PyTypeObject* type = inObject1->ob_type;
          LOGGING("type name is %s\n", type->tp_name);
-         return FALSE;
+         return false;
       }
    }
    //printf("returning from scalar conversion\n");
-   return TRUE;
+   return true;
 }
 
 
@@ -1262,8 +1282,8 @@ ThreadingMode(PyObject *self, PyObject *args)
 
    if (!PyArg_ParseTuple(args, "L", &threadmode)) return NULL;
 
-   BOOL previous = g_cMathWorker->NoThreading;
-   g_cMathWorker->NoThreading = (BOOL)threadmode;
+   bool previous = g_cMathWorker->NoThreading;
+   g_cMathWorker->NoThreading = (bool)threadmode;
 
    return PyLong_FromLong((int)previous);
 }
@@ -1972,27 +1992,42 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_DOUBLE: pgDefault = &gDefaultDouble;
       break;
       // BOOL should not really have an invalid value inhabiting the type
-   case NPY_BOOL:   pgDefault = &gDefaultBool;
+   case NPY_BOOL:
+      pgDefault = &gDefaultBool;
       break;
-   case NPY_BYTE:   pgDefault = &gDefaultInt8;
+   case NPY_BYTE:
+      pgDefault = &gDefaultInt8;
       break;
-   case NPY_INT16:  pgDefault = &gDefaultInt16;
+   case NPY_INT16:
+      pgDefault = &gDefaultInt16;
       break;
-   CASE_NPY_INT32:  pgDefault = &gDefaultInt32;
+   case NPY_INT32:
+   case NPY_INT:
+      pgDefault = &gDefaultInt32;
       break;
-   CASE_NPY_INT64:  pgDefault = &gDefaultInt64;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+      pgDefault = &gDefaultInt64;
       break;
-   case NPY_UINT8:  pgDefault = &gDefaultUInt8;
+   case NPY_UINT8:
+      pgDefault = &gDefaultUInt8;
       break;
-   case NPY_UINT16: pgDefault = &gDefaultUInt16;
+   case NPY_UINT16:
+      pgDefault = &gDefaultUInt16;
       break;
-   CASE_NPY_UINT32: pgDefault = &gDefaultUInt32;
+   case NPY_UINT32:
+   case NPY_UINT:
+      pgDefault = &gDefaultUInt32;
       break;
-   CASE_NPY_UINT64: pgDefault = &gDefaultUInt64;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+      pgDefault = &gDefaultUInt64;
       break;
-   case NPY_STRING: pgDefault = &gString;
+   case NPY_STRING:
+      pgDefault = &gString;
       break;
-   case NPY_UNICODE: pgDefault = &gString;
+   case NPY_UNICODE:
+      pgDefault = &gString;
       break;
    default:
       printf("!!! likely problem in GetDefaultForType\n");
@@ -2042,14 +2077,14 @@ int GetNumpyType(char* value) {
 }
 
 //-------------------------------------
-// Returns FALSE if cannot upcast
+// Returns false if cannot upcast
 // Input: numpyInType1, numpyInType2
 // Output: convertType1, convertType2
-BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber) {
+bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber) {
    if (numpyInType1 == numpyInType2) {
       convertType1 = numpyInType1;
       convertType2 = numpyInType1;
-      return TRUE;
+      return true;
    }
    if (numpyInType1 >=0 && numpyInType1 <= NPY_LONGDOUBLE && numpyInType2 >= 0 && numpyInType2 <= NPY_LONGDOUBLE) {
       stUpCast* pUpcast;
@@ -2062,7 +2097,7 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
       }
       convertType1 = pUpcast->dtype1;
       convertType2 = pUpcast->dtype2;
-      return TRUE;
+      return true;
    }
    else {
       // check for strings..
@@ -2070,19 +2105,19 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
          if (numpyInType2 == NPY_STRING) {
             convertType1 = NPY_UNICODE;
             convertType2 = NPY_UNICODE;
-            return TRUE;
+            return true;
          }
       }
       if (numpyInType2 == NPY_UNICODE) {
          if (numpyInType1 == NPY_STRING) {
             convertType1 = NPY_UNICODE;
             convertType2 = NPY_UNICODE;
-            return TRUE;
+            return true;
          }
       }
       convertType1 = -1;
       convertType2 = -1;
-      return FALSE;
+      return false;
    }
 }
 
@@ -2100,11 +2135,11 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
 //    Example: a=arange(20).reshape(5,4)[::-1] or a=arange(20).reshape(5,4)[::2]
 // Returns:
 //  ndim:   number of dimensions
-//  stride: stride to use if contig is TRUE
+//  stride: stride to use if contig is true
 //  direction: 0 - neither RowMajor or ColMajor (fully contiguous)
 //     > 0 RowMajor with value being the dimension where contiguous breaks
 //     < 0 ColMajor with -value being the dimension where contiguous breaks
-//  return value 0: one loop can process all data, FALSE = multiple loops
+//  return value 0: one loop can process all data, false = multiple loops
 //  NOTE: if return value is 0 and itemsze == stride, then vector math possible
 //
 int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride) {
