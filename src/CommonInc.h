@@ -20,102 +20,13 @@
 
 #endif
 
-#ifndef CONST
-#define CONST               const
-#endif
-typedef char               CHAR;
-typedef short              SHORT;
-typedef long               LONG;
-#define VOID void
-typedef void *PVOID;
-
-//Type             LP64   Windows
-//char              8       8
-//short             16      16
-//int               32      32
-//long              64      32
-//long long         64      64
-//pointer           64      64
-
-
-typedef unsigned long       DWORD;
-typedef int                 BOOL;
-typedef unsigned char       BYTE;
-typedef BYTE                BOOLEAN;
-typedef unsigned short      WORD;
-typedef float               FLOAT;
-typedef FLOAT               *PFLOAT;
-typedef BOOL                *PBOOL;
-typedef BOOL                *LPBOOL;
-typedef BYTE                *PBYTE;
-typedef BYTE                *LPBYTE;
-typedef int                 *PINT;
-typedef int                 *LPINT;
-typedef WORD                *PWORD;
-typedef WORD                *LPWORD;
-//typedef long                *LPLONG;  // dangerous
-typedef DWORD               *PDWORD;
-typedef DWORD               *LPDWORD;
-typedef void                *LPVOID;
-typedef CONST void          *LPCVOID;
-
-typedef int                 INT;
-typedef unsigned int        UINT;
-typedef unsigned int       *PUINT;
-
-typedef signed char         INT8, *PINT8;
-typedef signed short        INT16, *PINT16;
-typedef signed int          INT32, *PINT32;
-typedef unsigned char       UINT8, *PUINT8;
-typedef unsigned short      UINT16, *PUINT16;
-typedef unsigned int        UINT32, *PUINT32;
-
-typedef long long           INT64, *PINT64;
-typedef unsigned long long  UINT64, *PUINT64;
-
-typedef long long           LONGLONG;
-typedef unsigned long long  ULONGLONG;
-
-typedef double    DOUBLE;
-typedef float     FLOAT;
-//
-// The following types are guaranteed to be signed and 32 bits wide.
-//
-
-typedef int      LONG32, *PLONG32;
-
-//
-// The following types are guaranteed to be unsigned and 32 bits wide.
-//
-
-typedef unsigned int  ULONG32, *PULONG32;
-typedef unsigned int  DWORD32, *PDWORD32;
-
-typedef long long           INT_PTR, *PINT_PTR;
-typedef unsigned long long  UINT_PTR, *PUINT_PTR;
-
-typedef long long           LONG_PTR, *PLONG_PTR;
-typedef unsigned long long  ULONG_PTR, *PULONG_PTR;
-
-typedef ULONG_PTR SIZE_T, *PSIZE_T;
-typedef LONG_PTR  SSIZE_T, *PSSIZE_T;
-
-typedef void *HANDLE;
-
-#define TRUE 1
-#define FALSE 0
-
-
-
-
+using HANDLE = void*;
 
 #define RtlEqualMemory(Destination,Source,Length) (!memcmp((Destination),(Source),(Length)))
 #define RtlMoveMemory(Destination,Source,Length) memmove((Destination),(Source),(Length))
 #define RtlCopyMemory(Destination,Source,Length) memcpy((Destination),(Source),(Length))
 #define RtlFillMemory(Destination,Length,Fill) memset((Destination),(Fill),(Length))
 #define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
-
-
 
 #if defined(_WIN32) && !defined(__GNUC__)
 #define WINAPI      __stdcall
@@ -144,21 +55,24 @@ typedef void *HANDLE;
 
 #define lzcnt_64 _lzcnt_u64
 
+#if 0
 #define CASE_NPY_INT32      case NPY_INT32:       case NPY_INT
 #define CASE_NPY_UINT32     case NPY_UINT32:      case NPY_UINT
 #define CASE_NPY_INT64      case NPY_INT64
 #define CASE_NPY_UINT64     case NPY_UINT64
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
+#endif
 
 #endif
 #else
 
+#if 0
 #define CASE_NPY_INT32      case NPY_INT32
 #define CASE_NPY_UINT32     case NPY_UINT32
 #define CASE_NPY_INT64      case NPY_INT64:    case NPY_LONGLONG
 #define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
-
+#endif
 
 #define WINAPI
 #include <pthread.h>
