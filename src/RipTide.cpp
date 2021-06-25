@@ -953,12 +953,12 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       fvalue = (double)value;
       break;
    case NPY_UINT32:
-   case NPY_UINT:
+//   case NPY_UINT: This enumeration is the same value as NPY_UINT32 above
       value = (int64_t)*(uint32_t*)pInput;
       fvalue = (double)value;
       break;
    case NPY_INT32:
-   case NPY_INT:
+//   case NPY_INT: This enumeration is the same value as NPY_INT32 above
       value = (int64_t)*(int32_t*)pInput;
       fvalue = (double)value;
       break;
@@ -996,9 +996,9 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       pDest->i = _mm256_set1_epi16((int16_t)value);
       break;
    case NPY_UINT32:
-   case NPY_UINT:
+//   case NPY_UINT: This enumeration has the same value at NPY_UINT32 above
    case NPY_INT32:
-   case NPY_INT:
+//   case NPY_INT: This enumeration has the same value as NPY_INT32 above
       pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
    case NPY_UINT64:
@@ -1071,9 +1071,9 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          pDest->i = _mm256_set1_epi16((int16_t)value);
          break;
       case NPY_UINT32:
-      case  NPY_UINT:
+//      case  NPY_UINT: This enumeration has the same value as NPY_UINT32 above
       case NPY_INT32:
-      case NPY_INT:
+//      case NPY_INT: This enumeration has the same value as NPY_INT32 above
          pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
       case NPY_UINT64:
@@ -1151,11 +1151,11 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             pDest->i = _mm256_set1_epi16((uint16_t)value2);
             break;
          case NPY_INT32:
-         case NPY_INT:
+//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
          case NPY_UINT32:
-         case NPY_UINT:
+//         case NPY_UINT: This enumeration hasa the same value as NPY_UINT32 above
             pDest->i = _mm256_set1_epi32((uint32_t)value2);
             break;
          case NPY_INT64:
@@ -1198,11 +1198,11 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             pDest->i = _mm256_set1_epi16((uint16_t)value);
             break;
          case NPY_UINT32:
-         case NPY_UINT:
+//         case NPY_UINT: This enumeration has the same value as NPY_UINT32 above
             pDest->i = _mm256_set1_epi32((uint32_t)value);
             break;
          case NPY_INT32:
-         case NPY_INT:
+//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
          case NPY_UINT64:
@@ -1790,14 +1790,14 @@ PyMODINIT_FUNC PyInit_riptide_cpp() {
 
    // Build LUTs used in comparisons after mask generated
    for (int i = 0; i < 256; i++) {
-      BYTE* pDest = (BYTE*)&gBooleanLUT64[i];
+      unsigned char* pDest = (unsigned char*)&gBooleanLUT64[i];
       for (int j = 0; j < 8; j++) {
          *pDest++ = ((i >> j) & 1);
       }
    }
    // Build LUTs
    for (int i = 0; i < 16; i++) {
-      BYTE* pDest = (BYTE*)&gBooleanLUT32[i];
+      unsigned char* pDest = (unsigned char*)&gBooleanLUT32[i];
       for (int j = 0; j < 4; j++) {
          *pDest++ = ((i >> j) & 1);
       }
@@ -2001,8 +2001,8 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_INT16:
       pgDefault = &gDefaultInt16;
       break;
-   case NPY_INT32:
-   case NPY_INT:
+   case NPY_INT32: 
+//   case NPY_INT: This is the same numeric value as NPY_INT32 above
       pgDefault = &gDefaultInt32;
       break;
    case NPY_INT64:
@@ -2016,7 +2016,7 @@ void* GetDefaultForType(int numpyInType) {
       pgDefault = &gDefaultUInt16;
       break;
    case NPY_UINT32:
-   case NPY_UINT:
+//   case NPY_UINT: This is the same numeric value as NPY_UINT32 above
       pgDefault = &gDefaultUInt32;
       break;
    case NPY_UINT64:

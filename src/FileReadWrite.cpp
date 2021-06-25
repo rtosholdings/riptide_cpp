@@ -5,8 +5,8 @@
 
 #define LogVerbose(...)
 
-INT64 LogLevel(
-   INT64 level,
+int64_t LogLevel(
+   int64_t level,
    LPCTSTR        szString,
    ...) {
 
@@ -39,9 +39,9 @@ CFileReadWrite::~CFileReadWrite()
 }
 
 // Returns true if cache was successfully flushed
-BOOLEAN CFileReadWrite::FlushCache(CHAR driveLetter) {
+bool CFileReadWrite::FlushCache(CHAR driveLetter) {
 
-   BOOLEAN result = FALSE;
+   bool result = FALSE;
    char  szVolumeName[32] = "\\\\.\\X:";
 
    szVolumeName[4] = driveLetter;
@@ -76,7 +76,7 @@ BOOLEAN CFileReadWrite::FlushCache(CHAR driveLetter) {
 }
 
 
-BOOLEAN CFileReadWrite::Open(const char* fileName, BOOLEAN writeOption, BOOLEAN overlapped, BOOLEAN directIO)
+bool CFileReadWrite::Open(const char* fileName, bool writeOption, bool overlapped, bool directIO)
 {
    strcpy_s(FileName, sizeof(FileName), fileName);
    WriteOption = writeOption;
@@ -127,7 +127,7 @@ BOOLEAN CFileReadWrite::Open(const char* fileName, BOOLEAN writeOption, BOOLEAN 
 
 
 // Cancels all IO for the Handle
-BOOLEAN CFileReadWrite::CancelIO()
+bool CFileReadWrite::CancelIO()
 {
    return CancelIo(Handle);
 }
@@ -135,7 +135,7 @@ BOOLEAN CFileReadWrite::CancelIO()
 
 //---------------------------------------------------------
 // Standard read ahead
-DWORD CFileReadWrite::ReadChunk(void* buffer, UINT32 count)
+DWORD CFileReadWrite::ReadChunk(void* buffer, uint32_t count)
 {
    DWORD n = 0;
    if (!Overlapped) {
@@ -154,10 +154,10 @@ DWORD CFileReadWrite::ReadChunk(void* buffer, UINT32 count)
       OverlappedIO.hEvent = NULL;
       OverlappedIO.InternalHigh = 0;
       OverlappedIO.Internal = 0;
-      OverlappedIO.OffsetHigh = (UINT32)(BufferPos >> 32);
-      OverlappedIO.Offset = (UINT32)BufferPos;
+      OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
+      OverlappedIO.Offset = (uint32_t)BufferPos;
 
-      BOOLEAN bReadDone;
+      bool bReadDone;
 
       OVERLAPPED* pos = &OverlappedIO;
       {
@@ -198,7 +198,7 @@ DWORD CFileReadWrite::ReadChunk(void* buffer, UINT32 count)
 // The API may return and data will be pending
 DWORD CFileReadWrite::ReadChunkAsync(
    void* buffer,
-   UINT32 count,
+   uint32_t count,
    DWORD* lastError,
    OVERLAPPED* pOverlapped)
 {
@@ -218,10 +218,10 @@ DWORD CFileReadWrite::ReadChunkAsync(
    {
       pOverlapped->InternalHigh = 0;
       pOverlapped->Internal = 0;
-      pOverlapped->OffsetHigh = (UINT32)(BufferPos >> 32);
-      pOverlapped->Offset = (UINT32)BufferPos;
+      pOverlapped->OffsetHigh = (uint32_t)(BufferPos >> 32);
+      pOverlapped->Offset = (uint32_t)BufferPos;
 
-      BOOLEAN bReadDone;
+      bool bReadDone;
 
       // Async version of READ
       bReadDone = ReadFile(Handle, buffer, count, &n, pOverlapped);
@@ -255,14 +255,14 @@ DWORD CFileReadWrite::ReadChunkAsync(
 
 //----------------------------------------------------------------------------
 // ONLY if the last call was to ReadAsync can this be called
-BOOLEAN CFileReadWrite::WaitForLastRead(DWORD* lastError, OVERLAPPED* pos)
+bool CFileReadWrite::WaitForLastRead(DWORD* lastError, OVERLAPPED* pos)
 {
    // Check if last time operation was pending
    if (*lastError == ERROR_IO_PENDING)
    {
       DWORD n = 0;
       // Wait for this to complete
-      BOOLEAN bReadDone = GetOverlappedResult(Handle, pos, &n, true);
+      bool bReadDone = GetOverlappedResult(Handle, pos, &n, true);
 
       if (!bReadDone)
       {
@@ -298,11 +298,11 @@ BOOLEAN CFileReadWrite::WaitForLastRead(DWORD* lastError, OVERLAPPED* pos)
 
 
 
-BOOLEAN CFileReadWrite::WaitIoComplete(OVERLAPPED* pos)
+bool CFileReadWrite::WaitIoComplete(OVERLAPPED* pos)
 {
 
    DWORD n = 0;
-   BOOLEAN bWriteDone;
+   bool bWriteDone;
    // Wait for IO to complete
    bWriteDone = GetOverlappedResult(Handle, pos, &n, true);
 
@@ -325,7 +325,7 @@ BOOLEAN CFileReadWrite::WaitIoComplete(OVERLAPPED* pos)
 //---------------------------------------------------------------------------------------------------------------------------------
 // Will write for chunk to be written )non-Async version
 // Returns bytes written
-DWORD CFileReadWrite::WriteChunk(void* buffer, UINT32 count)
+DWORD CFileReadWrite::WriteChunk(void* buffer, uint32_t count)
 {
    DWORD n = 0;
    if (!Overlapped)
@@ -347,10 +347,10 @@ DWORD CFileReadWrite::WriteChunk(void* buffer, UINT32 count)
       OverlappedIO.hEvent = 0;
       OverlappedIO.InternalHigh = 0;
       OverlappedIO.Internal = 0;
-      OverlappedIO.OffsetHigh = (UINT32)(BufferPos >> 32);
-      OverlappedIO.Offset = (UINT32)BufferPos;
+      OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
+      OverlappedIO.Offset = (uint32_t)BufferPos;
 
-      BOOLEAN bWriteDone;
+      bool bWriteDone;
 
       OVERLAPPED* pos = &OverlappedIO;
       {
@@ -398,10 +398,10 @@ DWORD CFileReadWrite::WriteChunk(void* buffer, UINT32 count)
 // Returns: error result if any, in lastError
 DWORD CFileReadWrite::WriteChunkAsync(
    void* buffer,
-   UINT32 count,
+   uint32_t count,
    DWORD* lastError,
    OVERLAPPED* pOverlapped,
-   BOOLEAN bWaitOnIO)
+   bool bWaitOnIO)
 {
    DWORD n = 0;
    if (!Overlapped)
@@ -420,10 +420,10 @@ DWORD CFileReadWrite::WriteChunkAsync(
    {
       pOverlapped->InternalHigh = 0;
       pOverlapped->Internal = 0;
-      pOverlapped->OffsetHigh = (UINT32)(BufferPos >> 32);
-      pOverlapped->Offset = (UINT32)BufferPos;
+      pOverlapped->OffsetHigh = (uint32_t)(BufferPos >> 32);
+      pOverlapped->Offset = (uint32_t)BufferPos;
 
-      BOOLEAN bWriteDone;
+      bool bWriteDone;
 
       // Async version of WRITE
       bWriteDone = WriteFile(Handle, buffer, count, &n, pOverlapped);
@@ -469,14 +469,14 @@ DWORD CFileReadWrite::WriteChunkAsync(
 //--------------------------------------------------------------------
 // Seek from current position
 // Returns offset
-INT64 CFileReadWrite::SeekCurrentEx(INT64 pos)
+int64_t CFileReadWrite::SeekCurrentEx(int64_t pos)
 {
-   INT64 result = 0;
+   int64_t result = 0;
 
    LARGE_INTEGER temp;
    temp.QuadPart = pos;
 
-   BOOLEAN bResult =
+   bool bResult =
       SetFilePointerEx(Handle, temp, (PLARGE_INTEGER)&result, SEEK_CUR);
 
    if (!bResult)
@@ -500,14 +500,14 @@ INT64 CFileReadWrite::SeekCurrentEx(INT64 pos)
 //--------------------------------------------------------------------
 // Seek from start of file position
 // Move method = 0 = FILE_BEGIN
-INT64 CFileReadWrite::SeekBeginEx(INT64 pos)
+int64_t CFileReadWrite::SeekBeginEx(int64_t pos)
 {
-   INT64 result = 0;
+   int64_t result = 0;
 
    LARGE_INTEGER temp;
    temp.QuadPart = pos;
 
-   BOOLEAN bResult =
+   bool bResult =
       SetFilePointerEx(Handle, temp, (PLARGE_INTEGER)&result, SEEK_SET);
 
    if (!bResult)
@@ -529,11 +529,11 @@ INT64 CFileReadWrite::SeekBeginEx(INT64 pos)
 
 
 //--------------------------------------------------------------------
-BOOLEAN CFileReadWrite::Close()
+bool CFileReadWrite::Close()
 {
    if (Handle != NULL)
    {
-      BOOLEAN Result = CloseHandle(Handle);
+      bool Result = CloseHandle(Handle);
       Handle = NULL;
       return Result;
    }
@@ -546,9 +546,9 @@ extern "C" {
 
    CFileReadWrite* ReadWriteOpen(
       const char* fullFileName,
-      BOOLEAN writeOption = false,
-      BOOLEAN overlapped = true,
-      BOOLEAN directIO = false
+      bool writeOption = false,
+      bool overlapped = true,
+      bool directIO = false
    ) {
 
       CFileReadWrite* pReadWrite = new CFileReadWrite();
@@ -560,25 +560,25 @@ extern "C" {
       return pReadWrite;
    }
 
-   DWORD ReadChunk(CFileReadWrite* pReadWrite, void* buffer, UINT32 count) {
+   DWORD ReadChunk(CFileReadWrite* pReadWrite, void* buffer, uint32_t count) {
       return pReadWrite->ReadChunk(buffer, count);
    }
 
    DWORD ReadChunkAsync(
       CFileReadWrite* pReadWrite,
       void* buffer,
-      UINT32 count,
+      uint32_t count,
       DWORD* lastError,
       OVERLAPPED* pOverlapped) {
 
       return pReadWrite->ReadChunkAsync(buffer, count, lastError, pOverlapped);
    }
 
-   BOOLEAN ReadWriteClose(CFileReadWrite* pReadWrite) {
+   bool ReadWriteClose(CFileReadWrite* pReadWrite) {
       return pReadWrite->Close();
    }
 
-   BOOLEAN FlushCache(CHAR driveLetter) {
+   bool FlushCache(CHAR driveLetter) {
       return CFileReadWrite::FlushCache(driveLetter);
    }
 };
