@@ -39,7 +39,7 @@ CheckWindowsPrivilege(const char* pPrivilegeName)
    HANDLE         hCurrentProccess;
    HANDLE         hProcessToken = NULL;
    HRESULT        hResult;
-   bool           bResult;
+   BOOL           bResult;
 
    hResult = S_OK;
 
@@ -177,7 +177,7 @@ UtilSharedMemoryBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      hResult = S_false;
+      hResult = S_FALSE;
       return -(hResult);
    }
 
@@ -284,7 +284,7 @@ UtilSharedNumaMemoryBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      hResult = S_false;
+      hResult = S_FALSE;
       return -(hResult);
    }
 
@@ -369,7 +369,7 @@ UtilSharedNumaMemoryBegin(
 // The pReturnStruct will be valid if the call succeeded
 // if bTest = true, it will not complain if it cannot find shared memory
 // if returns S_OK you are mapped
-// returns S_false if it does not exist yet 
+// returns S_FALSE if it does not exist yet 
 HRESULT
 UtilSharedMemoryCopy(
    const char*              pMappingName,
@@ -497,7 +497,7 @@ UtilMappedViewReadBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName)) 
    {
-      return -(S_false);
+      return -(S_FALSE);
    }
 
    //
@@ -683,7 +683,7 @@ UtilMappedViewWriteBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      return -(S_false);
+      return -(S_FALSE);
    }
 
    //
