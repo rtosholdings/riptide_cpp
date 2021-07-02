@@ -17,18 +17,18 @@
 
 #if defined(_WIN32) && !defined(__GNUC__)
 
-#define CASE_NPY_INT32      case NPY_INT32:       case NPY_INT
-#define CASE_NPY_UINT32     case NPY_UINT32:      case NPY_UINT
-#define CASE_NPY_INT64      case NPY_INT64
-#define CASE_NPY_UINT64     case NPY_UINT64
+#define CASE_NPY_INT32      CASE_NPY_INT32:       case NPY_INT
+#define CASE_NPY_UINT32     CASE_NPY_UINT32:      case NPY_UINT
+#define CASE_NPY_INT64      CASE_NPY_INT64
+#define CASE_NPY_UINT64     CASE_NPY_UINT64
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
 
 #else
 
-#define CASE_NPY_INT32      case NPY_INT32
-#define CASE_NPY_UINT32     case NPY_UINT32
-#define CASE_NPY_INT64      case NPY_INT64:    case NPY_LONGLONG
-#define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
+#define CASE_NPY_INT32      CASE_NPY_INT32
+#define CASE_NPY_UINT32     CASE_NPY_UINT32
+#define CASE_NPY_INT64      CASE_NPY_INT64:    case NPY_LONGLONG
+#define CASE_NPY_UINT64     CASE_NPY_UINT64:   case NPY_ULONGLONG
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
 #endif
 

@@ -103,15 +103,15 @@ TIMEWINDOW_FUNC GeTimeWindowFunction(int64_t func, int32_t inputType, int32_t* o
    case NPY_LONGDOUBLE: *outputType = NPY_LONGDOUBLE; return TimeWindowBase<long double, long double, int64_t>::GeTimeWindowFunction(func);
    case NPY_INT8:   *outputType = NPY_INT64; return TimeWindowBase<int8_t, int64_t, int64_t>::GeTimeWindowFunction(func);
    case NPY_INT16:  *outputType = NPY_INT64; return TimeWindowBase<int16_t, int64_t, int64_t>::GeTimeWindowFunction(func);
-   case NPY_INT32:  *outputType = NPY_INT64; return TimeWindowBase<int32_t, int64_t, int64_t>::GeTimeWindowFunction(func);
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT32:  *outputType = NPY_INT64; return TimeWindowBase<int32_t, int64_t, int64_t>::GeTimeWindowFunction(func);
+   CASE_NPY_INT64:
+   
       *outputType = NPY_INT64; return TimeWindowBase<int64_t, int64_t, int64_t>::GeTimeWindowFunction(func);
    case NPY_UINT8:  *outputType = NPY_UINT64; return TimeWindowBase<uint8_t, uint64_t, int64_t>::GeTimeWindowFunction(func);
    case NPY_UINT16: *outputType = NPY_UINT64; return TimeWindowBase<uint16_t, uint64_t, int64_t>::GeTimeWindowFunction(func);
-   case NPY_UINT32: *outputType = NPY_UINT64; return TimeWindowBase<uint32_t, uint64_t, int64_t>::GeTimeWindowFunction(func);
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT32: *outputType = NPY_UINT64; return TimeWindowBase<uint32_t, uint64_t, int64_t>::GeTimeWindowFunction(func);
+   CASE_NPY_UINT64:
+   
       *outputType = NPY_UINT64; return TimeWindowBase<uint64_t, uint64_t, int64_t>::GeTimeWindowFunction(func);
    }
 
@@ -158,8 +158,8 @@ TimeWindow(PyObject *self, PyObject *args)
    }
 
    switch (PyArray_TYPE(timeArr)) {
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       break;
    default:
       PyErr_Format(PyExc_ValueError, "TimeWindow time array must be int64");

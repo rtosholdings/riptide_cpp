@@ -4261,11 +4261,11 @@ bool MergePreBinned(
    LOGGING("AlignCategorical32 dtype: %d  size1: %lld  size2: %lld\n", dtype, size1, size2);
 
    switch (dtype) {
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       FindLastMatchCategorical<KEY_TYPE, int64_t>(size1, size2, pKey1, pKey2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalUniqueSize);
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       FindLastMatchCategorical<KEY_TYPE, int32_t>(size1, size2, pKey1, pKey2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalUniqueSize);
       break;
    case NPY_FLOAT64:
@@ -4308,8 +4308,8 @@ bool AlignHashMK32(
    CHashLinear<char, int32_t>* pHashLinear = new CHashLinear<char, int32_t>(hashMode);
 
    switch (dtype) {
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       if (isForward) {
          pHashLinear->FindNextMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -4317,7 +4317,7 @@ bool AlignHashMK32(
          pHashLinear->FindLastMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       if (isForward) {
          pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -4371,8 +4371,8 @@ bool AlignHashMK64(
    CHashLinear<char, int64_t>* pHashLinear = new CHashLinear<char, int64_t>(hashMode);
 
    switch (dtype) {
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       if (isForward) {
          pHashLinear->FindNextMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -4381,7 +4381,7 @@ bool AlignHashMK64(
       }
 
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       if (isForward) {
          pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -5171,35 +5171,35 @@ IsMember32(PyObject *self, PyObject *args)
    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
    switch (arrayType1) {
-   case NPY_INT32:
+   CASE_NPY_INT32:
       arrayType1 = NPY_INT32;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       arrayType1 = NPY_UINT32;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       arrayType1 = NPY_INT64;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       arrayType1 = NPY_UINT64;
       break;
    }
 
    switch (arrayType2) {
-   case NPY_INT32:
+   CASE_NPY_INT32:
       arrayType2 = NPY_INT32;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       arrayType2 = NPY_UINT32;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       arrayType2 = NPY_INT64;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       arrayType2 = NPY_UINT64;
       break;
    }
@@ -5278,10 +5278,10 @@ IsMember32(PyObject *self, PyObject *args)
             case NPY_INT16:
                IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
-            case NPY_INT32:
+            CASE_NPY_INT32:
                IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
-            case NPY_INT64:
+            CASE_NPY_INT64:
                IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             }
@@ -5628,11 +5628,11 @@ PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args)
       case NPY_INT16:
          success = MergePreBinned<int16_t>(ArrayLength(key1), (int16_t*)pKey1, pVal1, ArrayLength(key2), (int16_t*)pKey2, pVal2, (int16_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          success = MergePreBinned<int32_t>(ArrayLength(key1), (int32_t*)pKey1, pVal1, ArrayLength(key2), (int32_t*)pKey2, pVal2, (int32_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          success = MergePreBinned<int64_t>(ArrayLength(key1), (int64_t*)pKey1, pVal1, ArrayLength(key2), (int64_t*)pKey2, pVal2, (int64_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       }

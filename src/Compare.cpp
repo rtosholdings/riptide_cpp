@@ -782,7 +782,7 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareDouble<_CMP_LE_OS, COMP_LE>;
       }
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       switch (func) {
       case MATH_OPERATION::CMP_EQ:      return CompareInt32S<COMP32i_EQS<__m256i>, COMP_EQ>;
       case MATH_OPERATION::CMP_NE:      return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
@@ -792,7 +792,7 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareInt32<COMP32i_LE<__m256i>, COMP_LE>;
       }
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       switch (func) {
       // NOTE: if this needs to get sped up, upcast from uint32_t to int64_t  using _mm256_cvtepu32_epi64 and cmpint64
       // For equal, not equal the sign does not matter
@@ -804,8 +804,8 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareAny<uint32_t, COMP_LE>;
       }
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && !(numpyInType2 & 1)) {
          switch (func) {
@@ -828,8 +828,8 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
          }
       }
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && (numpyInType2 & 1)) {
          switch (func) {

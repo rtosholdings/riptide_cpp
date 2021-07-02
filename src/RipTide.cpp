@@ -952,23 +952,21 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       value = (int64_t)*(uint16_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_UINT32:
-//   case NPY_UINT: This enumeration is the same value as NPY_UINT32 above
+   CASE_NPY_UINT32:
       value = (int64_t)*(uint32_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_INT32:
-//   case NPY_INT: This enumeration is the same value as NPY_INT32 above
+   CASE_NPY_INT32:
       value = (int64_t)*(int32_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       value = (int64_t)*(uint64_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       value = (int64_t)*(int64_t*)pInput;
       fvalue = (double)value;
       break;
@@ -995,16 +993,14 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
    case NPY_UINT16:
       pDest->i = _mm256_set1_epi16((int16_t)value);
       break;
-   case NPY_UINT32:
-//   case NPY_UINT: This enumeration has the same value at NPY_UINT32 above
-   case NPY_INT32:
-//   case NPY_INT: This enumeration has the same value as NPY_INT32 above
+   CASE_NPY_UINT32:
+   CASE_NPY_INT32:
       pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_UINT64:
+   
+   CASE_NPY_INT64:
+   
       pDest->ci.i1 = _mm_set1_epi64x(value);
       pDest->ci.i2 = _mm_set1_epi64x(value);
       break;
@@ -1070,16 +1066,14 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
       case NPY_UINT16:
          pDest->i = _mm256_set1_epi16((int16_t)value);
          break;
-      case NPY_UINT32:
-//      case  NPY_UINT: This enumeration has the same value as NPY_UINT32 above
-      case NPY_INT32:
-//      case NPY_INT: This enumeration has the same value as NPY_INT32 above
+      CASE_NPY_UINT32:
+      CASE_NPY_INT32:
          pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
-      case NPY_UINT64:
-      case NPY_ULONGLONG:
-      case NPY_INT64:
-      case  NPY_LONGLONG:
+      CASE_NPY_UINT64:
+      
+      CASE_NPY_INT64:
+
          pDest->ci.i1 = _mm_set1_epi64x(value);
          pDest->ci.i2 = _mm_set1_epi64x(value);
          break;
@@ -1150,21 +1144,19 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value2);
             break;
-         case NPY_INT32:
-//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
+         CASE_NPY_INT32:
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
-         case NPY_UINT32:
-//         case NPY_UINT: This enumeration hasa the same value as NPY_UINT32 above
+         CASE_NPY_UINT32:
             pDest->i = _mm256_set1_epi32((uint32_t)value2);
             break;
-         case NPY_INT64:
-         case NPY_LONGLONG:
+         CASE_NPY_INT64:
+         
             pDest->ci.i1 = _mm_set1_epi64x(value);
             pDest->ci.i2 = _mm_set1_epi64x(value);
             break;
-         case NPY_UINT64:
-         case NPY_ULONGLONG:
+         CASE_NPY_UINT64:
+         
             pDest->ci.i1 = _mm_set1_epi64x(value2);
             pDest->ci.i2 = _mm_set1_epi64x(value2);
             break;
@@ -1197,21 +1189,19 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value);
             break;
-         case NPY_UINT32:
-//         case NPY_UINT: This enumeration has the same value as NPY_UINT32 above
+         CASE_NPY_UINT32:
             pDest->i = _mm256_set1_epi32((uint32_t)value);
             break;
-         case NPY_INT32:
-//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
+         CASE_NPY_INT32:
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
-         case NPY_UINT64:
-         case NPY_ULONGLONG:
+         CASE_NPY_UINT64:
+         
             pDest->ci.i1 = _mm_set1_epi64x((uint64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((uint64_t)value);
             break;
-         case NPY_INT64:
-         case NPY_LONGLONG:
+         CASE_NPY_INT64:
+         
             pDest->ci.i1 = _mm_set1_epi64x((int64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((int64_t)value);
             break;
@@ -2001,12 +1991,12 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_INT16:
       pgDefault = &gDefaultInt16;
       break;
-   case NPY_INT32: 
+   CASE_NPY_INT32: 
 //   case NPY_INT: This is the same numeric value as NPY_INT32 above
       pgDefault = &gDefaultInt32;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       pgDefault = &gDefaultInt64;
       break;
    case NPY_UINT8:
@@ -2015,12 +2005,12 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_UINT16:
       pgDefault = &gDefaultUInt16;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
 //   case NPY_UINT: This is the same numeric value as NPY_UINT32 above
       pgDefault = &gDefaultUInt32;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       pgDefault = &gDefaultUInt64;
       break;
    case NPY_STRING:

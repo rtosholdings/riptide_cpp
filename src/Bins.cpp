@@ -82,13 +82,13 @@ REINDEXCALLBACK ReIndexer(int64_t itemSize, int dtypeIndex) {
    // Get the dtype for the INDEXER (should be int32_t or INT64)
    switch (dtypeIndex) {
 
-   case NPY_INT32:
-   case NPY_UINT32:
+   CASE_NPY_INT32:
+   CASE_NPY_UINT32:
       return ReIndexDataStep1<int32_t>(itemSize);
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_UINT64:
+   
+   CASE_NPY_INT64:
+   
       return ReIndexDataStep1<int64_t>(itemSize);
    case NPY_FLOAT:
       // allow matlab style float indexing?
@@ -247,11 +247,11 @@ REMAP_INDEX ReMapIndexStep1(int numpyOutputType) {
    case NPY_INT16:
       return ReMapIndex<T, int16_t>;
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       return ReMapIndex<T, int32_t>;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       return ReMapIndex<T, int64_t>;
       break;
    default:
@@ -303,11 +303,11 @@ PyObject* ReMapIndex(PyObject *self, PyObject *args) {
       case NPY_INT16:
          func = ReMapIndexStep1<int16_t>(numpyOutType);
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          func = ReMapIndexStep1<int32_t>(numpyOutType);
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          func = ReMapIndexStep1<int64_t>(numpyOutType);
          break;
       default:
@@ -425,11 +425,11 @@ GetNanInfCount(int numpyInType) {
    case NPY_INT16:
       result = NanInfCount<int16_t, U>;
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       result = NanInfCount<int32_t, U>;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       result = NanInfCount<int64_t, U>;
       break;
    case NPY_UINT8:
@@ -438,11 +438,11 @@ GetNanInfCount(int numpyInType) {
    case NPY_UINT16:
       result = NanInfCount<uint16_t, U>;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       result = NanInfCount<uint32_t, U>;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       result = NanInfCount<uint64_t, U>;
       break;
    case NPY_FLOAT:
@@ -481,11 +481,11 @@ PyObject* NanInfCountFromSort(PyObject *self, PyObject *args) {
          NAN_INF_COUNT func = nullptr;
 
          switch (numpyIndexType) {
-         case NPY_INT32:
+         CASE_NPY_INT32:
             func = GetNanInfCount<int32_t>(numpyInType);
             break;
-         case NPY_INT64:
-         case NPY_LONGLONG:
+         CASE_NPY_INT64:
+         
             func = GetNanInfCount<int64_t>(numpyInType);
             break;
          }
@@ -628,11 +628,11 @@ GetMakeBinsSorted(int numpyInType) {
    case NPY_INT16:
       result = MakeBinsSorted<int16_t, U, V>;
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       result = MakeBinsSorted<int32_t, U, V>;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       result = MakeBinsSorted<int64_t, U, V>;
       break;
    case NPY_UINT8:
@@ -641,11 +641,11 @@ GetMakeBinsSorted(int numpyInType) {
    case NPY_UINT16:
       result = MakeBinsSorted<uint16_t, U, V>;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       result = MakeBinsSorted<uint32_t, U, V>;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       result = MakeBinsSorted<uint64_t, U, V>;
       break;
    case NPY_FLOAT:
@@ -721,7 +721,7 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
       MAKE_BINS_SORTED func = NULL;
 
       switch (numpyIndexType) {
-      case NPY_INT32:
+      CASE_NPY_INT32:
          switch (binmode) {
          case 0:
             func = GetMakeBinsSorted<int32_t, int8_t>(numpyInType);
@@ -738,8 +738,8 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
          }
          break;
 
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          switch (binmode) {
          case 0:
             func = GetMakeBinsSorted<int64_t, int8_t>(numpyInType);
@@ -1456,11 +1456,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_INT16:
          result = MakeBinsBSearch<int16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          result = MakeBinsBSearch<int32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          result = MakeBinsBSearch<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
@@ -1469,11 +1469,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_UINT16:
          result = MakeBinsBSearch<uint16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT32:
+      CASE_NPY_UINT32:
          result = MakeBinsBSearch<uint32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT64:
-      case NPY_ULONGLONG:
+      CASE_NPY_UINT64:
+      
          result = MakeBinsBSearch<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
@@ -1500,11 +1500,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_INT16:
          result = SearchSortedLeft<int16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          result = SearchSortedLeft<int32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          result = SearchSortedLeft<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
@@ -1513,11 +1513,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_UINT16:
          result = SearchSortedLeft<uint16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT32:
+      CASE_NPY_UINT32:
          result = SearchSortedLeft<uint32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT64:
-      case NPY_ULONGLONG:
+      CASE_NPY_UINT64:
+      
          result = SearchSortedLeft<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
@@ -1544,11 +1544,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_INT16:
          result = SearchSortedRight<int16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          result = SearchSortedRight<int32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          result = SearchSortedRight<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
@@ -1557,11 +1557,11 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       case NPY_UINT16:
          result = SearchSortedRight<uint16_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT32:
+      CASE_NPY_UINT32:
          result = SearchSortedRight<uint32_t, OUT_TYPE, BINTYPE>;
          break;
-      case NPY_UINT64:
-      case NPY_ULONGLONG:
+      CASE_NPY_UINT64:
+      
          result = SearchSortedRight<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
@@ -1594,16 +1594,16 @@ GetMakeBinsBSearch(int numpyInType, int binType, int searchMode) {
    case NPY_INT16:
       result = GetMakeBinsBSearchPart2<OUT_TYPE, int16_t>(numpyInType, searchMode);
       break;
-   case NPY_INT32:
+   CASE_NPY_INT32:
       result = GetMakeBinsBSearchPart2<OUT_TYPE, int32_t>(numpyInType, searchMode);
       break;
       // NO UINT8/16/32?
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       result = GetMakeBinsBSearchPart2<OUT_TYPE, int64_t>(numpyInType, searchMode);
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       result = GetMakeBinsBSearchPart2<OUT_TYPE, uint64_t>(numpyInType, searchMode);
       break;
    case NPY_FLOAT:
