@@ -199,18 +199,18 @@ template<typename T> FORCE_INLINE const bool COMP_LE(T X, T Y) { return (X <= Y)
 template<typename T> FORCE_INLINE const bool COMP_NE(T X, T Y) { return (X != Y); }
 
 // Comparing int64_t to uint64_t
-template<typename T> FORCE_INLINE const bool COMP_GT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X > Y); }
-template<typename T> FORCE_INLINE const bool COMP_GE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X >= Y); }
-template<typename T> FORCE_INLINE const bool COMP_LT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X < Y); }
-template<typename T> FORCE_INLINE const bool COMP_LE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X <= Y); }
+template<typename T> FORCE_INLINE const bool COMP_GT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return false; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return false; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return true; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_int64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return true; return (X <= Y); }
 
 // Comparing uint64_t to int64_t
-template<typename T> FORCE_INLINE const bool COMP_EQ_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X == Y); }
-template<typename T> FORCE_INLINE const bool COMP_NE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X != Y); }
-template<typename T> FORCE_INLINE const bool COMP_GT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X > Y); }
-template<typename T> FORCE_INLINE const bool COMP_GE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return TRUE; return (X >= Y); }
-template<typename T> FORCE_INLINE const bool COMP_LT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X < Y); }
-template<typename T> FORCE_INLINE const bool COMP_LE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return FALSE; return (X <= Y); }
+template<typename T> FORCE_INLINE const bool COMP_EQ_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return false; return (X == Y); }
+template<typename T> FORCE_INLINE const bool COMP_NE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return true; return (X != Y); }
+template<typename T> FORCE_INLINE const bool COMP_GT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return true; return (X > Y); }
+template<typename T> FORCE_INLINE const bool COMP_GE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return true; return (X >= Y); }
+template<typename T> FORCE_INLINE const bool COMP_LT_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return false; return (X < Y); }
+template<typename T> FORCE_INLINE const bool COMP_LE_uint64_t(T X, T Y) { if ((X | Y) & 0x8000000000000000) return false; return (X <= Y); }
 
 
 
@@ -724,18 +724,18 @@ static void CompareInt16(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t 
 // May return NULL if it cannot handle type or function
 ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
 
-   bool bSpecialComparison = FALSE;
+   bool bSpecialComparison = false;
 
    if (scalarMode == SCALAR_MODE::NO_SCALARS && numpyInType1 != numpyInType2) {
       // Because upcasting an int64_t to a float64 results in precision loss, we try comparisons
       if (sizeof(long) == 8) {
          if (numpyInType1 >= NPY_LONG && numpyInType1 <= NPY_ULONGLONG && numpyInType2 >= NPY_LONG && numpyInType2 <= NPY_ULONGLONG) {
-            bSpecialComparison = TRUE;
+            bSpecialComparison = true;
          }
       }
       else {
          if (numpyInType1 >= NPY_LONGLONG && numpyInType1 <= NPY_ULONGLONG && numpyInType2 >= NPY_LONGLONG && numpyInType2 <= NPY_ULONGLONG) {
-            bSpecialComparison = TRUE;
+            bSpecialComparison = true;
          }
       }
 
@@ -782,7 +782,7 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareDouble<_CMP_LE_OS, COMP_LE>;
       }
       break;
-   CASE_NPY_INT32:
+   case NPY_INT32:
       switch (func) {
       case MATH_OPERATION::CMP_EQ:      return CompareInt32S<COMP32i_EQS<__m256i>, COMP_EQ>;
       case MATH_OPERATION::CMP_NE:      return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
@@ -792,7 +792,7 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareInt32<COMP32i_LE<__m256i>, COMP_LE>;
       }
       break;
-   CASE_NPY_UINT32:
+   case NPY_UINT32:
       switch (func) {
       // NOTE: if this needs to get sped up, upcast from uint32_t to int64_t  using _mm256_cvtepu32_epi64 and cmpint64
       // For equal, not equal the sign does not matter
@@ -804,7 +804,8 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
       case MATH_OPERATION::CMP_LTE:     return CompareAny<uint32_t, COMP_LE>;
       }
       break;
-   CASE_NPY_INT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && !(numpyInType2 & 1)) {
          switch (func) {
@@ -827,7 +828,8 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
          }
       }
       break;
-   CASE_NPY_UINT64:
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
       // signed ints in numpy will have last bit set
       if (numpyInType1 != numpyInType2 && (numpyInType2 & 1)) {
          switch (func) {

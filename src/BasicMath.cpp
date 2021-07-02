@@ -856,12 +856,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpFastSymmetric<float, __m256, AddOp<float>, ADD_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFastSymmetric<double, __m256d, AddOp<double>, ADD_OP_256f64>;
          // proof of concept for i32 addition loop
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AddOp<int32_t>, ADD_OP_256i32>;
-      CASE_NPY_INT64:  return SimpleMathOpFastSymmetric<int64_t, __m256i, AddOp<int64_t>, ADD_OP_256i64>;
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AddOp<int32_t>, ADD_OP_256i32>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, AddOp<int64_t>, ADD_OP_256i64>;
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, AddOp<int16_t>, ADD_OP_256i16>;
       case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t,  __m256i, AddOp<int8_t>, ADD_OP_256i8>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MUL:
       *wantedOutType = numpyInType1;
@@ -870,18 +872,20 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       case NPY_FLOAT:  return SimpleMathOpFastSymmetric<float, __m256, MulOp<float>, MUL_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFastSymmetric<double, __m256d, MulOp<double>, MUL_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MulOp<int32_t>, MUL_OP_256i32>;
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MulOp<int32_t>, MUL_OP_256i32>;
 
-      //CASE_NPY_INT64:  return SimpleMathOpFast<int64_t, __m256i, MulOp<int64_t>, MUL_OP_256i64>;
+      //case NPY_INT64:  case NPY_LONGLONG: return SimpleMathOpFast<int64_t, __m256i, MulOp<int64_t>, MUL_OP_256i64>;
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MulOp<int16_t>, MUL_OP_256i16>;
 
       // Below the intrinsic to multiply is slower so we disabled it (really wants 32bit -> 64bit)
-      //CASE_NPY_UINT32:  return SimpleMathOpFastMul<uint32_t, __m256i>;
+      //case NPY_UINT32:  return SimpleMathOpFastMul<uint32_t, __m256i>;
       // TODO: 64bit multiply can be done with algo..
       // lo1 * lo2 + (lo1 * hi2) << 32 + (hi1 *lo2) << 32)
-      CASE_NPY_UINT64: return SimpleMathOpFastSymmetric<uint64_t, __m256i, MulOp<uint64_t>, MUL_OP_256u64>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpFastSymmetric<uint64_t, __m256i, MulOp<uint64_t>, MUL_OP_256u64>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUB:
       *wantedOutType = numpyInType1;
@@ -889,12 +893,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_FLOAT:  return SimpleMathOpFast<float, __m256, SubOp<float>, SUB_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFast<double, __m256d, SubOp<double>, SUB_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, SubOp<int32_t>, SUB_OP_256i32>;
-      CASE_NPY_INT64:  return SimpleMathOpFast<int64_t, __m256i, SubOp<int64_t>, SUB_OP_256i64>;
+      case NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, SubOp<int32_t>, SUB_OP_256i32>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFast<int64_t, __m256i, SubOp<int64_t>, SUB_OP_256i64>;
       case NPY_INT16:  return SimpleMathOpFast<int16_t, __m256i, SubOp<int16_t>, SUB_OP_256i16>;
       case NPY_INT8:   return SimpleMathOpFast<int8_t,  __m256i, SubOp<int8_t>,  SUB_OP_256i8>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::MIN:
@@ -905,14 +911,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       // TODO: Vector routine needs to be written
       case NPY_FLOAT:  return SimpleMathOpSlowMin<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMin<double>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MinOp<int32_t>, MIN_OPi32>;
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MinOp<int32_t>, MIN_OPi32>;
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MinOp<int16_t>, MIN_OPi16>;
       case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t, __m256i, MinOp<int8_t>, MIN_OPi8>;
-      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MinOp<uint32_t>, MIN_OPu32>;
+      case NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MinOp<uint32_t>, MIN_OPu32>;
       case NPY_UINT16:  return SimpleMathOpFastSymmetric<uint16_t, __m256i, MinOp<uint16_t>, MIN_OPu16>;
       case NPY_UINT8:   return SimpleMathOpFastSymmetric<uint8_t, __m256i, MinOp<uint8_t>, MIN_OPu8>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MAX:
       // This is max for two arrays
@@ -922,14 +928,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       // TODO: Vector routine needs to be written
       case NPY_FLOAT:  return SimpleMathOpSlowMax<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMax<double>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MaxOp<int32_t>, MAX_OPi32>;
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MaxOp<int32_t>, MAX_OPi32>;
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MaxOp<int16_t>, MAX_OPi16>;
       case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t, __m256i, MaxOp<int8_t>, MAX_OPi8>;
-      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MaxOp<uint32_t>, MAX_OPu32>;
+      case NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MaxOp<uint32_t>, MAX_OPu32>;
       case NPY_UINT16:  return SimpleMathOpFastSymmetric<uint16_t, __m256i, MaxOp<uint16_t>, MAX_OPu16>;
       case NPY_UINT8:   return SimpleMathOpFastSymmetric<uint8_t, __m256i, MaxOp<uint8_t>, MAX_OPu8>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::DIV:
@@ -943,9 +949,9 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
       case NPY_FLOAT:  return SimpleMathOpFast<float, __m256, DivOp<float>, DIV_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFast<double, __m256d, DivOp<double>, DIV_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFastDivDouble<int32_t, __m128i, __m256d>;
+      case NPY_INT32:  return SimpleMathOpFastDivDouble<int32_t, __m128i, __m256d>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::LOGICAL_AND:
       *wantedOutType = numpyInType1;
@@ -953,7 +959,7 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_AND:
       *wantedOutType = numpyInType1;
@@ -964,12 +970,15 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, AndOp<int16_t>, AND_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AndOp<int32_t>, AND_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<int64_t, __m256i, AndOp<int64_t>, AND_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AndOp<int32_t>, AND_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, AndOp<int64_t>, AND_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::LOGICAL_OR:
       *wantedOutType = numpyInType1;
@@ -977,7 +986,7 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_OR:
       *wantedOutType = numpyInType1;
@@ -988,12 +997,15 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, OrOp<int16_t>, OR_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, OrOp<int32_t>, OR_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<int64_t, __m256i, OrOp<int64_t>, OR_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, OrOp<int32_t>, OR_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, OrOp<int64_t>, OR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_XOR:
       *wantedOutType = numpyInType1;
@@ -1004,12 +1016,15 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::BITWISE_XOR_SPECIAL:
@@ -1021,12 +1036,15 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_ANDNOT:
       *wantedOutType = numpyInType1;
@@ -1037,12 +1055,15 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFastReverse<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFastReverse<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastReverse<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastReverse<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFastReverse<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFastReverse<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_NOTAND:
       *wantedOutType = numpyInType1;
@@ -1053,21 +1074,24 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       case NPY_BOOL:   return SimpleMathOpFast<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
       case NPY_UINT16:
       case NPY_INT16:  return SimpleMathOpFast<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
-      CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
-      CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFast<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
+      case NPY_UINT32:
+      case NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpFast<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    }
 
-   return NULL;
+   return nullptr;
 }
 
 
 //==========================================================
-// May return NULL if it cannot handle type or function
+// May return nullptr if it cannot handle type or function
 static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
    switch (func) {
    case MATH_OPERATION::ADD:
@@ -1078,10 +1102,15 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowAdd<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowAdd<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowAdd<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowAdd<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowAdd<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowAdd<uint32_t>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowAdd<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowAdd<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowAdd<int64_t>;
+      case NPY_UINT32:
+         return SimpleMathOpSlowAdd<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowAdd<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowAdd<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowAdd<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowAdd<uint8_t>;
@@ -1098,7 +1127,7 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
          }
          break;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUB:
       *wantedOutType = numpyInType1;
@@ -1108,17 +1137,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowSub<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowSub<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowSub<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowSub<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowSub<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowSub<uint32_t>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowSub<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowSub<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowSub<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowSub<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowSub<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowSub<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowSub<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowSub<uint8_t>;
       case NPY_UINT16: return SimpleMathOpSlowSub<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::MUL:
@@ -1129,17 +1162,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowMul<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMul<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowMul<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowMul<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowMul<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowMul<uint32_t>;
-      case NPY_UINT64: return SimpleMathOpSlowMul<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowMul<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowMul<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowMul<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowMul<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowMul<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowMul<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowMul<uint8_t>;
       case NPY_UINT16: return SimpleMathOpSlowMul<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::DIV:
       *wantedOutType = NPY_DOUBLE;
@@ -1155,35 +1192,44 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowDivFloat<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowDiv<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowDiv<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowDiv<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowDiv<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowDiv<uint32_t>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowDiv<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowDiv<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowDiv<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowDiv<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowDiv<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowDiv<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowDiv<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowDiv<uint8_t>;
       case NPY_UINT16: return SimpleMathOpSlowDiv<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUBDATETIMES:
       *wantedOutType = NPY_DOUBLE;
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
-      CASE_NPY_INT32:  return SimpleMathOpSubDateTime<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSubDateTime<int64_t>;
+      case NPY_INT32:  return SimpleMathOpSubDateTime<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSubDateTime<int64_t>;
       }
       printf("bad call to subdatetimes %d %d\n", numpyInType2 , numpyInType1);
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUBDATES:
       *wantedOutType = NPY_INT32;
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
-      CASE_NPY_INT32:  return SimpleMathOpSubDates<int32_t>;
-      CASE_NPY_INT64:  *wantedOutType = NPY_INT64; return SimpleMathOpSubDates<int64_t>;
+      case NPY_INT32:  return SimpleMathOpSubDates<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         *wantedOutType = NPY_INT64;
+         return SimpleMathOpSubDates<int64_t>;
       }
       printf("bad call to subdates %d %d\n", numpyInType2, numpyInType1);
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::FLOORDIV:
       *wantedOutType = numpyInType1;
@@ -1194,10 +1240,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowFloorDiv<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowFloorDiv<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowFloorDiv<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowFloorDiv<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowFloorDiv<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowFloorDiv<uint32_t>;
-      case NPY_UINT64: return SimpleMathOpSlowFloorDiv<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowFloorDiv<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowFloorDiv<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowFloorDiv<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowFloorDiv<uint64_t>;
 
 #ifndef RT_COMPILER_CLANG  // possible error with int8 array and np.floor_divide() with vextractps instruction
       case NPY_INT8:   return SimpleMathOpSlowFloorDiv<int8_t>;
@@ -1206,7 +1256,7 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_UINT16: return SimpleMathOpSlowFloorDiv<uint16_t>;
 #endif
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MOD:
       *wantedOutType = numpyInType1;
@@ -1216,17 +1266,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowRemainder<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowRemainder<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowRemainder<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowMod<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowMod<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowMod<uint32_t>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowMod<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowMod<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowMod<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowMod<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowMod<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowMod<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowMod<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowMod<uint8_t>;
       case NPY_UINT16: return SimpleMathOpSlowMod<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::POWER:
       *wantedOutType = numpyInType1;
@@ -1236,17 +1290,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowPower<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowPower<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowPower<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowPower<int32_t>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowPower<int64_t>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowPower<uint32_t>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowPower<uint64_t>;
+      case NPY_INT32:  return SimpleMathOpSlowPower<int32_t>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+         return SimpleMathOpSlowPower<int64_t>;
+      case NPY_UINT32: return SimpleMathOpSlowPower<uint32_t>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+         return SimpleMathOpSlowPower<uint64_t>;
       case NPY_INT8:   return SimpleMathOpSlowPower<int8_t>;
       case NPY_INT16:  return SimpleMathOpSlowPower<int16_t>;
       case NPY_UINT8:  return SimpleMathOpSlowPower<uint8_t>;
       case NPY_UINT16: return SimpleMathOpSlowPower<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::REMAINDER:
       *wantedOutType = numpyInType1;
@@ -1257,7 +1315,7 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_LONGDOUBLE: return SimpleMathOpSlowRemainder<long double>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::FMOD:
       *wantedOutType = numpyInType1;
@@ -1268,11 +1326,11 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_LONGDOUBLE: return SimpleMathOpSlowFmod<long double>;
 
       }
-      return NULL;
+      return nullptr;
 
    }
 
-   return NULL;
+   return nullptr;
 }
 
 //---------------------------------
@@ -1282,16 +1340,18 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
 // TODO: Replace with call to our FixupDtype() function?
 static int GetNonAmbiguousDtype(int dtype) {
    switch (dtype) {
-   CASE_NPY_INT32:
+   case NPY_INT32:
       dtype = 5;
       break;
-   CASE_NPY_UINT32:
+   case NPY_UINT32:
       dtype = 6;
       break;
-   CASE_NPY_INT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       dtype = 9;
       break;
-   CASE_NPY_UINT64:
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
       dtype = 10;
       break;
    }
@@ -1301,7 +1361,7 @@ static int GetNonAmbiguousDtype(int dtype) {
 //--------------------------------------------------------------------
 // Check to see if we can compute this
 static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
-   ANY_TWO_FUNC pTwoFunc = NULL;
+   ANY_TWO_FUNC pTwoFunc = nullptr;
 
    LOGGING("CheckMathTwo %d  scalar:%d  type1:%d  type2:%d\n", func, scalarMode, numpyInType1, numpyInType2);
 
@@ -1332,7 +1392,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
 
          // Try to get fast one first
          pTwoFunc = GetSimpleMathOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetSimpleMathOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1345,7 +1405,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
       case MATH_OPERATION::CMP_LT:
       case MATH_OPERATION::CMP_LTE:
          pTwoFunc = GetComparisonOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetComparisonOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1369,7 +1429,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
 
          // Try to get fast one first
          pTwoFunc = GetSimpleMathOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetSimpleMathOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1554,7 +1614,7 @@ public:
 
    //-------------------------------------------------------------------
    // 
-   // returns NULL on failure
+   // returns nullptr on failure
    PyObject* PossiblyConvertString(int newType, int oldType, PyObject* inObject) {
       if (newType == NPY_UNICODE && oldType == NPY_STRING) {
          if (PyUnicode_Check(inObject)) {
@@ -1573,7 +1633,7 @@ public:
             }
          }
       } 
-      return NULL;
+      return nullptr;
    }
 
    //-------------------------------------------------------------------
@@ -1602,18 +1662,18 @@ public:
 
    //-------------------------------------------------------------------
    // Arg1: defaultScalarType currently not used
-   // returns FALSE on failure
+   // returns false on failure
    bool CheckInputs(PyObject* args, int defaultScalarType, int64_t funcNumber) {
       if (!PyTuple_CheckExact(args)) {
          PyErr_Format(PyExc_ValueError, "BasicMath arguments needs to be a tuple");
-         return FALSE;
+         return false;
       }
 
       tupleSize = Py_SIZE(args);
 
       if (tupleSize != (expectedTupleSize - 1) && tupleSize != expectedTupleSize) {
          PyErr_Format(PyExc_ValueError, "BasicMath only takes two or three arguments instead of %llu args", tupleSize);
-         return FALSE;
+         return false;
       }
 
       // PyTuple_GetItem will not increment the ref count
@@ -1639,7 +1699,7 @@ public:
       tupleSize = 2;
       inObject1 = input1;
       inObject2 = input2;
-      if (output != NULL) {
+      if (output != nullptr) {
          outputObject = output;
          // This will force the output type
          numpyOutType = PyArray_TYPE((PyArrayObject*)outputObject);
@@ -1650,7 +1710,7 @@ public:
 
    //----------------------------------------
    // Input: numpyInType1 and numpyInType2 must be set
-   // Returns FALSE on error
+   // Returns false on error
    // 
    bool CheckUpcast() {
       // Check if we need to upcast one or both of the arrays
@@ -1684,7 +1744,7 @@ public:
                   PyObject* newarray1 = ConvertSafeInternal(inArr, convertType1);
                   if (!newarray1) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   toDelete3 = newarray1;
                   FillArray1(newarray1);
@@ -1696,7 +1756,7 @@ public:
                   PyObject* newarray2 = ConvertSafeInternal(inArr2, convertType2);
                   if (!newarray2) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   toDelete4 = newarray2;
                   FillArray2(newarray2);
@@ -1704,12 +1764,12 @@ public:
             }
             else {
                LOGGING("BasicMath cannot upcast %d vs %d\n", numpyInType1, numpyInType2);
-               return FALSE;
+               return false;
             }
 
          }
       }
-      return TRUE;
+      return true;
    }
 
 
@@ -1730,12 +1790,12 @@ public:
             LOGGING("Converting object1 to array %s\n", inObject1->ob_type->tp_name);
             // Convert to temp array that must be deleted
             toDelete1 =
-            inObject1 = PyArray_FromAny(inObject1, NULL, 0, 0, NPY_ARRAY_ENSUREARRAY, NULL);
-            if (inObject1 == NULL) {
-               return FALSE;
+            inObject1 = PyArray_FromAny(inObject1, nullptr, 0, 0, NPY_ARRAY_ENSUREARRAY, nullptr);
+            if (inObject1 == nullptr) {
+               return false;
             }
-            isArray1 = TRUE;
-            isScalar1 = FALSE;
+            isArray1 = true;
+            isScalar1 = false;
          }
          else if (isArray2 && !outputObject) {
             // 
@@ -1751,7 +1811,7 @@ public:
                   PyObject* newarray2 = ConvertSafeInternal((PyArrayObject*)inObject2, newType);
                   if (!newarray2) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   // remember to delete temp array
                   toDelete1 =
@@ -1761,9 +1821,9 @@ public:
                else {
                   // Handle conversion from string to unicode here
                   toDelete1 = PossiblyConvertString(newType, oldType, inObject2);
-                  if (!toDelete1) return FALSE;
+                  if (!toDelete1) return false;
                   inObject2 = toDelete1;
-                  return FALSE; // until we handle string compares
+                  return false; // until we handle string compares
                }
             
             }
@@ -1776,12 +1836,12 @@ public:
          if (!isScalar2) {
             LOGGING("Converting object2 to array %s\n", inObject2->ob_type->tp_name);
             toDelete2 =
-            inObject2 = PyArray_FromAny(inObject2, NULL, 0, 0, NPY_ARRAY_ENSUREARRAY, NULL);
-            if (inObject2 == NULL) {
-               return FALSE;
+            inObject2 = PyArray_FromAny(inObject2, nullptr, 0, 0, NPY_ARRAY_ENSUREARRAY, nullptr);
+            if (inObject2 == nullptr) {
+               return false;
             }
-            isArray2 = TRUE;
-            isScalar2 = FALSE;
+            isArray2 = true;
+            isScalar2 = false;
          }
          else if (isArray1 && !outputObject) {
             // 
@@ -1795,7 +1855,7 @@ public:
                   PyObject* newarray1 = ConvertSafeInternal((PyArrayObject*)inObject1, newType);
                   if (!newarray1) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   // remember to delete temp array
                   toDelete2 =
@@ -1804,9 +1864,9 @@ public:
                else {
                   // Handle conversion from string to unicode here
                   toDelete2 =PossiblyConvertString(newType, oldType, inObject1);
-                  if (!toDelete2) return FALSE;
+                  if (!toDelete2) return false;
                   inObject1 = toDelete2;
-                  return FALSE;
+                  return false;
                }
             }
          }
@@ -1840,7 +1900,7 @@ public:
          // TJD added this Dec 11, 2018
          numpyInType1 = numpyInType2;
 
-         if (!bResult) return FALSE;
+         if (!bResult) return false;
 
       }
       else {
@@ -1848,7 +1908,7 @@ public:
          FillArray1(inObject1);
          // Check strides
          if (ndim1 > 0 && itemSize1 != PyArray_STRIDE((PyArrayObject*)inArr, 0)) {
-            return FALSE;
+            return false;
          }
 
          //// check for a scalar passed as array of 1 item
@@ -1861,7 +1921,7 @@ public:
          //      bool bResult =
          //         ConvertSingleItemArray(pDataIn1, GetArrDType(inArr), &m256Scalar1, numpyInType2);
 
-         //      if (!bResult) return FALSE;
+         //      if (!bResult) return false;
          //      pDataIn1 = &m256Scalar1;
          //   }
          //}
@@ -1885,7 +1945,7 @@ public:
 
          LOGGING("Converting second scalar type to %d, bresult: %d,  value: %lld  type: %s\n", numpyInType1, bResult, *(int64_t*)&m256Scalar2, inObject2->ob_type->tp_name);
 
-         if (!bResult) return FALSE;
+         if (!bResult) return false;
 
       }
       else {
@@ -1894,7 +1954,7 @@ public:
 
          // Check strides
          if (ndim2 > 0 && itemSize2 != PyArray_STRIDE((PyArrayObject*)inArr2, 0)) {
-            return FALSE;
+            return false;
          }
 
          //// check for a scalar passed as array of 1 item
@@ -1906,7 +1966,7 @@ public:
          //      bool bResult =
          //         ConvertSingleItemArray(pDataIn1, GetArrDType(inArr), &m256Scalar1, numpyInType2);
 
-         //      if (!bResult) return FALSE;
+         //      if (!bResult) return false;
          //      pDataIn1 = &m256Scalar1;
          //   }
          //}
@@ -1938,7 +1998,7 @@ public:
                   bool bResult =
                      ConvertSingleItemArray(pDataIn1, numpyInType1, &m256Scalar1, convertType1);
 
-                  if (!bResult) return FALSE;
+                  if (!bResult) return false;
                   pDataIn1 = &m256Scalar1;
                   numpyInType1 = convertType1;
 
@@ -1948,7 +2008,7 @@ public:
                      PyObject* newarray2 = ConvertSafeInternal(inArr2, convertType2);
                      if (!newarray2) {
                         // Failed to convert
-                        return FALSE;
+                        return false;
                      }
                      toDelete4 = newarray2;
                      FillArray2(newarray2);
@@ -1956,7 +2016,7 @@ public:
 
                }
                else {
-                  return FALSE;
+                  return false;
                }
 
             }
@@ -1977,7 +2037,7 @@ public:
                   bool bResult =
                      ConvertSingleItemArray(pDataIn2, numpyInType2, &m256Scalar2, convertType2);
 
-                  if (!bResult) return FALSE;
+                  if (!bResult) return false;
                   pDataIn2 = &m256Scalar2;
                   numpyInType2 = convertType2;
 
@@ -1987,7 +2047,7 @@ public:
                      PyObject* newarray1 = ConvertSafeInternal(inArr, convertType1);
                      if (!newarray1) {
                         // Failed to convert
-                        return FALSE;
+                        return false;
                      }
                      toDelete2 = newarray1;
                      FillArray1(newarray1);
@@ -1995,29 +2055,29 @@ public:
 
                }
                else {
-                  return FALSE;
+                  return false;
                }
 
             }
             else {
                LOGGING("BasicMath needs matching 1 dim x 1 dim array   %llu x %llu.  Will punt to numpy.\n", len1, len2);
                //PyErr_Format(PyExc_ValueError, "GenericAnyTwoFunc needs 1 dim x 1 dim array   %d x %d", len1, len2);
-               return FALSE;
+               return false;
             }
          } else {
             // Check if we need to upcast one or both of the arrays
             // bool, NPY_INT8, NPY_UINT8
-            if (!CheckUpcast()) return FALSE;
+            if (!CheckUpcast()) return false;
          }
 
       }
 
 
-      return TRUE;
+      return true;
    }
 
    //-----------------------------------------------------------------------
-   // returns NULL on failure
+   // returns nullptr on failure
    // will ALLOCATE or use an existing numpy array
    PyArrayObject* CheckOutputs(int wantOutType) {
 
@@ -2032,14 +2092,14 @@ public:
          if (!PyArray_Check(outputObject)) {
             LOGGING("BasicMath needs third argument to be an array\n");
             PyErr_Format(PyExc_ValueError, "BasicMath needs third argument to be an array");
-            return NULL;
+            return nullptr;
          }
 
          if (PyArray_TYPE((PyArrayObject*)outputObject) != wantOutType) {
             LOGGING("BasicMath does not match output type %d vs %d\n", PyArray_TYPE((PyArrayObject*)outputObject) ,wantOutType);
             //PyErr_Format(PyExc_ValueError, "BasicMath does not match output type %d vs %d", PyArray_TYPE((PyArrayObject*)outputObject), wantOutType);
             // NOTE: Now handled in FastArray where we will copy result back into array
-            outputObject= NULL;
+            outputObject= nullptr;
          }
          else {
 
@@ -2047,13 +2107,13 @@ public:
             LOGGING("oref %llu  len1:%lld  len2:%lld  len3: %lld\n", outputObject->ob_refcnt, len1, len2, len3);
             if (len3 < len2 || len3 < len1) {
                // something wrong with output size (gonna crash)
-               return NULL;
+               return nullptr;
             }
 
             if (PyArray_ITEMSIZE((PyArrayObject*)outputObject) != PyArray_STRIDE((PyArrayObject*)outputObject, 0)) {
                // output array is strided
                LOGGING("Punting because output array is strided\n");
-               return FALSE;
+               return nullptr;
             }
 
 
@@ -2074,33 +2134,33 @@ public:
          // a[1:] -= a[:-1]
          char* pOutput=PyArray_BYTES(returnObject);
          char* pOutputEnd = pOutput + ArrayLength(returnObject) * PyArray_ITEMSIZE(returnObject);
-         bool bOverlapProblem = FALSE;
+         bool bOverlapProblem = false;
 
          if (len1) {
             if (pDataIn1 > pOutput && pDataIn1 < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap in beginning for input1\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
             char* pTempEnd = (char*)pDataIn1 + (len1 * itemSize1);
             if (pTempEnd > pOutput && pTempEnd < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap at end for input1\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
          }
          if (len2) {
             if (pDataIn2 > pOutput && pDataIn2 < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap in beginning for input2\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
             char* pTempEnd = (char*)pDataIn2 + (len2 * itemSize2);
             if (pTempEnd > pOutput && pTempEnd < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap at end for input2\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
          }
 
          if (bOverlapProblem) {
-            return FALSE;
+            return nullptr;
          }
       }
       else {
@@ -2134,10 +2194,10 @@ public:
          CHECK_MEMORY_ERROR(returnObject);
       }
 
-      if (returnObject == NULL) {
+      if (returnObject == nullptr) {
          LOGGING("!!! BasicMath has no output\n");
          PyErr_Format(PyExc_ValueError, "BasicMath has no output (possibly out of memory)");
-         return NULL;
+         return nullptr;
       }
 
       LOGGING("Len1 %llu   len2  %llu  scalarmode:%d\n", len1, len2, scalarMode);
@@ -2169,28 +2229,28 @@ public:
    int            flags1 = NPY_ARRAY_F_CONTIGUOUS;
    int            flags2 = NPY_ARRAY_F_CONTIGUOUS;
 
-   void*          pDataIn1 = NULL;
-   void*          pDataIn2 = NULL;
+   void*          pDataIn1 = nullptr;
+   void*          pDataIn2 = nullptr;
 
    // PyTuple_GetItem will not increment the ref count
-   PyObject*      inObject1 = NULL;
-   PyObject*      inObject2 = NULL;
+   PyObject*      inObject1 = nullptr;
+   PyObject*      inObject2 = nullptr;
 
-   PyObject*      toDelete1 = NULL;
-   PyObject*      toDelete2 = NULL;
-   PyObject*      toDelete3 = NULL;
-   PyObject*      toDelete4 = NULL;
+   PyObject*      toDelete1 = nullptr;
+   PyObject*      toDelete2 = nullptr;
+   PyObject*      toDelete3 = nullptr;
+   PyObject*      toDelete4 = nullptr;
 
    // often the same as inObject1/2 
-   PyArrayObject *inArr = NULL;
-   PyArrayObject *inArr2 = NULL;
+   PyArrayObject *inArr = nullptr;
+   PyArrayObject *inArr2 = nullptr;
 
-   PyArrayObject* returnObject = NULL;
-   PyObject*      outputObject = NULL;
+   PyArrayObject* returnObject = nullptr;
+   PyObject*      outputObject = nullptr;
 
    int32_t          scalarMode = SCALAR_MODE::NO_SCALARS;
-   bool           isScalar1 = FALSE;
-   bool           isScalar2 = FALSE;
+   bool           isScalar1 = false;
+   bool           isScalar2 = false;
 
    Py_ssize_t     tupleSize = 0;
 
@@ -2210,7 +2270,7 @@ OLD_CALLBACK bmOldCallback;
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
 static bool BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-   bool didSomeWork = FALSE;
+   bool didSomeWork = false;
    OLD_CALLBACK* OldCallback = (OLD_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    int64_t typeSizeIn = OldCallback->FunctionList->InputItemSize;
@@ -2255,7 +2315,7 @@ static bool BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, in
       }
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -2275,7 +2335,7 @@ void WorkTwoStubCall(FUNCTION_LIST* anyTwoStubCall, void* pDataIn, void* pDataIn
    // Check if we can use worker threads
    stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(len);
 
-   if (pWorkItem == NULL) {
+   if (pWorkItem == nullptr) {
       // Threading not allowed for this work item, call it directly from main thread
       anyTwoStubCall->AnyTwoStubCall(pDataIn, pDataIn2, pDataOut, len, scalarMode);
       return;
@@ -2509,7 +2569,7 @@ PyObject* ConcatTwoUnicodes(
 
 //-------------------------------------------------------------
 // Called when adding two strings
-// May return NULL on failure, else new string array
+// May return nullptr on failure, else new string array
 static PyObject* PossiblyAddUnicode(CTwoInputs&  twoInputs) {
    int32_t inType = -1;
 
@@ -2549,7 +2609,7 @@ static PyObject* PossiblyAddUnicode(CTwoInputs&  twoInputs) {
             twoInputs.len1 >= twoInputs.len2 ? twoInputs.len1 : twoInputs.len2);
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 //-----------------------------------------------------------------------------------
@@ -2572,14 +2632,14 @@ TwoInputsInternal(CTwoInputs&  twoInputs, int64_t funcNumber) {
    }
 
    // Now check if we can perform the function requested
-   ANY_TWO_FUNC pTwoFunc = NULL;
+   ANY_TWO_FUNC pTwoFunc = nullptr;
    int wantedOutputType = -1;
 
    pTwoFunc=
    CheckMathOpTwoInputs((int)funcNumber, twoInputs.scalarMode, twoInputs.numpyInType1, twoInputs.numpyInType2, twoInputs.numpyOutType, &wantedOutputType);
 
    // Place holder for output array
-   PyArrayObject* outputArray = NULL;
+   PyArrayObject* outputArray = nullptr;
 
    //if (pTwoFunc && wantedOutputType != -1 && twoInputs.numpyOutType == wantedOutputType) {
    //   printf("Wanted output type %d does not match %d\n", wantedOutputType, numpyOutputType);
@@ -2651,13 +2711,13 @@ TwoInputsInternal(CTwoInputs&  twoInputs, int64_t funcNumber) {
 // If NONE is returned, punt to numpy
 PyObject *
 BasicMathTwoInputs(PyObject *self, PyObject *args) {
-   PyObject* tuple = NULL;
+   PyObject* tuple = nullptr;
    int64_t funcNumber;
    int64_t numpyOutputType;
 
    if (Py_SIZE(args) != 3) {
       PyErr_Format(PyExc_ValueError, "BasicMathTwoInputs requires three inputs: tuple, long, long");
-      return NULL;
+      return nullptr;
    }
 
    tuple = PyTuple_GET_ITEM(args, 0);
@@ -2666,7 +2726,7 @@ BasicMathTwoInputs(PyObject *self, PyObject *args) {
 
    if (!PyTuple_CheckExact(tuple)) {
       PyErr_Format(PyExc_ValueError, "BasicMathTwoInputs arguments needs to be a tuple");
-      return NULL;
+      return nullptr;
    }
 
    // Examine data
@@ -2687,14 +2747,14 @@ BasicMathTwoInputs(PyObject *self, PyObject *args) {
 
 //-----------------------------------------------------------------------------------
 // Called internally when type class numbermethod called
-// inputOut can be NULL if there is no output array
+// inputOut can be nullptr if there is no output array
 PyObject *
 BasicMathTwoInputsFromNumber(PyObject* input1, PyObject* input2, PyObject* output, int64_t funcNumber) {
 
    CTwoInputs  twoInputs((int)0, (int)funcNumber);
 
    // Check the inputs to see if the user request makes sense
-   bool result = FALSE;
+   bool result = false;
    result = twoInputs.CheckInputs(input1, input2, output, funcNumber);
 
    if (result) {
@@ -2862,7 +2922,7 @@ bool WhereCallback(void* callbackArgT, int core, int64_t start, int64_t length) 
       }
    }
    
-   return TRUE;
+   return true;
 }
 
 //========================================================================
@@ -2927,7 +2987,7 @@ bool WhereCallbackString(void* callbackArgT, int core, int64_t start, int64_t le
    }
    break;
    }
-   return TRUE;
+   return true;
 }
 
 
@@ -2942,8 +3002,8 @@ bool WhereCallbackString(void* callbackArgT, int core, int64_t start, int64_t le
 //
 PyObject *
 Where(PyObject *self, PyObject *args) {
-   PyArrayObject *inBool1 = NULL;
-   PyObject* tuple = NULL;
+   PyArrayObject *inBool1 = nullptr;
+   PyObject* tuple = nullptr;
    int64_t numpyOutputType;
    int64_t numpyItemSize;
 
@@ -2954,17 +3014,17 @@ Where(PyObject *self, PyObject *args) {
       &numpyOutputType,
       &numpyItemSize)) {
 
-      return NULL;
+      return nullptr;
    }
 
    if (!PyTuple_CheckExact(tuple)) {
       PyErr_Format(PyExc_ValueError, "Where: second argument needs to be a tuple");
-      return NULL;
+      return nullptr;
    }
 
    if (PyArray_TYPE(inBool1) != 0) {
       PyErr_Format(PyExc_ValueError, "Where: first argument must be a boolean array");
-      return NULL;
+      return nullptr;
    }
 
    // Examine data
@@ -2977,7 +3037,7 @@ Where(PyObject *self, PyObject *args) {
    LOGGING("Where: Examining data for func types: %d %d\n", twoInputs.numpyInType1, twoInputs.numpyInType2);
 
    // Check the inputs to see if the user request makes sense
-   bool result = FALSE;
+   bool result = false;
 
    result = twoInputs.CheckInputs(tuple, 0, MATH_OPERATION::WHERE);
 
@@ -2986,7 +3046,7 @@ Where(PyObject *self, PyObject *args) {
       LOGGING("Where input: scalarmode: %d  in1:%d in2:%d  out:%d  length: %lld  itemsize: %lld\n", twoInputs.scalarMode, twoInputs.numpyInType1, twoInputs.numpyInType2, twoInputs.numpyOutType, length, numpyItemSize);
 
       // Place holder for output array
-      PyArrayObject* outputArray = NULL;
+      PyArrayObject* outputArray = nullptr;
 
       outputArray =
          AllocateNumpyArray(1, (npy_intp*)&length, (int)numpyOutputType, numpyItemSize);
@@ -3003,8 +3063,8 @@ Where(PyObject *self, PyObject *args) {
          char* pInput1 = (char*)twoInputs.pDataIn1;
          char* pInput2 = (char*)twoInputs.pDataIn2;
 
-         char* extraAlloc1 = NULL;
-         char* extraAlloc2 = NULL;
+         char* extraAlloc1 = nullptr;
+         char* extraAlloc2 = nullptr;
 
          // If we have scalar strings, we must make sure the length is the same
          if (numpyOutputType == NPY_STRING || numpyOutputType == NPY_UNICODE) {
@@ -3068,14 +3128,14 @@ Where(PyObject *self, PyObject *args) {
          if (extraAlloc1) {
             free(extraAlloc1);
          }
-         if (extraAlloc2 == NULL) {
+         if (extraAlloc2 == nullptr) {
             free(extraAlloc2);
          }
          return (PyObject*)outputArray;
       }
 
       PyErr_Format(PyExc_ValueError, "Where could not allocate a numpy array");
-      return NULL;
+      return nullptr;
 
    }
 

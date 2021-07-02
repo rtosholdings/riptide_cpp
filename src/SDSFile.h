@@ -359,7 +359,7 @@ struct SDS_FILE_HEADER {
    }
 
    // only valid after file header has been filled in
-   INT64    GetEndOfFileOffset() {
+   int64_t    GetEndOfFileOffset() {
       return TotalArrayCompressedSize + ArrayFirstOffset;
    }
 };
@@ -791,7 +791,7 @@ extern "C" {
 
    typedef bool(*SDS_WRITE_FILE)(const char*, const char*, SDS_WRITE_INFO*, SDS_WRITE_CALLBACKS*);
    typedef void*(*SDS_READ_FILE)(const char*, const char*, SDS_READ_INFO*, SDS_READ_CALLBACKS*);
-   typedef void*(*SDS_READ_MANY_FILES)(SDS_MULTI_READ*, SDS_STRING_LIST*, INT64, int, SDS_READ_CALLBACKS*);
+   typedef void*(*SDS_READ_MANY_FILES)(SDS_MULTI_READ*, SDS_STRING_LIST*, int64_t, int, SDS_READ_CALLBACKS*);
    typedef char*(*SDS_GET_LAST_ERROR)();
    typedef void(*SDS_CLEAR_BUFFERS)();
 }

@@ -326,7 +326,7 @@ public:
       pSuperArray = NULL;
       pBoolFilterObject = NULL;
       pBoolFilter = NULL;
-      bAllocated = FALSE;
+      bAllocated = false;
 
       tupleSize = PyTuple_GET_SIZE(args);
 
@@ -386,7 +386,7 @@ public:
             //printf("row width %llu   rows %llu\n", totalItemSize, totalRows);
 
             if (listSize > 1) {
-               bAllocated = TRUE;
+               bAllocated = true;
                // Make rows
                pSuperArray = RotateArrays(listSize, aInfo);
             }
@@ -759,13 +759,13 @@ bool GroupByPackFinal32(
       *ppSortArray = (PyObject*)sortArray;
       *ppFirstArray = (PyObject*)firstArray;
       *ppCountArray = (PyObject*)countArray;
-      return TRUE;
+      return true;
    }
 
    CHECK_MEMORY_ERROR(0);
 
    // known possible memory leak here
-   return FALSE;
+   return false;
 }
 
 
@@ -806,13 +806,13 @@ GroupByPack32(PyObject* self, PyObject* args) {
 
       int32_t* pNextArray = NULL;
 
-      bool bMustFree = FALSE;
+      bool bMustFree = false;
 
       int32_t* pGroupArray = NULL;
 
       if (!PyArray_Check(nextArray)) {
          // Next was not supplied and must be calculated
-         bMustFree = TRUE;
+         bMustFree = true;
 
          int64_t allocsize = sizeof(int32_t) * (numUnique + GB_BASE_INDEX);
          pGroupArray = (int32_t*)WORKSPACE_ALLOC(allocsize);
@@ -824,10 +824,11 @@ GroupByPack32(PyObject* self, PyObject* args) {
          case NPY_INT16:
             pNextArray = GroupByPackFixup32<int16_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
-         CASE_NPY_INT32:
+         case NPY_INT32:
             pNextArray = GroupByPackFixup32<int32_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
-         CASE_NPY_INT64:
+         case NPY_INT64:
+         case NPY_LONGLONG:
             pNextArray = GroupByPackFixup32<int64_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          default:
@@ -847,7 +848,7 @@ GroupByPack32(PyObject* self, PyObject* args) {
       PyObject* firstArray = NULL;
       PyObject* countArray = NULL;
 
-      bool bResult = FALSE;
+      bool bResult = false;
 
       switch (numpyIndexType) {
       case NPY_INT8:
@@ -856,10 +857,11 @@ GroupByPack32(PyObject* self, PyObject* args) {
       case NPY_INT16:
          bResult = GroupByPackFinal32<int16_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          bResult = GroupByPackFinal32<int32_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          bResult = GroupByPackFinal32<int64_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       default:
@@ -909,7 +911,7 @@ PyObject *
 MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
 
    long hashMode = HASH_MODE::HASH_MODE_MASK;
-   bool parallelMode = FALSE;
+   bool parallelMode = false;
 
    if (!PyTuple_Check(args)) {
       PyErr_Format(PyExc_ValueError, "MultiKeyGroupBy32 arguments needs to be a tuple");
@@ -1389,7 +1391,7 @@ MultiKeyRolling(PyObject *self, PyObject *args)
 
       // Turn off caching because we want this to remain
       bool prevValue = g_cMathWorker->NoCaching;
-      g_cMathWorker->NoCaching = TRUE;
+      g_cMathWorker->NoCaching = true;
 
       void* pKeepRolling = 
       MultiKeyRollingStep2(
@@ -1710,10 +1712,10 @@ PyObject *MultiKeyAlign32(PyObject *self, PyObject *args)
       void* pVal1 = PyArray_BYTES(pvalArray1);
       void* pVal2 = PyArray_BYTES(pvalArray2);
       PyArrayObject* indexArray = (PyArrayObject*)Py_None;
-      bool isIndex32 = TRUE;
-      bool success = FALSE;
+      bool isIndex32 = true;
+      bool success = false;
       if (mkp1.totalRows > 2000000000 || mkp2.totalRows > 2000000000) {
-         isIndex32 = FALSE;
+         isIndex32 = false;
       }
       LOGGING("MultiKeyAlign32 total rows %lld %lld\n", mkp1.totalRows, mkp2.totalRows);
       try {
@@ -1819,10 +1821,11 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int32_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int32_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = MakeiGroup2<int64_t, int32_t>;
          break;
       default:
@@ -1837,10 +1840,11 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int64_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int64_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = MakeiGroup2<int64_t, int64_t>;
          break;
       default:
@@ -1928,10 +1932,11 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int32_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int32_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = MakeiGroup<int64_t, int32_t>;
          break;
       default:
@@ -1946,10 +1951,11 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int64_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int64_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = MakeiGroup<int64_t, int64_t>;
          break;
       default:
@@ -2088,7 +2094,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
                callbackArg->pstBinCount[t].BinHigh);
 
             LOGGING("[%d] %lld completed\n", core, workIndex);
-            return TRUE;
+            return true;
          };
 
          LOGGING("multithread makeigroup   %lld cores   %lld unique   %lld rows\n", cores, totalUnique, totalRows);
@@ -2170,10 +2176,11 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int32_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int32_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = BinCountAlgo<int64_t, int32_t>;
          break;
       default:
@@ -2188,10 +2195,11 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int64_t>;
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int64_t>;
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pBinFunc = BinCountAlgo<int64_t, int64_t>;
          break;
       default:
@@ -2272,7 +2280,7 @@ int64_t InternalBinCount(
          callbackArg->uniqueRows);
 
       LOGGING("[%d] %lld completed\n", core, workIndex);
-      return TRUE;
+      return true;
    };
 
    LOGGING("multithread bincount   %lld cores   %lld unique   %lld rows\n", cores, unique_rows, totalRows);
@@ -2515,7 +2523,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                         callbackArg->unique_rows);
 
                      LOGGING("[%d] %lld completed\n", core, workIndex);
-                     return TRUE;
+                     return true;
                   };
 
                   LOGGING("multithread makeigroup2   %lld cores   %lld unique   %lld rows\n", cores, unique_rows, totalRows);

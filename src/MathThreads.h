@@ -41,8 +41,8 @@ extern pthread_cond_t  g_WakeupCond;
 //WINAPI
 //WaitOnAddress(
 //   _In_reads_bytes_(AddressSize) volatile void * Address,
-//   _In_reads_bytes_(AddressSize) PVOID CompareAddress,
-//   _In_ SIZE_T AddressSize,
+//   _In_reads_bytes_(AddressSize) void* CompareAddress,
+//   _In_ size_t AddressSize,
 //   _In_opt_ DWORD dwMilliseconds
 //);
 //
@@ -50,22 +50,22 @@ extern pthread_cond_t  g_WakeupCond;
 //void
 //WINAPI
 //WakeByAddressSingle(
-//   _In_ PVOID Address
+//   _In_ void* Address
 //);
 //
 //
 //void
 //WINAPI
 //WakeByAddressAll(
-//   _In_ PVOID Address
+//   _In_ void* Address
 //);
 
 //-------------------------------------------------------------------
 //
 // global scope
-typedef void(WINAPI *WakeSingleAddress)(PVOID);
-typedef void(WINAPI *WakeAllAddress)(PVOID);
-typedef bool(WINAPI *WaitAddress)(volatile void*, PVOID, SIZE_T, DWORD);
+typedef void(WINAPI *WakeSingleAddress)(void*);
+typedef void(WINAPI *WakeAllAddress)(void*);
+typedef bool(WINAPI *WaitAddress)(volatile void*, void*, size_t, uint32_t);
 
 extern WakeSingleAddress g_WakeSingleAddress;
 extern WakeAllAddress g_WakeAllAddress;
@@ -352,12 +352,12 @@ struct stWorkerRing {
          if (maxThreadsToWake < 5) {
             // In windows faster to wake single if just a few threads
             for (int i = 0; i < maxThreadsToWake; i++) {
-               g_WakeSingleAddress((PVOID)&WorkIndex);
+               g_WakeSingleAddress((void*)&WorkIndex);
             }
          }
          else {
             // In windows the more threads we wake up, the longer it takes to return from this OS call
-            g_WakeAllAddress((PVOID)&WorkIndex);
+            g_WakeAllAddress((void*)&WorkIndex);
          }
       }
 
@@ -384,7 +384,7 @@ struct stWorkerRing {
 };
 
 WakeSingleAddress InitWakeCalls();
-//DWORD WINAPI WorkerThreadFunction(LPVOID lpParam);
+//DWORD WINAPI WorkerThreadFunction(void* lpParam);
 
 
 

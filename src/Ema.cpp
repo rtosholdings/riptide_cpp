@@ -515,12 +515,16 @@ ROLLING_FUNC GetRollingFunction(int64_t func, int32_t inputType) {
    case NPY_LONGDOUBLE: return EmaBase<long double, long double>::GetRollingFunction(func);
    case NPY_INT8:   return EmaBase<int8_t, int64_t>::GetRollingFunction(func);
    case NPY_INT16:  return EmaBase<int16_t, int64_t>::GetRollingFunction(func);
-   CASE_NPY_INT32:  return EmaBase<int32_t, int64_t>::GetRollingFunction(func);
-   CASE_NPY_UINT32: return EmaBase<uint32_t, int64_t>::GetRollingFunction(func);
-   CASE_NPY_INT64:  return EmaBase<int64_t, int64_t>::GetRollingFunction(func);
+   case NPY_INT32:  return EmaBase<int32_t, int64_t>::GetRollingFunction(func);
+   case NPY_UINT32: return EmaBase<uint32_t, int64_t>::GetRollingFunction(func);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+      return EmaBase<int64_t, int64_t>::GetRollingFunction(func);
    case NPY_UINT8:  return EmaBase<uint8_t, int64_t>::GetRollingFunction(func);
    case NPY_UINT16: return EmaBase<uint16_t, int64_t>::GetRollingFunction(func);
-   CASE_NPY_UINT64: return EmaBase<uint64_t, int64_t>::GetRollingFunction(func);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+      return EmaBase<uint64_t, int64_t>::GetRollingFunction(func);
    }
 
    return NULL;
@@ -534,12 +538,16 @@ ROLLING_FUNC GetRollingFunction2(int64_t func, int32_t inputType) {
    case NPY_LONGDOUBLE: return EmaBase<long double, long double>::GetRollingFunction2(func);
    case NPY_INT8:   return EmaBase<int8_t, double>::GetRollingFunction2(func);
    case NPY_INT16:  return EmaBase<int16_t, double>::GetRollingFunction2(func);
-   CASE_NPY_INT32:  return EmaBase<int32_t, double>::GetRollingFunction2(func);
-   CASE_NPY_UINT32:  return EmaBase<uint32_t, double>::GetRollingFunction2(func);
-   CASE_NPY_INT64:  return EmaBase<int64_t, double>::GetRollingFunction2(func);
+   case NPY_INT32:  return EmaBase<int32_t, double>::GetRollingFunction2(func);
+   case NPY_UINT32:  return EmaBase<uint32_t, double>::GetRollingFunction2(func);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+      return EmaBase<int64_t, double>::GetRollingFunction2(func);
    case NPY_UINT8:  return EmaBase<uint8_t, double>::GetRollingFunction2(func);
    case NPY_UINT16: return EmaBase<uint16_t, double>::GetRollingFunction2(func);
-   CASE_NPY_UINT64: return EmaBase<uint64_t, double>::GetRollingFunction2(func);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+      return EmaBase<uint64_t, double>::GetRollingFunction2(func);
    }
 
    return NULL;
@@ -1466,10 +1474,14 @@ static EMA_BY_TWO_FUNC GetEmaByStep2(int timeType, EMA_FUNCTIONS func) {
    case NPY_FLOAT:  return EmaByBase<T, double, float, K>::GetFunc(func);
    case NPY_DOUBLE: return EmaByBase<T, double, double, K>::GetFunc(func);
    case NPY_LONGDOUBLE: return EmaByBase<T, long double, long double, K>::GetFunc(func);
-   CASE_NPY_INT32:  return EmaByBase<T, double, int32_t, K>::GetFunc(func);
-   CASE_NPY_INT64:  return EmaByBase<T, double, int64_t, K>::GetFunc(func);
-   CASE_NPY_UINT32: return EmaByBase<T, double, uint32_t, K>::GetFunc(func);
-   CASE_NPY_UINT64: return EmaByBase<T, double, uint64_t, K>::GetFunc(func);
+   case NPY_INT32:  return EmaByBase<T, double, int32_t, K>::GetFunc(func);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+      return EmaByBase<T, double, int64_t, K>::GetFunc(func);
+   case NPY_UINT32: return EmaByBase<T, double, uint32_t, K>::GetFunc(func);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return EmaByBase<T, double, uint64_t, K>::GetFunc(func);
    }
    return NULL;
 
@@ -1492,13 +1504,17 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_BOOL:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
       case NPY_INT8:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
       case NPY_INT16:  *outputType = NPY_INT64; return CumSum<int16_t, int64_t, K>;
-      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumSum<int32_t, int64_t, K>;
-      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumSum<int64_t, int64_t, K>;
+      case NPY_INT32:  *outputType = NPY_INT64; return CumSum<int32_t, int64_t, K>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           *outputType = NPY_INT64; return CumSum<int64_t, int64_t, K>;
 
       case NPY_UINT8:  *outputType = NPY_UINT64; return CumSum<uint8_t,  uint64_t, K>;
       case NPY_UINT16: *outputType = NPY_UINT64; return CumSum<uint16_t, uint64_t, K>;
-      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumSum<uint32_t, uint64_t, K>;
-      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumSum<uint64_t, uint64_t, K>;
+      case NPY_UINT32: *outputType = NPY_UINT64; return CumSum<uint32_t, uint64_t, K>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+          *outputType = NPY_UINT64; return CumSum<uint64_t, uint64_t, K>;
 
       }
       break;
@@ -1511,13 +1527,17 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_BOOL:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
       case NPY_INT8:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
       case NPY_INT16:  *outputType = NPY_INT64; return CumProd<int16_t, int64_t, K>;
-      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumProd<int32_t, int64_t, K>;
-      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumProd<int64_t, int64_t, K>;
+      case NPY_INT32:  *outputType = NPY_INT64; return CumProd<int32_t, int64_t, K>;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           *outputType = NPY_INT64; return CumProd<int64_t, int64_t, K>;
 
       case NPY_UINT8:  *outputType = NPY_UINT64; return CumProd<uint8_t, uint64_t, K>;
       case NPY_UINT16: *outputType = NPY_UINT64; return CumProd<uint16_t, uint64_t, K>;
-      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumProd<uint32_t, uint64_t, K>;
-      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumProd<uint64_t, uint64_t, K>;
+      case NPY_UINT32: *outputType = NPY_UINT64; return CumProd<uint32_t, uint64_t, K>;
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+          *outputType = NPY_UINT64; return CumProd<uint64_t, uint64_t, K>;
 
       }
       break;
@@ -1538,12 +1558,16 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_LONGDOUBLE: return GetEmaByStep2<long double, K>(timeType, func);
       case NPY_INT8:   return GetEmaByStep2<int8_t, K>(timeType, func);
       case NPY_INT16:  return GetEmaByStep2<int16_t, K>(timeType, func);
-      CASE_NPY_INT32:  return GetEmaByStep2<int32_t, K>(timeType, func);
-      CASE_NPY_INT64:  return GetEmaByStep2<int64_t, K>(timeType, func);
+      case NPY_INT32:  return GetEmaByStep2<int32_t, K>(timeType, func);
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           return GetEmaByStep2<int64_t, K>(timeType, func);
       case NPY_UINT8:  return GetEmaByStep2<uint8_t, K>(timeType, func);
       case NPY_UINT16: return GetEmaByStep2<uint16_t, K>(timeType, func);
-      CASE_NPY_UINT32: return GetEmaByStep2<uint32_t, K>(timeType, func);
-      CASE_NPY_UINT64: return GetEmaByStep2<uint64_t, K>(timeType, func);
+      case NPY_UINT32: return GetEmaByStep2<uint32_t, K>(timeType, func);
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
+          return GetEmaByStep2<uint64_t, K>(timeType, func);
 
       }
       break;
@@ -1669,8 +1693,9 @@ EmaAll32(PyObject *self, PyObject *args)
    switch (iKeyType) {
    case NPY_INT8:
    case NPY_INT16:
-   CASE_NPY_INT32:
-   CASE_NPY_INT64:
+   case NPY_INT32:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       break;
    default:
       PyErr_Format(PyExc_ValueError, "EmaAll32 key param must int8, int16, int32, int64");
@@ -1773,10 +1798,11 @@ EmaAll32(PyObject *self, PyObject *args)
       case NPY_INT16:
          pFunction = GetEmaByFunction<int16_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
-      CASE_NPY_INT32:
+      case NPY_INT32:
          pFunction = GetEmaByFunction<int32_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
-      CASE_NPY_INT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
          pFunction = GetEmaByFunction<int64_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
       }
@@ -2039,7 +2065,7 @@ bool InterpolateExtrap(void* callbackArgT, int core, int64_t start, int64_t leng
       }
 
    }
-   return TRUE;
+   return true;
 }
 
 

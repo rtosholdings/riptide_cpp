@@ -6,27 +6,27 @@
 
 // allocated on 64 byte alignment
 struct stRecycleItem {
-   INT16                type;          // numpy type -- up to maximum type
-   INT16                initRefCount;  // ref count when first put in q
-   INT32                ndim;          // number of dims
-   INT64                totalSize;     // total size
-   UINT64               tsc;           // time stamp counter
+   int16_t                type;          // numpy type -- up to maximum type
+   int16_t                initRefCount;  // ref count when first put in q
+   int32_t                ndim;          // number of dims
+   int64_t                totalSize;     // total size
+   uint64_t               tsc;           // time stamp counter
    void*                memoryAddress;
    PyArrayObject*       recycledArray;
 };
 
 
-static const INT64 RECYCLE_ENTRIES = 64;
-static const INT64 RECYCLE_MAXIMUM_TYPE = 14;
-static const INT64 RECYCLE_MAXIMUM_SEARCH = 4;
-static const INT64 RECYCLE_MASK = 3;
-static const INT64 RECYCLE_MIN_SIZE = 1;
+static const int64_t RECYCLE_ENTRIES = 64;
+static const int64_t RECYCLE_MAXIMUM_TYPE = 14;
+static const int64_t RECYCLE_MAXIMUM_SEARCH = 4;
+static const int64_t RECYCLE_MASK = 3;
+static const int64_t RECYCLE_MIN_SIZE = 1;
 
 struct stRecycleList {
    // Circular list, when Head==Tail no items
 
-   INT32             Head;
-   INT32             Tail;
+   int32_t             Head;
+   int32_t             Tail;
 
    stRecycleItem     Item[RECYCLE_MAXIMUM_SEARCH];
 };
@@ -41,11 +41,11 @@ PyObject *TryRecycleNumpy(PyObject *self, PyObject *args);
 PyObject *SetRecycleMode(PyObject *self, PyObject *args);
 
 
-PyArrayObject* RecycleFindArray(INT32 ndim, INT32 type, INT64 totalSize);
+PyArrayObject* RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize);
 
 void InitRecycler();
 
-BOOL RecycleNumpyInternal(PyArrayObject *inArr);
+bool RecycleNumpyInternal(PyArrayObject *inArr);
 
 void* WorkSpaceAllocLarge(size_t HashTableAllocSize);
 void WorkSpaceFreeAllocLarge(void* &pHashTableAny, size_t HashTableAllocSize);
@@ -53,4 +53,4 @@ void WorkSpaceFreeAllocLarge(void* &pHashTableAny, size_t HashTableAllocSize);
 void* WorkSpaceAllocSmall(size_t BitAllocSize);
 void WorkSpaceFreeAllocSmall(void* &pBitFields, size_t BitAllocSize);
 
-INT64 GarbageCollect(INT64 timespan, bool verbose);
+int64_t GarbageCollect(int64_t timespan, bool verbose);

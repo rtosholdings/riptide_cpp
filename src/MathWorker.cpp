@@ -300,12 +300,12 @@ extern "C" {
    }
 
 
-   VOID Sleep(DWORD dwMilliseconds) {
+   void Sleep(unsigned int dwMilliseconds) {
       usleep(dwMilliseconds * 1000);
    }
 
    bool CloseHandle(THANDLE hObject) {
-      return TRUE;
+      return true;
    }
 
    pid_t GetCurrentThread() {
@@ -367,7 +367,7 @@ extern "C" {
       }
 
       //CPU_ISSET = 0xFF;
-      return TRUE;
+      return true;
    
    #else
    #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
@@ -377,19 +377,19 @@ extern "C" {
    }
 
 
-   HANDLE GetCurrentProcess(VOID) {
+   HANDLE GetCurrentProcess() {
       return NULL;
    }
 
-   DWORD  GetLastError(VOID) {
+   unsigned int  GetLastError() {
       return 0;
    }
 
-   HANDLE CreateThread(VOID* lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
+   HANDLE CreateThread(void* lpThreadAttributes, size_t dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter, unsigned int dwCreationFlags, uint32_t* lpThreadId) {
       return NULL;
    }
 
-   HMODULE LoadLibraryW(const WCHAR* lpLibFileName) {
+   HMODULE LoadLibraryW(const wchar_t* lpLibFileName) {
       return NULL;
    }
 
@@ -443,7 +443,7 @@ int GetProcCount() {
 
    uint64_t mask1;
    uint64_t mask2;
-   INT count;
+   int32_t count;
 
    count = 0;
    GetProcessAffinityMask(proc, &mask1, &mask2);

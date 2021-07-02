@@ -33,7 +33,7 @@ int64_t IsMemberHashCategorical(
    int64_t size2,
    void* pInput2,
    int32_t* pOutput,
-   INT sizeType,
+   int32_t sizeType,
    HASH_MODE hashMode,
    int64_t hintSize);
 
@@ -43,7 +43,7 @@ int64_t IsMemberHashCategorical64(
    int64_t size2,
    void* pInput2,
    int64_t* pOutput,
-   INT sizeType,
+   int32_t sizeType,
    HASH_MODE hashMode,
    int64_t hintSize);
 
@@ -56,7 +56,7 @@ void* IsMemberHash32(
    void* pInput2,
    U* pOutput,
    int8_t* pBooleanOutput,
-   INT sizeType,
+   int32_t sizeType,
    HASH_MODE hashMode,
    int64_t hintSize);
 
@@ -67,7 +67,7 @@ void* IsMemberHash64(
    void* pInput2,
    int64_t* pOutput,
    int8_t* pBooleanOutput,
-   INT sizeType,
+   int32_t sizeType,
    HASH_MODE hashMode,
    int64_t hintSize);
 
@@ -149,7 +149,7 @@ bool MergePreBinned(
    KEY_TYPE*    pOutput,
    int64_t totalUniqueSize,
    HASH_MODE hashMode,
-   INT dtype);
+   int32_t dtype);
 
 
 
@@ -163,7 +163,7 @@ bool AlignHashMK32(
    int32_t* pOutput,
    int64_t totalItemSize,
    HASH_MODE hashMode,
-   INT dtype,
+   int32_t dtype,
    bool isForward,
    bool allowExact);
 
@@ -177,7 +177,7 @@ bool AlignHashMK64(
    int64_t* pOutput,
    int64_t totalItemSize,
    HASH_MODE hashMode,
-   INT dtype,
+   int32_t dtype,
    bool isForward,
    bool allowExact);
 
@@ -458,11 +458,11 @@ public:
 
    const U     BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
-   bool        Deallocate = TRUE;
+   bool        Deallocate = true;
 
 public:
-   // Parallel hashing does not want memory deallocated so it will set deallocate to FALSE
-   CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate=TRUE) {
+   // Parallel hashing does not want memory deallocated so it will set deallocate to false
+   CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate=true) {
       pHashTableAny = NULL;
       pBitFields = NULL;
 
@@ -479,7 +479,7 @@ public:
 
    ~CHashLinear() {
 
-      FreeMemory(FALSE);
+      FreeMemory(false);
    }
 
    void FreeMemory(bool forceDeallocate);
