@@ -14,7 +14,7 @@ typedef HINSTANCE HMODULE;
 typedef wchar_t WCHAR;    // wc,   16-bit UNICODE character
 
 extern "C" {
-   typedef int* (WINAPI *FARPROC)();
+   typedef ptrdiff_t (WINAPI *FARPROC)();
    typedef unsigned int(WINAPI *PTHREAD_START_ROUTINE)(void* lpThreadParameter);
    typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
 
