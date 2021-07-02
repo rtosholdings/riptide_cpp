@@ -35,7 +35,7 @@ HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   bool                 bTest);
+   int                 bTest);
 
 HRESULT
 UtilSharedMemoryEnd(
@@ -87,7 +87,7 @@ HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   bool                 bTest);
+   int                 bTest);
 
 HRESULT
 UtilSharedMemoryEnd(

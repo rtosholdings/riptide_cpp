@@ -918,7 +918,7 @@ HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   bool                 bTest) {
+   int                 bTest) {
 
    // NULL indicates failure - default to that.
    *pReturnStruct = NULL;

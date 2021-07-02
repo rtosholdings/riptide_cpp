@@ -887,7 +887,7 @@ typedef HRESULT(*SDS_SharedMemoryEnd)(
 typedef HRESULT(*SDS_SharedMemoryCopy)(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   bool                 bTest);
+   int                 bTest);
 
 class SharedMemory {
 
