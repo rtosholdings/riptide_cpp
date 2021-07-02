@@ -371,7 +371,7 @@ extern "C" {
    
    #else
    #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
-      return FALSE;
+      return false;
       
    #endif   // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
    }

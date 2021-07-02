@@ -31,7 +31,7 @@ void LogWarningLE(HRESULT error) {
 // Checks Windows policy settings if the current process has
 // the privilege enabled.
 // 
-BOOL
+bool
 CheckWindowsPrivilege(const char* pPrivilegeName)
 {
    LUID           luid;
@@ -39,7 +39,7 @@ CheckWindowsPrivilege(const char* pPrivilegeName)
    HANDLE         hCurrentProccess;
    HANDLE         hProcessToken = NULL;
    HRESULT        hResult;
-   BOOL           bResult;
+   bool           bResult;
 
    hResult = S_OK;
 
@@ -81,10 +81,10 @@ CheckWindowsPrivilege(const char* pPrivilegeName)
 
 
 //------------------------------------------------------------------------------------------
-BOOL SetPrivilege(
+bool SetPrivilege(
    HANDLE hToken,          // access token handle
    LPCTSTR lpszPrivilege,  // name of privilege to enable/disable
-   BOOL bEnablePrivilege   // to enable or disable privilege
+   bool bEnablePrivilege   // to enable or disable privilege
 )
 {
    TOKEN_PRIVILEGES tp;
@@ -133,7 +133,7 @@ BOOL SetPrivilege(
 
 //------------------------------------------------------------------------------------------
 //
-BOOL
+bool
 CheckWindowsSharedMemoryPrerequisites(const char* pMappingName)
 {
    const char* pPrivilegeName = "SeCreateGlobalPrivilege";
@@ -144,7 +144,7 @@ CheckWindowsSharedMemoryPrerequisites(const char* pMappingName)
 
       // More work to do here
       if (OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &currentToken)) {
-         BOOL newResult = SetPrivilege(currentToken, pPrivilegeName, true);
+         bool newResult = SetPrivilege(currentToken, pPrivilegeName, true);
          CloseHandle(currentToken);
          return newResult;
       }
