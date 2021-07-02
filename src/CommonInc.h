@@ -70,6 +70,8 @@ using HANDLE = void*;
 #define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
 
+using INT_PTR = ptrdiff_t;
+
 #define WINAPI
 #include <pthread.h>
 
