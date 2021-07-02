@@ -17,16 +17,16 @@
 
 #if defined(_WIN32) && !defined(__GNUC__)
 
-#define CASE_NPY_INT32      case NPY_INT32:       case NPY_INT
-#define CASE_NPY_UINT32     case NPY_UINT32:      case NPY_UINT
+#define CASE_NPY_INT      case NPY_INT:       case NPY_INT
+#define CASE_NPY_UINT     case NPY_UINT:      case NPY_UINT
 #define CASE_NPY_INT64      case NPY_INT64
 #define CASE_NPY_UINT64     case NPY_UINT64
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
 
 #else
 
-#define CASE_NPY_INT32      case NPY_INT32
-#define CASE_NPY_UINT32     case NPY_UINT32
+#define CASE_NPY_INT      case NPY_INT
+#define CASE_NPY_UINT     case NPY_UINT
 #define CASE_NPY_INT64      case NPY_INT64:    case NPY_LONGLONG
 #define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
@@ -1062,7 +1062,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType) {
       }
       break;
 
-   CASE_NPY_INT32:
+   CASE_NPY_INT:
       switch (itemSize) {
       case 1:  return GetItemInt<int8_t, int32_t>;
       case 2:  return GetItemInt<int16_t, int32_t>;
@@ -1072,7 +1072,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType) {
       default: return GetItemIntVariable<int32_t>;
       }
       break;
-   CASE_NPY_UINT32:
+   CASE_NPY_UINT:
       switch (itemSize) {
       case 1:  return GetItemUInt<int8_t, int32_t>;
       case 2:  return GetItemUInt<int16_t, int32_t>;
@@ -1381,7 +1381,7 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
    int dtype = NPY_INT64;
    // INT32 or INT64
    if (indexLength < 2000000000) {
-      dtype = NPY_INT32;
+      dtype = NPY_INT;
    }
 
    if (bothMode) {
