@@ -60,7 +60,7 @@ PyObject* ConvertFloat32(PyObject* object) {
 static
 PyObject* ConvertInt32(PyObject* object) {
    npy_intp size = Py_SIZE(object);
-   PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_INT32);
+   PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_INT);
    int32_t* pInt32 = (int32_t*)PyArray_DATA(pArray);
 
    for (int64_t i = 0; i < size; i++) {
@@ -300,7 +300,7 @@ AsAnyArray(PyObject *self, PyObject *args, PyObject *kwargs) {
                   return ConvertBool(object);
                }
                else {
-                  // For Windows allocate NPY_INT32 and if out of range, switch to int64_t
+                  // For Windows allocate NPY_INT and if out of range, switch to int64_t
                   if (sizeof(long) == 4) {
                      PyObject* result=ConvertInt32(object);
                      if (result) return result;

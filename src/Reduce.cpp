@@ -236,13 +236,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -312,13 +312,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -413,13 +413,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -513,13 +513,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -661,13 +661,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return avx2<int8_t, __m256i, __m128i>;
       case NPY_INT16:  return avx2<int16_t, __m256i, __m128i>;
-      case NPY_INT32:  return avx2<int32_t, __m256i, __m128i>;
+      case NPY_INT:  return avx2<int32_t, __m256i, __m128i>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return avx2<uint32_t, __m256i, __m128i>;
+      case NPY_UINT: return avx2<uint32_t, __m256i, __m128i>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -1019,13 +1019,13 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return avx2<int8_t, __m256i, __m128i>;
       case NPY_INT16:  return avx2<int16_t, __m256i, __m128i>;
-      case NPY_INT32:  return avx2<int32_t, __m256i, __m128i>;
+      case NPY_INT:  return avx2<int32_t, __m256i, __m128i>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return avx2<uint32_t, __m256i, __m128i>;
+      case NPY_UINT: return avx2<uint32_t, __m256i, __m128i>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -1239,13 +1239,13 @@ public:
       case NPY_LONGDOUBLE: return non_vector<long double>;
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -1464,13 +1464,13 @@ public:
       case NPY_LONGDOUBLE: return non_vector<long double>;
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32:  return non_vector<int32_t>;
+      case NPY_INT:  return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
            return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
-      case NPY_UINT32: return non_vector<uint32_t>;
+      case NPY_UINT: return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -1872,14 +1872,14 @@ public:
       case NPY_BOOL: // TODO: Call/return our fast SumBooleanMask() implementation.
       case NPY_INT8:   return ReduceAddSlow<int8_t>;
       case NPY_INT16:  return ReduceAddSlow<int16_t>;
-      case NPY_INT32: return ReduceAddI32;
+      case NPY_INT: return ReduceAddI32;
       case NPY_INT64:
       case NPY_LONGLONG:
           return ReduceAddI64;
 
       case NPY_UINT8:   return ReduceAddSlow<uint8_t>;
       case NPY_UINT16:  return ReduceAddSlow<uint16_t>;
-      case NPY_UINT32:  return ReduceAddSlow<uint32_t>;
+      case NPY_UINT:  return ReduceAddSlow<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return ReduceAddU64;
@@ -1931,14 +1931,14 @@ public:
       case NPY_BOOL: return non_vector<bool>;
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32: return non_vector<int32_t>;
+      case NPY_INT: return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
           return non_vector<int64_t>;
 
       case NPY_UINT8:   return non_vector<uint8_t>;
       case NPY_UINT16:  return non_vector<uint16_t>;
-      case NPY_UINT32:  return non_vector<uint32_t>;
+      case NPY_UINT:  return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;
@@ -2099,14 +2099,14 @@ public:
       case NPY_BOOL:
       case NPY_INT8:   return ReduceVar<int8_t>;
       case NPY_INT16:  return ReduceVar<int16_t>;
-      case NPY_INT32: return ReduceVar<int32_t>;
+      case NPY_INT: return ReduceVar<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
           return ReduceVar<int64_t>;
 
       case NPY_UINT8:   return ReduceVar<uint8_t>;
       case NPY_UINT16:  return ReduceVar<uint16_t>;
-      case NPY_UINT32:  return ReduceVar<uint32_t>;
+      case NPY_UINT:  return ReduceVar<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return ReduceVar<uint64_t>;
@@ -2162,14 +2162,14 @@ public:
       case NPY_BOOL:   return non_vector<bool>;
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
-      case NPY_INT32: return non_vector<int32_t>;
+      case NPY_INT: return non_vector<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
           return non_vector<int64_t>;
 
       case NPY_UINT8:   return non_vector<uint8_t>;
       case NPY_UINT16:  return non_vector<uint16_t>;
-      case NPY_UINT32:  return non_vector<uint32_t>;
+      case NPY_UINT:  return non_vector<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
           return non_vector<uint64_t>;

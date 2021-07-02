@@ -2042,12 +2042,12 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
       case NPY_LONGDOUBLE: return GatherSum<long double>;
       case NPY_INT8:  return GatherSum<int64_t>;
       case NPY_INT16: return GatherSum<int64_t>;
-      case NPY_INT32: return GatherSum<int64_t>;
+      case NPY_INT: return GatherSum<int64_t>;
       case NPY_INT64:
       case NPY_LONGLONG: return GatherSum<int64_t>;
       case NPY_UINT8: return GatherSum<uint64_t>;
       case NPY_UINT16:return GatherSum<uint64_t>;
-      case NPY_UINT32:return GatherSum<uint64_t>;
+      case NPY_UINT:return GatherSum<uint64_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GatherSum<uint64_t>;
@@ -2064,12 +2064,12 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
       case NPY_LONGDOUBLE: 
       case NPY_INT8:  
       case NPY_INT16: 
-      case NPY_INT32: 
+      case NPY_INT: 
       case NPY_INT64:
       case NPY_LONGLONG:
       case NPY_UINT8: 
       case NPY_UINT16:
-      case NPY_UINT32:
+      case NPY_UINT:
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GatherMean<double>;
@@ -2085,13 +2085,13 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
       case NPY_LONGDOUBLE: return GatherMaxFloat<long double>;
       case NPY_INT8:  return GatherMax<int8_t>;
       case NPY_INT16: return GatherMax<int16_t>;
-      case NPY_INT32: return GatherMax<int32_t>;
+      case NPY_INT: return GatherMax<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
          return GatherMax<int64_t>;
       case NPY_UINT8: return GatherMax<uint8_t>;
       case NPY_UINT16:return GatherMax<uint16_t>;
-      case NPY_UINT32:return GatherMax<uint32_t>;
+      case NPY_UINT:return GatherMax<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GatherMax<uint64_t>;
@@ -2107,13 +2107,13 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
       case NPY_LONGDOUBLE: return GatherMinFloat<long double>;
       case NPY_INT8:  return GatherMin<int8_t>;
       case NPY_INT16: return GatherMin<int16_t>;
-      case NPY_INT32: return GatherMin<int32_t>;
+      case NPY_INT: return GatherMin<int32_t>;
       case NPY_INT64:
       case NPY_LONGLONG:
          return GatherMin<int64_t>;
       case NPY_UINT8: return GatherMin<uint8_t>;
       case NPY_UINT16:return GatherMin<uint16_t>;
-      case NPY_UINT32:return GatherMin<uint32_t>;
+      case NPY_UINT:return GatherMin<uint32_t>;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GatherMin<uint64_t>;
@@ -2143,13 +2143,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_LONGDOUBLE; return GroupByBase<long double, long double, V>::AccumSum;
       case NPY_INT8:   *wantedOutputType = NPY_INT64; return GroupByBase<int8_t,    int64_t,  V>::AccumSum;
       case NPY_INT16:  *wantedOutputType = NPY_INT64; return GroupByBase<int16_t,   int64_t,  V>::AccumSum;
-      case NPY_INT32:  *wantedOutputType = NPY_INT64; return GroupByBase<int32_t,   int64_t,  V>::AccumSum;
+      case NPY_INT:  *wantedOutputType = NPY_INT64; return GroupByBase<int32_t,   int64_t,  V>::AccumSum;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t,   int64_t,  V>::AccumSum;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT64; return GroupByBase<uint8_t,  uint64_t, V>::AccumSum;
       case NPY_UINT16: *wantedOutputType = NPY_UINT64; return GroupByBase<uint16_t, uint64_t, V>::AccumSum;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT64; return GroupByBase<uint32_t, uint64_t, V>::AccumSum;
+      case NPY_UINT: *wantedOutputType = NPY_UINT64; return GroupByBase<uint32_t, uint64_t, V>::AccumSum;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumSum;
@@ -2165,13 +2165,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_BOOL:   *wantedOutputType = NPY_INT64; return GroupByBase<int8_t, int64_t, V>::AccumSum;
       case NPY_INT8:   *wantedOutputType = NPY_INT64; return GroupByBase<int8_t, int64_t, V>::AccumNanSum;
       case NPY_INT16:  *wantedOutputType = NPY_INT64; return GroupByBase<int16_t, int64_t, V>::AccumNanSum;
-      case NPY_INT32:  *wantedOutputType = NPY_INT64; return GroupByBase<int32_t, int64_t, V>::AccumNanSum;
+      case NPY_INT:  *wantedOutputType = NPY_INT64; return GroupByBase<int32_t, int64_t, V>::AccumNanSum;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t, int64_t, V>::AccumNanSum;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT64; return GroupByBase<uint8_t, uint64_t, V>::AccumNanSum;
       case NPY_UINT16: *wantedOutputType = NPY_UINT64; return GroupByBase<uint16_t, uint64_t, V>::AccumNanSum;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT64; return GroupByBase<uint32_t, uint64_t, V>::AccumNanSum;
+      case NPY_UINT: *wantedOutputType = NPY_UINT64; return GroupByBase<uint32_t, uint64_t, V>::AccumNanSum;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumNanSum;
@@ -2187,13 +2187,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_LONGDOUBLE; return GroupByBase<long double, long double, V>::AccumMin;
       case NPY_INT8:   *wantedOutputType = NPY_INT8; return GroupByBase<int8_t,     int8_t, V>::AccumMin;
       case NPY_INT16:  *wantedOutputType = NPY_INT16; return GroupByBase<int16_t,   int16_t, V>::AccumMin;
-      case NPY_INT32:  *wantedOutputType = NPY_INT32; return GroupByBase<int32_t,   int32_t, V>::AccumMin;
+      case NPY_INT:  *wantedOutputType = NPY_INT; return GroupByBase<int32_t,   int32_t, V>::AccumMin;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t,   int64_t, V>::AccumMin;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT8; return GroupByBase<uint8_t,   uint8_t, V>::AccumMin;
       case NPY_UINT16: *wantedOutputType = NPY_UINT16; return GroupByBase<uint16_t, uint16_t, V>::AccumMin;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT32; return GroupByBase<uint32_t, uint32_t, V>::AccumMin;
+      case NPY_UINT: *wantedOutputType = NPY_UINT; return GroupByBase<uint32_t, uint32_t, V>::AccumMin;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumMin;
@@ -2209,13 +2209,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_BOOL:   *wantedOutputType = NPY_BOOL; return GroupByBase<int8_t, int8_t, V>::AccumMin;
       case NPY_INT8:   *wantedOutputType = NPY_INT8; return GroupByBase<int8_t, int8_t, V>::AccumNanMin;
       case NPY_INT16:  *wantedOutputType = NPY_INT16; return GroupByBase<int16_t, int16_t, V>::AccumNanMin;
-      case NPY_INT32:  *wantedOutputType = NPY_INT32; return GroupByBase<int32_t, int32_t, V>::AccumNanMin;
+      case NPY_INT:  *wantedOutputType = NPY_INT; return GroupByBase<int32_t, int32_t, V>::AccumNanMin;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t, int64_t, V>::AccumNanMin;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT8; return GroupByBase<uint8_t, uint8_t, V>::AccumNanMin;
       case NPY_UINT16: *wantedOutputType = NPY_UINT16; return GroupByBase<uint16_t, uint16_t, V>::AccumNanMin;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT32; return GroupByBase<uint32_t, uint32_t, V>::AccumNanMin;
+      case NPY_UINT: *wantedOutputType = NPY_UINT; return GroupByBase<uint32_t, uint32_t, V>::AccumNanMin;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumNanMin;
@@ -2231,13 +2231,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_LONGDOUBLE; return GroupByBase<long double, long double, V>::AccumMax;
       case NPY_INT8:   *wantedOutputType = NPY_INT8; return GroupByBase<int8_t, int8_t, V>::AccumMax;
       case NPY_INT16:  *wantedOutputType = NPY_INT16; return GroupByBase<int16_t, int16_t, V>::AccumMax;
-      case NPY_INT32:  *wantedOutputType = NPY_INT32; return GroupByBase<int32_t, int32_t, V>::AccumMax;
+      case NPY_INT:  *wantedOutputType = NPY_INT; return GroupByBase<int32_t, int32_t, V>::AccumMax;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t, int64_t, V>::AccumMax;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT8; return GroupByBase<uint8_t, uint8_t, V>::AccumMax;
       case NPY_UINT16: *wantedOutputType = NPY_UINT16; return GroupByBase<uint16_t, uint16_t, V>::AccumMax;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT32; return GroupByBase<uint32_t, uint32_t, V>::AccumMax;
+      case NPY_UINT: *wantedOutputType = NPY_UINT; return GroupByBase<uint32_t, uint32_t, V>::AccumMax;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumMax;
@@ -2254,13 +2254,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_BOOL:   *wantedOutputType = NPY_BOOL; return GroupByBase<int8_t, int8_t, V>::AccumMax;
       case NPY_INT8:   *wantedOutputType = NPY_INT8; return GroupByBase<int8_t, int8_t, V>::AccumNanMax;
       case NPY_INT16:  *wantedOutputType = NPY_INT16; return GroupByBase<int16_t, int16_t, V>::AccumNanMax;
-      case NPY_INT32:  *wantedOutputType = NPY_INT32; return GroupByBase<int32_t, int32_t, V>::AccumNanMax;
+      case NPY_INT:  *wantedOutputType = NPY_INT; return GroupByBase<int32_t, int32_t, V>::AccumNanMax;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_INT64; return GroupByBase<int64_t, int64_t, V>::AccumNanMax;
       case NPY_UINT8:  *wantedOutputType = NPY_UINT8; return GroupByBase<uint8_t, uint8_t, V>::AccumNanMax;
       case NPY_UINT16: *wantedOutputType = NPY_UINT16; return GroupByBase<uint16_t, uint16_t, V>::AccumNanMax;
-      case NPY_UINT32: *wantedOutputType = NPY_UINT32; return GroupByBase<uint32_t, uint32_t, V>::AccumNanMax;
+      case NPY_UINT: *wantedOutputType = NPY_UINT; return GroupByBase<uint32_t, uint32_t, V>::AccumNanMax;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_UINT64; return GroupByBase<uint64_t, uint64_t, V>::AccumNanMax;
@@ -2276,13 +2276,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumMean;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t,     double, V>::AccumMean;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t,   double, V>::AccumMean;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t,   double, V>::AccumMean;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t,   double, V>::AccumMean;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t,   double, V>::AccumMean;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t,   double, V>::AccumMean;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumMean;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumMean;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumMean;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumMean;
@@ -2299,13 +2299,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumNanMean;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanMean;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t, double, V>::AccumNanMean;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanMean;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanMean;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t, double, V>::AccumNanMean;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t, double, V>::AccumNanMean;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumNanMean;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanMean;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanMean;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumNanMean;
@@ -2322,13 +2322,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumVar;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumVar;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t, double, V>::AccumVar;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumVar;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumVar;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t, double, V>::AccumVar;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t, double, V>::AccumVar;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumVar;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumVar;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumVar;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumVar;
@@ -2345,13 +2345,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumNanVar;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanVar;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t, double, V>::AccumNanVar;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanVar;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanVar;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t, double, V>::AccumNanVar;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t, double, V>::AccumNanVar;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumNanVar;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanVar;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanVar;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumNanVar;
@@ -2367,13 +2367,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumStd;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumStd;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t, double, V>::AccumStd;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumStd;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumStd;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t, double, V>::AccumStd;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t, double, V>::AccumStd;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumStd;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumStd;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumStd;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumStd;
@@ -2390,13 +2390,13 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<long double, double, V>::AccumNanStd;
       case NPY_INT8:   *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanStd;
       case NPY_INT16:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int16_t, double, V>::AccumNanStd;
-      case NPY_INT32:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanStd;
+      case NPY_INT:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<int32_t, double, V>::AccumNanStd;
       case NPY_INT64:
       case NPY_LONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<int64_t, double, V>::AccumNanStd;
       case NPY_UINT8:  *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint8_t, double, V>::AccumNanStd;
       case NPY_UINT16: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint16_t, double, V>::AccumNanStd;
-      case NPY_UINT32: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanStd;
+      case NPY_UINT: *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint32_t, double, V>::AccumNanStd;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          *wantedOutputType = NPY_DOUBLE; return GroupByBase<uint64_t, double, V>::AccumNanStd;
@@ -2419,12 +2419,12 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
 //      //   case NPY_BYTE:   return GroupByBase<T, int8_t>::GetFunc(func);
 //      //   case NPY_INT16:  return GroupByBase<T, int16_t>::GetFunc(func);
 //   case NPY_INT:    return GroupByBase<T, int32_t>::GetXFunc(func);
-//   case NPY_INT32:  return GroupByBase<T, int32_t>::GetXFunc(func);
+//   case NPY_INT:  return GroupByBase<T, int32_t>::GetXFunc(func);
 //   case NPY_INT64:  return GroupByBase<T, int64_t>::GetXFunc(func);
 //      //   case NPY_UBYTE:  return GroupByBase<T, uint8_t>::GetFunc(func);
 //      //   case NPY_UINT16: return GroupByBase<T, uint16_t>::GetFunc(func);
 //   case NPY_UINT:   return GroupByBase<T, uint32_t>::GetXFunc(func);
-//   case NPY_UINT32: return GroupByBase<T, uint32_t>::GetXFunc(func);
+//   case NPY_UINT: return GroupByBase<T, uint32_t>::GetXFunc(func);
 //   case NPY_UINT64: return GroupByBase<T, uint64_t>::GetXFunc(func);
 //   }
 //   return NULL;
@@ -2443,13 +2443,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
       case NPY_LONGDOUBLE: return GroupByBase<long double, double, V>::AccumTrimMeanBR;
       case NPY_INT8:   return GroupByBase<int8_t, double, V>::AccumTrimMeanBR;
       case NPY_INT16:  return GroupByBase<int16_t, double, V>::AccumTrimMeanBR;
-      case NPY_INT32:  return GroupByBase<int32_t, double, V>::AccumTrimMeanBR;
+      case NPY_INT:  return GroupByBase<int32_t, double, V>::AccumTrimMeanBR;
       case NPY_INT64:
       case NPY_LONGLONG:
          return GroupByBase<int64_t, double, V>::AccumTrimMeanBR;
       case NPY_UINT8:  return GroupByBase<uint8_t, double, V>::AccumTrimMeanBR;
       case NPY_UINT16: return GroupByBase<uint16_t, double, V>::AccumTrimMeanBR;
-      case NPY_UINT32: return GroupByBase<uint32_t, double, V>::AccumTrimMeanBR;
+      case NPY_UINT: return GroupByBase<uint32_t, double, V>::AccumTrimMeanBR;
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GroupByBase<uint64_t, double, V>::AccumTrimMeanBR;
@@ -2460,7 +2460,7 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
       switch (inputType) {
       case NPY_INT8:   return GroupByBase<int8_t, int32_t, V>::GetXFunc2(func);
       case NPY_INT16:  return GroupByBase<int16_t, int32_t, V>::GetXFunc2(func);
-      case NPY_INT32:  return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
+      case NPY_INT:  return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
       case NPY_INT64:
       case NPY_LONGLONG:
          return GroupByBase<int64_t, int32_t, V>::GetXFunc2(func);
@@ -2477,13 +2477,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
       case NPY_LONGDOUBLE: return GroupByBase<long double, long double, V>::GetXFunc2(func);
       case NPY_INT8:   return GroupByBase<int8_t, int8_t, V>::GetXFunc2(func);
       case NPY_INT16:  return GroupByBase<int16_t, int16_t, V>::GetXFunc2(func);
-      case NPY_INT32:  return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
+      case NPY_INT:  return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
       case NPY_INT64:
       case NPY_LONGLONG:
          return GroupByBase<int64_t, int64_t, V>::GetXFunc2(func);
       case NPY_UINT8:  return GroupByBase<uint8_t, uint8_t, V>::GetXFunc2(func);
       case NPY_UINT16: return GroupByBase<uint16_t, uint16_t, V>::GetXFunc2(func);
-      case NPY_UINT32: return GroupByBase<uint32_t, uint32_t, V>::GetXFunc2(func);
+      case NPY_UINT: return GroupByBase<uint32_t, uint32_t, V>::GetXFunc2(func);
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GroupByBase<uint64_t, uint64_t, V>::GetXFunc2(func);
@@ -2501,13 +2501,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
          case NPY_LONGDOUBLE: return GroupByBase<long double, double, V>::GetXFunc2(func);
          case NPY_INT8:   return GroupByBase<int8_t, double, V>::GetXFunc2(func);
          case NPY_INT16:  return GroupByBase<int16_t, double, V>::GetXFunc2(func);
-         case NPY_INT32:  return GroupByBase<int32_t, double, V>::GetXFunc2(func);
+         case NPY_INT:  return GroupByBase<int32_t, double, V>::GetXFunc2(func);
          case NPY_INT64:
          case NPY_LONGLONG:
             return GroupByBase<int64_t, double, V>::GetXFunc2(func); 
          case NPY_UINT8:  return GroupByBase<uint8_t, double, V>::GetXFunc2(func);
          case NPY_UINT16: return GroupByBase<uint16_t, double, V>::GetXFunc2(func);
-         case NPY_UINT32: return GroupByBase<uint32_t, double, V>::GetXFunc2(func);
+         case NPY_UINT: return GroupByBase<uint32_t, double, V>::GetXFunc2(func);
          case NPY_UINT64:
          case NPY_ULONGLONG:
             return GroupByBase<uint64_t, double, V>::GetXFunc2(func);
@@ -2526,13 +2526,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
          case NPY_LONGDOUBLE: return GroupByBase<long double, long double, V>::GetXFunc2(func);
          case NPY_INT8:   return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
          case NPY_INT16:  return GroupByBase<int16_t, int64_t, V>::GetXFunc2(func);
-         case NPY_INT32:  return GroupByBase<int32_t, int64_t, V>::GetXFunc2(func);
+         case NPY_INT:  return GroupByBase<int32_t, int64_t, V>::GetXFunc2(func);
          case NPY_INT64:
          case NPY_LONGLONG:
             return GroupByBase<int64_t, int64_t, V>::GetXFunc2(func);
          case NPY_UINT8:  return GroupByBase<uint8_t, int64_t, V>::GetXFunc2(func);
          case NPY_UINT16: return GroupByBase<uint16_t, int64_t, V>::GetXFunc2(func);
-         case NPY_UINT32: return GroupByBase<uint32_t, int64_t, V>::GetXFunc2(func);
+         case NPY_UINT: return GroupByBase<uint32_t, int64_t, V>::GetXFunc2(func);
          case NPY_UINT64:
          case NPY_ULONGLONG:
             return GroupByBase<uint64_t, int64_t, V>::GetXFunc2(func);
@@ -2549,13 +2549,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
       case NPY_LONGDOUBLE: return GroupByBase<long double, long double, V>::GetXFunc(func);
       case NPY_INT8:   return GroupByBase<int8_t, int8_t, V>::GetXFunc(func);
       case NPY_INT16:  return GroupByBase<int16_t, int16_t, V>::GetXFunc(func);
-      case NPY_INT32:  return GroupByBase<int32_t, int32_t, V>::GetXFunc(func);
+      case NPY_INT:  return GroupByBase<int32_t, int32_t, V>::GetXFunc(func);
       case NPY_INT64:
       case NPY_LONGLONG:
          return GroupByBase<int64_t, int64_t, V>::GetXFunc(func);
       case NPY_UINT8:  return GroupByBase<uint8_t, uint8_t, V>::GetXFunc(func);
       case NPY_UINT16: return GroupByBase<uint16_t, uint16_t, V>::GetXFunc(func);
-      case NPY_UINT32: return GroupByBase<uint32_t, uint32_t, V>::GetXFunc(func);
+      case NPY_UINT: return GroupByBase<uint32_t, uint32_t, V>::GetXFunc(func);
       case NPY_UINT64:
       case NPY_ULONGLONG:
          return GroupByBase<uint64_t, uint64_t, V>::GetXFunc(func);
@@ -2810,7 +2810,7 @@ GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool* hasCounts, int3
    case NPY_INT16:
       pFunction = GetGroupByFunction<int16_t>(hasCounts, numpyOutType, numpyInType, funcNum);
       break;
-   case NPY_INT32:
+   case NPY_INT:
       pFunction = GetGroupByFunction<int32_t>(hasCounts, numpyOutType, numpyInType, funcNum);
       break;
    case NPY_INT64:
@@ -2857,7 +2857,7 @@ GroupBySingleOpMultiBands(
    case NPY_INT16:
       pFunction = GetGroupByXFunction32<int16_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
       break;
-   case NPY_INT32:
+   case NPY_INT:
       pFunction = GetGroupByXFunction32<int32_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
       break;
    case NPY_INT64:
@@ -3192,7 +3192,7 @@ GroupByAll32(PyObject *self, PyObject *args)
    switch (iKeyType) {
    case NPY_INT8:
    case NPY_INT16:
-   case NPY_INT32:
+   case NPY_INT:
    case NPY_INT64:
    case NPY_LONGLONG:
       break;
@@ -3438,7 +3438,7 @@ GroupByAllPack32(PyObject *self, PyObject *args)
    switch (iKeyType) {
    case NPY_INT8:
    case NPY_INT16:
-   case NPY_INT32:
+   case NPY_INT:
    case NPY_INT64:
    case NPY_LONGLONG:
       break;
@@ -3558,7 +3558,7 @@ GroupByAllPack32(PyObject *self, PyObject *args)
          case NPY_INT16:
             pFunction = GetGroupByXFunction32<int16_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)funcNum);
             break;
-         case NPY_INT32:
+         case NPY_INT:
             pFunction = GetGroupByXFunction32<int32_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)funcNum);
             break;
          case NPY_INT64:
@@ -3594,7 +3594,7 @@ GroupByAllPack32(PyObject *self, PyObject *args)
                      numpyOutType = NPY_INT64;
 
                      if (funcNum == GB_ROLLING_COUNT) {
-                        numpyOutType = NPY_INT32;
+                        numpyOutType = NPY_INT;
                      }
                      else {
 
