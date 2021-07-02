@@ -824,11 +824,11 @@ GroupByPack32(PyObject* self, PyObject* args) {
          case NPY_INT16:
             pNextArray = GroupByPackFixup32<int16_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
-         case NPY_INT32:
+         CASE_NPY_INT32:
             pNextArray = GroupByPackFixup32<int32_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
-         case NPY_INT64:
-         case NPY_LONGLONG:
+         CASE_NPY_INT64:
+         
             pNextArray = GroupByPackFixup32<int64_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          default:
@@ -857,11 +857,11 @@ GroupByPack32(PyObject* self, PyObject* args) {
       case NPY_INT16:
          bResult = GroupByPackFinal32<int16_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          bResult = GroupByPackFinal32<int32_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          bResult = GroupByPackFinal32<int64_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       default:
@@ -1821,11 +1821,11 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int32_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int32_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = MakeiGroup2<int64_t, int32_t>;
          break;
       default:
@@ -1840,11 +1840,11 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int64_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int64_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = MakeiGroup2<int64_t, int64_t>;
          break;
       default:
@@ -1932,11 +1932,11 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int32_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int32_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = MakeiGroup<int64_t, int32_t>;
          break;
       default:
@@ -1951,11 +1951,11 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int64_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int64_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = MakeiGroup<int64_t, int64_t>;
          break;
       default:
@@ -2023,7 +2023,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       // Generate the location for bin to write the next location
       // Effectively this is a cumsum
       switch (outdtype) {
-      case NPY_INT32:
+      CASE_NPY_INT32:
       {
          int32_t* pCount = (int32_t*)pnCountGroup;
          int32_t* pCumSum = (int32_t*)piFirstGroup;
@@ -2034,7 +2034,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
          }
       }
       break;
-      case NPY_INT64:
+      CASE_NPY_INT64:
       {
          int64_t* pCount = (int64_t*)pnCountGroup;
          int64_t* pCumSum = (int64_t*)piFirstGroup;
@@ -2176,11 +2176,11 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int32_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int32_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = BinCountAlgo<int64_t, int32_t>;
          break;
       default:
@@ -2195,11 +2195,11 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int64_t>;
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int64_t>;
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          pBinFunc = BinCountAlgo<int64_t, int64_t>;
          break;
       default:

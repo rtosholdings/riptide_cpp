@@ -155,35 +155,35 @@ IsMemberCategorical(PyObject *self, PyObject *args)
    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
    switch (arrayType1) {
-   case NPY_INT32:
+   CASE_NPY_INT32:
       arrayType1 = NPY_INT32;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       arrayType1 = NPY_UINT32;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       arrayType1 = NPY_INT64;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       arrayType1 = NPY_UINT64;
       break;
    }
 
    switch (arrayType2) {
-   case NPY_INT32:
+   CASE_NPY_INT32:
       arrayType2 = NPY_INT32;
       break;
-   case NPY_UINT32:
+   CASE_NPY_UINT32:
       arrayType2 = NPY_UINT32;
       break;
-   case NPY_INT64:
-   case NPY_LONGLONG:
+   CASE_NPY_INT64:
+   
       arrayType2 = NPY_INT64;
       break;
-   case NPY_UINT64:
-   case NPY_ULONGLONG:
+   CASE_NPY_UINT64:
+   
       arrayType2 = NPY_UINT64;
       break;
    }
@@ -414,7 +414,7 @@ IsMemberCategoricalFixup(PyObject *self, PyObject *args)
    int32_t array1Type = PyArray_TYPE(inArr1);
 
    switch (uniqueType) {
-   case NPY_INT32:
+   CASE_NPY_INT32:
       break;
    default:
       PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup third argument must be type int32_t not %s", NpyToString(uniqueType));
@@ -442,11 +442,11 @@ IsMemberCategoricalFixup(PyObject *self, PyObject *args)
       case NPY_INT16:
          FindFirstOccurence<int16_t>((int16_t*)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique, unique2Length, baseoffset2);
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          FindFirstOccurence<int32_t>((int32_t*)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique, unique2Length, baseoffset2);
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          FindFirstOccurence<int64_t>((int64_t*)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique, unique2Length, baseoffset2);
          break;
       default:
@@ -465,11 +465,11 @@ IsMemberCategoricalFixup(PyObject *self, PyObject *args)
       case NPY_INT16:
          FinalMatch<int16_t>((int16_t*)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
          break;
-      case NPY_INT32:
+      CASE_NPY_INT32:
          FinalMatch<int32_t>((int32_t*)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
          break;
-      case NPY_INT64:
-      case NPY_LONGLONG:
+      CASE_NPY_INT64:
+      
          FinalMatch<int64_t>((int64_t*)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
          break;
       default:
