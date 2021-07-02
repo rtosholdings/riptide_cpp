@@ -442,13 +442,13 @@ static UNARY_FUNC GetConversionStep2(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvert;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvert;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvert;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvert;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvert;
    case NPY_INT64:
    case NPY_LONGLONG:
       return ConvertBase<T, int64_t>::OneStubConvert;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvert;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvert;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvert;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvert;
    case NPY_UINT64:
    case NPY_ULONGLONG:
       return ConvertBase<T, uint64_t>::OneStubConvert;
@@ -466,13 +466,13 @@ static CONVERT_SAFE GetConversionStep2Safe(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafe;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafe;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafe;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvertSafe;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafe;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::OneStubConvertSafe;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafe;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafe;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvertSafe;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafe;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::OneStubConvertSafe;
@@ -492,13 +492,13 @@ static CONVERT_SAFE GetConversionStep2Unsafe(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertUnsafe;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertUnsafe;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertUnsafe;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvertUnsafe;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertUnsafe;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::OneStubConvertUnsafe;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertUnsafe;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertUnsafe;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvertUnsafe;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertUnsafe;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::OneStubConvertUnsafe;
@@ -517,13 +517,13 @@ static CONVERT_SAFE GetConversionStep2SafeFromFloat(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
@@ -541,13 +541,13 @@ static CONVERT_SAFE GetConversionStep2SafeFromDouble(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
@@ -566,13 +566,13 @@ static CONVERT_SAFE GetConversionStep2SafeFloat(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   case NPY_INT:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
@@ -592,8 +592,8 @@ static CONVERT_SAFE GetConversionFunctionSafeCopy(int inputType) {
    case NPY_INT16:
    case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::OneStubConvertSafeCopy;
 
-   case NPY_INT:
-   case NPY_UINT:
+   case NPY_INT32:
+   case NPY_UINT32:
    case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::OneStubConvertSafeCopy;
 
    case NPY_INT64:
@@ -624,7 +624,7 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionStep2SafeFloat<long double>(outputType);
    case NPY_BYTE:   return GetConversionStep2Safe<int8_t>(outputType);
    case NPY_INT16:  return GetConversionStep2Safe<int16_t>(outputType);
-   case NPY_INT:  return GetConversionStep2Safe<int32_t>(outputType);
+   case NPY_INT32:  return GetConversionStep2Safe<int32_t>(outputType);
    case NPY_INT64:
    case NPY_LONGLONG:
            return GetConversionStep2Safe<int64_t>(outputType);
@@ -634,7 +634,7 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType) {
    case NPY_UBYTE:  return GetConversionStep2Safe<uint8_t>(outputType);
 
    case NPY_UINT16: return GetConversionStep2Safe<uint16_t>(outputType);
-   case NPY_UINT: return GetConversionStep2Safe<uint32_t>(outputType);
+   case NPY_UINT32: return GetConversionStep2Safe<uint32_t>(outputType);
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return GetConversionStep2Safe<uint64_t>(outputType);
@@ -659,13 +659,13 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionStep2Unsafe<long double>(outputType);
    case NPY_BYTE:   return GetConversionStep2Unsafe<int8_t>(outputType);
    case NPY_INT16:  return GetConversionStep2Unsafe<int16_t>(outputType);
-   case NPY_INT:  return GetConversionStep2Unsafe<int32_t>(outputType);
+   case NPY_INT32:  return GetConversionStep2Unsafe<int32_t>(outputType);
    case NPY_INT64:
    case NPY_LONGLONG:
            return GetConversionStep2Unsafe<int64_t>(outputType);
    case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
    case NPY_UINT16: return GetConversionStep2Unsafe<uint16_t>(outputType);
-   case NPY_UINT: return GetConversionStep2Unsafe<uint32_t>(outputType);
+   case NPY_UINT32: return GetConversionStep2Unsafe<uint32_t>(outputType);
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return GetConversionStep2Unsafe<uint64_t>(outputType);
@@ -685,13 +685,13 @@ static MASK_CONVERT_SAFE GetConversionPutMask2Float(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopyFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopyFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopyFloat;
-   case NPY_INT:  return ConvertBase<T, int32_t>::PutMaskCopyFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopyFloat;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::PutMaskCopyFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopyFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopyFloat;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::PutMaskCopyFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopyFloat;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::PutMaskCopyFloat;
@@ -710,13 +710,13 @@ static MASK_CONVERT_SAFE GetConversionPutMask2(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopy;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopy;
    case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopy;
-   case NPY_INT:  return ConvertBase<T, int32_t>::PutMaskCopy;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopy;
    case NPY_INT64:
    case NPY_LONGLONG:
            return ConvertBase<T, int64_t>::PutMaskCopy;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopy;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopy;
-   case NPY_UINT: return ConvertBase<T, uint32_t>::PutMaskCopy;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopy;
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return ConvertBase<T, uint64_t>::PutMaskCopy;
@@ -737,8 +737,8 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
       case NPY_INT16:
       case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::PutMaskFast;
 
-      case NPY_INT:
-      case NPY_UINT:
+      case NPY_INT32:
+      case NPY_UINT32:
       case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::PutMaskFast;
 
       case NPY_INT64:
@@ -760,7 +760,7 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionPutMask2Float<long double>(outputType);
    case NPY_BYTE:   return GetConversionPutMask2<int8_t>(outputType);
    case NPY_INT16:  return GetConversionPutMask2<int16_t>(outputType);
-   case NPY_INT:  return GetConversionPutMask2<int32_t>(outputType);
+   case NPY_INT32:  return GetConversionPutMask2<int32_t>(outputType);
    case NPY_INT64:
    case NPY_LONGLONG:
            return GetConversionPutMask2<int64_t>(outputType);
@@ -770,7 +770,7 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
    case NPY_UBYTE:  return GetConversionPutMask2<uint8_t>(outputType);
 
    case NPY_UINT16: return GetConversionPutMask2<uint16_t>(outputType);
-   case NPY_UINT: return GetConversionPutMask2<uint32_t>(outputType);
+   case NPY_UINT32: return GetConversionPutMask2<uint32_t>(outputType);
    case NPY_UINT64:
    case NPY_ULONGLONG:
           return GetConversionPutMask2<uint64_t>(outputType);
@@ -1147,7 +1147,7 @@ static COMBINE_MASK GetCombineFunction(int outputType) {
    switch (outputType) {
    case NPY_INT8:   return CombineMask<int8_t>;
    case NPY_INT16:  return CombineMask<int16_t>;
-   case NPY_INT:  return CombineMask<int32_t>;
+   case NPY_INT32:  return CombineMask<int32_t>;
    case NPY_INT64:
    case NPY_LONGLONG:
            return CombineMask<int64_t>;
@@ -1254,7 +1254,7 @@ CombineFilter(PyObject *self, PyObject *args)
       pFunction = GetCombineFunction(numpyOutType);
       break;
 
-   case NPY_INT:
+   case NPY_INT32:
       pFunction = GetCombineFunction(numpyOutType);
       break;
 
@@ -1402,7 +1402,7 @@ static COMBINE_ACCUM2_MASK GetCombineAccum2Function(int outputType) {
    switch (outputType) {
    case NPY_INT8:   return CombineAccum2Mask<T,U,int8_t>;
    case NPY_INT16:  return CombineAccum2Mask<T,U,int16_t>;
-   case NPY_INT:  return CombineAccum2Mask<T,U,int32_t>;
+   case NPY_INT32:  return CombineAccum2Mask<T,U,int32_t>;
    case NPY_INT64:
    case NPY_LONGLONG:
            return CombineAccum2Mask<T,U,int64_t>;
@@ -1553,7 +1553,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
    int64_t typeSizeOut = 8;
 
    if (hashSize < 2000000000) {
-      numpyOutType = NPY_INT;
+      numpyOutType = NPY_INT32;
       typeSizeOut = 4;
    }
    if (hashSize < 32000) {
@@ -1575,7 +1575,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int8_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int8_t, int16_t>(numpyOutType);  break;
-      case NPY_INT:  pFunction = GetCombineAccum2Function<int8_t, int32_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int8_t, int32_t>(numpyOutType);  break;
       case NPY_INT64:
       case NPY_LONGLONG:
            pFunction = GetCombineAccum2Function<int8_t, int64_t>(numpyOutType);  break;
@@ -1586,18 +1586,18 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int16_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int16_t, int16_t>(numpyOutType);  break;
-      case NPY_INT:  pFunction = GetCombineAccum2Function<int16_t, int32_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int16_t, int32_t>(numpyOutType);  break;
       case NPY_INT64:
       case NPY_LONGLONG:
            pFunction = GetCombineAccum2Function<int16_t, int64_t>(numpyOutType);  break;
       }
       break;
 
-   case NPY_INT:
+   case NPY_INT32:
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int32_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int32_t, int16_t>(numpyOutType);  break;
-      case NPY_INT:  pFunction = GetCombineAccum2Function<int32_t, int32_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int32_t, int32_t>(numpyOutType);  break;
       case NPY_INT64:
       case NPY_LONGLONG:
            pFunction = GetCombineAccum2Function<int32_t, int64_t>(numpyOutType);  break;
@@ -1609,7 +1609,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int64_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int64_t, int16_t>(numpyOutType);  break;
-      case NPY_INT:  pFunction = GetCombineAccum2Function<int64_t, int32_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int64_t, int32_t>(numpyOutType);  break;
       case NPY_INT64:
       case NPY_LONGLONG:
            pFunction = GetCombineAccum2Function<int64_t, int64_t>(numpyOutType);  break;
@@ -1639,7 +1639,7 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
          void* pCountArray = NULL;
 
          if (bWantCount) {
-            countArray = AllocateNumpyArray(1, (npy_intp*)&hashSize, is64bithash ? NPY_INT64 : NPY_INT);
+            countArray = AllocateNumpyArray(1, (npy_intp*)&hashSize, is64bithash ? NPY_INT64 : NPY_INT32);
             CHECK_MEMORY_ERROR(countArray);
             if (countArray) {
                pCountArray = (int64_t*)PyArray_BYTES(countArray);
@@ -1930,7 +1930,7 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
    case NPY_INT16:
       pFunction = Combine1Filter<int16_t>;
       break;
-   case NPY_INT:
+   case NPY_INT32:
       pFunction = Combine1Filter<int32_t>;
       break;
    case NPY_INT64:
@@ -1944,7 +1944,7 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
       PyArrayObject* outArray = AllocateNumpyArray(ndim, dims, dtype, 0, PyArray_IS_F_CONTIGUOUS(inArr1));
       CHECK_MEMORY_ERROR(outArray);
 
-      PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&arraySize1, NPY_INT);  // TODO: bump up to int64_t for large arrays
+      PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&arraySize1, NPY_INT32);  // TODO: bump up to int64_t for large arrays
       CHECK_MEMORY_ERROR(firstArray);
 
       if (outArray && firstArray) {
@@ -1961,7 +1961,7 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
 
          if (uniqueCount < arraySize1) {
             // fixup first to hold only the uniques
-            PyArrayObject* firstArrayReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, NPY_INT);  // TODO: bump up to int64_t for large arrays
+            PyArrayObject* firstArrayReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, NPY_INT32);  // TODO: bump up to int64_t for large arrays
             CHECK_MEMORY_ERROR(firstArrayReduced);
 
             if (firstArrayReduced) {
@@ -2168,7 +2168,7 @@ MakeiFirst(PyObject *self, PyObject *args) {
       case NPY_INT16:
          pFunction = iLastFilter<int16_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pFunction = iLastFilter<int32_t>;
          break;
       case NPY_INT64:
@@ -2185,7 +2185,7 @@ MakeiFirst(PyObject *self, PyObject *args) {
       case NPY_INT16:
          pFunction = iFirstFilter<int16_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pFunction = iFirstFilter<int32_t>;
          break;
       case NPY_INT64:

@@ -618,9 +618,9 @@ bool GroupByPackFinal32(
 
    //-----------------------------------------------------
    // sortArray is iGroup in python land
-   PyArrayObject* sortArray =  AllocateNumpyArray(1, (npy_intp*)&totalRows, NPY_INT);
-   PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT);
-   PyArrayObject* countArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT);
+   PyArrayObject* sortArray =  AllocateNumpyArray(1, (npy_intp*)&totalRows, NPY_INT32);
+   PyArrayObject* firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
+   PyArrayObject* countArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
 
    if (sortArray && firstArray && countArray) {
 
@@ -824,7 +824,7 @@ GroupByPack32(PyObject* self, PyObject* args) {
          case NPY_INT16:
             pNextArray = GroupByPackFixup32<int16_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
-         case NPY_INT:
+         case NPY_INT32:
             pNextArray = GroupByPackFixup32<int32_t>(numUnique, totalRows, pIndexArray, pGroupArray);
             break;
          case NPY_INT64:
@@ -857,7 +857,7 @@ GroupByPack32(PyObject* self, PyObject* args) {
       case NPY_INT16:
          bResult = GroupByPackFinal32<int16_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
-      case NPY_INT:
+      case NPY_INT32:
          bResult = GroupByPackFinal32<int32_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray, &firstArray, &countArray);
          break;
       case NPY_INT64:
@@ -936,7 +936,7 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
 
    try {
 
-      int32_t numpyIndexType = NPY_INT;
+      int32_t numpyIndexType = NPY_INT32;
 
       // Rotate the arrays
       CMultiKeyPrepare mkp(args);
@@ -988,7 +988,7 @@ MultiKeyGroupBy32(PyObject *self, PyObject *args, PyObject *kwargs) {
             GROUPBYCALL pGroupByCall = NULL;
             void* pIndexArray = PyArray_BYTES(indexArray);
 
-            if (numpyIndexType == NPY_INT) {
+            if (numpyIndexType == NPY_INT32) {
                pGroupByCall = GroupBy32;
             }
             else {
@@ -1075,7 +1075,7 @@ MultiKeyGroupBy32Super(PyObject *self, PyObject *args) {
 
    try {
 
-      int32_t numpyIndexType = NPY_INT;
+      int32_t numpyIndexType = NPY_INT32;
 
       CMultiKeyPrepare mkp(args);
 
@@ -1236,7 +1236,7 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
                      mkp.pBoolFilter);
 
                // We allocated for worst case, now copy over only the unique indexes
-               PyArrayObject* indexArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT);
+               PyArrayObject* indexArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
                CHECK_MEMORY_ERROR(indexArray2);
 
                if (indexArray2 != NULL) {
@@ -1244,7 +1244,7 @@ MultiKeyUnique32(PyObject *self, PyObject *args) {
                   memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(int32_t));
                }
 
-               PyArrayObject* countArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT);
+               PyArrayObject* countArray2 = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
                CHECK_MEMORY_ERROR(countArray2);
 
                if (countArray2 != NULL) {
@@ -1437,15 +1437,15 @@ MultiKeyHash(PyObject *self, PyObject *args)
 
       PyArrayObject* firstObject = mkp.aInfo[0].pObject;
 
-      PyArrayObject* indexArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
-      PyArrayObject* runningCountArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
-      PyArrayObject* prevArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
-      PyArrayObject* nextArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
+      PyArrayObject* indexArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
+      PyArrayObject* runningCountArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
+      PyArrayObject* prevArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
+      PyArrayObject* nextArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
 
       // Second pass
-      PyArrayObject* firstArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
-      PyArrayObject* bktSizeArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
-      PyArrayObject* lastArray = AllocateLikeNumpyArray(firstObject, NPY_INT);
+      PyArrayObject* firstArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
+      PyArrayObject* bktSizeArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
+      PyArrayObject* lastArray = AllocateLikeNumpyArray(firstObject, NPY_INT32);
 
       if (lastArray == NULL) {
          PyErr_Format(PyExc_ValueError, "MultiKeyHash out of memory    %llu", mkp.totalRows);
@@ -1720,7 +1720,7 @@ PyObject *MultiKeyAlign32(PyObject *self, PyObject *args)
       LOGGING("MultiKeyAlign32 total rows %lld %lld\n", mkp1.totalRows, mkp2.totalRows);
       try {
          if (isIndex32) {
-            indexArray = AllocateLikeNumpyArray(mkp1.aInfo[0].pObject, NPY_INT);
+            indexArray = AllocateLikeNumpyArray(mkp1.aInfo[0].pObject, NPY_INT32);
             if (!indexArray) return PyErr_Format(PyExc_BufferError, "MultiKeyAlign32");
             int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(indexArray);
             success = AlignHashMK32(mkp1.totalRows, mkp1.pSuperArray, pVal1, mkp2.totalRows, mkp2.pSuperArray, pVal2, pDataOut2, mkp1.totalItemSize, HASH_MODE_MASK, dtype1, isForward, allowExact);
@@ -1813,7 +1813,7 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
    //
    MAKE_I_GROUP2 pBinFunc = NULL;
 
-   if (outdtype == NPY_INT) {
+   if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
          pBinFunc = MakeiGroup2<int8_t, int32_t>;
@@ -1821,7 +1821,7 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int32_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int32_t>;
          break;
       case NPY_INT64:
@@ -1840,7 +1840,7 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup2<int16_t, int64_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = MakeiGroup2<int32_t, int64_t>;
          break;
       case NPY_INT64:
@@ -1924,7 +1924,7 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
    //
    MAKE_I_GROUP pBinFunc = NULL;
 
-   if (outdtype == NPY_INT) {
+   if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
          pBinFunc = MakeiGroup<int8_t, int32_t>;
@@ -1932,7 +1932,7 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int32_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int32_t>;
          break;
       case NPY_INT64:
@@ -1951,7 +1951,7 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = MakeiGroup<int16_t, int64_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = MakeiGroup<int32_t, int64_t>;
          break;
       case NPY_INT64:
@@ -1999,7 +1999,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
    PyArrayObject* outiFirstGroup = NULL;
 
    // Check for totalRows > 2100000000 and switch to int64_t
-   int outdtype = NPY_INT;
+   int outdtype = NPY_INT32;
 
    if (totalRows > 2000000000) {
       outdtype = NPY_INT64;
@@ -2023,7 +2023,7 @@ GroupFromBinCount(PyObject *self, PyObject *args)
       // Generate the location for bin to write the next location
       // Effectively this is a cumsum
       switch (outdtype) {
-      case NPY_INT:
+      case NPY_INT32:
       {
          int32_t* pCount = (int32_t*)pnCountGroup;
          int32_t* pCumSum = (int32_t*)piFirstGroup;
@@ -2168,7 +2168,7 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
    // Pick one of 8 bincount routines based on
    // ikey size and int32_t vs int64_t output
    //
-   if (outdtype == NPY_INT) {
+   if (outdtype == NPY_INT32) {
       switch (iKeyType) {
       case NPY_INT8:
          pBinFunc = BinCountAlgo<int8_t, int32_t>;
@@ -2176,7 +2176,7 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int32_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int32_t>;
          break;
       case NPY_INT64:
@@ -2195,7 +2195,7 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype) {
       case NPY_INT16:
          pBinFunc = BinCountAlgo<int16_t, int64_t>;
          break;
-      case NPY_INT:
+      case NPY_INT32:
          pBinFunc = BinCountAlgo<int32_t, int64_t>;
          break;
       case NPY_INT64:
@@ -2345,7 +2345,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
    PyArrayObject* outiFirstGroup = NULL;
 
    // Check for totalRows > 2100000000 and switch to int64_t
-   int outdtype = NPY_INT;
+   int outdtype = NPY_INT32;
 
    if (unique_rows == 0 || totalRows <=0) {
       PyErr_Format(PyExc_ValueError, "BinCount: unique or totalRows is zero, cannot calculate the bins.");
@@ -2401,7 +2401,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                // Count up what all the worker threads produced
                // This will produce nCountGroup
                // TODO: Could be counted in parallel for large uniques
-               if (outdtype == NPY_INT) {
+               if (outdtype == NPY_INT32) {
                   int32_t* pMaster = (int32_t*)pnCountGroup;
                   int32_t* pCount = (int32_t*)pMem;
 
@@ -2436,7 +2436,7 @@ BinCount(PyObject *self, PyObject *args, PyObject* kwargs)
                   void* piFirstGroup = PyArray_BYTES(outiFirstGroup);
                   void* piGroup = PyArray_BYTES(outiGroup);
 
-                  if (outdtype == NPY_INT) {
+                  if (outdtype == NPY_INT32) {
                      // Should be all ZEROS
                      int32_t lastvalue = 0;
                      int32_t* pCountArray2d = (int32_t*)pstBinCount[0].pUserMemory;

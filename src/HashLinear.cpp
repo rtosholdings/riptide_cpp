@@ -28,7 +28,7 @@
 //static constexpr int numpy_type_code = -1;   // -1 is an invalid code, because if something uses this specialization we want it to break.
 //
 //template<>
-//static constexpr int numpy_type_code<int32_t> = NPY_INT;
+//static constexpr int numpy_type_code<int32_t> = NPY_INT32;
 //
 //template<>
 //static constexpr int numpy_type_code<int64_t> = NPY_INT64;
@@ -44,7 +44,7 @@ struct numpy_type_code
 template<>
 struct numpy_type_code<int32_t>
 {
-   static constexpr int value = NPY_INT;
+   static constexpr int value = NPY_INT32;
 };
 
 template<>
@@ -1981,7 +1981,7 @@ PyArrayObject* CopyToSmallerArray(void* pFirstArrayIndex, int64_t numUnique, int
          firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT16);
          break;
       case 4:
-         firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT);
+         firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT32);
          break;
       case 8:
          firstArray = AllocateNumpyArray(1, (npy_intp*)&numUnique, NPY_INT64);
@@ -4265,7 +4265,7 @@ bool MergePreBinned(
    case NPY_LONGLONG:
       FindLastMatchCategorical<KEY_TYPE, int64_t>(size1, size2, pKey1, pKey2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalUniqueSize);
       break;
-   case NPY_INT:
+   case NPY_INT32:
       FindLastMatchCategorical<KEY_TYPE, int32_t>(size1, size2, pKey1, pKey2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalUniqueSize);
       break;
    case NPY_FLOAT64:
@@ -4317,7 +4317,7 @@ bool AlignHashMK32(
          pHashLinear->FindLastMatchMK<int64_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int64_t*)pInVal1, (int64_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
       break;
-   case NPY_INT:
+   case NPY_INT32:
       if (isForward) {
          pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -4381,7 +4381,7 @@ bool AlignHashMK64(
       }
 
       break;
-   case NPY_INT:
+   case NPY_INT32:
       if (isForward) {
          pHashLinear->FindNextMatchMK<int32_t>(size1, size2, (char*)pInput1, (char*)pInput2, (int32_t*)pInVal1, (int32_t*)pInVal2, pOutput, totalItemSize, allowExact);
       }
@@ -4831,7 +4831,7 @@ void IsMemberHashString32Pre(
 
    }
    else if (size < 2000000000) {
-      *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT);
+      *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
       int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(*indexArray);
       IsMemberHashString32<int32_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, pBoolOutput, HASH_MODE(hashMode), hintSize, isUnicode);
 
@@ -4877,7 +4877,7 @@ int64_t IsMemberCategoricalHashStringPre(
 
    }
    else if (size2 < 2000000000) {
-      *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT);
+      *indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
       int32_t* pDataOut2 = (int32_t*)PyArray_BYTES(*indexArray);
       missed = IsMemberHashStringCategorical<int32_t>(size1, strWidth1, (const char*)pInput1, size2, strWidth2, (const char*)pInput2, pDataOut2, HASH_MODE(hashMode), hintSize, isUnicode);
 
@@ -5052,7 +5052,7 @@ void IsMemberHashMKPre(
       }
    }
    else if (size < 2000000000) {
-      *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT);
+      *indexArray = AllocateNumpyArray(1, (npy_intp*)&size1, NPY_INT32);
       if (*indexArray) {
          int32_t* pOutput = (int32_t*)PyArray_BYTES(*indexArray);
          IsMemberHashMK<int32_t>(size1, pInput1, size2, pInput2, pBoolOutput, pOutput, totalItemSize, hintSize, hashMode);
@@ -5171,11 +5171,11 @@ IsMember32(PyObject *self, PyObject *args)
    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
    switch (arrayType1) {
-   case NPY_INT:
-      arrayType1 = NPY_INT;
+   case NPY_INT32:
+      arrayType1 = NPY_INT32;
       break;
-   case NPY_UINT:
-      arrayType1 = NPY_UINT;
+   case NPY_UINT32:
+      arrayType1 = NPY_UINT32;
       break;
    case NPY_INT64:
    case NPY_LONGLONG:
@@ -5188,11 +5188,11 @@ IsMember32(PyObject *self, PyObject *args)
    }
 
    switch (arrayType2) {
-   case NPY_INT:
-      arrayType2 = NPY_INT;
+   case NPY_INT32:
+      arrayType2 = NPY_INT32;
       break;
-   case NPY_UINT:
-      arrayType2 = NPY_UINT;
+   case NPY_UINT32:
+      arrayType2 = NPY_UINT32;
       break;
    case NPY_INT64:
    case NPY_LONGLONG:
@@ -5260,7 +5260,7 @@ IsMember32(PyObject *self, PyObject *args)
             dtype = NPY_INT16;
          } else
          if (arraySize2 < 2000000000) {
-            dtype = NPY_INT;
+            dtype = NPY_INT32;
          }
          else {
             dtype = NPY_INT64;
@@ -5278,7 +5278,7 @@ IsMember32(PyObject *self, PyObject *args)
             case NPY_INT16:
                IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
-            case NPY_INT:
+            case NPY_INT32:
                IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t*)pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode), hintSize);
                break;
             case NPY_INT64:
@@ -5628,7 +5628,7 @@ PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args)
       case NPY_INT16:
          success = MergePreBinned<int16_t>(ArrayLength(key1), (int16_t*)pKey1, pVal1, ArrayLength(key2), (int16_t*)pKey2, pVal2, (int16_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
-      case NPY_INT:
+      case NPY_INT32:
          success = MergePreBinned<int32_t>(ArrayLength(key1), (int32_t*)pKey1, pVal1, ArrayLength(key2), (int32_t*)pKey2, pVal2, (int32_t*)PyArray_BYTES(indexArray), totalUniqueSize, HASH_MODE_MASK, dtype1);
          break;
       case NPY_INT64:
