@@ -41,7 +41,7 @@ CFileReadWrite::~CFileReadWrite()
 // Returns true if cache was successfully flushed
 bool CFileReadWrite::FlushCache(CHAR driveLetter) {
 
-   bool result = FALSE;
+   bool result = false;
    char  szVolumeName[32] = "\\\\.\\X:";
 
    szVolumeName[4] = driveLetter;

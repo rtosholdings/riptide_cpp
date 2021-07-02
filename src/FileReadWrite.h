@@ -59,9 +59,9 @@ public:
    HANDLE Handle = INVALID_HANDLE_VALUE;
    TCHAR  FileName[_MAX_FNAME] = { 0 };
 
-   bool WriteOption = FALSE;
-   bool Overlapped = FALSE;
-   bool DirectIO = FALSE;
+   bool WriteOption = false;
+   bool Overlapped = false;
+   bool DirectIO = false;
 
    INT64 BufferPos = 0;
    OVERLAPPED OverlappedIO;

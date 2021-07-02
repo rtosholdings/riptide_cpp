@@ -847,7 +847,7 @@ int32_t _SDSWriteFile(
          return g_fpWriteFile(fileName, shareName, pWriteInfo, pWriteCallbacks);
       }
    }
-   return FALSE;
+   return false;
 }
 
 //===================================================================
