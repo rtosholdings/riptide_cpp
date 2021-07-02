@@ -71,6 +71,7 @@ using HANDLE = void*;
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
 
 using INT_PTR = ptrdiff_t;
+using DWORD = uint32_t;
 
 #define WINAPI
 #include <pthread.h>
