@@ -72,6 +72,7 @@ using HANDLE = void*;
 
 using INT_PTR = ptrdiff_t;
 using DWORD = uint32_t;
+using LPVOID = void*;
 
 #define WINAPI
 #include <pthread.h>
