@@ -72,7 +72,7 @@ WaitAddress g_WaitAddress=NULL;
 //   * BSD syscalls like __psynch_cvwait (and other __psynch functions). These are not externally documented -- need to look in github.com/apple/darwin-libpthread to see how things work.
 //
 #if defined(RT_OS_WINDOWS)
-uint32_t WINAPI WorkerThreadFunction(LPVOID lpParam)
+DWORD WINAPI WorkerThreadFunction(LPVOID lpParam)
 #else
 void *
 WorkerThreadFunction(void *lpParam)
