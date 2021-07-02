@@ -2667,7 +2667,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       case NPY_INT16:
          SortInPlace<int16_t>(pDataIn1, arraySize1, mode);
          break;
-      CASE_NPY_INT:
+      CASE_NPY_INT32:
          SortInPlace<int32_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_INT64:
@@ -2679,7 +2679,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       case NPY_UINT16:
          SortInPlace<uint16_t>(pDataIn1, arraySize1, mode);
          break;
-      CASE_NPY_UINT:
+      CASE_NPY_UINT32:
          SortInPlace<uint32_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_UINT64:
@@ -2753,7 +2753,7 @@ PyObject* SortInPlaceIndirect(PyObject *self, PyObject *args) {
    int64_t sortSize = ArrayLength(inSort);
 
 
-   if (arrayType1 == NPY_INT && sortType == NPY_INT) {
+   if (arrayType1 == NPY_INT32 && sortType == NPY_INT32) {
       int32_t* pDataIn = (int32_t*)PyArray_BYTES(inArr1);
       int32_t* pSort = (int32_t*)PyArray_BYTES(inSort);
 
@@ -2768,7 +2768,7 @@ PyObject* SortInPlaceIndirect(PyObject *self, PyObject *args) {
 
       WORKSPACE_FREE(inverseSort);
    }
-   else if (arrayType1 == NPY_INT && sortType == NPY_INT64) {
+   else if (arrayType1 == NPY_INT32 && sortType == NPY_INT64) {
       int32_t* pDataIn = (int32_t*)PyArray_BYTES(inArr1);
       int64_t* pSort = (int64_t*)PyArray_BYTES(inSort);
 
@@ -2876,7 +2876,7 @@ static void SortIndex(
    case NPY_INT16:
       SortIndex<int16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
-   CASE_NPY_INT:
+   CASE_NPY_INT32:
       SortIndex<int32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_INT64:
@@ -2888,7 +2888,7 @@ static void SortIndex(
    case NPY_UINT16:
       SortIndex<uint16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
-   CASE_NPY_UINT:
+   CASE_NPY_UINT32:
       SortIndex<uint32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_UINT64:
@@ -3034,7 +3034,7 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
    case NPY_INT16:
       pSortedFunc = IsSorted<int16_t>;
       break;
-   CASE_NPY_INT:
+   CASE_NPY_INT32:
       pSortedFunc = IsSorted<int32_t>;
       break;
    CASE_NPY_INT64:
@@ -3046,7 +3046,7 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
    case NPY_UINT16:
       pSortedFunc = IsSorted<uint16_t>;
       break;
-   CASE_NPY_UINT:
+   CASE_NPY_UINT32:
       pSortedFunc = IsSorted<uint32_t>;
       break;
    CASE_NPY_UINT64:
@@ -3188,8 +3188,8 @@ static PyArrayObject* GetKwargIndex(PyObject *kwargs, int64_t& indexLength, int 
          CASE_NPY_INT64:
             dtype = NPY_INT64;
             return pStartIndex;
-         CASE_NPY_INT:
-            dtype = NPY_INT;
+         CASE_NPY_INT32:
+            dtype = NPY_INT32;
             return pStartIndex;
          default:
             printf("Bad index dtype... make sure int64_t or int32_t\n");
@@ -3265,7 +3265,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
             return NULL;
          }
 
-         if (sizeof(UINDEX) == 4 && indexDType != NPY_INT) {
+         if (sizeof(UINDEX) == 4 && indexDType != NPY_INT32) {
             PyErr_Format(PyExc_ValueError, "LexSort 'index' is not int32_t");
             return NULL;
          }
@@ -3276,7 +3276,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
          Py_IncRef((PyObject*)result);
       }
       else {
-         result = AllocateLikeNumpyArray(mlp.aInfo[0].pObject, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
+         result = AllocateLikeNumpyArray(mlp.aInfo[0].pObject, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
       }
 
       if (result) {
@@ -3680,9 +3680,9 @@ static PyObject* GroupFromLexSortInternal(
    // TODO: Change this to use type npy_intp and check for overflow.
    int64_t worstCase = indexLength + 1 + cutOffLength;
 
-   PyArrayObject* const keys = AllocateNumpyArray(1, (npy_intp*)&indexLengthValues, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
-   PyArrayObject* const first = AllocateNumpyArray(1, (npy_intp*)&indexLength, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
-   PyArrayObject* const count = AllocateNumpyArray(1, (npy_intp*)&worstCase, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
+   PyArrayObject* const keys = AllocateNumpyArray(1, (npy_intp*)&indexLengthValues, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
+   PyArrayObject* const first = AllocateNumpyArray(1, (npy_intp*)&indexLength, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
+   PyArrayObject* const count = AllocateNumpyArray(1, (npy_intp*)&worstCase, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
 
    // Make sure allocations succeeded
    if (!keys || !first || !count)
@@ -3797,10 +3797,10 @@ static PyObject* GroupFromLexSortInternal(
 
       // TODO: fix up keys
       //parallel add?
-      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT : NPY_INT64);
+      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
 
       totalUniques++;
-      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT : NPY_INT64);
+      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
 
       // ANOTHER PARALEL ROUTINE to copy
       struct stPGROUPADD {
@@ -4006,12 +4006,12 @@ static PyObject* GroupFromLexSortInternal(
       // now we know the actual unique counts
       // memcpy..
       // also count invalid bin
-      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
+      PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
       int64_t copySize = sizeof(UINDEX) * uniqueCount;
       memcpy(PyArray_BYTES(firstReduced), pFirstOut, copySize);
 
       uniqueCount++;
-      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, sizeof(UINDEX) == 4 ? NPY_INT : NPY_INT64);
+      PyArrayObject* countReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
       copySize = sizeof(UINDEX) * uniqueCount;
       // reduced
       memcpy(PyArray_BYTES(countReduced), pCountOut, copySize);
@@ -4070,7 +4070,7 @@ PyObject* GroupFromLexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
    void* pValues = PyArray_BYTES(inArrValues);
 
    switch (dtype) {
-   CASE_NPY_INT:
+   CASE_NPY_INT32:
       return GroupFromLexSortInternal<int32_t>(kwargs, (int32_t*)pIndex, arrLength, arrLengthValues,  pValues, itemSize);
       break;
 

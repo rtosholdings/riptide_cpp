@@ -85,8 +85,8 @@ stScalarType NpTypeObjects[MAX_NUMPY_TYPE] = {
    { NULL, 4,  NPY_INT },
    { NULL, 4,  NPY_UINT },
 #if defined(RT_OS_WINDOWS)
-   { NULL, 4,  NPY_INT },   // believe this is 8 bytes on Linux
-   { NULL, 4,  NPY_UINT },  // believe this is 8 bytes on Linux
+   { NULL, 4,  NPY_INT32 },   // believe this is 8 bytes on Linux
+   { NULL, 4,  NPY_UINT32 },  // believe this is 8 bytes on Linux
 #else
    { NULL, 8,  NPY_LONG },   // believe this is 8 bytes on Linux enum 7
    { NULL, 8,  NPY_ULONG },  // believe this is 8 bytes on Linux enum 8
@@ -118,8 +118,8 @@ const char* gNumpyTypeToString[NUMPY_LAST_TYPE] = {
    "NPY_INT",
    "NPY_UINT",
 #if defined(RT_OS_WINDOWS)
-   "NPY_INT",   // not on linux
-   "NPY_UINT",  // not on linux
+   "NPY_INT32",   // not on linux
+   "NPY_UINT32",  // not on linux
 #else
    "NPY_LONG64",   // not on linux
    "NPY_LONG64",  // not on linux
@@ -147,14 +147,14 @@ int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
    1, //NPY_UBYTE,     2
    2, //NPY_SHORT,     3
    2, //NPY_USHORT,    4
-   4, //NPY_INT,       5 // TJD is this used or just NPY_INT?
-   4, //NPY_UINT,      6 // TJD is this used or just NPY_UINT?
+   4, //NPY_INT,       5 // TJD is this used or just NPY_INT32?
+   4, //NPY_UINT,      6 // TJD is this used or just NPY_UINT32?
 #if defined(RT_OS_WINDOWS)
-   4, //NPY_INT,      7 // TODO: change to sizeof(long)
-   4, //NPY_UINT,     8
+   4, //NPY_INT32,      7 // TODO: change to sizeof(long)
+   4, //NPY_UINT32,     8
 #else
-   8, //NPY_INT,      7
-   8, //NPY_UINT,     8
+   8, //NPY_INT32,      7
+   8, //NPY_UINT32,     8
 
 #endif
    8, //NPY_INT64,  9
@@ -177,7 +177,7 @@ int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
 
 
 //---------------------------------------------------------------
-// Pass in a type such as np.int32 and a NPY_INT will be returned
+// Pass in a type such as np.int32 and a NPY_INT32 will be returned
 // returns -1 on failure adn set error string
 // otherwise returns NPY_TYPE
 int32_t TypeToDtype(PyTypeObject *out_dtype) {
@@ -200,7 +200,7 @@ int32_t TypeToDtype(PyTypeObject *out_dtype) {
 //---------------------------------------------
 // Return the objects dtype
 // Returns -1 on types > NPY_VOID suchas NPY_DATETIME,
-// otherwise the type number such as NPY_INT or NPY_FLOAT
+// otherwise the type number such as NPY_INT32 or NPY_FLOAT
 int32_t ObjectToDtype(PyArrayObject* obj) {
 
    int32_t result = PyArray_TYPE(obj);
@@ -881,10 +881,10 @@ int32_t GetArrDType(PyArrayObject* inArr) {
 #if defined(RT_OS_WINDOWS)
 
    if (dtype == NPY_INT) {
-      dtype = NPY_INT;
+      dtype = NPY_INT32;
    }
    if (dtype == NPY_UINT) {
-      dtype = NPY_UINT;
+      dtype = NPY_UINT32;
    }
 
 #else
@@ -918,8 +918,8 @@ int32_t GetArrDType(PyArrayObject* inArr) {
 // NPY_USHORT   4
 // NPY_INT      5
 // NPY_UINT     6
-// NPY_INT      7
-// NPY_UINT     8
+// NPY_INT32      7
+// NPY_UINT32     8
 // NPY_INT64      9
 // NPY_UINT64     10
 // NPY_FLOAT      11
@@ -952,13 +952,13 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       value = (int64_t)*(uint16_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_UINT:
-//   case NPY_UINT: This enumeration is the same value as NPY_UINT above
+   case NPY_UINT32:
+//   case NPY_UINT: This enumeration is the same value as NPY_UINT32 above
       value = (int64_t)*(uint32_t*)pInput;
       fvalue = (double)value;
       break;
-   case NPY_INT:
-//   case NPY_INT: This enumeration is the same value as NPY_INT above
+   case NPY_INT32:
+//   case NPY_INT: This enumeration is the same value as NPY_INT32 above
       value = (int64_t)*(int32_t*)pInput;
       fvalue = (double)value;
       break;
@@ -995,10 +995,10 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
    case NPY_UINT16:
       pDest->i = _mm256_set1_epi16((int16_t)value);
       break;
-   case NPY_UINT:
-//   case NPY_UINT: This enumeration has the same value at NPY_UINT above
-   case NPY_INT:
-//   case NPY_INT: This enumeration has the same value as NPY_INT above
+   case NPY_UINT32:
+//   case NPY_UINT: This enumeration has the same value at NPY_UINT32 above
+   case NPY_INT32:
+//   case NPY_INT: This enumeration has the same value as NPY_INT32 above
       pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
    case NPY_UINT64:
@@ -1070,10 +1070,10 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
       case NPY_UINT16:
          pDest->i = _mm256_set1_epi16((int16_t)value);
          break;
-      case NPY_UINT:
-//      case  NPY_UINT: This enumeration has the same value as NPY_UINT above
-      case NPY_INT:
-//      case NPY_INT: This enumeration has the same value as NPY_INT above
+      case NPY_UINT32:
+//      case  NPY_UINT: This enumeration has the same value as NPY_UINT32 above
+      case NPY_INT32:
+//      case NPY_INT: This enumeration has the same value as NPY_INT32 above
          pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
       case NPY_UINT64:
@@ -1150,12 +1150,12 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value2);
             break;
-         case NPY_INT:
-//         case NPY_INT: This enumeration has the same value as NPY_INT above
+         case NPY_INT32:
+//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
-         case NPY_UINT:
-//         case NPY_UINT: This enumeration hasa the same value as NPY_UINT above
+         case NPY_UINT32:
+//         case NPY_UINT: This enumeration hasa the same value as NPY_UINT32 above
             pDest->i = _mm256_set1_epi32((uint32_t)value2);
             break;
          case NPY_INT64:
@@ -1197,12 +1197,12 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((uint16_t)value);
             break;
-         case NPY_UINT:
-//         case NPY_UINT: This enumeration has the same value as NPY_UINT above
+         case NPY_UINT32:
+//         case NPY_UINT: This enumeration has the same value as NPY_UINT32 above
             pDest->i = _mm256_set1_epi32((uint32_t)value);
             break;
-         case NPY_INT:
-//         case NPY_INT: This enumeration has the same value as NPY_INT above
+         case NPY_INT32:
+//         case NPY_INT: This enumeration has the same value as NPY_INT32 above
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
          case NPY_UINT64:
@@ -2001,8 +2001,8 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_INT16:
       pgDefault = &gDefaultInt16;
       break;
-   case NPY_INT: 
-//   case NPY_INT: This is the same numeric value as NPY_INT above
+   case NPY_INT32: 
+//   case NPY_INT: This is the same numeric value as NPY_INT32 above
       pgDefault = &gDefaultInt32;
       break;
    case NPY_INT64:
@@ -2015,8 +2015,8 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_UINT16:
       pgDefault = &gDefaultUInt16;
       break;
-   case NPY_UINT:
-//   case NPY_UINT: This is the same numeric value as NPY_UINT above
+   case NPY_UINT32:
+//   case NPY_UINT: This is the same numeric value as NPY_UINT32 above
       pgDefault = &gDefaultUInt32;
       break;
    case NPY_UINT64:
@@ -2046,7 +2046,7 @@ int GetNumpyType(int16_t value) {
    return NPY_INT16;
 }
 int GetNumpyType(int32_t value) {
-   return NPY_INT;
+   return NPY_INT32;
 }
 int GetNumpyType(int64_t value) {
    return NPY_INT64;
@@ -2058,7 +2058,7 @@ int GetNumpyType(uint16_t value) {
    return NPY_UINT16;
 }
 int GetNumpyType(uint32_t value) {
-   return NPY_UINT;
+   return NPY_UINT32;
 }
 int GetNumpyType(uint64_t value) {
    return NPY_UINT64;
