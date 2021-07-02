@@ -5,9 +5,6 @@
 //#define MATHLOGGING printf
 #define MATHLOGGING(...)
 
-// Windows typedefs needd to call Windows APIS------------------------------------------------
-typedef INT_PTR(WINAPI *FARPROC)();
-
 #ifndef DECLARE_HANDLE
 #define DECLARE_HANDLE(name) struct name##__{int unused;}; typedef struct name##__ *name
 DECLARE_HANDLE(HINSTANCE);
@@ -17,8 +14,8 @@ typedef HINSTANCE HMODULE;
 typedef wchar_t WCHAR;    // wc,   16-bit UNICODE character
 
 extern "C" {
-   typedef INT_PTR(WINAPI *FARPROC)();
-   typedef DWORD(WINAPI *PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
+   typedef int* (WINAPI *FARPROC)();
+   typedef unsigned int(WINAPI *PTHREAD_START_ROUTINE)(void* lpThreadParameter);
    typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
 
 
@@ -46,7 +43,7 @@ extern "C" {
    typedef pthread_t  THANDLE;
 
    int GetProcCount();
-   VOID Sleep(DWORD dwMilliseconds);
+   void Sleep(unsigned int dwMilliseconds);
    bool CloseHandle(THANDLE hObject);
 
    uint64_t SetThreadAffinityMask(pid_t hThread, uint64_t dwThreadAffinityMask);
@@ -54,13 +51,13 @@ extern "C" {
    bool GetProcessAffinityMask(HANDLE hProcess, uint64_t* lpProcessAffinityMask, uint64_t* lpSystemAffinityMask);
    pid_t GetCurrentThread();
 
-   HANDLE GetCurrentProcess(VOID);
+   HANDLE GetCurrentProcess();
 
-   DWORD  GetLastError(VOID);
+   unsigned int  GetLastError();
 
-   HANDLE CreateThread(VOID* lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+   HANDLE CreateThread(void* lpThreadAttributes, size_t dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter, unsigned int dwCreationFlags, unsigned int* lpThreadId);
 
-   HMODULE LoadLibraryW(const WCHAR* lpLibFileName);
+   HMODULE LoadLibraryW(const wchar_t* lpLibFileName);
    FARPROC GetProcAddress(HMODULE hModule, const char* lpProcName);
 
 #endif
@@ -104,8 +101,8 @@ public:
       PrintCPUInfo();
 
       WorkerThreadCount = GetProcCount();
-      NoThreading = FALSE;
-      NoCaching = FALSE;
+      NoThreading = false;
+      NoCaching = false;
 
       pWorkerRing = (stWorkerRing*)ALIGNED_ALLOC(sizeof(stWorkerRing), 64);
       memset(pWorkerRing, 0, sizeof(stWorkerRing));
@@ -189,7 +186,7 @@ public:
    static bool MultiThreadedCounterCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       // -1 is the first core
       core = core + 1;
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
 
       int64_t index;
       int64_t workBlock;
@@ -201,7 +198,7 @@ public:
 
          pstWorkerItem->MTWorkCallback(pstWorkerItem->WorkCallbackArg, core, index);
 
-         didSomeWork = TRUE;
+         didSomeWork = true;
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
 
@@ -229,7 +226,7 @@ public:
          MATHLOGGING("before compress threaded\n");
 
          // This will notify the worker threads of a new work item
-         WorkMain(pWorkItem, numItems, threadWakeup, 1, FALSE);
+         WorkMain(pWorkItem, numItems, threadWakeup, 1, false);
          MATHLOGGING("after compress threaded\n");
       }
       else {
@@ -249,7 +246,7 @@ public:
    static bool MultiThreadedChunkCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       // -1 is the first core
       core = core + 1;
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
 
       int64_t lenX;
       int64_t workBlock;
@@ -260,7 +257,7 @@ public:
 
          pstWorkerItem->MTChunkCallback(pstWorkerItem->WorkCallbackArg, core, start, lenX);
 
-         didSomeWork = TRUE;
+         didSomeWork = true;
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
       }
@@ -272,7 +269,7 @@ public:
    //-----------------------------------------------------------
    // Automatically handles threading vs no threading
    // Used to divide up single array of data into chunks or sections
-   // Returns TRUE if actually did multithreaded work, otherwise FALSE
+   // Returns true if actually did multithreaded work, otherwise false
    bool DoMultiThreadedChunkWork(int64_t lengthData, MTCHUNK_CALLBACK  doMTChunkCallback, void* workCallbackArg, int32_t threadWakeup=0)
    {
       // See if we get a work item (threading might be off)
@@ -288,12 +285,12 @@ public:
 
          // This will notify the worker threads of a new work item
          WorkMain(pWorkItem, lengthData, threadWakeup);
-         return TRUE;
+         return true;
       }
       else {
          // Just assume core 0 does all the work
          doMTChunkCallback(workCallbackArg, 0, 0, lengthData);
-         return FALSE;
+         return false;
       }
    }
 
@@ -398,7 +395,7 @@ public:
       int64_t len, 
       int32_t  threadWakeup,
       int64_t BlockSize= WORK_ITEM_CHUNK, 
-      bool bGenericMode=TRUE) {
+      bool bGenericMode=true) {
 
       pWorkItem->TotalElements = len;
 
@@ -469,7 +466,7 @@ public:
    //=================================================================================================================
 
    static bool AnyScatterGather(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
       OLD_CALLBACK* OldCallback = &pstWorkerItem->OldCallback;
 
 
@@ -494,7 +491,7 @@ public:
          OldCallback->FunctionList->AnyScatterGatherCall(pDataInX + offsetAdj, lenX, pstScatterGatherFunc);
 
          // Indicate we completed a block
-         didSomeWork = TRUE;
+         didSomeWork = true;
 
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
@@ -507,7 +504,7 @@ public:
    }
 
    static bool AnyGroupby(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
       GROUPBY_FUNC groupByCall = (GROUPBY_FUNC)(pstWorkerItem->WorkCallbackArg);
 
       int64_t index;
@@ -524,7 +521,7 @@ public:
          groupByCall(pstWorkerItem->OldCallback.pDataInBase1, workBlock - 1);
 
          // Indicate we completed a block
-         didSomeWork = TRUE;
+         didSomeWork = true;
 
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
@@ -540,7 +537,7 @@ public:
 
 
    static bool AnyTwoCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
       OLD_CALLBACK* OldCallback = &pstWorkerItem->OldCallback;
 
       int64_t strideSizeIn = OldCallback->FunctionList->InputItemSize;
@@ -606,7 +603,7 @@ public:
          }
 
          // Indicate we completed a block
-         didSomeWork = TRUE;
+         didSomeWork = true;
 
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
@@ -641,7 +638,7 @@ public:
       // The only item that needs to be filled in for AnyGroupby
       pWorkItem->OldCallback.pDataInBase1 = pstData;
 
-      WorkMain(pWorkItem, tupleSize, 0, 1, FALSE);
+      WorkMain(pWorkItem, tupleSize, 0, 1, false);
    }
 
    //------------------------------------------------------------------------------
@@ -665,7 +662,7 @@ public:
 
       int32_t numCores = WorkerThreadCount + 1;
       int64_t sizeToAlloc = numCores * sizeof(stScatterGatherFunc);
-      PVOID pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
+      void* pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
 
       if (pWorkSpace) {
          //Insert a work item
@@ -691,7 +688,7 @@ public:
          
          //pWorkItem->TotalElements = len;
          // Kick off the worker threads for calculation
-         WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK,TRUE);
+         WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK,true);
 
          // Gather the results from all cores
          if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX) {
@@ -757,7 +754,7 @@ public:
    //   pWorkItem->OldCallback.pDataOutBase1 = pDataOut;
    //   //pWorkItem->TotalElements = len;
 
-   //   WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK, TRUE);
+   //   WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK, true);
    //}
 
 

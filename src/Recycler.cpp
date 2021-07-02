@@ -6,23 +6,23 @@
 // Array to store what we can recycle
 stRecycleList  g_stRecycleList[RECYCLE_ENTRIES][RECYCLE_MAXIMUM_TYPE];
 
-INT64 g_DidNotFindRecycled = 0;
-INT64 g_FoundRecycled = 0;
-INT64 g_TotalHeads = 0;
-INT64 g_TotalTails = 0;
+int64_t g_DidNotFindRecycled = 0;
+int64_t g_FoundRecycled = 0;
+int64_t g_TotalHeads = 0;
+int64_t g_TotalTails = 0;
 
 // Default garbage collect timespan
 // Setting to 0 will stop collection
 // Setting to 1 billion will never garbage collect
-INT64 g_GarbageCollectTimeSpan = 150;
+int64_t g_GarbageCollectTimeSpan = 150;
 
 extern PyTypeObject*  g_FastArrayType;
-static const INT64 NANO_BILLION = 1000000000LL;
+static const int64_t NANO_BILLION = 1000000000LL;
 
 //#define LOGRECYCLE printf
 #define LOGRECYCLE(...)
 
-static UINT64 gLastGarbageCollectTSC = 0;
+static uint64_t gLastGarbageCollectTSC = 0;
 //-----------------------------------------------
 // RECYCLING of BitFields
 size_t g_CurrentAllocBitSize = 0;
@@ -33,12 +33,12 @@ void* g_pBitFields = NULL;
 size_t g_CurrentAllocHashTable = 0;
 void*  g_pHashTableAny = NULL;
 
-static INT64 g_TotalAllocs = 0;
-static INT64 g_TotalFree = 0;
-static INT64 g_TotalMemoryAllocated = 0;
-static INT64 g_TotalMemoryFreed = 0;
+static int64_t g_TotalAllocs = 0;
+static int64_t g_TotalFree = 0;
+static int64_t g_TotalMemoryAllocated = 0;
+static int64_t g_TotalMemoryFreed = 0;
 //-----------------------------------------
-static INT64 gRecyleMode = 0;
+static int64_t gRecyleMode = 0;
 static int gRecursion = 0;
 static int gGarbageCollecting = 0;
 
@@ -46,7 +46,7 @@ static int gGarbageCollecting = 0;
 //-----------------------------------------------
 void* FmAlloc(size_t _Size) {
    // make thread safe
-   UINT64* pageGuard= (UINT64*)malloc(_Size + 16);
+   uint64_t* pageGuard= (uint64_t*)malloc(_Size + 16);
    if (pageGuard) {
       InterlockedIncrement64(&g_TotalAllocs);
       InterlockedAdd64(&g_TotalMemoryAllocated, _Size);
@@ -67,7 +67,7 @@ void FmFree(void* _Block) {
 
    //LOGRECYCLE("Freeing %p\n", _Block);
    InterlockedIncrement64(&g_TotalFree);
-   UINT64* pageGuard = (UINT64*)_Block;
+   uint64_t* pageGuard = (uint64_t*)_Block;
    pageGuard--;
    pageGuard--;
    if (pageGuard[1] != MAGIC_PAGE_GUARD) {
@@ -276,7 +276,7 @@ void WorkSpaceFreeAllocSmall(void* &pBitFields, size_t BitAllocSize) {
 // NOTE: This routine does not release the ref count
 // It can be called when an array is reused instead of deleted
 // Call RefCountNumpyArray instead 
-static inline void RemoveFromList(stRecycleList* pItems, INT32 slot) {
+static inline void RemoveFromList(stRecycleList* pItems, int32_t slot) {
    // remove it from list
    // clear the total size to prevent reuse
    //printf("setting slot %d to 0 from %lld\n", slot, pItems->Item[slot].totalSize);
@@ -296,7 +296,7 @@ static inline void RemoveFromList(stRecycleList* pItems, INT32 slot) {
 // On decrement it will decref array, set the slot to null and inc Tail
 // On increment it will incref array, time stamp, and inc Head
 // On Entry: the recycledArray must be valid
-static void RefCountNumpyArray(stRecycleList* pItems, INT32 lzcount, INT32 type, INT32 slot, BOOL bIncrement) {
+static void RefCountNumpyArray(stRecycleList* pItems, int32_t lzcount, int32_t type, int32_t slot, bool bIncrement) {
 
    if (pItems->Item[slot].recycledArray == NULL) {
       LOGRECYCLE("!!! Critical error -- recycled array is NULL");
@@ -334,11 +334,11 @@ static void RefCountNumpyArray(stRecycleList* pItems, INT32 lzcount, INT32 type,
 // Just does a printf to dump the stats for an item
 static void DumpItemStats(stRecycleList* pItems, int k) {
 
-   INT64 delta = (INT64)(__rdtsc() - pItems->Item[k].tsc);
+   int64_t delta = (int64_t)(__rdtsc() - pItems->Item[k].tsc);
    printf("    delta: %lld   refcount: %d  now: %lld  addr: %p  type: %d \t %p \t %lld\n",
       delta / NANO_BILLION,
       pItems->Item[k].initRefCount,
-      pItems->Item[k].recycledArray == NULL ? 0LL : (INT64)(pItems->Item[k].recycledArray->ob_base.ob_refcnt),
+      pItems->Item[k].recycledArray == NULL ? 0LL : (int64_t)(pItems->Item[k].recycledArray->ob_base.ob_refcnt),
       // too dangerous -- might be gone pItems->Item[k].recycledOrigArray == NULL ? 0 : pItems->Item[k].recycledOrigArray->ob_base.ob_refcnt,
       pItems->Item[k].recycledArray == NULL ? NULL: PyArray_BYTES(pItems->Item[k].recycledArray),
       pItems->Item[k].type,
@@ -355,9 +355,9 @@ static void DumpItemStats(stRecycleList* pItems, int k) {
 //
 // NOTE: on normal operation will only run GC when 1 billion cycles have elapsed
 // Returns TotalDeleted
-INT64 GarbageCollect(INT64 timespan, bool verbose) {
-   UINT64 currentTSC = __rdtsc();
-   INT64 totalDeleted = 0;
+int64_t GarbageCollect(int64_t timespan, bool verbose) {
+   uint64_t currentTSC = __rdtsc();
+   int64_t totalDeleted = 0;
 
    if (verbose) {
       // verbose mode will always run GC because assumed user initiated
@@ -386,7 +386,7 @@ INT64 GarbageCollect(INT64 timespan, bool verbose) {
    for (int i = 0; i < RECYCLE_ENTRIES; i++) {
       for (int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++) {
          stRecycleList* pItems = &g_stRecycleList[i][j];
-         INT32 deltaHead = pItems->Head - pItems->Tail;
+         int32_t deltaHead = pItems->Head - pItems->Tail;
 
          // sanity check head tail
          if (deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH) {
@@ -395,11 +395,11 @@ INT64 GarbageCollect(INT64 timespan, bool verbose) {
          if (pItems->Head != pItems->Tail) {
             if (verbose) printf("%d:%d  head: %d  tail: %d\n", i, j, pItems->Head, pItems->Tail);
             for (int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++) {
-               INT64 totalSize = pItems->Item[k].totalSize;
+               int64_t totalSize = pItems->Item[k].totalSize;
 
                // size must be > 0 for the entry to be valid
                if (totalSize > 0) {
-                  INT64 delta = (INT64)(currentTSC - pItems->Item[k].tsc);
+                  int64_t delta = (int64_t)(currentTSC - pItems->Item[k].tsc);
                   if (verbose)
                      DumpItemStats(pItems, k);
 
@@ -409,7 +409,7 @@ INT64 GarbageCollect(INT64 timespan, bool verbose) {
                      if (verbose) printf("    ***GC deleting with size %lld\n", totalSize);
                      
                      // Release ref count and remove entry
-                     RefCountNumpyArray(pItems, i,j, k, FALSE);
+                     RefCountNumpyArray(pItems, i,j, k, false);
                      totalDeleted++;
                   }
                }
@@ -436,9 +436,9 @@ RecycleDump(PyObject *self, PyObject *args)
    printf("Recycled stats.   Hits: %lld    Misses: %lld    Heads: %lld    Tails: %lld\n",
          g_FoundRecycled, g_DidNotFindRecycled, g_TotalHeads, g_TotalTails);
 
-   UINT64 currentTSC = __rdtsc();
+   uint64_t currentTSC = __rdtsc();
 
-   INT64 totalSize = 0;
+   int64_t totalSize = 0;
    for (int i = 0; i < RECYCLE_ENTRIES; i++) {
       for (int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++) {
          stRecycleList* pItems = &g_stRecycleList[i][j];
@@ -464,10 +464,10 @@ static PyObject* g_namestring=  PyUnicode_FromString("_name");
 //-----------------------------------
 // Called when we look for recycled array
 // Scans the tables to see if a recycled array is available
-PyArrayObject* RecycleFindArray(INT32 ndim, INT32 type, INT64 totalSize) {
+PyArrayObject* RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize) {
    if (totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE && ndim == 1) {
       // Based on size and type, lookup
-      INT64 log2 = lzcnt_64(totalSize);
+      int64_t log2 = lzcnt_64(totalSize);
 
       LOGRECYCLE("totalSize %llu  log2 %llu\n", totalSize, log2);
       
@@ -478,7 +478,7 @@ PyArrayObject* RecycleFindArray(INT32 ndim, INT32 type, INT64 totalSize) {
          if (pItems->Item[i].totalSize == totalSize) {
 
             PyArrayObject* inArr = pItems->Item[i].recycledArray;
-            INT64 refCount = inArr->ob_base.ob_refcnt;
+            int64_t refCount = inArr->ob_base.ob_refcnt;
 
             // If the refcnt is one, it must be just us holding on to it
             if (refCount == 1) {
@@ -512,7 +512,7 @@ PyArrayObject* RecycleFindArray(INT32 ndim, INT32 type, INT64 totalSize) {
 PyObject *
 SetRecycleMode(PyObject *self, PyObject *args)
 {
-   INT64 mode = 0;
+   int64_t mode = 0;
 
    if (!PyArg_ParseTuple(args, "L", &mode)) return NULL;
 
@@ -524,24 +524,24 @@ SetRecycleMode(PyObject *self, PyObject *args)
 
 //-----------------------------------
 // Called when an array is deleted
-// Returns: TRUE if recycled
-// Returns: FALSE if rejected recycling
+// Returns: true if recycled
+// Returns: false if rejected recycling
 //
 // pFirst == original object without base pointer traversed
 // inArr = base array object
-static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
+static bool DeleteNumpyArray(PyArrayObject *inArr) {
    // Make sure this is worth caching
    // For very small sizes, we do not bother to cache
    // For odd types, we also do not bother to cache
    // 1024 = 2^10
    if (gRecyleMode) {
-      return FALSE;
+      return false;
    }
 
-   INT64 refCount = inArr->ob_base.ob_refcnt;
+   int64_t refCount = inArr->ob_base.ob_refcnt;
    if (refCount != 0) {
       LOGRECYCLE("Rejected recycling because base refCount is %lld\n", refCount);
-      return FALSE;
+      return false;
    }
 
    int flags = PyArray_FLAGS(inArr);
@@ -551,12 +551,12 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
    // Cannot recycle readonly (not writeable) or (not owned)
    if ((flags & (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS)) != (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS)) {
       LOGRECYCLE("Rejected recycling because object is not writeable or owned or contiguous.\n");
-      return FALSE;
+      return false;
    }
 
    if (gRecursion) {
       //printf("recursion on %lld  %lld\n", refCount, totalSize);
-      return FALSE;
+      return false;
    }
    else {
       //printf("non recursion on %lld  %lld\n", refCount, totalSize);
@@ -565,12 +565,12 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
 
    gRecursion++;
 
-   INT32 ndim = PyArray_NDIM(inArr);
+   int32_t ndim = PyArray_NDIM(inArr);
    npy_intp* dims = PyArray_DIMS(inArr);
 
-   INT64 totalSize = CalcArrayLength(ndim, dims);
-   INT32  type = PyArray_TYPE(inArr);
-   BOOL retVal = FALSE;
+   int64_t totalSize = CalcArrayLength(ndim, dims);
+   int32_t  type = PyArray_TYPE(inArr);
+   bool retVal = false;
 
    npy_intp* strides= PyArray_STRIDES(inArr);
    npy_intp itemSize = PyArray_ITEMSIZE(inArr);
@@ -588,28 +588,28 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
          itemSize == strides[0]) {
 
          // Based on size and type, lookup
-         INT32 log2 = (INT32)lzcnt_64(totalSize);
+         int32_t log2 = (int32_t)lzcnt_64(totalSize);
 
          stRecycleList* pItems = &g_stRecycleList[log2][type];
 
          // Choose default empty slot if everything is full
          void* memAddress = PyArray_BYTES(inArr);
 
-         BOOL abort = FALSE;
+         bool abort = false;
 
          for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++) {
             // Search for same memory address
             if (pItems->Item[i].totalSize != 0 && pItems->Item[i].memoryAddress == memAddress) {
                // Does this happen when wrapped in a FA? does double delete
                //LOGRECYCLE("Rejected recycling due to mem address clash slot:%d  refcnt: %llu   size: %llu   type: %d  %p\n", i, refCount, totalSize, type, memAddress);
-               abort = TRUE;
+               abort = true;
                break;
             }
          }
 
          if (!abort) {
-            BOOL bFoundEmpty = FALSE;
-            INT32 slot = -1;
+            bool bFoundEmpty = false;
+            int32_t slot = -1;
 
             for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++) {
 
@@ -622,7 +622,7 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
                }
                //else {
                //   // TODO: Check current ref count--- if not 1, remove?
-               //   INT64 curRefCount = pItems->Item[i].recycledArray->ob_base.ob_refcnt;
+               //   int64_t curRefCount = pItems->Item[i].recycledArray->ob_base.ob_refcnt;
                //   if (curRefCount != 1) {
                //      printf("Weird ref count %llu\n", curRefCount);
                //      slot = i;
@@ -636,7 +636,7 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
                for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++) {
 
                   // TODO: Check current ref count--- if not 1, remove?
-                  INT64 curRefCount = pItems->Item[i].recycledArray->ob_base.ob_refcnt;
+                  int64_t curRefCount = pItems->Item[i].recycledArray->ob_base.ob_refcnt;
                   if (curRefCount != 1) {
                      LOGRECYCLE("Weird ref count %llu\n", curRefCount);
                      slot = i;
@@ -649,11 +649,11 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
                   LOGRECYCLE("!! removing existing entry -- slot %d  size: %lld\n", slot, pItems->Item[slot].totalSize);
                   // Let go of old item to make room for new item
                   // NOTE: this can recurse back
-                  RefCountNumpyArray(pItems, log2, type, slot, FALSE);
+                  RefCountNumpyArray(pItems, log2, type, slot, false);
                }
             }
 
-            INT32 deltaHead = pItems->Head - pItems->Tail;
+            int32_t deltaHead = pItems->Head - pItems->Tail;
 
             // sanity check head tail
             if (deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH) {
@@ -668,8 +668,8 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
             LOGRECYCLE("-- keeping array with refcnt %llu   head: %d  tail: %d   size: %llu  leadingz:%d   type:%d  %p %p\n", refCount, pItems->Head, pItems->Tail, totalSize, log2, type, inArr, PyArray_BYTES(inArr));
             stRecycleItem* pItemSlot = &pItems->Item[slot];
 
-            pItemSlot->type = (INT16)type;
-            pItemSlot->initRefCount = (INT16)refCount;
+            pItemSlot->type = (int16_t)type;
+            pItemSlot->initRefCount = (int16_t)refCount;
             pItemSlot->ndim = ndim;
 
             pItemSlot->totalSize = totalSize;
@@ -679,8 +679,8 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
             LOGRECYCLE("inner setting slot %d,%d,%d to %lld from %lld\n", log2, type, slot, totalSize, pItemSlot->totalSize);
 
             // keep it
-            RefCountNumpyArray(pItems, log2, type, slot, TRUE);
-            retVal = TRUE;
+            RefCountNumpyArray(pItems, log2, type, slot, true);
+            retVal = true;
 
             //if (NOEMPTYSLOT) {
             //   // Remove LAST ITEM
@@ -700,7 +700,7 @@ static BOOL DeleteNumpyArray(PyArrayObject *inArr) {
       }
 
       // Force garbage collection
-      GarbageCollect(g_GarbageCollectTimeSpan, FALSE);
+      GarbageCollect(g_GarbageCollectTimeSpan, false);
 
    }
    else {
@@ -733,9 +733,9 @@ AllocateNumpy(PyObject *self, PyObject *args)
 }
 
 //-----------------------------------------------------------------------------------------
-// Returns: TRUE if recycled
-// Returns: FALSE if rejected recycling
-BOOL RecycleNumpyInternal(PyArrayObject *inArr) {
+// Returns: true if recycled
+// Returns: false if rejected recycling
+bool RecycleNumpyInternal(PyArrayObject *inArr) {
 
    // Get to the base object
    PyArrayObject* pFirst = inArr;
@@ -746,7 +746,7 @@ BOOL RecycleNumpyInternal(PyArrayObject *inArr) {
          return DeleteNumpyArray(inArr);
       }
    }
-   return FALSE;
+   return false;
 }
 
 
@@ -761,7 +761,7 @@ RecycleNumpy(PyObject *self, PyObject *args)
 
    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr)) return NULL;
 
-   BOOL retVal = RecycleNumpyInternal(inArr);
+   bool retVal = RecycleNumpyInternal(inArr);
 
    if (retVal) {
       Py_INCREF(Py_True);
@@ -795,7 +795,7 @@ TryRecycleNumpy(PyObject *self, PyObject *args)
 
       LOGRECYCLE("tuple has size of %llu\n", size);
 
-      for (INT64 i = 0; i < size; i++) {
+      for (int64_t i = 0; i < size; i++) {
          PyObject* item = PyList_GetItem(tuple,i);
          //Py_DecRef(item);
 
@@ -804,7 +804,7 @@ TryRecycleNumpy(PyObject *self, PyObject *args)
          int ndim = PyArray_NDIM(inArr);
          npy_intp* dims = PyArray_DIMS(inArr);
 
-         INT64 len = CalcArrayLength(ndim, dims);
+         int64_t len = CalcArrayLength(ndim, dims);
 
          LOGRECYCLE("item %d is an array of %d dims and size %llu\n", (int)i, ndim, len);
 
@@ -831,11 +831,11 @@ TryRecycleNumpy(PyObject *self, PyObject *args)
 // Returns previous timespan
 PyObject *
 RecycleSetGarbageCollectTimeout(PyObject *self, PyObject *args) {
-   INT64 timespan;
+   int64_t timespan;
 
    if (!PyArg_ParseTuple(args, "L", &timespan)) return NULL;
 
-   INT64 previousTimespan = g_GarbageCollectTimeSpan;
+   int64_t previousTimespan = g_GarbageCollectTimeSpan;
    g_GarbageCollectTimeSpan = timespan;
    return PyLong_FromLongLong(previousTimespan);
 }
@@ -849,7 +849,7 @@ RecycleSetGarbageCollectTimeout(PyObject *self, PyObject *args) {
 PyObject *
 RecycleGarbageCollectNow(PyObject *self, PyObject *args)
 {
-   INT64 timespan;
+   int64_t timespan;
 
    if (!PyArg_ParseTuple(args, "L", &timespan)) return NULL;
 
@@ -871,7 +871,7 @@ RecycleGarbageCollectNow(PyObject *self, PyObject *args)
    FreeWorkSpaceAllocLarge(g_pHashTableAny);
    FreeWorkSpaceAllocSmall(g_pBitFields);
 
-   INT64 totalDeleted = GarbageCollect(timespan, FALSE);
+   int64_t totalDeleted = GarbageCollect(timespan, false);
 
    PyDict_SetItemString(pDict, "TotalDeleted", (PyObject*)PyLong_FromLongLong(totalDeleted));
    //return PyLong_FromLongLong(totalDeleted);

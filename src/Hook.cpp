@@ -35,7 +35,7 @@ struct stMATH_HOOK {
    NUMBER_FUNC       SuperMethod;
 
    // Offset from PyNumberMethods
-   INT64             Offset;
+   int64_t             Offset;
 };
 
 // forward reference
@@ -43,14 +43,14 @@ extern stMATH_HOOK  g_MathHook[];
 
 static
 PyObject *
-RiptideTernaryMathFunction(PyObject *self, PyObject *arg1, PyObject *arg2, INT64 index) {
+RiptideTernaryMathFunction(PyObject *self, PyObject *arg1, PyObject *arg2, int64_t index) {
    LOGGING("in ternary math function %lld %s\n", index, self->ob_type->tp_name);
    // third param is optional and is for applying a modulus after the result
    if (arg2 == Py_None) {
       // TODO: intercept a value of 2 to apply square
       if (PyLong_Check(arg1)) {
          int overflow = 0;
-         INT64 power = PyLong_AsLongLongAndOverflow(arg1, &overflow);
+         int64_t power = PyLong_AsLongLongAndOverflow(arg1, &overflow);
          if (power == 1) {
             Py_INCREF(self);
             return self;
@@ -84,7 +84,7 @@ RiptideTernaryMathFunction(PyObject *self, PyObject *arg1, PyObject *arg2, INT64
 
 static
 PyObject *
-RiptideTernaryMathFunctionInplace(PyObject *self, PyObject *arg1, PyObject *arg2, INT64 index) {
+RiptideTernaryMathFunctionInplace(PyObject *self, PyObject *arg1, PyObject *arg2, int64_t index) {
    LOGGING("in ternary math inplace function %lld %s\n", index, self->ob_type->tp_name);
    PyObject* result = BasicMathTwoInputsFromNumber(self, arg1, self, g_MathHook[index].MathOp);
    if (arg2 == Py_None) {
@@ -98,9 +98,9 @@ RiptideTernaryMathFunctionInplace(PyObject *self, PyObject *arg1, PyObject *arg2
 
 static
 PyObject *
-RiptideUnaryMathFunction(PyObject *self, INT64 index) {
+RiptideUnaryMathFunction(PyObject *self, int64_t index) {
    LOGGING("in unary math function %lld %s\n", index, self->ob_type->tp_name);
-   PyObject* result = BasicMathOneInputFromNumber((PyArrayObject*)self, g_MathHook[index].MathOp, FALSE);
+   PyObject* result = BasicMathOneInputFromNumber((PyArrayObject*)self, g_MathHook[index].MathOp, false);
    if (result != Py_None) {
       return result;
    }
@@ -110,7 +110,7 @@ RiptideUnaryMathFunction(PyObject *self, INT64 index) {
 
 static
 PyObject *
-RiptideBinaryMathFunction(PyObject *self, PyObject *right, INT64 index) {
+RiptideBinaryMathFunction(PyObject *self, PyObject *right, int64_t index) {
    //
    // Assumes two inputs, the left always a FastArray
    LOGGING("in binary math function %lld %s\n", index, self->ob_type->tp_name);
@@ -125,7 +125,7 @@ RiptideBinaryMathFunction(PyObject *self, PyObject *right, INT64 index) {
 
 static
 PyObject *
-RiptideBinaryMathFunctionInplace(PyObject *self, PyObject *right, INT64 index) {
+RiptideBinaryMathFunctionInplace(PyObject *self, PyObject *right, int64_t index) {
    //
    // Assumes two inputs, the left always a FastArray and the operation is inplace
    LOGGING("in binary math function inplace %lld %s\n", index, self->ob_type->tp_name);
@@ -259,7 +259,7 @@ static const MATH_OPERATION COMP_TABLE[6] = {
    MATH_OPERATION::CMP_GTE };
 
 static richcmpfunc   g_CompareFunc = NULL;
-static INT64         g_ishooked = 0;
+static int64_t         g_ishooked = 0;
 
 //-----------------------------------------------------------------------------------
 // Called when comparisons on arrays
@@ -303,14 +303,14 @@ BasicMathHook(PyObject *self, PyObject *args) {
 
       if (numbermethods) {
          g_ishooked = 1;
-         BOOL hookNumpy = FALSE;
+         bool hookNumpy = false;
 
          // Hook python comparison functions
          g_CompareFunc = fastArrayClass->ob_type->tp_richcompare;
          fastArrayClass->ob_type->tp_richcompare = CompareFunction;
 
-         INT64 i = 0;
-         while (TRUE) {
+         int64_t i = 0;
+         while (true) {
             if (g_MathHook[i].MathOp == MATH_OPERATION::LAST) break;
 
             // Use the offset to get to the function ptr for this method

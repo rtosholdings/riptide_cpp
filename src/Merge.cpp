@@ -211,14 +211,14 @@ int64_t BooleanCount(PyArrayObject* aIndex, int64_t** ppChunkCount, int64_t stri
          int64_t* pChunkCount = callbackArg->pChunkCount;
 
          // Use the single-threaded implementation to sum the number of
-         // 1-byte boolean TRUE values in the current chunk.
+         // 1-byte boolean true values in the current chunk.
          // This means the current function is just responsible for parallelizing over the chunks
          // but doesn't do any real "math" itself.
          int64_t strides = callbackArg->strideBoolean;
          int64_t total = SumBooleanMask(&pBooleanMask[start * strides], length, strides);
 
          pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK] = total;
-         return TRUE;
+         return true;
       };
 
       BSCallbackStruct stBSCallback;
@@ -598,7 +598,7 @@ BooleanIndexInternal(
                break;
                }
             }
-            return TRUE;
+            return true;
          };
 
          BICallbackStruct stBICallback;
@@ -1295,10 +1295,10 @@ bool GetKwargBoth(PyObject* kwargs) {
       pBoth = PyDict_GetItemString(kwargs, "both");
 
       if (pBoth != NULL && pBoth == Py_True) {
-         return TRUE;
+         return true;
       }
    }
-   return FALSE;
+   return false;
 }
 
 //---------------------------------------------------------------------------
@@ -1478,7 +1478,7 @@ BooleanToFancy(PyObject* self, PyObject* args, PyObject* kwargs)
             }
          }
 
-         return TRUE;
+         return true;
       };
 
       BTFCallbackStruct stBTFCallback;
@@ -1608,7 +1608,7 @@ bool ReIndexGroupsMT(void* preindexV, int core, int64_t t) {
       }
    }
 
-   return TRUE;
+   return true;
 }
 
 //---------------------------------------------------------------------------
@@ -1711,7 +1711,7 @@ bool ReverseShuffleMT(void* preindexV, int core, int64_t start, int64_t length) 
          pOut[index] = (KEYTYPE)i;
       }
    }
-   return TRUE;
+   return true;
 }
 
 //---------------------------------------------------------------------------
@@ -1888,7 +1888,7 @@ MergeBinnedCutoffs(PyObject *self, PyObject *args) {
                         callbackArg->pBadInput1,
                         callbackArg->pBadOutput1);
 
-                     return TRUE;
+                     return true;
                   };
 
                   stMask.itemSizeIn = itemSizeIn;

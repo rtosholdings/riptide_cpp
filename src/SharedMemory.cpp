@@ -52,7 +52,7 @@ CheckWindowsPrivilege(const char* pPrivilegeName)
       printf("OpenProcessToken error %u\n", e);
       hResult = HRESULT_FROM_WIN32(e);
       LogWarningLE(hResult);
-      return FALSE;
+      return false;
    }
 
    if (!LookupPrivilegeValue(NULL, pPrivilegeName, &luid))
@@ -63,7 +63,7 @@ CheckWindowsPrivilege(const char* pPrivilegeName)
       printf("LookupPrivilegeValue error %u\n", e);
       hResult = HRESULT_FROM_WIN32(e);
       LogWarningLE(hResult);
-      return FALSE;
+      return false;
    }
 
    privilegeSet.PrivilegeCount = 1;
@@ -96,7 +96,7 @@ BOOL SetPrivilege(
       &luid))        // receives LUID of privilege
    {
       printf("LookupPrivilegeValue error: %u\n", GetLastError());
-      return FALSE;
+      return false;
    }
 
    tp.PrivilegeCount = 1;
@@ -110,24 +110,24 @@ BOOL SetPrivilege(
 
    if (!AdjustTokenPrivileges(
       hToken,
-      FALSE,
+      false,
       &tp,
       sizeof(TOKEN_PRIVILEGES),
       (PTOKEN_PRIVILEGES)NULL,
       (PDWORD)NULL))
    {
       printf("AdjustTokenPrivileges error: %u\n", GetLastError());
-      return FALSE;
+      return false;
    }
 
    if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 
    {
       printf("The token does not have the specified privilege. \n");
-      return FALSE;
+      return false;
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -144,13 +144,13 @@ CheckWindowsSharedMemoryPrerequisites(const char* pMappingName)
 
       // More work to do here
       if (OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &currentToken)) {
-         BOOL newResult = SetPrivilege(currentToken, pPrivilegeName, TRUE);
+         BOOL newResult = SetPrivilege(currentToken, pPrivilegeName, true);
          CloseHandle(currentToken);
          return newResult;
       }
-      return FALSE;
+      return false;
    }
-   return TRUE;
+   return true;
 }
 
 //------------------------------------------------------------------------------------------
@@ -177,7 +177,7 @@ UtilSharedMemoryBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      hResult = S_FALSE;
+      hResult = S_false;
       return -(hResult);
    }
 
@@ -284,7 +284,7 @@ UtilSharedNumaMemoryBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      hResult = S_FALSE;
+      hResult = S_false;
       return -(hResult);
    }
 
@@ -369,7 +369,7 @@ UtilSharedNumaMemoryBegin(
 // The pReturnStruct will be valid if the call succeeded
 // if bTest = true, it will not complain if it cannot find shared memory
 // if returns S_OK you are mapped
-// returns S_FALSE if it does not exist yet 
+// returns S_false if it does not exist yet 
 HRESULT
 UtilSharedMemoryCopy(
    const char*              pMappingName,
@@ -401,7 +401,7 @@ UtilSharedMemoryCopy(
    pMappedViewStruct->MapHandle =
       OpenFileMapping(
          FILE_MAP_ALL_ACCESS,
-         FALSE,
+         false,
          pMappingName);
 
    //printf("Result from OpenFileMaApping %s -- %p\n", pMappingName, pMappedViewStruct->MapHandle);
@@ -460,12 +460,12 @@ UtilSharedMemoryEnd(
       return(E_POINTER);
    }
 
-   if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == FALSE) {
+   if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false) {
       hResult = HRESULT_FROM_WIN32(GetLastError());
       return (hResult);
    }
 
-   if (CloseHandle(pMappedViewStruct->MapHandle) == FALSE) {
+   if (CloseHandle(pMappedViewStruct->MapHandle) == false) {
       hResult = HRESULT_FROM_WIN32(GetLastError());
       return (hResult);
    }
@@ -497,7 +497,7 @@ UtilMappedViewReadBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName)) 
    {
-      return -(S_FALSE);
+      return -(S_false);
    }
 
    //
@@ -636,12 +636,12 @@ UtilMappedViewReadEnd(
       return(E_POINTER);
    }
 
-   if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == FALSE) {
+   if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false) {
       hResult = HRESULT_FROM_WIN32(GetLastError());
       return (hResult);
    }
 
-   if (CloseHandle(pMappedViewStruct->MapHandle) == FALSE) {
+   if (CloseHandle(pMappedViewStruct->MapHandle) == false) {
       hResult = HRESULT_FROM_WIN32(GetLastError());
       return (hResult);
    }
@@ -683,7 +683,7 @@ UtilMappedViewWriteBegin(
 
    if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
    {
-      return -(S_FALSE);
+      return -(S_false);
    }
 
    //
@@ -822,7 +822,7 @@ UtilMappedViewWriteBegin(
 HRESULT
 UtilSharedMemoryBegin(
    const char*          pMappingName,
-   INT64                size,
+   int64_t                size,
    PMAPPED_VIEW_STRUCT *pReturnStruct) {
 
    // NULL indicates failure - default to that.
@@ -918,18 +918,18 @@ HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   BOOL                 bTest) {
+   bool                 bTest) {
 
    // NULL indicates failure - default to that.
    *pReturnStruct = NULL;
    errno = 0;
-   BOOL bCanOnlyRead = FALSE;
+   bool bCanOnlyRead = false;
 
    LOGGING("Trying to open shared memory %s.\n", pMappingName);
    int     fd = shm_open(pMappingName, O_RDWR, 0666);
 
    if (fd <= 0) {
-      bCanOnlyRead = TRUE;
+      bCanOnlyRead = true;
       fd = shm_open(pMappingName, O_RDONLY, 0666);
    }
 

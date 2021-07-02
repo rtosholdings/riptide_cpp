@@ -9,33 +9,33 @@ struct MAPPED_VIEW_STRUCT
    void*    BaseAddress;         // Past RCF Header
    void*    MapHandle;
    void*    FileHandle;
-   INT64    FileSize;
+   int64_t    FileSize;
    void*    pSharedMemoryHeader;
-   INT64    RealFileSize;        // Includes RCF Header size
-   INT64    RefCount;
+   int64_t    RealFileSize;        // Includes RCF Header size
+   int64_t    RefCount;
 };
 
 
 HRESULT
 UtilSharedMemoryBegin(
    const char*          pMappingName,
-   INT64                Size,
+   int64_t                Size,
    PMAPPED_VIEW_STRUCT *pReturnStruct);
 
 
 HRESULT
 UtilSharedNumaMemoryBegin(
    const char*          pMappingName,
-   INT64                Size,
-   DWORD                nndPreferred,        // preferred numa node
-   LPVOID               lpBaseAddress,
+   int64_t                Size,
+   uint32_t                nndPreferred,        // preferred numa node
+   void*               lpBaseAddress,
    PMAPPED_VIEW_STRUCT *pReturnStruct);
 
 HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   BOOL                 bTest);
+   bool                 bTest);
 
 HRESULT
 UtilSharedMemoryEnd(
@@ -58,8 +58,8 @@ HRESULT
 UtilMappedViewWriteBegin(
    const char*          pszFilename,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   DWORD                dwMaxSizeHigh,
-   DWORD                dwMaxSizeLow);
+   uint32_t                dwMaxSizeHigh,
+   uint32_t                dwMaxSizeLow);
 
 
 #else
@@ -72,22 +72,22 @@ struct MAPPED_VIEW_STRUCT
 
    void*    BaseAddress;         
    int      FileHandle;
-   INT64    FileSize;
-   INT64    RefCount;
+   int64_t    FileSize;
+   int64_t    RefCount;
 
 };
 
 HRESULT
 UtilSharedMemoryBegin(
    const char*           pMappingName,
-   INT64                Size,
+   int64_t                Size,
    PMAPPED_VIEW_STRUCT *pReturnStruct);
 
 HRESULT
 UtilSharedMemoryCopy(
    const char*          pMappingName,
    PMAPPED_VIEW_STRUCT *pReturnStruct,
-   BOOL                 bTest);
+   bool                 bTest);
 
 HRESULT
 UtilSharedMemoryEnd(

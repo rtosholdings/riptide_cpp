@@ -18,12 +18,12 @@ const char PERIOD = '.';
 // pStart updated on return
 //
 template <typename T>
-FORCE_INLINE INT64 ParseDecimal(const T** ppStart, const T* pEnd) {
+FORCE_INLINE int64_t ParseDecimal(const T** ppStart, const T* pEnd) {
    const T* pStart = *ppStart;
 
    // parse a number
-   INT64 num = 0;
-   INT64 places = 0;
+   int64_t num = 0;
+   int64_t places = 0;
    while (pStart < pEnd) {
       if (*pStart >= '0' && *pStart <= '9') {
          num = num * 10;
@@ -57,7 +57,7 @@ FORCE_INLINE INT64 ParseDecimal(const T** ppStart, const T* pEnd) {
 // will stop at end, stop at nonnumber, or when places reached
 // pStart updated on return
 template <typename T>
-FORCE_INLINE INT64 ParseNumber(const T** ppStart, const T* pEnd, INT64 maxplaces) {
+FORCE_INLINE int64_t ParseNumber(const T** ppStart, const T* pEnd, int64_t maxplaces) {
    const T* pStart = *ppStart;
 
    // skip non numbers in front
@@ -70,8 +70,8 @@ FORCE_INLINE INT64 ParseNumber(const T** ppStart, const T* pEnd, INT64 maxplaces
    }
 
    // parse a number
-   INT64 num = 0;
-   INT64 places = 0;
+   int64_t num = 0;
+   int64_t places = 0;
    while (pStart < pEnd) {
       if (*pStart >= '0' && *pStart <= '9') {
          num = num * 10;
@@ -94,17 +94,17 @@ FORCE_INLINE INT64 ParseNumber(const T** ppStart, const T* pEnd, INT64 maxplaces
 // T is either a char or UCS4 (byte string or unicode string)
 //
 template <typename T>
-void ParseTimeString(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT64 itemSize) {
+void ParseTimeString(int64_t* pOutNanoTime, int64_t arrayLength, const T* pString, int64_t itemSize) {
 
-   for (INT64 i = 0; i < arrayLength; i++) {
+   for (int64_t i = 0; i < arrayLength; i++) {
       const T* pStart = &pString[i*itemSize];
       const T* pEnd = pStart + itemSize;
 
-      INT64 hour = 0;
-      INT64 minute = 0;
-      INT64 seconds = 0;
+      int64_t hour = 0;
+      int64_t minute = 0;
+      int64_t seconds = 0;
 
-      BOOL bSuccess = 0;
+      bool bSuccess = 0;
 
       hour = ParseNumber<T>(&pStart, pEnd,2);
 
@@ -142,7 +142,7 @@ void ParseTimeString(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, I
 
 }
 
-INT64 MONTH_SPLITS[12] = {
+int64_t MONTH_SPLITS[12] = {
       0,
       31,
       59,
@@ -156,7 +156,7 @@ INT64 MONTH_SPLITS[12] = {
       304,
       334 };
 
-INT64 MONTH_SPLITS_LEAP[12] = {
+int64_t MONTH_SPLITS_LEAP[12] = {
    0,  // Jan
    31, // Feb
    60, // Mar
@@ -170,14 +170,14 @@ INT64 MONTH_SPLITS_LEAP[12] = {
    305,  // Nov
    335 };
 
-INT64 NANOS_PER_SECOND = 1000000000LL;
-INT64 NANOS_PER_MINUTE = NANOS_PER_SECOND * 60;
-INT64 NANOS_PER_HOUR = NANOS_PER_MINUTE * 60;
-INT64 NANOS_PER_DAY = NANOS_PER_HOUR * 24;
+int64_t NANOS_PER_SECOND = 1000000000LL;
+int64_t NANOS_PER_MINUTE = NANOS_PER_SECOND * 60;
+int64_t NANOS_PER_HOUR = NANOS_PER_MINUTE * 60;
+int64_t NANOS_PER_DAY = NANOS_PER_HOUR * 24;
 
 //==========================================================
 // return -1 for error
-INT64 YearToEpochNano(INT64 year, INT64 month, INT64 day) {
+int64_t YearToEpochNano(int64_t year, int64_t month, int64_t day) {
 
    if (year >= 1970 && year <= 2040 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
 
@@ -193,8 +193,8 @@ INT64 YearToEpochNano(INT64 year, INT64 month, INT64 day) {
       // 1977 has 2 leap years (7)
       // 1972 has 0 leap years (2)
       year = year - 1970;
-      INT64 extradays = (year + 1) / 4;
-      INT64 daysSinceEpoch = (year * 365) + extradays + day;
+      int64_t extradays = (year + 1) / 4;
+      int64_t daysSinceEpoch = (year * 365) + extradays + day;
 
       return (daysSinceEpoch* NANOS_PER_DAY);
    }
@@ -208,22 +208,22 @@ INT64 YearToEpochNano(INT64 year, INT64 month, INT64 day) {
 // T is either a char or UCS4 (byte string or unicode string)
 //
 template <typename T>
-void ParseDateString(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT64 itemSize) {
+void ParseDateString(int64_t* pOutNanoTime, int64_t arrayLength, const T* pString, int64_t itemSize) {
 
-   for (INT64 i = 0; i < arrayLength; i++) {
+   for (int64_t i = 0; i < arrayLength; i++) {
       const T* pStart = &pString[i*itemSize];
       const T* pEnd = pStart + itemSize;
 
-      INT64 year = 0;
-      INT64 month = 0;
-      INT64 day = 0;
+      int64_t year = 0;
+      int64_t month = 0;
+      int64_t day = 0;
 
       year = ParseNumber<T>(&pStart, pEnd, 4);
       // could check for dash here...
       month = ParseNumber<T>(&pStart, pEnd, 2);
       day = ParseNumber<T>(&pStart, pEnd, 2);
       LOGGING("date: %lld:%lld:%lld\n", year, month, day);
-      INT64 result = YearToEpochNano(year, month, day);
+      int64_t result = YearToEpochNano(year, month, day);
       if (result < 0) result = 0;
       pOutNanoTime[i] = result;
    }
@@ -236,29 +236,29 @@ void ParseDateString(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, I
 // T is either a char or UCS4 (byte string or unicode string)
 // Anything invalid is set to 0
 template <typename T>
-void ParseDateTimeString(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT64 itemSize) {
+void ParseDateTimeString(int64_t* pOutNanoTime, int64_t arrayLength, const T* pString, int64_t itemSize) {
 
-   for (INT64 i = 0; i < arrayLength; i++) {
+   for (int64_t i = 0; i < arrayLength; i++) {
       const T* pStart = &pString[i*itemSize];
       const T* pEnd = pStart + itemSize;
 
-      INT64 year = 0;
-      INT64 month = 0;
-      INT64 day = 0;
+      int64_t year = 0;
+      int64_t month = 0;
+      int64_t day = 0;
 
       year = ParseNumber<T>(&pStart, pEnd, 4);
       // could check for dash here...
       month = ParseNumber<T>(&pStart, pEnd, 2);
       day = ParseNumber<T>(&pStart, pEnd, 2);
       LOGGING("date: %lld:%lld:%lld\n", year, month, day);
-      INT64 yearresult= YearToEpochNano(year, month, day);
+      int64_t yearresult= YearToEpochNano(year, month, day);
 
       // What if year is negative?
       if (yearresult >= 0) {
-         INT64 hour = 0;
-         INT64 minute = 0;
-         INT64 seconds = 0;
-         BOOL  bSuccess = 0;
+         int64_t hour = 0;
+         int64_t minute = 0;
+         int64_t seconds = 0;
+         bool  bSuccess = 0;
 
          if (ParseSingleNonNumber(pStart, pEnd)) {
             hour = ParseNumber<T>(&pStart, pEnd, 2);
@@ -302,10 +302,10 @@ void ParseDateTimeString(INT64* pOutNanoTime, INT64 arrayLength, const T* pStrin
 }
 
 //--------------------------------------------------------------
-// Arg1: input numpy array time == assumes INT64 for now
+// Arg1: input numpy array time == assumes int64_t for now
 // HH:MM:SS format
 //
-// Output: INT64 numpy array with nanos
+// Output: int64_t numpy array with nanos
 //
 PyObject *
 TimeStringToNanos(PyObject *self, PyObject *args)
@@ -319,10 +319,10 @@ TimeStringToNanos(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 dType = PyArray_TYPE(inArr);
+   int32_t dType = PyArray_TYPE(inArr);
 
    PyArrayObject* outArray = NULL;
-   INT64 arrayLength = ArrayLength(inArr);
+   int64_t arrayLength = ArrayLength(inArr);
 
    // TODO: Check to make sure inArr and timeArr sizes are the same
    if (dType != NPY_STRING && dType != NPY_UNICODE) {
@@ -334,8 +334,8 @@ TimeStringToNanos(PyObject *self, PyObject *args)
    outArray = AllocateNumpyArray(1, (npy_intp*)&arrayLength, NPY_INT64);
 
    if (outArray) {
-      INT64 itemSize = PyArray_ITEMSIZE(inArr);
-      INT64* pNanoTime = (INT64*)PyArray_BYTES(outArray);
+      int64_t itemSize = PyArray_ITEMSIZE(inArr);
+      int64_t* pNanoTime = (int64_t*)PyArray_BYTES(outArray);
       char* pString = (char*)PyArray_BYTES(inArr);
 
       if (dType == NPY_STRING) {
@@ -343,7 +343,7 @@ TimeStringToNanos(PyObject *self, PyObject *args)
          ParseTimeString<char>(pNanoTime, arrayLength, pString, itemSize);
       }
       else {
-         ParseTimeString<UINT32>(pNanoTime, arrayLength, (UINT32*)pString, itemSize/4);
+         ParseTimeString<uint32_t>(pNanoTime, arrayLength, (uint32_t*)pString, itemSize/4);
 
       }
       return (PyObject*)outArray;
@@ -355,10 +355,10 @@ TimeStringToNanos(PyObject *self, PyObject *args)
 
 
 //--------------------------------------------------------------
-// Arg1: input numpy array time == assumes INT64 for now
+// Arg1: input numpy array time == assumes int64_t for now
 // YYYYMMDD or YYYY-MM-DD
 //
-// Output: INT64 numpy array with nanos
+// Output: int64_t numpy array with nanos
 //
 PyObject *
 DateStringToNanos(PyObject *self, PyObject *args)
@@ -372,10 +372,10 @@ DateStringToNanos(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 dType = PyArray_TYPE(inArr);
+   int32_t dType = PyArray_TYPE(inArr);
 
    PyArrayObject* outArray = NULL;
-   INT64 arrayLength = ArrayLength(inArr);
+   int64_t arrayLength = ArrayLength(inArr);
 
    // TODO: Check to make sure inArr and timeArr sizes are the same
    if (dType != NPY_STRING && dType != NPY_UNICODE) {
@@ -387,8 +387,8 @@ DateStringToNanos(PyObject *self, PyObject *args)
    outArray = AllocateNumpyArray(1, (npy_intp*)&arrayLength, NPY_INT64);
 
    if (outArray) {
-      INT64 itemSize = PyArray_ITEMSIZE(inArr);
-      INT64* pNanoTime = (INT64*)PyArray_BYTES(outArray);
+      int64_t itemSize = PyArray_ITEMSIZE(inArr);
+      int64_t* pNanoTime = (int64_t*)PyArray_BYTES(outArray);
       char* pString = (char*)PyArray_BYTES(inArr);
 
       if (dType == NPY_STRING) {
@@ -396,7 +396,7 @@ DateStringToNanos(PyObject *self, PyObject *args)
          ParseDateString<char>(pNanoTime, arrayLength, pString, itemSize);
       }
       else {
-         ParseDateString<UINT32>(pNanoTime, arrayLength, (UINT32*)pString, itemSize / 4);
+         ParseDateString<uint32_t>(pNanoTime, arrayLength, (uint32_t*)pString, itemSize / 4);
 
       }
       return (PyObject*)outArray;
@@ -408,10 +408,10 @@ DateStringToNanos(PyObject *self, PyObject *args)
 
 
 //--------------------------------------------------------------
-// Arg1: input numpy array time == assumes INT64 for now
+// Arg1: input numpy array time == assumes int64_t for now
 // YYYYMMDD or YYYY-MM-DD
 //
-// Output: INT64 numpy array with nanos
+// Output: int64_t numpy array with nanos
 //
 PyObject *
 DateTimeStringToNanos(PyObject *self, PyObject *args)
@@ -425,10 +425,10 @@ DateTimeStringToNanos(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 dType = PyArray_TYPE(inArr);
+   int32_t dType = PyArray_TYPE(inArr);
 
    PyArrayObject* outArray = NULL;
-   INT64 arrayLength = ArrayLength(inArr);
+   int64_t arrayLength = ArrayLength(inArr);
 
    // TODO: Check to make sure inArr and timeArr sizes are the same
    if (dType != NPY_STRING && dType != NPY_UNICODE) {
@@ -440,8 +440,8 @@ DateTimeStringToNanos(PyObject *self, PyObject *args)
    outArray = AllocateNumpyArray(1, (npy_intp*)&arrayLength, NPY_INT64);
 
    if (outArray) {
-      INT64 itemSize = PyArray_ITEMSIZE(inArr);
-      INT64* pNanoTime = (INT64*)PyArray_BYTES(outArray);
+      int64_t itemSize = PyArray_ITEMSIZE(inArr);
+      int64_t* pNanoTime = (int64_t*)PyArray_BYTES(outArray);
       char* pString = (char*)PyArray_BYTES(inArr);
 
       if (dType == NPY_STRING) {
@@ -449,7 +449,7 @@ DateTimeStringToNanos(PyObject *self, PyObject *args)
          ParseDateTimeString<char>(pNanoTime, arrayLength, pString, itemSize);
       }
       else {
-         ParseDateTimeString<UINT32>(pNanoTime, arrayLength, (UINT32*)pString, itemSize / 4);
+         ParseDateTimeString<uint32_t>(pNanoTime, arrayLength, (uint32_t*)pString, itemSize / 4);
 
       }
       return (PyObject*)outArray;
@@ -466,19 +466,19 @@ DateTimeStringToNanos(PyObject *self, PyObject *args)
 // T is either a char or UCS4 (byte string or unicode string)
 // Anything invalid is set to 0
 template<typename T>
-void ParseStrptime(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT64 itemSize, const char* pFmt) {
+void ParseStrptime(int64_t* pOutNanoTime, int64_t arrayLength, const T* pString, int64_t itemSize, const char* pFmt) {
 
    tm timeBack;
 
    char* pTempString = (char*)WORKSPACE_ALLOC(itemSize + 8);
    const char* pEnd = pTempString + itemSize;
 
-   for (INT64 i = 0; i < arrayLength; i++) {
+   for (int64_t i = 0; i < arrayLength; i++) {
       const T* pStart = &pString[i*itemSize];
 
       // copy string over (or convert unicode)
       // so we can add a terminating zero
-      for (INT64 j = 0; j < itemSize; j++) {
+      for (int64_t j = 0; j < itemSize; j++) {
          pTempString[j] = (char)pStart[j];
       }
       pTempString[itemSize] = 0;
@@ -489,7 +489,7 @@ void ParseStrptime(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT
       const char* pStop;
       pStop = rt_strptime(pTempString, pFmt, &timeBack);
 
-      INT64 yearresult = 0;
+      int64_t yearresult = 0;
 
       // Check if we parsed it correctly
       if (pStop && timeBack.tm_year != 0) {
@@ -533,14 +533,14 @@ void ParseStrptime(INT64* pOutNanoTime, INT64 arrayLength, const T* pString, INT
 // Arg1: input numpy string array time 
 // Arg2: strptime format string (MUSTBE BE BYESTRING)
 //
-// Output: INT64 numpy array with nanos
+// Output: int64_t numpy array with nanos
 //
 PyObject *
 StrptimeToNanos(PyObject *self, PyObject *args)
 {
    PyArrayObject *inArr = NULL;
    const char *strTimeFormat;
-   UINT32 strTimeFormatSize;
+   uint32_t strTimeFormatSize;
 
    if (!PyArg_ParseTuple(
       args, "O!y#",
@@ -551,10 +551,10 @@ StrptimeToNanos(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 dType = PyArray_TYPE(inArr);
+   int32_t dType = PyArray_TYPE(inArr);
 
    PyArrayObject* outArray = NULL;
-   INT64 arrayLength = ArrayLength(inArr);
+   int64_t arrayLength = ArrayLength(inArr);
 
    // TODO: Check to make sure inArr and timeArr sizes are the same
    if (dType != NPY_STRING && dType != NPY_UNICODE) {
@@ -566,8 +566,8 @@ StrptimeToNanos(PyObject *self, PyObject *args)
    outArray = AllocateNumpyArray(1, (npy_intp*)&arrayLength, NPY_INT64);
 
    if (outArray) {
-      INT64 itemSize = PyArray_ITEMSIZE(inArr);
-      INT64* pNanoTime = (INT64*)PyArray_BYTES(outArray);
+      int64_t itemSize = PyArray_ITEMSIZE(inArr);
+      int64_t* pNanoTime = (int64_t*)PyArray_BYTES(outArray);
       char* pString = (char*)PyArray_BYTES(inArr);
 
       if (dType == NPY_STRING) {
@@ -575,7 +575,7 @@ StrptimeToNanos(PyObject *self, PyObject *args)
       }
       else {
 
-         ParseStrptime<UINT32>(pNanoTime, arrayLength, (UINT32*)pString, itemSize/4, strTimeFormat);
+         ParseStrptime<uint32_t>(pNanoTime, arrayLength, (uint32_t*)pString, itemSize/4, strTimeFormat);
       }
 
       return (PyObject*)outArray;

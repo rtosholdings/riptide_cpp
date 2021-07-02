@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdlib>
-
+#include <cstdint>
 #include <iostream>
 #include <limits>
 
@@ -432,7 +432,7 @@ struct FUNCTION_LIST {
       GROUPBY_FUNC      GroupByCall;
    };
 
-   const CHAR*       FunctionName;
+   const char*       FunctionName;
 };
 
 

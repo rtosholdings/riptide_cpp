@@ -1,4 +1,5 @@
 #pragma once
+
 // Hack because debug builds force python36_d.lib
 #ifdef _DEBUG
 #undef _DEBUG
@@ -99,7 +100,7 @@ typedef struct {
       npy_bool obval;
 } PyBoolScalarObject;
 
-extern BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber);
+extern bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber);
 extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride);
 
 /**
@@ -142,7 +143,7 @@ inline static int64_t CALC_ARRAY_LENGTH(int ndim, npy_intp* dims) {
  * @return PyArrayObject* The allocated array object, or nullptr if an error occurred.
  * @note if the @p dtype is NPY_STRING or NPY_UNICODE -- then @p itemsize is valid.
  */
-extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize = 0, BOOL fortran_array = FALSE, npy_intp* strides = nullptr);
+extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize = 0, bool fortran_array = false, npy_intp* strides = nullptr);
 
 /**
  * @brief Allocate a numpy array (or FastArray) backed by an existing data buffer.
@@ -163,8 +164,8 @@ extern PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpy
 extern PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize);
 
 extern int32_t GetArrDType(PyArrayObject* inArr);
-extern BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyType, void** pDataIn, int64_t *pItemSize);
-extern BOOL ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyType);
+extern bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyType, void** pDataIn, int64_t *pItemSize);
+extern bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyType);
 extern PyArrayObject* EnsureContiguousArray(PyArrayObject* inObject);
 
 extern int64_t NpyItemSize(PyObject *self);
@@ -183,12 +184,12 @@ extern int64_t ArrayLength(PyArrayObject* inArr);
 extern PyTypeObject*  g_FastArrayType;
 extern PyObject*  g_FastArrayModule;
 
-static inline BOOL IsFastArrayView(PyArrayObject* pArray) {
+static inline bool IsFastArrayView(PyArrayObject* pArray) {
    return (pArray->ob_base.ob_type == g_FastArrayType);
 }
 
 // Optimistic faster way to check for array (most common check)
-static inline BOOL IsFastArrayOrNumpy(PyArrayObject* pArray) {
+static inline bool IsFastArrayOrNumpy(PyArrayObject* pArray) {
    PyTypeObject* pto=   pArray->ob_base.ob_type;
    // consider pto->tp_base for Categoricals
    return ((pto == g_FastArrayType) || (pto == &PyArray_Type) || PyType_IsSubtype(pto, &PyArray_Type));

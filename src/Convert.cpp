@@ -442,12 +442,16 @@ static UNARY_FUNC GetConversionStep2(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvert;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvert;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvert;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvert;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvert;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvert;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+      return ConvertBase<T, int64_t>::OneStubConvert;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvert;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvert;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvert;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvert;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvert;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+      return ConvertBase<T, uint64_t>::OneStubConvert;
    }
    return NULL;
 
@@ -462,12 +466,16 @@ static CONVERT_SAFE GetConversionStep2Safe(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafe;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafe;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafe;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafe;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafe;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafe;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::OneStubConvertSafe;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafe;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafe;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafe;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafe;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafe;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::OneStubConvertSafe;
    }
    return NULL;
 
@@ -484,12 +492,16 @@ static CONVERT_SAFE GetConversionStep2Unsafe(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertUnsafe;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertUnsafe;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertUnsafe;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertUnsafe;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertUnsafe;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertUnsafe;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::OneStubConvertUnsafe;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertUnsafe;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertUnsafe;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertUnsafe;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertUnsafe;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertUnsafe;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::OneStubConvertUnsafe;
    }
    return NULL;
 
@@ -505,12 +517,16 @@ static CONVERT_SAFE GetConversionStep2SafeFromFloat(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -525,12 +541,16 @@ static CONVERT_SAFE GetConversionStep2SafeFromDouble(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -546,12 +566,16 @@ static CONVERT_SAFE GetConversionStep2SafeFloat(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::OneStubConvertSafeFloat;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::OneStubConvertSafeFloat;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::OneStubConvertSafeFloat;
    }
    return NULL;
 
@@ -568,12 +592,14 @@ static CONVERT_SAFE GetConversionFunctionSafeCopy(int inputType) {
    case NPY_INT16:
    case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::OneStubConvertSafeCopy;
 
-   CASE_NPY_INT32:
-   CASE_NPY_UINT32:
+   case NPY_INT32:
+   case NPY_UINT32:
    case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::OneStubConvertSafeCopy;
 
-   CASE_NPY_INT64:
-   CASE_NPY_UINT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:   
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
    case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::OneStubConvertSafeCopy;
 
    case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::OneStubConvertSafeCopy;
@@ -598,16 +624,20 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionStep2SafeFloat<long double>(outputType);
    case NPY_BYTE:   return GetConversionStep2Safe<int8_t>(outputType);
    case NPY_INT16:  return GetConversionStep2Safe<int16_t>(outputType);
-   CASE_NPY_INT32:  return GetConversionStep2Safe<int32_t>(outputType);
-   CASE_NPY_INT64:  return GetConversionStep2Safe<int64_t>(outputType);
+   case NPY_INT32:  return GetConversionStep2Safe<int32_t>(outputType);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return GetConversionStep2Safe<int64_t>(outputType);
 
    // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
    //case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
    case NPY_UBYTE:  return GetConversionStep2Safe<uint8_t>(outputType);
 
    case NPY_UINT16: return GetConversionStep2Safe<uint16_t>(outputType);
-   CASE_NPY_UINT32: return GetConversionStep2Safe<uint32_t>(outputType);
-   CASE_NPY_UINT64: return GetConversionStep2Safe<uint64_t>(outputType);
+   case NPY_UINT32: return GetConversionStep2Safe<uint32_t>(outputType);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return GetConversionStep2Safe<uint64_t>(outputType);
 
    }
    return NULL;
@@ -629,12 +659,16 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionStep2Unsafe<long double>(outputType);
    case NPY_BYTE:   return GetConversionStep2Unsafe<int8_t>(outputType);
    case NPY_INT16:  return GetConversionStep2Unsafe<int16_t>(outputType);
-   CASE_NPY_INT32:  return GetConversionStep2Unsafe<int32_t>(outputType);
-   CASE_NPY_INT64:  return GetConversionStep2Unsafe<int64_t>(outputType);
+   case NPY_INT32:  return GetConversionStep2Unsafe<int32_t>(outputType);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return GetConversionStep2Unsafe<int64_t>(outputType);
    case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
    case NPY_UINT16: return GetConversionStep2Unsafe<uint16_t>(outputType);
-   CASE_NPY_UINT32: return GetConversionStep2Unsafe<uint32_t>(outputType);
-   CASE_NPY_UINT64: return GetConversionStep2Unsafe<uint64_t>(outputType);
+   case NPY_UINT32: return GetConversionStep2Unsafe<uint32_t>(outputType);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return GetConversionStep2Unsafe<uint64_t>(outputType);
 
    }
    return NULL;
@@ -651,12 +685,16 @@ static MASK_CONVERT_SAFE GetConversionPutMask2Float(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopyFloat;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopyFloat;
    case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopyFloat;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopyFloat;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::PutMaskCopyFloat;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopyFloat;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::PutMaskCopyFloat;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopyFloat;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopyFloat;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopyFloat;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::PutMaskCopyFloat;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopyFloat;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::PutMaskCopyFloat;
    }
    return NULL;
 
@@ -672,12 +710,16 @@ static MASK_CONVERT_SAFE GetConversionPutMask2(int outputType) {
    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopy;
    case NPY_BYTE:   return ConvertBase<T, int8_t>::PutMaskCopy;
    case NPY_INT16:  return ConvertBase<T, int16_t>::PutMaskCopy;
-   CASE_NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopy;
-   CASE_NPY_INT64:  return ConvertBase<T, int64_t>::PutMaskCopy;
+   case NPY_INT32:  return ConvertBase<T, int32_t>::PutMaskCopy;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return ConvertBase<T, int64_t>::PutMaskCopy;
    case NPY_UBYTE:  return ConvertBase<T, uint8_t>::PutMaskCopy;
    case NPY_UINT16: return ConvertBase<T, uint16_t>::PutMaskCopy;
-   CASE_NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopy;
-   CASE_NPY_UINT64: return ConvertBase<T, uint64_t>::PutMaskCopy;
+   case NPY_UINT32: return ConvertBase<T, uint32_t>::PutMaskCopy;
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return ConvertBase<T, uint64_t>::PutMaskCopy;
    }
    return NULL;
 
@@ -695,12 +737,14 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
       case NPY_INT16:
       case NPY_UINT16:  return ConvertBase<int16_t, int16_t>::PutMaskFast;
 
-      CASE_NPY_INT32:
-      CASE_NPY_UINT32:
+      case NPY_INT32:
+      case NPY_UINT32:
       case NPY_FLOAT:  return ConvertBase<int32_t, int32_t>::PutMaskFast;
 
-      CASE_NPY_INT64:
-      CASE_NPY_UINT64:
+      case NPY_INT64:
+      case NPY_LONGLONG:
+      case NPY_UINT64:
+      case NPY_ULONGLONG:
       case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::PutMaskFast;
 
       case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::PutMaskFast;
@@ -716,16 +760,20 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType) {
    case NPY_LONGDOUBLE: return GetConversionPutMask2Float<long double>(outputType);
    case NPY_BYTE:   return GetConversionPutMask2<int8_t>(outputType);
    case NPY_INT16:  return GetConversionPutMask2<int16_t>(outputType);
-   CASE_NPY_INT32:  return GetConversionPutMask2<int32_t>(outputType);
-   CASE_NPY_INT64:  return GetConversionPutMask2<int64_t>(outputType);
+   case NPY_INT32:  return GetConversionPutMask2<int32_t>(outputType);
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return GetConversionPutMask2<int64_t>(outputType);
 
       // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
       //case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
    case NPY_UBYTE:  return GetConversionPutMask2<uint8_t>(outputType);
 
    case NPY_UINT16: return GetConversionPutMask2<uint16_t>(outputType);
-   CASE_NPY_UINT32: return GetConversionPutMask2<uint32_t>(outputType);
-   CASE_NPY_UINT64: return GetConversionPutMask2<uint64_t>(outputType);
+   case NPY_UINT32: return GetConversionPutMask2<uint32_t>(outputType);
+   case NPY_UINT64:
+   case NPY_ULONGLONG:
+          return GetConversionPutMask2<uint64_t>(outputType);
 
    }
    return NULL;
@@ -748,8 +796,8 @@ struct CONVERT_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = false;
    CONVERT_CALLBACK* Callback = (CONVERT_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)Callback->pDataIn;
@@ -766,7 +814,7 @@ static BOOL ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int 
       Callback->anyConvertCallback(pDataIn + inputAdj, pDataOut + outputAdj, lenX, Callback->pBadInput1, Callback->pBadOutput1, Callback->typeSizeIn, Callback->typeSizeOut);
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -783,7 +831,7 @@ static BOOL ConvertThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int 
 void* GetInvalid(int dtype) {
    void* pBadInput = GetDefaultForType(dtype);
    if (dtype == NPY_BOOL) {
-      // We do not want FALSE to become a sentinel
+      // We do not want false to become a sentinel
       pBadInput = GetDefaultForType(NPY_INT8);
    }
    return pBadInput;
@@ -842,7 +890,7 @@ ConvertSafeInternal(
    void* pDataOut = PyArray_BYTES(outArray);
    void* pBadInput1 = GetInvalid(numpyInType);
 
-   // if output is boolean, bad means FALSE
+   // if output is boolean, bad means false
    void* pBadOutput1 = GetDefaultForType(numpyOutType);
 
    // Check the strides of both the input and output to make sure we can handle
@@ -1023,7 +1071,7 @@ ConvertUnsafeInternal(
 
    void* pBadInput1 = GetInvalid(numpyInType);
 
-   // if output is boolean, bad means FALSE
+   // if output is boolean, bad means false
    void* pBadOutput1 = GetDefaultForType(numpyOutType);
 
    stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(len);
@@ -1099,8 +1147,10 @@ static COMBINE_MASK GetCombineFunction(int outputType) {
    switch (outputType) {
    case NPY_INT8:   return CombineMask<int8_t>;
    case NPY_INT16:  return CombineMask<int16_t>;
-   CASE_NPY_INT32:  return CombineMask<int32_t>;
-   CASE_NPY_INT64:  return CombineMask<int64_t>;
+   case NPY_INT32:  return CombineMask<int32_t>;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return CombineMask<int64_t>;
    }
    return NULL;
 
@@ -1122,8 +1172,8 @@ struct COMBINE_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL CombineThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool CombineThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = false;
    COMBINE_CALLBACK* Callback = (COMBINE_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)Callback->pDataIn;
@@ -1140,7 +1190,7 @@ static BOOL CombineThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int 
       Callback->anyCombineCallback(pDataIn + inputAdj, pDataOut + inputAdj, lenX, Callback->pFilter + filterAdj);
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -1204,11 +1254,12 @@ CombineFilter(PyObject *self, PyObject *args)
       pFunction = GetCombineFunction(numpyOutType);
       break;
 
-   CASE_NPY_INT32:
+   case NPY_INT32:
       pFunction = GetCombineFunction(numpyOutType);
       break;
 
-   CASE_NPY_INT64:
+   case NPY_INT64:
+      case NPY_LONGLONG:
       pFunction = GetCombineFunction(numpyOutType);
       break;
    }
@@ -1351,8 +1402,10 @@ static COMBINE_ACCUM2_MASK GetCombineAccum2Function(int outputType) {
    switch (outputType) {
    case NPY_INT8:   return CombineAccum2Mask<T,U,int8_t>;
    case NPY_INT16:  return CombineAccum2Mask<T,U,int16_t>;
-   CASE_NPY_INT32:  return CombineAccum2Mask<T,U,int32_t>;
-   CASE_NPY_INT64:  return CombineAccum2Mask<T,U,int64_t>;
+   case NPY_INT32:  return CombineAccum2Mask<T,U,int32_t>;
+   case NPY_INT64:
+   case NPY_LONGLONG:
+           return CombineAccum2Mask<T,U,int64_t>;
    }
    return NULL;
 
@@ -1380,8 +1433,8 @@ struct COMBINE_ACCUM2_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = false;
    COMBINE_ACCUM2_CALLBACK* Callback = (COMBINE_ACCUM2_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn1 = (char *)Callback->pDataIn1;
@@ -1414,7 +1467,7 @@ static BOOL CombineThreadAccum2Callback(struct stMATH_WORKER_ITEM* pstWorkerItem
          Callback->pFilter ? (Callback->pFilter + filterAdj) : NULL);
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -1522,8 +1575,10 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int8_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int8_t, int16_t>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int8_t, int32_t>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int8_t, int64_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int8_t, int32_t>(numpyOutType);  break;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           pFunction = GetCombineAccum2Function<int8_t, int64_t>(numpyOutType);  break;
       }
       break;
 
@@ -1531,31 +1586,38 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int16_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int16_t, int16_t>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int16_t, int32_t>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int16_t, int64_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int16_t, int32_t>(numpyOutType);  break;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           pFunction = GetCombineAccum2Function<int16_t, int64_t>(numpyOutType);  break;
       }
       break;
 
-   CASE_NPY_INT32:
+   case NPY_INT32:
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int32_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int32_t, int16_t>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int32_t, int32_t>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int32_t, int64_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int32_t, int32_t>(numpyOutType);  break;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           pFunction = GetCombineAccum2Function<int32_t, int64_t>(numpyOutType);  break;
       }
       break;
 
-   CASE_NPY_INT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:
       switch (type2) {
       case NPY_INT8:   pFunction = GetCombineAccum2Function<int64_t, int8_t>(numpyOutType);  break;
       case NPY_INT16:  pFunction = GetCombineAccum2Function<int64_t, int16_t>(numpyOutType);  break;
-      CASE_NPY_INT32:  pFunction = GetCombineAccum2Function<int64_t, int32_t>(numpyOutType);  break;
-      CASE_NPY_INT64:  pFunction = GetCombineAccum2Function<int64_t, int64_t>(numpyOutType);  break;
+      case NPY_INT32:  pFunction = GetCombineAccum2Function<int64_t, int32_t>(numpyOutType);  break;
+      case NPY_INT64:
+      case NPY_LONGLONG:
+           pFunction = GetCombineAccum2Function<int64_t, int64_t>(numpyOutType);  break;
       }
       break;
    }
 
-   BOOL bWantCount = FALSE;
+   bool bWantCount = false;
 
    if (pFunction != NULL) {
       PyArrayObject* outArray = AllocateNumpyArray(ndim, dims, numpyOutType, 0, PyArray_IS_F_CONTIGUOUS(inArr1));
@@ -1563,14 +1625,14 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
 
       if (outArray) {
          void* pDataOut = PyArray_BYTES(outArray);
-         BOOL is64bithash = FALSE;
+         bool is64bithash = false;
          int64_t sizeofhash = 4;
 
          // 32 bit count limitation here
          PyArrayObject* countArray = NULL;
 
          if (hashSize > 2147480000) {
-            is64bithash = TRUE;
+            is64bithash = true;
             sizeofhash = 8;
          }
 
@@ -1595,9 +1657,9 @@ CombineAccum2Filter(PyObject *self, PyObject *args)
          else {
 
             // TODO: steal from hash
-            INT numCores = g_cMathWorker->WorkerThreadCount + 1;
+            int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
             int64_t sizeToAlloc = numCores * hashSize * sizeofhash;
-            PVOID pWorkSpace = 0;
+            void* pWorkSpace = 0;
 
             if (bWantCount) {
                pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
@@ -1868,10 +1930,12 @@ CombineAccum1Filter(PyObject *self, PyObject *args)
    case NPY_INT16:
       pFunction = Combine1Filter<int16_t>;
       break;
-   CASE_NPY_INT32:
+   case NPY_INT32:
       pFunction = Combine1Filter<int32_t>;
       break;
-   CASE_NPY_INT64:
+   case NPY_INT64:
+   case NPY_LONGLONG:
+         
       pFunction = Combine1Filter<int64_t>;
       break;
    }
@@ -2373,7 +2437,7 @@ PyObject *GetUpcastNum(PyObject* self, PyObject *args)
 
    // Allow jagged rows
    // Do not copy
-   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, FALSE, FALSE);
+   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, false, false);
 
    if (aInfo) {
       int dtype = GetUpcastDtype(aInfo, tupleSize);
@@ -2412,7 +2476,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
    int64_t tupleSize = 0;
 
    // Allow jagged rows
-   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, FALSE);
+   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, false);
 
    if (aInfo) {
 
@@ -2425,12 +2489,12 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
          if (dtype <  0 || dtype > NPY_LONGDOUBLE) {
 
-            BOOL isSameDtype = TRUE;
+            bool isSameDtype = true;
 
             // Check for all strings or all unicode which we know how to stack
             for (int t = 0; t < tupleSize; t++) {
                if (dtype != aInfo[t].NumpyDType) {
-                  isSameDtype = FALSE;
+                  isSameDtype = false;
                   break;
                }
                // track max itemsize since for a string we must match it
@@ -2511,7 +2575,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
                LOGGING("MT string hstack work on %lld\n", tupleSize);
 
-               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
                   stSHSTACK* callbackArg = (stSHSTACK*)callbackArgT;
                   int64_t t = workIndex;
                   callbackArg->pHStack[t].ConvertSafeString(
@@ -2521,7 +2585,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
                      callbackArg->aInfo[t].ItemSize,
                      callbackArg->ItemSizeOutput);
 
-                  return TRUE;
+                  return true;
                };
 
                g_cMathWorker->DoMultiThreadedWork((int)tupleSize, lambdaHSCallback, &myhstack);
@@ -2563,7 +2627,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
          if (outputArray) {
 
-            // if output is boolean, bad means FALSE
+            // if output is boolean, bad means false
             void* pBadOutput1 = GetDefaultForType(dtype);
 
             int64_t strideOut = PyArray_STRIDE(outputArray, 0);
@@ -2601,7 +2665,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
 
                LOGGING("MT hstack work on %lld\n", tupleSize);
 
-               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+               auto lambdaHSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
                   stSHSTACK* callbackArg = (stSHSTACK*)callbackArgT;
                   int64_t t = workIndex;
                   callbackArg->pHStack[t].ConvertSafe(
@@ -2613,7 +2677,7 @@ PyObject *HStack(PyObject* self, PyObject *args)
                      PyArray_STRIDE(callbackArg->aInfo[t].pObject, 0),
                      callbackArg->StrideOut);
 
-                  return TRUE;
+                  return true;
                };
 
                g_cMathWorker->DoMultiThreadedWork((int)tupleSize, lambdaHSCallback, &myhstack);
@@ -2660,7 +2724,7 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
    int64_t tupleSize = 0;
 
    // Allow jagged rows
-   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, FALSE);
+   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, false);
 
    if (aInfo) {
 
@@ -2676,7 +2740,7 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
       myshift.aInfo = aInfo;
       myshift.shiftAmount = shiftAmount;
 
-      auto lambdaShiftCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+      auto lambdaShiftCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
          stSHIFT* pShift = (stSHIFT*)callbackArgT;
          int64_t t = workIndex;
 
@@ -2764,7 +2828,7 @@ PyObject *ShiftArrays(PyObject* self, PyObject *args)
                }
             }
          }
-         return TRUE;
+         return true;
       };
 
       g_cMathWorker->DoMultiThreadedWork((int)tupleSize, lambdaShiftCallback, &myshift);
@@ -2806,7 +2870,7 @@ PyObject *HomogenizeArrays(PyObject* self, PyObject *args) {
    int64_t tupleSize = 0;
 
    // Do not allow jagged rows
-   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, TRUE);
+   ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, true);
 
    if (aInfo) {
       int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
@@ -2825,7 +2889,7 @@ PyObject *HomogenizeArrays(PyObject* self, PyObject *args) {
       }
 
       // Now convert?
-      // if output is boolean, bad means FALSE
+      // if output is boolean, bad means false
       void* pBadOutput1 = GetDefaultForType(dtype);
 
       PyObject*  returnList = PyList_New(0);
@@ -3202,7 +3266,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
    if (stBoolCounter.pCounts) {
       stBoolCounter.pBoolMask = (int8_t*)PyArray_BYTES(mask);
 
-      auto lambdaCallback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+      auto lambdaCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
          ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
          int64_t t = workIndex;
 
@@ -3214,7 +3278,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
          pstBoolCounter->pCounts[workIndex] = SumBooleanMask(pstBoolCounter->pBoolMask + (SETITEM_PARTITION_SIZE * workIndex), lastCount);
          //printf("isum %lld %lld %lld\n", workIndex, pstBoolCounter->pCounts[workIndex], lastCount);
 
-         return TRUE;
+         return true;
       };
 
       g_cMathWorker->DoMultiThreadedWork((int)stBoolCounter.sections, lambdaCallback, &stBoolCounter);
@@ -3231,7 +3295,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
 
       if (bsum > 0 && bsum == arrlength) {
 
-         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
             ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
             int64_t t = workIndex;
 
@@ -3248,7 +3312,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
                lastCount,
                pstBoolCounter->itemSize);
 
-            return TRUE;
+            return true;
          };
 
          g_cMathWorker->DoMultiThreadedWork((int)stBoolCounter.sections, lambda2Callback, &stBoolCounter);
@@ -3261,7 +3325,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
 
       if (bsum > 0 && arrlength == 1) {
 
-         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> BOOL {
+         auto lambda2Callback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
             ST_BOOLCOUNTER* pstBoolCounter = (ST_BOOLCOUNTER*)callbackArgT;
             int64_t t = workIndex;
 
@@ -3278,7 +3342,7 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
                lastCount,
                pstBoolCounter->itemSize);
 
-            return TRUE;
+            return true;
          };
 
          g_cMathWorker->DoMultiThreadedWork((int)stBoolCounter.sections, lambda2Callback, &stBoolCounter);
@@ -3301,8 +3365,8 @@ PyObject* SetItemBooleanMaskLarge(PyArrayObject* arr, PyArrayObject* mask, PyArr
 //   : param fld : boolean or fancy index mask
 //   : param value : scalar, sequence or dataset value as follows
 //
-// returns TRUE if it worked
-// returns FALSE
+// returns true if it worked
+// returns false
 // NOTE: This routine is not finished yet
 PyObject *SetItem(PyObject* self, PyObject *args)
 {
@@ -3388,8 +3452,8 @@ PyObject *SetItem(PyObject* self, PyObject *args)
 //----------------------------------------------------
 // rough equivalvent arr[mask] = value[mask]
 //
-// returns TRUE if it worked
-// returns FALSE
+// returns true if it worked
+// returns false
 PyObject *PutMask(PyObject* self, PyObject *args)
 {
    Py_ssize_t argTupleSize = PyTuple_GET_SIZE(args);
@@ -3444,7 +3508,7 @@ PyObject *PutMask(PyObject* self, PyObject *args)
                   MASK_CALLBACK_STRUCT stMask;
 
                   // This is the routine that will be called back from multiple threads
-                  auto lambdaMaskCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> BOOL {
+                  auto lambdaMaskCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
                      MASK_CALLBACK_STRUCT* callbackArg = (MASK_CALLBACK_STRUCT*)callbackArgT;
 
                      //printf("[%d] Mask %lld %lld\n", core, start, length);
@@ -3458,7 +3522,7 @@ PyObject *PutMask(PyObject* self, PyObject *args)
                         callbackArg->pBadInput1,
                         callbackArg->pBadOutput1);
 
-                     return TRUE;
+                     return true;
                   };
 
                   stMask.itemSizeIn = itemSizeIn;
@@ -3528,7 +3592,7 @@ PyObject *ApplyRows(PyObject* self, PyObject *args, PyObject* kwargs)
       int64_t tupleSize = 0;
 
       // Do not allow jagged rows
-      ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, TRUE);
+      ArrayInfo* aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, true);
 
       if (aInfo) {
          int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
@@ -3544,7 +3608,7 @@ PyObject *ApplyRows(PyObject* self, PyObject *args, PyObject* kwargs)
          }
 
          // Now convert?
-         // if output is boolean, bad means FALSE
+         // if output is boolean, bad means false
          void* pBadOutput1 = GetDefaultForType(dtype);
 
          // Convert any different types... build a new list...

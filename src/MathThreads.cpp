@@ -72,7 +72,7 @@ WaitAddress g_WaitAddress=NULL;
 //   * BSD syscalls like __psynch_cvwait (and other __psynch functions). These are not externally documented -- need to look in github.com/apple/darwin-libpthread to see how things work.
 //
 #if defined(RT_OS_WINDOWS)
-DWORD WINAPI WorkerThreadFunction(LPVOID lpParam)
+uint32_t WINAPI WorkerThreadFunction(LPVOID lpParam)
 #else
 void *
 WorkerThreadFunction(void *lpParam)
@@ -80,7 +80,7 @@ WorkerThreadFunction(void *lpParam)
 {
    stWorkerRing* pWorkerRing = (stWorkerRing*)lpParam;
 
-   DWORD core = (DWORD)(InterlockedIncrement64(&pWorkerRing->WorkThread));
+   uint32_t core = (uint32_t)(InterlockedIncrement64(&pWorkerRing->WorkThread));
    core = core - 1;
 
    //if (core > 3) core += 16;
@@ -90,24 +90,24 @@ WorkerThreadFunction(void *lpParam)
    
    // On windows we set the thread affinity mask
    if (g_WaitAddress != NULL) {
-      UINT64 mask = (UINT64)(1) << core;//core number starts from 0
-      UINT64 ret = SetThreadAffinityMask(GetCurrentThread(), mask);
+      uint64_t mask = (uint64_t)(1) << core;//core number starts from 0
+      uint64_t ret = SetThreadAffinityMask(GetCurrentThread(), mask);
       //UINT64 ret = SetThreadAffinityMask(GetCurrentThread(), 0xFFFFFFFF);
    }
 
-   INT64 lastWorkItemCompleted = -1;
+   int64_t lastWorkItemCompleted = -1;
 
    //
    // Setting Cancelled will stop all worker threads
    //
    while (pWorkerRing->Cancelled == 0) {
-      INT64 workIndexCompleted;
-      INT64 workIndex;
+      int64_t workIndexCompleted;
+      int64_t workIndex;
 
       workIndex = pWorkerRing->WorkIndex;
       workIndexCompleted = pWorkerRing->WorkIndexCompleted;
 
-      BOOL didSomeWork = FALSE;
+      bool didSomeWork = false;
 
       // See if work to do
       if (workIndex > workIndexCompleted) {
@@ -115,7 +115,7 @@ WorkerThreadFunction(void *lpParam)
 
 #if defined(RT_OS_WINDOWS)
          // Windows we check if the work was for our thread
-         INT64 wakeup = InterlockedDecrement64(&pWorkItem->ThreadWakeup);
+         int64_t wakeup = InterlockedDecrement64(&pWorkItem->ThreadWakeup);
          if (wakeup >= 0) {
             didSomeWork = pWorkItem->DoWork(core, workIndex);
          }

@@ -47,8 +47,8 @@ extern ArrayInfo* BuildArrayInfo(
    PyObject* listObject,
    int64_t* pTupleSize,
    int64_t* pTotalItemSize,
-   bool checkrows = TRUE,
-   bool convert = TRUE);
+   bool checkrows = true,
+   bool convert = true);
 
 extern void FreeArrayInfo(ArrayInfo* pArrayInfo);
 

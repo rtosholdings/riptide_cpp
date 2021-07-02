@@ -298,22 +298,22 @@ static size_t DecompressDataPartial(int32_t core, int32_t compMode, void* dst, s
 static bool CompressIsError(int32_t compMode, size_t code) {
    if (ZSTD_isError(code)) {
       SetErr_Format(SDS_VALUE_ERROR, "Decompression error: %s", ZSTD_getErrorName(code));
-      return TRUE;
+      return true;
    }
    else {
-      return FALSE;
+      return false;
    }
 
 }
 
 // check to see if any errors were recorded
-// Returns TRUE if there was an error
+// Returns true if there was an error
 //static bool CheckErrors() {
 //
 //   if (g_lastexception) {
-//      return TRUE;
+//      return true;
 //   }
-//   return FALSE;
+//   return false;
 //}
 
 
@@ -387,7 +387,7 @@ const char* GetLastErrorMessage(
 
 
 SDS_EVENT_HANDLE SDS_CREATE_EVENTHANDLE() {
-   return CreateEvent(NULL, TRUE, FALSE, NULL);
+   return CreateEvent(NULL, true, false, NULL);
 }
 void SDS_DESTROY_EVENTHANDLE(SDS_EVENT_HANDLE handle) {
    CloseHandle(handle);
@@ -954,7 +954,7 @@ public:
    // hr < 0 on failure
    HRESULT MapExisting() {
       HRESULT hr =
-         SharedMemoryCopy(SharedMemoryName, &pMapStruct, TRUE);
+         SharedMemoryCopy(SharedMemoryName, &pMapStruct, true);
 
       if (hr > 0) {
          AddSharedMemory(SharedMemoryName, pMapStruct, NULL);
@@ -1125,7 +1125,7 @@ public:
                // replace bang
                *pHasBang = BANG_CHAR;
 
-               // if we matched return TRUE
+               // if we matched return true
                if (InclusionList.find(newitem) != InclusionList.end()) {
                   return 1;
                }
@@ -1166,7 +1166,7 @@ public:
 
                LOGGING("Failed to match, has sep %s   folder: %s\n", item.c_str(), newitem.c_str());
 
-               // if we matched return TRUE
+               // if we matched return true
                if (InclusionList.find(newitem) != InclusionList.end()) {
                   return 1;
                }
@@ -1257,7 +1257,7 @@ DecompressWithFilter(
    int64_t lastData = (bytesPerRow * lastRow);
 
    // Check if user just wants the very first bytes
-   // All set to TRUE in mask
+   // All set to true in mask
    if (rowOffset ==0 && lastRow <= lastPossibleRow && lastRow == pFilter->BoolMaskTrueCount && lastData <= uncompressedSize) {
       int64_t firstBand = 0;
       int64_t firstData = bytesPerRow * firstBand;
@@ -1319,11 +1319,11 @@ DecompressWithFilter(
       // Make sure something to read
       //if (pFilter->pFilterInfo && pFilter->pFilterInfo[stackIndex].TrueCount > 0) {
       if (pFilter->BoolMaskTrueCount > 0) {
-         bool uncompressedRead = FALSE;
+         bool uncompressedRead = false;
 
          if (compressedSize == uncompressedSize) {
             // this data was saved uncompressed
-            uncompressedRead = TRUE;
+            uncompressedRead = true;
             result = compressedSize;
          }
          else {
@@ -1333,7 +1333,7 @@ DecompressWithFilter(
          }
 
          if (result == compressedSize) {
-            // Copy all TRUE rows
+            // Copy all true rows
             bool*    pMask = pFilter->pBoolMask + rowOffset;
 
             //printf("allocating temp buffer of %lld bytes", uncompressedSize);
@@ -1490,7 +1490,7 @@ ReadAndDecompressBandWithFilter(
          sectionLength = boolLength - rowOffset;
       }
 
-      // Copy all TRUE rows
+      // Copy all true rows
       bool*    pMask = pFilter->pBoolMask + rowOffset;
       int64_t trueCount = SumBooleanMask((int8_t*)pMask, sectionLength);
 
@@ -1529,7 +1529,7 @@ ReadAndDecompressBandWithFilter(
             core,
             compMode);
 
-         // TODO change based on how many TRUE values in the mask
+         // TODO change based on how many true values in the mask
          destBandBuffer += (trueCount * bytesPerRow);
 
       }
@@ -1565,12 +1565,12 @@ ReadAndDecompressArrayBlockWithFilter(
 ) {
 
    int64_t result = -1;
-   bool didAlloc = FALSE;
+   bool didAlloc = false;
 
    if (!tempBuffer) {
       LOGGING("Allocating tempbuffer of %lld\n", pBlockInfo->ArrayCompressedSize);
       tempBuffer = WORKSPACE_ALLOC(pBlockInfo->ArrayCompressedSize);
-      didAlloc = TRUE;
+      didAlloc = true;
    }
 
    // All boolean masks come here
@@ -2438,7 +2438,7 @@ bool DecompressFileArray(void* pstCompressArraysV, int32_t core, int64_t t) {
       }
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -2644,7 +2644,7 @@ bool CompressFileArray(void* pstCompressArraysV, int32_t core, int64_t t) {
       }
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -2991,7 +2991,7 @@ bool SDSWriteFileInternal(
       }
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -3062,7 +3062,7 @@ void CopyFromBlockToInfo(SDS_ARRAY_BLOCK*  pBlock, SDSArrayInfo* pDestInfo) {
 
 
 struct SDS_COMPATIBLE {
-   int8_t                 IsCompatible;  // set to FALSE if conversion required
+   int8_t                 IsCompatible;  // set to false if conversion required
    int8_t                 NeedsStringFixup;  // set to 1 if conversion required, or in 2 for mtlab conversion
    int8_t                 NeedsConversion;  // if flag set, dtype conversion called
    int8_t                 NeedsRotation;
@@ -3178,7 +3178,7 @@ bool IsNameIncluded(
       if (!pInclude || pInclude->IsEmpty()) {
          // we have no column name included
          if (!pFolderName || pFolderName->IsEmpty()) {
-            return TRUE;
+            return true;
          }
 
          // we have a folder name but no column name (any match works)
@@ -3195,28 +3195,28 @@ bool IsNameIncluded(
          if (pStart >= nameToCheck) {
             if (*pStart == '/') {
                // pure folder name -- if it matches, it contains meta that we need
-               if (pFolderName->IsIncluded(nameToCheck)) return TRUE;
+               if (pFolderName->IsIncluded(nameToCheck)) return true;
             }
          }
          
       }
       else {
          // just a name -- no folder -- probably not allowed
-         //return FALSE;
+         //return false;
       }
 
       if ((!pInclude || pInclude->IsIncluded(nameToCheck)) &&
          (!pFolderName || pFolderName->IsIncluded(nameToCheck))) {
-         return TRUE;
+         return true;
       }
    }
    else {
       if (!pInclude || pInclude->IsIncluded(nameToCheck)) {
-         return TRUE;
+         return true;
       }
 
    }
-   return FALSE;
+   return false;
 }
 
 
@@ -3227,7 +3227,7 @@ bool PossiblyShrinkArray(
    SDS_READ_CALLBACKS*  pReadCallbacks,
    bool                 isStackable
 ) {
-   bool wasFiltered = FALSE;
+   bool wasFiltered = false;
 
    // Categoricals will not be in original container
    int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
@@ -3235,7 +3235,7 @@ bool PossiblyShrinkArray(
       if (pArrayCallback->sdsFlags & mask) {
          // Did they pass a fancy index or a bool index?
          if (pReadCallbacks->Filter.pBoolMask && pReadCallbacks->Filter.BoolMaskTrueCount >= 0 && isStackable) {
-            wasFiltered = TRUE;
+            wasFiltered = true;
             int64_t dim0Length = pArrayCallback->dims[0];
             int64_t newLength = pReadCallbacks->Filter.BoolMaskTrueCount;
 
@@ -3306,8 +3306,8 @@ public:
    SDSSectionName cSectionName;
 
    // Set to true when file header is read (does not work for shared memory file)
-   bool           IsFileValid = FALSE;
-   bool           IsFileValidAndNotFilteredOut = FALSE;
+   bool           IsFileValid = false;
+   bool           IsFileValidAndNotFilteredOut = false;
 
    //------------------------------------------------
    // constructor
@@ -3334,14 +3334,14 @@ public:
 
    //-----------------------------------------------------------
    // Caller must fill in pDestInfo->pData because memory will be read into
-   //// returns TRUE if array allocated
+   //// returns true if array allocated
    //bool CallAllocateArray(SDS_READ_CALLBACKS* pReadCallbacks, SDS_ALLOCATE_ARRAY *pAllocateArray) {
 
    //   if (pReadCallbacks->AllocateArrayCallback) {
    //      pReadCallbacks->AllocateArrayCallback(pAllocateArray);
-   //      return TRUE;
+   //      return true;
    //   }
-   //   return FALSE;
+   //   return false;
    //}
 
 
@@ -3396,7 +3396,7 @@ public:
       pDestInfo->pArrayObject = NULL;
       pDestInfo->pData = NULL;
 
-      bool wasFiltered = FALSE;
+      bool wasFiltered = false;
 
       //LOGGING("Checking to allocate name %s\n", pAllocateArray->pArrayName);
       // Include exclude check
@@ -3405,7 +3405,7 @@ public:
 
          //-----------------------------------
          // Caller will fill info pArrayObject and pData
-         // NOTE: this routine can filter names (will return FALSE if filtered out)
+         // NOTE: this routine can filter names (will return false if filtered out)
          // pData is valid for shared memory
          if (pReadCallbacks->AllocateArrayCallback) {
 
@@ -3447,7 +3447,7 @@ public:
          pIOPacket->pReadCallbacks = pReadCallbacks;
          pIOPacket->pBlockInfo = &pArrayBlocks[t];
          pIOPacket->pMasterBlock = NULL;
-         pIOPacket->Compatible = { TRUE, FALSE, FALSE, FALSE };
+         pIOPacket->Compatible = { true, false, false, false };
          pIOPacket->ArrayOffset = 0;
          pIOPacket->OriginalArrayOffset = 0;
          pIOPacket->StackPosition = 0;
@@ -3472,7 +3472,7 @@ public:
             fileType == SDS_FILE_TYPE_ARRAY);
 
          // callback into python or matlab to allocate memory
-         AllocateOneArray(t, pReadCallbacks, &pDestInfo[t], FALSE, oneFile, fileTypeStackable);
+         AllocateOneArray(t, pReadCallbacks, &pDestInfo[t], false, oneFile, fileTypeStackable);
 
          // next io packet to build
          pIOPacket++;
@@ -3697,7 +3697,7 @@ public:
    //  ppArrayBlock (currently allocated)
    //
    // Returns:
-   //   TRUE or FALSE.  if TRUE and NULL passed in then can call GetMetaData()
+   //   true or false.  if true and NULL passed in then can call GetMetaData()
    //   
    //
    bool DecompressMetaData(
@@ -3722,7 +3722,7 @@ public:
 
          if (!metaDataCompressed) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in metaDataCompressedsize: %lld", metaCompressedSize);
-            return FALSE;
+            return false;
          }
 
          // Read in compressed data into our buffer: metaDataCompressed
@@ -3731,7 +3731,7 @@ public:
          if (bytesRead != metaCompressedSize) {
             WORKSPACE_FREE(metaDataCompressed);
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in bytesRead: %lld", metaCompressedSize);
-            return FALSE;
+            return false;
          }
 
          int64_t metaUncompressedSize = pFileHeader->TotalMetaUncompressedSize;
@@ -3745,7 +3745,7 @@ public:
             // allocate a string object
             if (!metaDataUncompressed) {
                SetErr_Format(SDS_VALUE_ERROR, "Decompression error meta: could not allocate meta string %lld", metaUncompressedSize);
-               return FALSE;
+               return false;
             }
 
             // get the memory of the pystring
@@ -3760,7 +3760,7 @@ public:
 
          if (CompressIsError(COMPRESSION_TYPE_ZSTD, cSize) || cSize != metaUncompressedSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error meta: length mismatch -> decomp %llu != %llu [header]", (uint64_t)cSize, metaUncompressedSize);
-            return FALSE;
+            return false;
          }
 
       }
@@ -3779,7 +3779,7 @@ public:
             // allocate a string object
             if (!metaDataUncompressed) {
                SetErr_Format(SDS_VALUE_ERROR, "Decompression error meta: could not allocate meta string %lld", metaUncompressedSize);
-               return FALSE;
+               return false;
             }
          }
 
@@ -3788,12 +3788,12 @@ public:
       }
 
       LOGGING("out decompress meta\n");
-      return TRUE;
+      return true;
    }
 
    //------------------------------------------------
-   // Returns FALSE on failure
-   // Returns TRUE on success
+   // Returns false on failure
+   // Returns true on success
    // 
    // Reads from File and decompresses into shared memory
    // Call EndDecompressedFile() when done
@@ -3808,13 +3808,13 @@ public:
          // This will allocate pArrayBlocks
          if (!AllocateArrayBlocks()) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in pArrayBlock: %lld", pFileHeader->ArrayBlockSize);
-            return FALSE;
+            return false;
          }
 
          int64_t bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
          if (bytesRead != pFileHeader->ArrayBlockSize) {
             SetErr_Format(SDS_VALUE_ERROR, "Decompression error in ArrayBlockSize: %lld", pFileHeader->ArrayBlockSize);
-            return FALSE;
+            return false;
          }
 
          // Calculate size of shared memory
@@ -3910,7 +3910,7 @@ public:
 
                // MORE WORK TO DO 
                SDS_READ_DECOMPRESS_ARRAYS* pstCompressArrays =
-                  AllocDecompressArrays(pReadCallbacks, arrayCount, TRUE, oneFile, fileTypeStackable);
+                  AllocDecompressArrays(pReadCallbacks, arrayCount, true, oneFile, fileTypeStackable);
 
                // Set all the cores working memory to zero
                int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
@@ -3944,20 +3944,20 @@ public:
 
                pMemoryFileHeader->ArraysWritten = arrayCount;
                LOGGING("End fill array block %lld\n", arrayCount);;
-               return TRUE;
+               return true;
             }
          }
       }
       else {
          SetErr_Format(SDS_VALUE_ERROR, "SDS file was null when copying into shared memory\n");
       }
-      return FALSE;
+      return false;
    }
 
 
    //------------------------------------------------
-   // Returns FALSE on failure
-   // Returns TRUE on success
+   // Returns false on failure
+   // Returns true on success
    // 
    // Calls EndDecompressedFile() when done
    bool CopyIntoSharedMemory(SDS_READ_CALLBACKS* pReadCallbacks, const char* fileName, SDSIncludeExclude* pFolderName, int32_t core) {
@@ -3972,7 +3972,7 @@ public:
          EndDecompressedFile();
          return bResult;
       }
-      return FALSE;
+      return false;
    }
 
 
@@ -4040,7 +4040,7 @@ public:
 
 
    //===============================================
-   // returns TRUE/FALSE
+   // returns true/false
    // stops early if Mode == COMPRESSION_MODE_INFO
    // new ver 4.3: handles filter=
    bool DecompressFileInternal(SDS_READ_CALLBACKS* pReadCallbacks, int32_t core, int64_t startOffset) {
@@ -4094,13 +4094,13 @@ public:
          LOGGING("Arrays to read %lld  %p\n", tupleSize, pArrayBlocks);
 
          // If we got this far, the file is good
-         IsFileValid = TRUE;
-         IsFileValidAndNotFilteredOut = TRUE;
+         IsFileValid = true;
+         IsFileValidAndNotFilteredOut = true;
 
          // -- STOP EARLY IF THE USER JUST WANTS THE INFORMATION -----------------
          // Leave the files open in case they want to read arrays later
          if (Mode == COMPRESSION_MODE_INFO) {
-            return TRUE;
+            return true;
          }
 
          int32_t fileType = pFileHeader->FileType;
@@ -4112,7 +4112,7 @@ public:
          pstCompressArrays = AllocDecompressArrays(
             pReadCallbacks, 
             tupleSize, 
-            FALSE, 
+            false, 
             pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE,
             fileTypeStackable
          );
@@ -4150,7 +4150,7 @@ public:
             DefaultFileIO.DestroyEventHandle(pstCompressArrays->eventHandles[j]);
          }
 
-         return TRUE;
+         return true;
       }
       else {
          //  This overwrites real error
@@ -4164,7 +4164,7 @@ public:
       if (g_errorbuffer[0] == 0) {
          SetErr_Format(SDS_VALUE_ERROR, "ExitDecompress called for error when opening file %s\n", FileName);
       }
-      return FALSE;
+      return false;
    }
 
 
@@ -4191,14 +4191,14 @@ public:
 
          // Check for previous existence first
          HRESULT result = DefaultMemoryIO.MapExisting();
-         bool bResult = TRUE;
+         bool bResult = true;
 
          if (result < 0) {
             LOGGING("Failed to find existing share name %s\n", DefaultMemoryIO.SharedMemoryName);
 
             if (Mode == COMPRESSION_MODE_INFO) {
                // When the user just want the file information, we do not need to copy the file into shared memory yet
-               bResult = FALSE;
+               bResult = false;
             }
             else {
                bResult = CopyIntoSharedMemory(pReadCallbacks, FileName, pFolderName, core);
@@ -4617,24 +4617,24 @@ SDS_WHICH_DTYPE WhichDType(int32_t dtype)
 
    if (dtype <= SDS_LONGDOUBLE) {
       if (dtype >= SDS_FLOAT) {
-         retVal.w.isFloat = TRUE;
+         retVal.w.isFloat = true;
       }
       else {
          // Odd dtypes below floats are ints
          if (dtype & 1 || dtype == 0) {
-            retVal.w.isInt = TRUE;
+            retVal.w.isInt = true;
          }
          else {
-            retVal.w.isUInt = TRUE;
+            retVal.w.isUInt = true;
          }
       }
    }
    else {
       if (dtype == SDS_STRING || dtype == SDS_UNICODE) {
-         retVal.w.isString = TRUE;
+         retVal.w.isString = true;
       }
       else {
-         retVal.w.isUnknown = TRUE;
+         retVal.w.isUnknown = true;
       }
    }
    return retVal;
@@ -5228,9 +5228,9 @@ SDS_COMPATIBLE IsArrayCompatible(
    int32_t odtype = FixupDType(pArrayBlock->DType, pArrayBlock->ItemSize);
 
    SDS_COMPATIBLE  c;
-   c.IsCompatible = TRUE;
-   c.NeedsConversion = FALSE;
-   c.NeedsRotation = FALSE;
+   c.IsCompatible = true;
+   c.NeedsConversion = false;
+   c.NeedsRotation = false;
    c.NeedsStringFixup = 0;
 
    if (mdtype != odtype) {
@@ -5242,7 +5242,7 @@ SDS_COMPATIBLE IsArrayCompatible(
       // If they are in the same class.. we can convert
       if (wmdtype.whole == wodtype.whole) {
          // String to UNICODE happens here
-         c.NeedsConversion = TRUE;
+         c.NeedsConversion = true;
          LOGGING("step1 conversion %s  %d  %d  masteritemsize:%d vs  %d  length: %lld %lld\n", colName, odtype, mdtype, pMasterArrayBlock->ItemSize, pArrayBlock->ItemSize, pMasterArrayBlock->Dimensions[0], pArrayBlock->Dimensions[0]);
          // pick the higher type
          if (odtype > mdtype) {
@@ -5270,13 +5270,13 @@ SDS_COMPATIBLE IsArrayCompatible(
 
          // Float to int32_t or uint?
          if (cwhole.w.isFloat && (cwhole.w.isInt || cwhole.w.isUInt)) {
-            c.NeedsConversion = TRUE;
+            c.NeedsConversion = true;
             LOGGING("Conversion: possible upgrade to float32/64 from int/uint32_t for col %s  %d to %d\n", colName, mdtype, odtype);
 
             if (doFixup) {
                // does the master have the float?
                if (mdtype > odtype) {
-                  if (odtype >= SDS_int32_t && mdtype < SDS_DOUBLE) {
+                  if (odtype >= SDS_INT && mdtype < SDS_DOUBLE) {
                      // MUST BE ATLEAST FLOAT64!! (auto upgrade)
                      // upgrade the dtype
                      UpgradeType(pMasterArrayBlock, SDS_DOUBLE, 0);
@@ -5288,7 +5288,7 @@ SDS_COMPATIBLE IsArrayCompatible(
                }
                else {
 
-                  if (mdtype >= SDS_int32_t && odtype < SDS_DOUBLE) {
+                  if (mdtype >= SDS_INT && odtype < SDS_DOUBLE) {
                      // MUST BE ATLEAST FLOAT64!! (auto upgrade)
                      // upgrade the dtype
                      UpgradeType(pMasterArrayBlock, SDS_DOUBLE, 0);
@@ -5304,8 +5304,8 @@ SDS_COMPATIBLE IsArrayCompatible(
          }
          else
             if (cwhole.w.isUInt && cwhole.w.isInt) {
-               bool handleInt64ToUInt64 = TRUE;
-               c.NeedsConversion = TRUE;
+               bool handleInt64ToUInt64 = true;
+               c.NeedsConversion = true;
                LOGGING("Conversion: int32_t /  uint32_t for col %s  %d to %d  fixup: %d\n", colName, mdtype, odtype, doFixup);
 
                if (doFixup) {
@@ -5322,7 +5322,7 @@ SDS_COMPATIBLE IsArrayCompatible(
                      if (handleInt64ToUInt64) {
                         printf("Warning: ignoring sign loss going to from int/uint64 for col: %s\n", colName);
                         // flip it back off
-                        c.NeedsConversion = FALSE;
+                        c.NeedsConversion = false;
                      }
                      else {
                         // This is the old code
@@ -5350,7 +5350,7 @@ SDS_COMPATIBLE IsArrayCompatible(
             else {
                // NOTE possible string to unicode conversion here.. unicode
                LOGGING("!!!Incompat due to dtypes %d %d\n", mdtype, odtype);
-               c.IsCompatible = FALSE;
+               c.IsCompatible = false;
             }
       }
 
@@ -5376,18 +5376,18 @@ SDS_COMPATIBLE IsArrayCompatible(
          // dtypes MATCH, and are NOT STRINGS, but itemsize does not match (is this a void)?
          if (pMasterArrayBlock->ItemSize != pArrayBlock->ItemSize) {
             LOGGING("!!!Incompat due to itemsize\n");
-            c.IsCompatible = FALSE;
+            c.IsCompatible = false;
          }
    }
    if (pMasterArrayBlock->NDim != pArrayBlock->NDim) {
       LOGGING("!!!Incompat due to ndim %d not macthing\n", pMasterArrayBlock->NDim);
-      c.IsCompatible = FALSE;
+      c.IsCompatible = false;
    }
    if (pMasterArrayBlock->NDim > 1) {
       for (int32_t i = 1; i < pMasterArrayBlock->NDim; i++) {
          if (pMasterArrayBlock->Dimensions[i] != pArrayBlock->Dimensions[i]) {
             LOGGING("!!!Incompat due to dim %d not macthing\n", i);
-            c.IsCompatible = FALSE;
+            c.IsCompatible = false;
          }
       }
       int32_t mflag = (pMasterArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
@@ -5395,7 +5395,7 @@ SDS_COMPATIBLE IsArrayCompatible(
 
       if (mflag != oflag) {
          // possibly incompatible
-         c.NeedsRotation = TRUE;
+         c.NeedsRotation = true;
       }
    }
    return c;
@@ -5453,7 +5453,7 @@ bool FinishRotationalFixup(
    void*          tempBuffer) {
 
    if (!tempBuffer || !origBuffer) {
-      return FALSE;
+      return false;
    }
 
    SDS_ARRAY_BLOCK*        pMasterBlock = pIOPacket->pMasterBlock;
@@ -5503,7 +5503,7 @@ bool FinishRotationalFixup(
          }
       }
    WORKSPACE_FREE(tempBuffer);
-   return TRUE;
+   return true;
 
 }
 
@@ -5559,7 +5559,7 @@ bool DecompressMultiArray(
    if (pBlockInfo == NULL || !pIOPacket->Compatible.IsCompatible) {
 
       GapFillAny(pDestInfo, destBuffer, pIOPacket);
-      return TRUE;
+      return true;
    }
 
    // Make sure we have a valid buffer
@@ -5609,7 +5609,7 @@ bool DecompressMultiArray(
          int64_t slaveItemSize = GetBytesPerRow(pBlockInfo);
 
          //  If no bytes to read..
-         if (slaveItemSize == 0) return TRUE;
+         if (slaveItemSize == 0) return true;
 
          if ((pMasterBlock && pMasterBlock->Flags & SDS_ARRAY_FILTERED) || (pBlockInfo->Flags & SDS_ARRAY_FILTERED)) {
             //printf("filtering on for %lld\n", t);
@@ -5687,7 +5687,7 @@ bool DecompressMultiArray(
    else {
       LOG_THREAD("!!bad destBuffer\n");
    }
-   return TRUE;
+   return true;
 }
 
 
@@ -5908,7 +5908,7 @@ public:
 
          // For strings, if the width increased, we update the king block
          SDS_COMPATIBLE compat =
-            IsArrayCompatible(columnName, &ColumnVector[colPos].KingBlock, pArrayBlock, TRUE);
+            IsArrayCompatible(columnName, &ColumnVector[colPos].KingBlock, pArrayBlock, true);
 
          if (compat.NeedsRotation) {
             // cannot handle
@@ -5938,7 +5938,7 @@ public:
       }
 
       // track last valid row?
-      LastRow = (INT)fileRow;
+      LastRow = (int32_t)fileRow;
    }
 
 
@@ -5977,7 +5977,7 @@ public:
       if (pSDSDecompressFile->IsFileValid && pSDSDecompressFile->Mode == SDS_MULTI_MODE_CONCAT_MANY) {
          pSDSDecompressFile->FileSize = DefaultFileIO.FileSize(pSDSDecompressFile->FileName);
       }
-      return TRUE;
+      return true;
    }
 
    //===========================================
@@ -6032,7 +6032,7 @@ public:
                pArrayInfo,
                pReadCallbacks,
                tupleSize,
-               FALSE);
+               false);
 
             pReadFinalCallback[f].pArrayInfo = pArrayInfo;
             currentPos += tupleSize;
@@ -6089,12 +6089,12 @@ public:
 
       int64_t origArrayBlockOffset = pFileHeader->ArrayBlockOffset;
       SDS_FILE_HANDLE inFile = pSDSDecompress->SDSFile;
-      bool hasSections = FALSE;
+      bool hasSections = false;
       int64_t localOffset = 0;
 
       if (pFileHeader->SectionBlockOffset) {
          LOGGING("!!warning file %s has section within section when concat\n", pSDSDecompress->FileName);
-         hasSections = TRUE;
+         hasSections = true;
       }
 
       // end of file might be larger due to padding... when it is, cap to filesize
@@ -6628,10 +6628,10 @@ public:
       // Now build a hash of all the valid filenames
       // Also.. how homogenous are the files... all datasets?  all structs?
       for (int32_t t = 0; t < FileCount; t++) {
-         bool isStruct = FALSE;
-         bool isDataset = FALSE;
-         bool isArray = FALSE;
-         bool isOneFile = FALSE;
+         bool isStruct = false;
+         bool isDataset = false;
+         bool isArray = false;
+         bool isOneFile = false;
 
          SDSDecompressFile* pSDSDecompress = pSDSDecompressFile[t];
          if (pSDSDecompress->IsFileValid) {
@@ -6736,7 +6736,7 @@ public:
       //   SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- all the filetypes must be the same type (struct or dataset or array)\nFilename: %s\n", pFirstFileName);
       //   goto EXIT_EARLY;
       //}
-      bool isGood = FALSE;
+      bool isGood = false;
 
       if (validCount == 0) {
          SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- none of the files were valid: %s\n", pFirstFileName);
@@ -6751,7 +6751,7 @@ public:
          SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- detected a dimension fixup problem %s\n", pFirstFileName);
       }
       else {
-         isGood = TRUE;
+         isGood = true;
       }
 
       if (isGood) {
@@ -6830,7 +6830,7 @@ public:
             //LOGGING("master %p ", pMasterBlock);
 
             int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
-            bool  isFilterable = FALSE;           
+            bool  isFilterable = false;           
 
             if (pFilterInfo && 
                (pKing->ArrayEnum & mask) == mask &&
@@ -6838,7 +6838,7 @@ public:
                fileTypeStackable) {
 
                // only the first column that is stackable is used to calculate
-               isFilterable = TRUE;
+               isFilterable = true;
             }
 
             // PASS #1...
@@ -6858,12 +6858,12 @@ public:
 
                   //LOGGING("{%d} {%p} ", f, pArrayBlock);
                   // TODO -- CHECK MASTER BLOCK??
-                  SDS_COMPATIBLE isCompatible = { TRUE, FALSE, FALSE, FALSE };
+                  SDS_COMPATIBLE isCompatible = { true, false, false, false };
 
                   // The array might be missing in another file
                   // This happens when users add new rows
                   if (pArrayBlock) {
-                     isCompatible = IsArrayCompatible(pKing->ColName, pMasterBlock, pArrayBlock, FALSE);
+                     isCompatible = IsArrayCompatible(pKing->ColName, pMasterBlock, pArrayBlock, false);
                   }
 
                   int64_t calcLength = 0;
@@ -6903,7 +6903,7 @@ public:
 
                      // Keep track of how many completely filtered out
                      if (filterTrueCount == 0) {
-                        pSDSDecompress->IsFileValidAndNotFilteredOut = FALSE;
+                        pSDSDecompress->IsFileValidAndNotFilteredOut = false;
                         filteredOut++;
                      }                     
 
@@ -6989,7 +6989,7 @@ public:
                oneRowSize *= dimensions[j];
             }
 
-            bool wasFiltered = FALSE;
+            bool wasFiltered = false;
 
             // Caller will fill info pArrayObject and pData
             // pData is valid for shared memory
@@ -7057,7 +7057,7 @@ public:
                   pIOPacket->CompMode = COMPRESSION_MODE_DECOMPRESS;
 
                   // TODO -- CHECK MASTER BLOCK??
-                  pIOPacket->Compatible = { TRUE, FALSE, FALSE, FALSE };
+                  pIOPacket->Compatible = { true, false, false, false };
                   pIOPacket->ArrayOffset = pArrayOffsets[row];
                   pIOPacket->OriginalArrayOffset = pOriginalArrayOffsets[row];
 
@@ -7072,7 +7072,7 @@ public:
                   // The array might be missing in another file
                   // This happens when they add new rows
                   if (pArrayBlock) {
-                     pIOPacket->Compatible = IsArrayCompatible(pKing->ColName, pMasterBlock, pArrayBlock, FALSE);
+                     pIOPacket->Compatible = IsArrayCompatible(pKing->ColName, pMasterBlock, pArrayBlock, false);
                   }
 
                   //printf("array offset %lld\n", pArrayOffsets[row]);
@@ -7401,15 +7401,15 @@ extern "C" {
       PMAPPED_VIEW_STRUCT pMappedStruct = (PMAPPED_VIEW_STRUCT)pMapStruct;
       if (pMappedStruct) {
          UtilSharedMemoryEnd(pMappedStruct);
-         return TRUE;
+         return true;
       }
-      return FALSE;
+      return false;
    }
 
    DllExport int32_t CloseDecompressFile(void* pInput) {      
       SDSDecompressFile* pSDSDecompressFile = (SDSDecompressFile * )pInput;
       delete pSDSDecompressFile;
-      return TRUE;
+      return true;
    }
 
    //DllExport void SDSClearBuffers() {

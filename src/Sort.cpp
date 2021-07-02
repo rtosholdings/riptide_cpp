@@ -1792,7 +1792,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       //}
 
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || STRING_LT(pValue + (*pm)*strlen, pValue + (*pm-1)*strlen, strlen)) {
+      if (true || STRING_LT(pValue + (*pm)*strlen, pValue + (*pm-1)*strlen, strlen)) {
 
          //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
          //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
@@ -1844,7 +1844,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       UINDEX *pi, *pj, *pk, *pm;
       pm = pl + ((pr - pl) >> 1);
 
-      if (TRUE || UNICODE_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
+      if (true || UNICODE_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
 
          //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
          //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
@@ -1896,7 +1896,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       pm = pl + ((pr - pl) >> 1);
 
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || VOID_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
+      if (true || VOID_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
 
          memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -1971,7 +1971,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
       // quickcheck to see if we have to copy
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)])) {
+      if (true || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)])) {
 
          //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
          //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
@@ -2035,7 +2035,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //  Concurrent callback from multiple threads
    static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       MERGE_STEP_ONE_CALLBACK* Callback = (MERGE_STEP_ONE_CALLBACK*)pstWorkerItem->WorkCallbackArg;
-      bool didSomeWork = FALSE;
+      bool didSomeWork = false;
 
       int64_t index;
       int64_t workBlock;
@@ -2172,7 +2172,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          }
 
          // Indicate we completed a block
-         didSomeWork = TRUE;
+         didSomeWork = true;
 
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
@@ -2326,7 +2326,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
                callbackArg->strlen,
                callbackArg->sortType);
 
-            return TRUE;
+            return true;
          };
 
          g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPSCallback, &psort);
@@ -2443,7 +2443,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
             }
 
             // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, FALSE);
+            g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, false);
 
          }
 
@@ -3099,14 +3099,14 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
          }
          int result = cb->pSortedFunc(cb->pDataIn1 + (start * cb->ItemSize), length, cb->ItemSize);
 
-         // on success, return TRUE 
-         if (result) return TRUE;
+         // on success, return true 
+         if (result) return true;
 
-         // on failure, set the failure flag and return FALSE
+         // on failure, set the failure flag and return false
          cb->IsSorted = 0;
       }
 
-      return FALSE;
+      return false;
    };
 
    // A zero length array is considered sorted
@@ -3168,7 +3168,7 @@ static bool ARangeCallback(void* callbackArgT, int core, int64_t start, int64_t 
       pDataOut[i] = i;
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -3311,7 +3311,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
 
          if (pCutOffs) {
             // Turn off caching of large memory allocs
-            g_cMathWorker->NoCaching = TRUE;
+            g_cMathWorker->NoCaching = true;
          }
 
          // When multiple arrays are passed, we sort in order of how it is passed
@@ -3323,7 +3323,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
          }
 
          if (pCutOffs) {
-            g_cMathWorker->NoCaching = FALSE;
+            g_cMathWorker->NoCaching = false;
          }
          return (PyObject*)result;
       }
@@ -3706,7 +3706,7 @@ static PyObject* GroupFromLexSortInternal(
       int64_t*         pUniqueCounts = (int64_t*)PyArray_BYTES(uniqueCounts);
 
       // Turn off caching of large memory allocs
-      g_cMathWorker->NoCaching = TRUE;
+      g_cMathWorker->NoCaching = true;
 
       PLOGGING("partition version col: %lld  %p  %p  %p\n", cutOffLength, pToSort, pToSort + arrayLength, pValues);
 
@@ -3780,11 +3780,11 @@ static PyObject* GroupFromLexSortInternal(
             0,       //callbackArg->base_index, fix for countout
             callbackArg->strlen);
 
-         return TRUE;
+         return true;
       };
 
       g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPSCallback, &pgroup);
-      g_cMathWorker->NoCaching = FALSE;
+      g_cMathWorker->NoCaching = false;
 
       // TODO: make global routine
       int64_t totalUniques = 0;
@@ -3971,7 +3971,7 @@ static PyObject* GroupFromLexSortInternal(
 
          }
 
-         return TRUE;
+         return true;
       };
       g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPGADDCallback, &pgroupadd);
 

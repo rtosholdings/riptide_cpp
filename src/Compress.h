@@ -36,22 +36,22 @@ PyObject *CompressDecompressArrays(PyObject* self, PyObject *args);
 #define HEADER_TAG_ARRAY 1
 
 struct NUMPY_HEADERSIZE {
-   UINT8    magic;
-   INT8     compressiontype;
-   INT8     dtype;
-   INT8     ndim;
+   uint8_t    magic;
+   int8_t     compressiontype;
+   int8_t     dtype;
+   int8_t     ndim;
 
-   INT32    itemsize;
-   INT32    flags;
+   int32_t    itemsize;
+   int32_t    flags;
 
    // no more than 3 dims
-   INT64    dimensions[3];
+   int64_t    dimensions[3];
    size_t   compressedSize;
 
    void*    pCompressedArray;
 
-   INT64    get_arraylength() {
-      INT64 arraylength = dimensions[0];
+   int64_t    get_arraylength() {
+      int64_t arraylength = dimensions[0];
 
       for (int i = 1; i < ndim; i++) {
          arraylength *= dimensions[0];
@@ -68,11 +68,11 @@ struct NUMPY_HEADERSIZE {
 struct COMPRESS_NUMPY_TO_NUMPY {
    struct ArrayInfo*   aInfo;
 
-   INT64               totalHeaders;
+   int64_t               totalHeaders;
 
-   INT16               compMode;
-   INT16               compType;
-   INT32               compLevel;
+   int16_t               compMode;
+   int16_t               compType;
+   int32_t               compLevel;
 
    // Per core allocations
    void*                pCoreMemory[64];
