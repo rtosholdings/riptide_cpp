@@ -5,7 +5,7 @@
 #include <nmmintrin.h>
 
 PyObject * BitCount(PyObject *self, PyObject *args) {
-   static constexpr INT8 nibble_bitcount[] = {0,  // 0b0000
+   static constexpr int8_t nibble_bitcount[] = {0,  // 0b0000
                                               1,  // 0b0001
                                               1,  // 0b0010
                                               2,  // 0b0011
@@ -29,11 +29,11 @@ PyObject * BitCount(PyObject *self, PyObject *args) {
    npy_intp* dims = PyArray_DIMS(inArr);
    PyArrayObject* returnObject = AllocateNumpyArray(ndim, dims, NPY_INT8);
    if (returnObject == NULL) return NULL;
-   INT8* pDataOut = (INT8*)PyArray_BYTES(returnObject);
+   int8_t* pDataOut = (int8_t*)PyArray_BYTES(returnObject);
 
    const npy_intp length = CalcArrayLength(ndim, dims);
    if (PyArray_TYPE(inArr) == NPY_BOOL) {
-      auto pDataIn = (UINT8*)PyArray_BYTES(inArr);
+      auto pDataIn = (uint8_t*)PyArray_BYTES(inArr);
       for (npy_intp i(0); i < length; ++i, ++pDataIn, ++pDataOut)
          *pDataOut = *pDataIn == 0 ? 0 : 1;
    } else {
@@ -41,7 +41,7 @@ PyObject * BitCount(PyObject *self, PyObject *args) {
       switch (itemsize) {
          case 1:
             {
-               auto pDataIn = (UINT8*)PyArray_BYTES(inArr);
+               auto pDataIn = (uint8_t*)PyArray_BYTES(inArr);
                for (npy_intp i(0); i < length; ++i, ++pDataIn, ++pDataOut) {
                   const auto n(*pDataIn);
                   *pDataOut = nibble_bitcount[n >> 4] + nibble_bitcount[n & 0xf];
@@ -51,7 +51,7 @@ PyObject * BitCount(PyObject *self, PyObject *args) {
          case 2:
             // N.B. __builtin_popcount from GCC works for only unsigned int, can't use for short.
             {
-               auto pDataIn = (UINT16*)PyArray_BYTES(inArr);
+               auto pDataIn = (uint16_t*)PyArray_BYTES(inArr);
                for (npy_intp i(0); i < length; ++i, ++pDataIn, ++pDataOut) {
                   const auto n(*pDataIn);
                   *pDataOut = nibble_bitcount[n >> 12] + nibble_bitcount[(n >> 8) & 0xf] +
@@ -61,16 +61,16 @@ PyObject * BitCount(PyObject *self, PyObject *args) {
             }
          case 4:
             {
-               auto pDataIn = (UINT32*)PyArray_BYTES(inArr);
+               auto pDataIn = (uint32_t*)PyArray_BYTES(inArr);
                for (npy_intp i(0); i < length; ++i, ++pDataIn, ++pDataOut)
                   *pDataOut = _mm_popcnt_u32(*pDataIn);
                break;
             }
          case 8:
             {
-               auto pDataIn = (UINT64*)PyArray_BYTES(inArr);
+               auto pDataIn = (uint64_t*)PyArray_BYTES(inArr);
                for (npy_intp i(0); i < length; ++i, ++pDataIn, ++pDataOut)
-                  *pDataOut = (INT8)_mm_popcnt_u64(*pDataIn);
+                  *pDataOut = (int8_t)_mm_popcnt_u64(*pDataIn);
                break;
             }
          default:

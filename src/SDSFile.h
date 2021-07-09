@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <vector>
 
 
@@ -253,29 +252,29 @@ enum SDS_TYPES {
 struct SDS_ARRAY_BLOCK {
 
    //----- offset 0 -----
-   INT16       HeaderTag;
-   INT16       HeaderLength;
+   int16_t       HeaderTag;
+   int16_t       HeaderLength;
 
-   UINT8       Magic;  // See compression magic
-   INT8        CompressionType;
-   INT8        DType;
-   INT8        NDim;
+   uint8_t       Magic;  // See compression magic
+   int8_t        CompressionType;
+   int8_t        DType;
+   int8_t        NDim;
 
-   //----- offset 8 -----
-   INT32       ItemSize;
-   INT32       Flags;
+   //----- offset 8 ----- // BUGBUG All these offsets are wrong, this struct has default member alignments.
+   int32_t       ItemSize;
+   int32_t       Flags;
 
    //----- offset 16 -----
    // no more than 5 dims
-   INT64       Dimensions[SDS_MAX_DIMS];
-   INT64       Strides[SDS_MAX_DIMS];
+   int64_t       Dimensions[SDS_MAX_DIMS];
+   int64_t       Strides[SDS_MAX_DIMS];
 
-   INT64       ArrayDataOffset;     // Start of data in file                          
+   int64_t       ArrayDataOffset;     // Start of data in file                          
                                     // If banding, then (UncompressedSize + (BandSize-1)) / BandSize => # of bands
-   INT64       ArrayCompressedSize;
-   INT64       ArrayUncompressedSize;
-   INT32       ArrayBandCount;      // 0=no banding
-   INT32       ArrayBandSize;       // 0=no banding
+   int64_t       ArrayCompressedSize;
+   int64_t       ArrayUncompressedSize;
+   int32_t       ArrayBandCount;      // 0=no banding
+   int32_t       ArrayBandSize;       // 0=no banding
 
 };
 
@@ -283,75 +282,75 @@ struct SDS_ARRAY_BLOCK {
 // At offset 0 of the file is this header
 struct SDS_FILE_HEADER {
 
-   UINT32      SDSHeaderMagic;
-   INT16       VersionHigh;
-   INT16       VersionLow;
+   uint32_t      SDSHeaderMagic;
+   int16_t       VersionHigh;
+   int16_t       VersionLow;
 
-   INT16       CompMode;
-   INT16       CompType;
-   INT32       CompLevel;
+   int16_t       CompMode;
+   int16_t       CompType;
+   int16_t       CompLevel;
 
    //----- offset 16 -----
-   INT64       NameBlockSize;
-   INT64       NameBlockOffset;
-   INT64       NameBlockCount;
+   int64_t       NameBlockSize;
+   int64_t       NameBlockOffset;
+   int64_t       NameBlockCount;
 
-   INT16       FileType;  // see SDS_FILE_TYPE
-   INT16       StackType;  // see SDS_STACK_TYPE
-   INT32       AuthorId;  // see SDS_AUTHOR_ID
+   int16_t       FileType;  // see SDS_FILE_TYPE
+   int16_t       StackType;  // see SDS_STACK_TYPE
+   int32_t       AuthorId;  // see SDS_AUTHOR_ID
 
    //----- offset 48 -----
-   INT64       MetaBlockSize;
-   INT64       MetaBlockOffset;
+   int64_t       MetaBlockSize;
+   int64_t       MetaBlockOffset;
 
    //----- offset 64 -----
-   INT64       TotalMetaCompressedSize;
-   INT64       TotalMetaUncompressedSize;
+   int64_t       TotalMetaCompressedSize;
+   int64_t       TotalMetaUncompressedSize;
 
    //----- offset 80 -----
-   INT64       ArrayBlockSize;
-   INT64       ArrayBlockOffset;
+   int64_t       ArrayBlockSize;
+   int64_t       ArrayBlockOffset;
 
    //----- offset 96 -----
-   INT64       ArraysWritten;
-   INT64       ArrayFirstOffset;
+   int64_t       ArraysWritten;
+   int64_t       ArrayFirstOffset;
 
    //----- offset 112 -----
-   INT64       TotalArrayCompressedSize;        // Includes the SDS_PADDING, next relative offset to write to
-   INT64       TotalArrayUncompressedSize;
+   int64_t       TotalArrayCompressedSize;        // Includes the SDS_PADDING, next relative offset to write to
+   int64_t       TotalArrayUncompressedSize;
 
    //----- offset 128 -----
    //------------- End of Version 4.1 ---------
    //------------- Version 4.3 starts here ----
-   INT64       BandBlockSize;       // 00 if nothing
-   INT64       BandBlockOffset;     // 00
-   INT64       BandBlockCount;      // Number of names
-   INT64       BandSize;            // How many elements before creating another band
+   int64_t       BandBlockSize;       // 00 if nothing
+   int64_t       BandBlockOffset;     // 00
+   int64_t       BandBlockCount;      // Number of names
+   int64_t       BandSize;            // How many elements before creating another band
 
    //----- offset 160 -----
    //------------- End of Version 4.3 ---------
    //------------- Version 4.4 starts here ----
-   INT64       SectionBlockSize;    // how many bytes valid data
-   INT64       SectionBlockOffset;  // points to section directory if it exists (often NULL if file was never appended)
+   int64_t       SectionBlockSize;    // how many bytes valid data
+   int64_t       SectionBlockOffset;  // points to section directory if it exists (often NULL if file was never appended)
                                     // if exists was often the LastFileOffset when an append operation was done
                                     // Then can read that offset to get a list of
                                     // NAMES\0\NAME2\0
-   INT64       SectionBlockCount;   // number of names (number of sections total) (often 0 if never appended)
-   INT64       SectionBlockReservedSize;   // total size of what we reserved for this block (so we can append names)
+   int64_t       SectionBlockCount;   // number of names (number of sections total) (often 0 if never appended)
+   int64_t       SectionBlockReservedSize;   // total size of what we reserved for this block (so we can append names)
 
    //----- offset 192 -----
-   INT64       FileOffset;          // this file offset within the file
-   UINT64      TimeStampUTCNanos;   // time stamp when file was last written (0s indicate no time stamp)
+   int64_t       FileOffset;          // this file offset within the file
+   uint64_t      TimeStampUTCNanos;   // time stamp when file was last written (0s indicate no time stamp)
 
    //----- offset 208 -----
-   char        Reserved[512 - 208];
+   char        Reserved[512 - 208]; //BUGBUG This should be done using align statements, not magic number math with incorrect arguments.
 
    //-----------------------------
    // function to multithreaded safe calculate the next array offset to write to
    // returns the relative file offset (has added pFileHeader->ArrayFirstOffset)
-   INT64       AddArrayCompressedSize(INT64 cSize) {
-      INT64 padSize = SDS_PAD_NUMBER(cSize);
-      INT64 fileOffset = InterlockedAdd64(&TotalArrayCompressedSize, padSize) - padSize;
+   int64_t       AddArrayCompressedSize(int64_t cSize) {
+      int64_t padSize = SDS_PAD_NUMBER(cSize);
+      int64_t fileOffset = InterlockedAdd64(&TotalArrayCompressedSize, padSize) - padSize;
 
       // Calculate file offset location where arrays are stored
       fileOffset += ArrayFirstOffset;
@@ -360,7 +359,7 @@ struct SDS_FILE_HEADER {
    }
 
    // only valid after file header has been filled in
-   INT64    GetEndOfFileOffset() {
+   int64_t    GetEndOfFileOffset() {
       return TotalArrayCompressedSize + ArrayFirstOffset;
    }
 };
@@ -371,13 +370,13 @@ public:
    // Section data created when user appends to a file with section name
    char*          pSectionData = NULL;
    const char**   pSectionNames = NULL;
-   INT64*         pSectionOffsets = NULL;
-   INT64          SectionCount = 0;
-   INT64          SectionOffset = 0;
+   int64_t*         pSectionOffsets = NULL;
+   int64_t          SectionCount = 0;
+   int64_t          SectionOffset = 0;
 
    // For creating one when it was missing (first time appended)
    const char* g_firstsectioname = "0";
-   INT64       g_firstsectionoffset = 0;
+   int64_t       g_firstsectionoffset = 0;
    char        g_firstsectiondata[10] = { '0',0,0,0,0,0,0,0,0,0 };
 
    //-----------------------------------------------------------
@@ -385,29 +384,30 @@ public:
    // Returns sizeof new section
    // Returns pointer in *pListNames
    // NOTE: caller must WORKSPACE_FREE *pListNames
-   INT64
+   int64_t
       BuildSectionNamesAndOffsets(
          char** pListNames,                // Returned
          const char*  pNewSectionName,
-         INT64  newSectionOffset           // 0 Allowed
+         int64_t  newSectionOffset           // 0 Allowed
       );
-   void AllocateSectionData(INT64 sectionBlockCount, INT64 sectionSize);
+   void AllocateSectionData(int64_t sectionBlockCount, int64_t sectionSize);
 
    void DeleteSectionData();
-   void MakeListSections(const INT64 sectionBlockCount, const INT64 sectionByteSize);
+   void MakeListSections(const int64_t sectionBlockCount, const int64_t sectionByteSize);
    char* MakeFirstSectionName();
    char* ReadListSections(SDS_FILE_HANDLE SDSFile, SDS_FILE_HEADER *pFileHeader);
    ~SDSSectionName();
 };
 
 //------------ PAD TO 512 ----------------------
-// 4 of these (4*128) can fit in 512
+// 4 of these (4*128) can fit in 512 
 // TJD: NOT USED YET
+// BUGBUG: EST: Needs alignment / corrected padding work
 struct SDS_FOLDER_HEADER {
-   INT64       FolderHeaderOffset;     // points to SDS_FILE_HEADER
-   INT64       FolderCreateTimeUTC;
-   INT8        FolderType;             // 0 for now SDS_FILE_TYPE_UNKNOWN, etc.
-   INT8        FolderNameLength;       // up to 110 chars
+   int64_t       FolderHeaderOffset;     // points to SDS_FILE_HEADER
+   int64_t       FolderCreateTimeUTC;
+   int8_t        FolderType;             // 0 for now SDS_FILE_TYPE_UNKNOWN, etc.
+   int8_t        FolderNameLength;       // up to 110 chars
    char        FolderName[128 - 16 -2];
 };
 
@@ -422,45 +422,45 @@ struct SDSArrayInfo {
    char*       pData;
 
    // total number of items
-   INT64       ArrayLength;
+   int64_t    ArrayLength;
 
    // total number of items * itemsize
-   INT64       NumBytes;
+   int64_t       NumBytes;
 
    // see SDS_TYPES which follow numpy dtypes
-   INT32       NumpyDType;
+   int32_t       NumpyDType;
 
    // Number of dimensions (not to exceed 3 currently)
-   INT32       NDim;
+   int32_t       NDim;
 
    // Width in bytes of one row
-   INT32       ItemSize;
+   int32_t       ItemSize;
 
    // See SDS_FLAGS which are same as numpy flags
-   INT32       Flags;
+   int32_t       Flags;
 
    // no more than SDS_MAX_DIMS dims
-   INT64       Dimensions[SDS_MAX_DIMS];
-   INT64       Strides[SDS_MAX_DIMS];
+   int64_t       Dimensions[SDS_MAX_DIMS];
+   int64_t       Strides[SDS_MAX_DIMS];
 
 };
 
 //---------------------------------------------------------------------
 // NOTE: filter or mask must be passed
 struct SDSFilterInfo {
-   INT64    TrueCount;  // If zero, dont bother reading in data
-   INT64    RowOffset;  // sum of all previous True Count
+   int64_t    TrueCount;  // If zero, dont bother reading in data
+   int64_t    RowOffset;  // sum of all previous True Count
 };
 
 struct SDS_FILTER {
-   //INT32*                           pFancyMask;
-   //INT64                            FancyLength;         // length of the index array as well as final array
+   //int32_t*                           pFancyMask;
+   //int64_t                            FancyLength;         // length of the index array as well as final array
 
    // if BoolMaskLength == BoolMaskTrueCount and BoolMaskLength < 100
    // we assume this is looking at the header (first 5, 10, 100 rows)
    bool*                            pBoolMask;
-   INT64                            BoolMaskLength;      // length of bool mask (but not final array)
-   INT64                            BoolMaskTrueCount;   // length of final array
+   int64_t                            BoolMaskLength;      // length of bool mask (but not final array)
+   int64_t                            BoolMaskTrueCount;   // length of final array
    SDSFilterInfo*                   pFilterInfo;         // allocated on the fly when stacking
 };
 
@@ -479,14 +479,14 @@ struct SDS_WRITE_COMPRESS_ARRAYS {
    // Used when going to shared memory
    class SharedMemory*  pMemoryIO;
 
-   INT64                totalHeaders;
-   INT16                compMode;
-   INT16                compType;
-   INT32                compLevel;
+   int64_t                totalHeaders;
+   int16_t                compMode;
+   int16_t                compType;
+   int32_t                compLevel;
 
    // Per core allocations
    void*                pCoreMemory[SDS_MAX_THREADS];
-   INT64                pCoreMemorySize[SDS_MAX_THREADS];
+   int64_t                pCoreMemorySize[SDS_MAX_THREADS];
    SDS_EVENT_HANDLE     eventHandles[SDS_MAX_THREADS];
 
    // See: compMode value -- COMPRESSIOM_MODE_SHAREDMEMORY
@@ -517,14 +517,14 @@ struct SDS_READ_DECOMPRESS_ARRAYS {
    // Used when going to shared memory
    class SharedMemory*  pMemoryIO;
 
-   INT64                totalHeaders;
-   INT16                compMode;
-   INT16                compType;
-   INT32                compLevel;
+   int64_t                totalHeaders;
+   int16_t                compMode;
+   int16_t                compType;
+   int32_t                compLevel;
 
    // Per core allocations
    void*                pCoreMemory[SDS_MAX_THREADS];
-   INT64                pCoreMemorySize[SDS_MAX_THREADS];
+   int64_t                pCoreMemorySize[SDS_MAX_THREADS];
    SDS_EVENT_HANDLE     eventHandles[SDS_MAX_THREADS];
 
    // See: compMode value -- COMPRESSIOM_MODE_SHAREDMEMORY
@@ -539,7 +539,7 @@ struct SDS_READ_DECOMPRESS_ARRAYS {
 struct SDS_STACK_CALLBACK_FILES {
    const char*       Filename;
    const char*       MetaData;
-   INT64             MetaDataSize;
+   int64_t             MetaDataSize;
    SDS_FILE_HEADER*  pFileHeader;
 };
 
@@ -549,9 +549,9 @@ struct SDS_STACK_CALLBACK {
 
    const char*       ArrayName;
    void *            pArrayObject;
-   INT64*            pArrayOffsets;
+   int64_t*            pArrayOffsets;
    SDS_ARRAY_BLOCK*  pArrayBlock;
-   INT32             ArrayEnum;
+   int32_t             ArrayEnum;
 };
 
 
@@ -561,17 +561,17 @@ struct SDS_STACK_CALLBACK {
 struct SDS_FINAL_CALLBACK {
    SDS_FILE_HEADER*  pFileHeader;
 
-   INT32             mode;                      // info or decompress
-   INT32             reserved1;
+   int32_t             mode;                      // info or decompress
+   int32_t             reserved1;
 
-   INT64             arraysWritten;
+   int64_t             arraysWritten;
    SDS_ARRAY_BLOCK*  pArrayBlocks;
    SDSArrayInfo*     pArrayInfo;
 
    //SDS_READ_DECOMPRESS_ARRAYS*  pstCompressArrays;
 
    char*             metaData;
-   INT64             metaSize;
+   int64_t             metaSize;
 
    char*             nameData;                  // array name data
    SDSSectionName*   pSectionName;              // if the file has section, else NULL
@@ -584,8 +584,8 @@ struct SDS_SHARED_MEMORY_CALLBACK {
    SDS_FILE_HEADER*  pFileHeader;
    char*             baseOffset;
 
-   INT32             mode;
-   INT32             reserved1;
+   int32_t             mode;
+   int32_t             reserved1;
    void*             pSDSDecompressFile;
 
    // used to close memory/file handles
@@ -600,15 +600,15 @@ struct SDS_ALLOCATE_ARRAY {
    //void*          pExclusionList;
 
    // Tells caller how to allocate
-   int            ndim;
-   INT64*         dims;
-   INT32          numpyType;
-   INT64          itemsize;
+   int32_t            ndim;
+   int64_t*         dims;
+   int32_t          numpyType;
+   int64_t          itemsize;
    char*          data;
-   INT32          numpyFlags;
-   INT64*         strides;
+   int32_t          numpyFlags;
+   int64_t*         strides;
    const char*    pArrayName;
-   INT32          sdsFlags;     //  see SDS_FLAGS_ORIGINAL_CONTAINER, etc.
+   int32_t          sdsFlags;     //  see SDS_FLAGS_ORIGINAL_CONTAINER, etc.
 };
 
 
@@ -616,20 +616,20 @@ struct SDS_ALLOCATE_ARRAY {
 // Callbacks
 
 // Called at the end of reading a file
-typedef void*(*SDS_READ_FINAL_CALLBACK)(SDS_FINAL_CALLBACK* pSDSFinalCallback, INT64 finalCount);
+typedef void*(*SDS_READ_FINAL_CALLBACK)(SDS_FINAL_CALLBACK* pSDSFinalCallback, int64_t finalCount);
 
 // Called at the end of reading a stacked file
 typedef void*(*SDS_STACK_FINAL_CALLBACK)(
    SDS_STACK_CALLBACK* pSDSFinalCallback, 
-   INT64 finalCount, 
+   int64_t finalCount, 
    SDS_STACK_CALLBACK_FILES* pSDSFileInfo, 
    SDS_FILTER*    pSDSFilter,
-   INT64 fileCount);
+   int64_t fileCount);
 
 // Only called when reading from shared memory
 typedef void*(*SDS_READ_SHARED_MEMORY_CALLBACK) (SDS_SHARED_MEMORY_CALLBACK* pSDSMemoryCallback);
 
-//examples PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT64 itemsize, char* data, INT32 numpyFlags, npy_intp* strides) {
+//examples PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, char* data, int32_t numpyFlags, npy_intp* strides) {
 // Copy all information into pDestInfo
 // Called at the beginning of reading a file
 // if pData return as NULL, data is assume to be EXCLUDED
@@ -670,7 +670,7 @@ struct SDS_READ_CALLBACKS {
 
    bool                             MustExist;
    bool                             Dummy1;
-   INT16                            Dummy2;
+   int16_t                            Dummy2;
    // new for filtering
    SDS_FILTER                       Filter;
 
@@ -680,7 +680,7 @@ struct SDS_READ_CALLBACKS {
 };
 
 struct SDS_READ_INFO {
-   INT32 mode;       // = COMPRESSION_MODE_COMPRESS_FILE,
+   int32_t mode;       // = COMPRESSION_MODE_COMPRESS_FILE,
 };
 
 
@@ -693,40 +693,40 @@ struct SDS_WRITE_CALLBACKS {
 struct SDS_WRITE_INFO {
    // arrays to save information
    SDSArrayInfo* aInfo;
-   INT64 arrayCount;
+   int64_t arrayCount;
 
    // meta information
    const char *metaData;
-   UINT32 metaDataSize;
+   uint32_t metaDataSize;
 
    // names of arrays information
    char* pListNames;
-   INT64 listNameSize;    // total byte size (store in memory)
-   INT64 listNameCount;   // number of names
+   int64_t listNameSize;    // total byte size (store in memory)
+   int64_t listNameCount;   // number of names
 
                           // compressed or uncompressed
-   INT32 mode;       // = COMPRESSION_MODE_COMPRESS_FILE,
-   INT32 compType;   // = COMPRESSION_TYPE_ZSTD,
-   INT32 level;      // = ZSTD_CLEVEL_DEFAULT;
+   int32_t mode;       // = COMPRESSION_MODE_COMPRESS_FILE,
+   int32_t compType;   // = COMPRESSION_TYPE_ZSTD,
+   int32_t level;      // = ZSTD_CLEVEL_DEFAULT;
 
-   INT32 sdsFileType; // = SDS_FILE_TYPE_STRUCT
-   INT32 sdsAuthorId; // = SDS_AUTHOR_IS
+   int32_t sdsFileType; // = SDS_FILE_TYPE_STRUCT
+   int32_t sdsAuthorId; // = SDS_AUTHOR_IS
 
-   BOOL  appendFileHeadersMode;  // True if appending to existing file
-   BOOL  appendRowsMode;         // Appending rows only
-   BOOL  appendColumnsMode;      // Appending columns only (code not written yet)
-   BOOL  appendReserved1;
+   bool  appendFileHeadersMode;  // True if appending to existing file
+   bool  appendRowsMode;         // Appending rows only
+   bool  appendColumnsMode;      // Appending columns only (code not written yet)
+   bool  appendReserved1;
 
-   INT64 bandSize;    // banding divides a column into chunks (set to 0 for no banding)
+   int64_t bandSize;    // banding divides a column into chunks (set to 0 for no banding)
 
    const char* sectionName;
-   INT64       sectionNameSize;
+   int64_t       sectionNameSize;
 };
 
 struct SDS_MULTI_READ {
    const char*          pFileName;
    SDS_STRING_LIST*     pFolderName;
-   INT64                Index;
+   int64_t                Index;
    SDS_FINAL_CALLBACK   FinalCallback;
 };
 
@@ -748,7 +748,7 @@ extern "C" {
    //-------------------------------------------------
    // Main API to write SDS file
    // File only
-   DllExport BOOL SDSWriteFile(
+   DllExport int32_t SDSWriteFile(
       const char *fileName,
       const char *shareName,  // can be NULL
       SDS_STRING_LIST *folderName,
@@ -775,23 +775,23 @@ extern "C" {
       SDS_STRING_LIST*     pInclusionList,      // may be set to NULL
       SDS_STRING_LIST*     pFolderList,      // may be set to NULL
       SDS_STRING_LIST*     pSectionsName,    // can be NULL
-      INT64                fileCount,
-      int                  multiMode,           // see SDS_MULTI
+      int64_t                fileCount,
+      int32_t                  multiMode,           // see SDS_MULTI
       SDS_READ_CALLBACKS*  pReadCallbacks);
 
 
    DllExport char* SDSGetLastError();
 
-   DllExport BOOL CloseSharedMemory(void* pMapStruct);
+   DllExport int32_t CloseSharedMemory(void* pMapStruct);
 
-   DllExport BOOL CloseDecompressFile(void* pSDSDecompressFile);
+   DllExport int32_t CloseDecompressFile(void* pSDSDecompressFile);
 
    // no longer supported
    //DllExport void SDSClearBuffers();
 
-   typedef BOOL(*SDS_WRITE_FILE)(const char*, const char*, SDS_WRITE_INFO*, SDS_WRITE_CALLBACKS*);
+   typedef bool(*SDS_WRITE_FILE)(const char*, const char*, SDS_WRITE_INFO*, SDS_WRITE_CALLBACKS*);
    typedef void*(*SDS_READ_FILE)(const char*, const char*, SDS_READ_INFO*, SDS_READ_CALLBACKS*);
-   typedef void*(*SDS_READ_MANY_FILES)(SDS_MULTI_READ*, SDS_STRING_LIST*, INT64, int, SDS_READ_CALLBACKS*);
+   typedef void*(*SDS_READ_MANY_FILES)(SDS_MULTI_READ*, SDS_STRING_LIST*, int64_t, int, SDS_READ_CALLBACKS*);
    typedef char*(*SDS_GET_LAST_ERROR)();
    typedef void(*SDS_CLEAR_BUFFERS)();
 }
@@ -825,7 +825,7 @@ void _LazyLoad(const char* dllLoadPath) {
 // For matlab which does not statically link to the DLL
 // Load DLL on demand
 // dllLoadPath may be null, it will try to load from normal paths
-BOOL _SDSWriteFile(
+int32_t _SDSWriteFile(
    const char* dllLoadPath,
    const char *fileName,
    const char *shareName,  // can be NULL
@@ -847,7 +847,7 @@ BOOL _SDSWriteFile(
          return g_fpWriteFile(fileName, shareName, pWriteInfo, pWriteCallbacks);
       }
    }
-   return FALSE;
+   return false;
 }
 
 //===================================================================
@@ -881,8 +881,8 @@ void* _SDSReadManyFiles(
    const char* dllLoadPath,
    SDS_MULTI_READ*      pMultiRead,
    SDS_STRING_LIST*     pInclusionList,      // may be set to NULL
-   INT64                fileCount,
-   int                  multiMode,           // see SDS_MULTI
+   int64_t                fileCount,
+   int32_t                  multiMode,           // see SDS_MULTI
    SDS_READ_CALLBACKS*  pReadCallbacks) {
 
    // Lazy DLL load

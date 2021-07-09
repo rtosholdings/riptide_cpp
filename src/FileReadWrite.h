@@ -3,19 +3,17 @@
 
 //#include "winbase.h"
 
-typedef BYTE BOOLEAN;
-
 class CFileReadWrite
 {
 public:
    CFileReadWrite();
    ~CFileReadWrite();
 
-   BOOLEAN Open(const char* fileName, BOOLEAN writeOption = false, BOOLEAN overlapped = false, BOOLEAN directIO = false);
+   bool Open(const char* fileName, bool writeOption = false, bool overlapped = false, bool directIO = false);
 
-   static BOOLEAN FlushCache(CHAR DriveLetter);
+   static bool FlushCache(CHAR DriveLetter);
 
-   BOOLEAN CancelIO();
+   bool CancelIO();
 
    DWORD ReadChunk(void* buffer, UINT32 count);
 
@@ -25,14 +23,14 @@ public:
       DWORD* lastError,
       OVERLAPPED* pOverlapped);
 
-   BOOLEAN WaitForLastRead(DWORD* lastError, OVERLAPPED* pos);
+   bool WaitForLastRead(DWORD* lastError, OVERLAPPED* pos);
 
-   BOOLEAN WaitIoComplete(OVERLAPPED* pos);
+   bool WaitIoComplete(OVERLAPPED* pos);
 
    DWORD WriteChunk(void* buffer, UINT32 count);
 
    // File existence check
-   static BOOLEAN FileExists(const char* filename) {
+   static bool FileExists(const char* filename) {
 
       if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(filename) && GetLastError() == ERROR_FILE_NOT_FOUND)
       {
@@ -47,7 +45,7 @@ public:
       UINT32 count,
       DWORD* lastError,
       OVERLAPPED* pOverlapped,
-      BOOLEAN bWaitOnIO = false);
+      bool bWaitOnIO = false);
 
    // Seek from current location
    INT64 SeekCurrentEx(INT64 pos);
@@ -55,15 +53,15 @@ public:
    // Seek from beginning of file
    INT64 SeekBeginEx(INT64 pos);
 
-   BOOLEAN Close();
+   bool Close();
 
    //-----------------------------------
    HANDLE Handle = INVALID_HANDLE_VALUE;
    TCHAR  FileName[_MAX_FNAME] = { 0 };
 
-   BOOLEAN WriteOption = FALSE;
-   BOOLEAN Overlapped = FALSE;
-   BOOLEAN DirectIO = FALSE;
+   bool WriteOption = false;
+   bool Overlapped = false;
+   bool DirectIO = false;
 
    INT64 BufferPos = 0;
    OVERLAPPED OverlappedIO;
@@ -82,7 +80,7 @@ public:
    CFileReadWrite();
    ~CFileReadWrite();
 
-   BOOLEAN Open(const char* fileName, BOOLEAN writeOption = false, BOOLEAN overlapped = false, BOOLEAN directIO = false);
+   bool Open(const char* fileName, bool writeOption = false, bool overlapped = false, bool directIO = false);
 
    FILE*    Handle;
 };

@@ -15,7 +15,7 @@
 //#define TSWAP(A, i, j) { T tmp = A[i]; A[i] = A[j]; A[j] = tmp; }
 //
 //template <typename T>
-//void sort(T* A, INT64 left, INT64 right) {
+//void sort(T* A, int64_t left, int64_t right) {
 //   if (right > left) {
 //      // Choose outermost elements as pivots
 //      if (A[left] > A[right]) TSWAP(A, left, right);
@@ -23,7 +23,7 @@
 //      T p = A[left], q = A[right];
 //
 //      // Partition A according to invariant below
-//      INT64 l = left + 1, g = right - 1, k = l;
+//      int64_t l = left + 1, g = right - 1, k = l;
 //      while (k <= g) {
 //         if (A[k] < p) {
 //            TSWAP(A, k, l);
@@ -57,7 +57,7 @@
 #define NPY_ENOMEM 1
 #define NPY_ECOMP 2
 
-static __inline int npy_get_msb(UINT64 unum)
+static __inline int npy_get_msb(uint64_t unum)
 {
    int depth_limit = 0;
    while (unum >>= 1) {
@@ -80,14 +80,14 @@ static __inline int npy_get_msb(UINT64 unum)
 __inline bool COMPARE_LT(float X, float Y)   { return (X < Y || (Y != Y && X == X)); }
 __inline bool COMPARE_LT(double X, double Y) { return (X < Y || (Y != Y && X == X)); }
 __inline bool COMPARE_LT(long double X, long double Y) { return (X < Y || (Y != Y && X == X)); }
-__inline bool COMPARE_LT(INT32 X, INT32 Y)   { return (X < Y); }
-__inline bool COMPARE_LT(INT64 X, INT64 Y)   { return (X < Y); }
-__inline bool COMPARE_LT(UINT32 X, UINT32 Y) { return (X < Y); }
-__inline bool COMPARE_LT(UINT64 X, UINT64 Y) { return (X < Y); }
-__inline bool COMPARE_LT(INT8 X, INT8 Y) { return (X < Y); }
-__inline bool COMPARE_LT(INT16 X, INT16 Y) { return (X < Y); }
-__inline bool COMPARE_LT(UINT8 X, UINT8 Y) { return (X < Y); }
-__inline bool COMPARE_LT(UINT16 X, UINT16 Y) { return (X < Y); }
+__inline bool COMPARE_LT(int32_t X, int32_t Y)   { return (X < Y); }
+__inline bool COMPARE_LT(int64_t X, int64_t Y)   { return (X < Y); }
+__inline bool COMPARE_LT(uint32_t X, uint32_t Y) { return (X < Y); }
+__inline bool COMPARE_LT(uint64_t X, uint64_t Y) { return (X < Y); }
+__inline bool COMPARE_LT(int8_t X, int8_t Y) { return (X < Y); }
+__inline bool COMPARE_LT(int16_t X, int16_t Y) { return (X < Y); }
+__inline bool COMPARE_LT(uint8_t X, uint8_t Y) { return (X < Y); }
+__inline bool COMPARE_LT(uint16_t X, uint16_t Y) { return (X < Y); }
 
 NPY_INLINE static int
 STRING_LT(const char *s1, const char *s2, size_t len)
@@ -138,13 +138,13 @@ VOID_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 2:
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
-         return *(UINT16*)c1 < *(UINT16*)c2;
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+         return *(uint16_t*)c1 < *(uint16_t*)c2;
       }
       return 0;
    case 3:
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
-         return *(UINT16*)c1 < *(UINT16*)c2;
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+         return *(uint16_t*)c1 < *(uint16_t*)c2;
       }
       c1 += 2;
       c2 += 2;
@@ -153,13 +153,13 @@ VOID_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 4:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
-         return *(UINT32*)c1 < *(UINT32*)c2;
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+         return *(uint32_t*)c1 < *(uint32_t*)c2;
       }
       return 0;
    case 5:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
-         return *(UINT32*)c1 < *(UINT32*)c2;
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+         return *(uint32_t*)c1 < *(uint32_t*)c2;
       }
       c1 += 4;
       c2 += 4;
@@ -168,23 +168,23 @@ VOID_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 6:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
-         return *(UINT32*)c1 < *(UINT32*)c2;
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+         return *(uint32_t*)c1 < *(uint32_t*)c2;
       }
       c1 += 4;
       c2 += 4;
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
-         return *(UINT16*)c1 < *(UINT16*)c2;
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+         return *(uint16_t*)c1 < *(uint16_t*)c2;
       }
       return 0;
    case 7:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
-         return *(UINT32*)c1 < *(UINT32*)c2;
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+         return *(uint32_t*)c1 < *(uint32_t*)c2;
       }
       c1 += 4;
       c2 += 4;
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
-         return *(UINT16*)c1 < *(UINT16*)c2;
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+         return *(uint16_t*)c1 < *(uint16_t*)c2;
       }
       c1 += 2;
       c2 += 2;
@@ -193,16 +193,16 @@ VOID_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 8:
-      if (*(UINT64*)c1 != *(UINT64*)c2) {
-         return *(UINT64*)c1 < *(UINT64*)c2;
+      if (*(uint64_t*)c1 != *(uint64_t*)c2) {
+         return *(uint64_t*)c1 < *(uint64_t*)c2;
       }
       return 0;
    default:
    {
       // compare 8 bytes at a time
       while (len > 8) {
-         if (*(UINT64*)c1 != *(UINT64*)c2) {
-            return *(UINT64*)c1 < *(UINT64*)c2;
+         if (*(uint64_t*)c1 != *(uint64_t*)c2) {
+            return *(uint64_t*)c1 < *(uint64_t*)c2;
          }
          c1 += 8;
          c2 += 8;
@@ -215,13 +215,13 @@ VOID_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 2:
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
-            return *(UINT16*)c1 < *(UINT16*)c2;
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+            return *(uint16_t*)c1 < *(uint16_t*)c2;
          }
          return 0;
       case 3:
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
-            return *(UINT16*)c1 < *(UINT16*)c2;
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+            return *(uint16_t*)c1 < *(uint16_t*)c2;
          }
          c1 += 2;
          c2 += 2;
@@ -230,13 +230,13 @@ VOID_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 4:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
-            return *(UINT32*)c1 < *(UINT32*)c2;
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+            return *(uint32_t*)c1 < *(uint32_t*)c2;
          }
          return 0;
       case 5:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
-            return *(UINT32*)c1 < *(UINT32*)c2;
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+            return *(uint32_t*)c1 < *(uint32_t*)c2;
          }
          c1 += 4;
          c2 += 4;
@@ -245,23 +245,23 @@ VOID_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 6:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
-            return *(UINT32*)c1 < *(UINT32*)c2;
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+            return *(uint32_t*)c1 < *(uint32_t*)c2;
          }
          c1 += 4;
          c2 += 4;
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
-            return *(UINT16*)c1 < *(UINT16*)c2;
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+            return *(uint16_t*)c1 < *(uint16_t*)c2;
          }
          return 0;
       case 7:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
-            return *(UINT32*)c1 < *(UINT32*)c2;
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
+            return *(uint32_t*)c1 < *(uint32_t*)c2;
          }
          c1 += 4;
          c2 += 4;
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
-            return *(UINT16*)c1 < *(UINT16*)c2;
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
+            return *(uint16_t*)c1 < *(uint16_t*)c2;
          }
          c1 += 2;
          c2 += 2;
@@ -270,8 +270,8 @@ VOID_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 8:
-         if (*(UINT64*)c1 != *(UINT64*)c2) {
-            return *(UINT64*)c1 < *(UINT64*)c2;
+         if (*(uint64_t*)c1 != *(uint64_t*)c2) {
+            return *(uint64_t*)c1 < *(uint64_t*)c2;
          }
          return 0;
       default:
@@ -297,12 +297,12 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 2:
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
          return 1;
       }
       return 0;
    case 3:
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
          return 1;
       }
       c1 += 2;
@@ -312,12 +312,12 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 4:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
          return 1;
       }
       return 0;
    case 5:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
          return 1;
       }
       c1 += 4;
@@ -327,22 +327,22 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 6:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
          return 1;
       }
       c1 += 4;
       c2 += 4;
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
          return 1;
       }
       return 0;
    case 7:
-      if (*(UINT32*)c1 != *(UINT32*)c2) {
+      if (*(uint32_t*)c1 != *(uint32_t*)c2) {
          return 1;
       }
       c1 += 4;
       c2 += 4;
-      if (*(UINT16*)c1 != *(UINT16*)c2) {
+      if (*(uint16_t*)c1 != *(uint16_t*)c2) {
          return 1;
       }
       c1 += 2;
@@ -352,14 +352,14 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
       }
       return 0;
    case 8:
-      if (*(UINT64*)c1 != *(UINT64*)c2) {
+      if (*(uint64_t*)c1 != *(uint64_t*)c2) {
          return 1;
       }
       return 0;
    default:
    {
       while (len > 8) {
-         if (*(UINT64*)c1 != *(UINT64*)c2) {
+         if (*(uint64_t*)c1 != *(uint64_t*)c2) {
             return 1;
          }
          c1 += 8;
@@ -373,12 +373,12 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 2:
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
             return 1;
          }
          return 0;
       case 3:
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
             return 1;
          }
          c1 += 2;
@@ -388,12 +388,12 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 4:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
             return 1;
          }
          return 0;
       case 5:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
             return 1;
          }
          c1 += 4;
@@ -403,22 +403,22 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 6:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
             return 1;
          }
          c1 += 4;
          c2 += 4;
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
             return 1;
          }
          return 0;
       case 7:
-         if (*(UINT32*)c1 != *(UINT32*)c2) {
+         if (*(uint32_t*)c1 != *(uint32_t*)c2) {
             return 1;
          }
          c1 += 4;
          c2 += 4;
-         if (*(UINT16*)c1 != *(UINT16*)c2) {
+         if (*(uint16_t*)c1 != *(uint16_t*)c2) {
             return 1;
          }
          c1 += 2;
@@ -428,7 +428,7 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
          }
          return 0;
       case 8:
-         if (*(UINT64*)c1 != *(UINT64*)c2) {
+         if (*(uint64_t*)c1 != *(uint64_t*)c2) {
             return 1;
          }
          return 0;
@@ -485,8 +485,8 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //}
 
 
-#define INT32_LT(_X_,_Y_) (_X_ < _Y_)
-#define INT32_SWAP(_X_,_Y_) { INT32 temp; temp=_X_; _X_=_Y_; _Y_=temp;}
+#define int32_t_LT(_X_,_Y_) (_X_ < _Y_)
+#define int32_t_SWAP(_X_,_Y_) { int32_t temp; temp=_X_; _X_=_Y_; _Y_=temp;}
 #define INTP_SWAP(_X_,_Y_) { auto temp=_X_; _X_=_Y_; _Y_=temp;}
 
 //#define T_SWAP(_X_, _Y_) { auto temp;  temp = _X_; _X_ = _Y_; _Y_ = temp; }
@@ -495,14 +495,14 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 
 ////--------------------------------------------------------------------------------------
 //static int
-//orig_quicksort_(INT32 *start, INT64 num)
+//orig_quicksort_(int32_t *start, int64_t num)
 //{
-//   INT32 vp;
-//   INT32 *pl = start;
-//   INT32 *pr = pl + num - 1;
-//   INT32 *stack[PYA_QS_STACK];
-//   INT32 **sptr = stack;
-//   INT32 *pm, *pi, *pj, *pk;
+//   int32_t vp;
+//   int32_t *pl = start;
+//   int32_t *pr = pl + num - 1;
+//   int32_t *stack[PYA_QS_STACK];
+//   int32_t **sptr = stack;
+//   int32_t *pm, *pi, *pj, *pk;
 //   int depth[PYA_QS_STACK];
 //   int * psdepth = depth;
 //   int cdepth = npy_get_msb(num) * 2;
@@ -515,23 +515,23 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //      while ((pr - pl) > SMALL_QUICKSORT) {
 //         /* quicksort partition */
 //         pm = pl + ((pr - pl) >> 1);
-//         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
-//         if (INT32_LT(*pr, *pm)) INT32_SWAP(*pr, *pm);
-//         if (INT32_LT(*pm, *pl)) INT32_SWAP(*pm, *pl);
+//         if (int32_t_LT(*pm, *pl)) int32_t_SWAP(*pm, *pl);
+//         if (int32_t_LT(*pr, *pm)) int32_t_SWAP(*pr, *pm);
+//         if (int32_t_LT(*pm, *pl)) int32_t_SWAP(*pm, *pl);
 //         vp = *pm;
 //         pi = pl;
 //         pj = pr - 1;
-//         INT32_SWAP(*pm, *pj);
+//         int32_t_SWAP(*pm, *pj);
 //         for (;;) {
-//            do ++pi; while (INT32_LT(*pi, vp));
-//            do --pj; while (INT32_LT(vp, *pj));
+//            do ++pi; while (int32_t_LT(*pi, vp));
+//            do --pj; while (int32_t_LT(vp, *pj));
 //            if (pi >= pj) {
 //               break;
 //            }
-//            INT32_SWAP(*pi, *pj);
+//            int32_t_SWAP(*pi, *pj);
 //         }
 //         pk = pr - 1;
-//         INT32_SWAP(*pi, *pk);
+//         int32_t_SWAP(*pi, *pk);
 //         /* push largest partition on stack */
 //         if (pi - pl < pr - pi) {
 //            *sptr++ = pi + 1;
@@ -551,7 +551,7 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //         vp = *pi;
 //         pj = pi;
 //         pk = pi - 1;
-//         while (pj > pl && INT32_LT(vp, *pk)) {
+//         while (pj > pl && int32_t_LT(vp, *pk)) {
 //            *pj-- = *pk--;
 //         }
 //         *pj = vp;
@@ -570,15 +570,15 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //
 //
 //static int
-//orig_aquicksort_(INT32 *vv, INT64* tosort, INT64 num)
+//orig_aquicksort_(int32_t *vv, int64_t* tosort, int64_t num)
 //{
-//   INT32 *v = vv;
-//   INT32 vp;
-//   INT64 *pl = tosort;
-//   INT64 *pr = tosort + num - 1;
-//   INT64 *stack[PYA_QS_STACK];
-//   INT64 **sptr = stack;
-//   INT64 *pm, *pi, *pj, *pk, vi;
+//   int32_t *v = vv;
+//   int32_t vp;
+//   int64_t *pl = tosort;
+//   int64_t *pr = tosort + num - 1;
+//   int64_t *stack[PYA_QS_STACK];
+//   int64_t **sptr = stack;
+//   int64_t *pm, *pi, *pj, *pk, vi;
 //   int depth[PYA_QS_STACK];
 //   int * psdepth = depth;
 //   int cdepth = npy_get_msb(num) * 2;
@@ -592,16 +592,16 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //      while ((pr - pl) > SMALL_QUICKSORT) {
 //         /* quicksort partition */
 //         pm = pl + ((pr - pl) >> 1);
-//         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
-//         if (INT32_LT(v[*pr], v[*pm])) INTP_SWAP(*pr, *pm);
-//         if (INT32_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
+//         if (int32_t_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
+//         if (int32_t_LT(v[*pr], v[*pm])) INTP_SWAP(*pr, *pm);
+//         if (int32_t_LT(v[*pm], v[*pl])) INTP_SWAP(*pm, *pl);
 //         vp = v[*pm];
 //         pi = pl;
 //         pj = pr - 1;
 //         INTP_SWAP(*pm, *pj);
 //         for (;;) {
-//            do ++pi; while (INT32_LT(v[*pi], vp));
-//            do --pj; while (INT32_LT(vp, v[*pj]));
+//            do ++pi; while (int32_t_LT(v[*pi], vp));
+//            do --pj; while (int32_t_LT(vp, v[*pj]));
 //            if (pi >= pj) {
 //               break;
 //            }
@@ -629,7 +629,7 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //         vp = v[vi];
 //         pj = pi;
 //         pk = pi - 1;
-//         while (pj > pl && INT32_LT(vp, v[*pk])) {
+//         while (pj > pl && int32_t_LT(vp, v[*pk])) {
 //            *pj-- = *pk--;
 //         }
 //         *pj = vi;
@@ -656,10 +656,10 @@ BINARY_LT(const char *s1, const char *s2, size_t len)
 //-----------------------------------------------------------------------------------------------
 template <typename T>
 /*static*/ int
-heapsort_(T *start, INT64 n)
+heapsort_(T *start, int64_t n)
 {
    T     tmp, *a;
-   INT64 i, j, l;
+   int64_t i, j, l;
 
    /* The array needs to be offset by one for heapsort indexing */
    a = (T *)start - 1;
@@ -815,7 +815,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // N.B. This function isn't static like the others because it's used in a couple of places in GroupBy.cpp.
    template <typename T>
    /*static*/ int
-   quicksort_(T *start, INT64 num)
+   quicksort_(T *start, int64_t num)
    {
       T vp;
       T *pl = start;
@@ -1115,7 +1115,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename T>
    /*static*/ int 
-   mergesort_(T *start, INT64 num)
+   mergesort_(T *start, int64_t num)
    {
       T *pl, *pr, *pw;
 
@@ -1138,7 +1138,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // TJD NOTE: Does not appear much faster
    template <typename T>
    static int 
-   mergesort_binary_norecursion(T *start, INT64 num)
+   mergesort_binary_norecursion(T *start, int64_t num)
    {
       T *pl, *pr, *pw, *pm, *pk, *pi, *pj;
 
@@ -1201,7 +1201,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
       // START MERGING ----------------------------------
       //----------------------------------------------------------------
-      INT64 startSize = SMALL_MERGESORT;
+      int64_t startSize = SMALL_MERGESORT;
 
       pEnd = start + num;
       pl = start;
@@ -1272,7 +1272,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
 // TD NOTE: Jan 2018 -- the memcpy improves float sorting slightly, it does not improve INT copying for some reason...
 #ifndef USE_MEMCPY
-         INT64 diff = pm - pj;
+         int64_t diff = pm - pj;
          memcpy(pi, pj, diff * sizeof(T));
          pi += diff;
          pj += diff;
@@ -1324,7 +1324,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename T>
    static int 
-   mergesort_float(T *start, INT64 num)
+   mergesort_float(T *start, int64_t num)
    {
       T *pl, *pr, *pw;
 
@@ -1345,7 +1345,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
   template <typename UINDEX>
   static void
-  amergesort0_string(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, INT64 strlen)
+  amergesort0_string(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, int64_t strlen)
    {
       const char* vp;
       UINDEX vi, *pi, *pj, *pk, *pm;
@@ -1392,7 +1392,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
   //-----------------------------------------------------------------------------------------------
   template <typename UINDEX>
   static void
-  amergesort0_unicode(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, INT64 strlen)
+  amergesort0_unicode(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, int64_t strlen)
   {
      const char* vp;
      UINDEX vi, *pi, *pj, *pk, *pm;
@@ -1440,7 +1440,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
   //-----------------------------------------------------------------------------------------------
   template <typename UINDEX>
   static void
-  amergesort0_void(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, INT64 strlen)
+  amergesort0_void(UINDEX *pl, UINDEX *pr, const char *strItem, UINDEX *pw, int64_t strlen)
   {
      const char* vp;
      UINDEX vi, *pi, *pj, *pk, *pm;
@@ -1488,8 +1488,8 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    template <typename T, typename UINDEX> 
    static void
    // T= data type == float32/float64
-   // UINDEX = INT32 or INT64
-   amergesort0_float(UINDEX *pl, UINDEX *pr, T *v, UINDEX *pw, INT64 strlen=0)
+   // UINDEX = int32_t or int64_t
+   amergesort0_float(UINDEX *pl, UINDEX *pr, T *v, UINDEX *pw, int64_t strlen=0)
    {
       T vp;
       UINDEX vi, *pi, *pj, *pk, *pm;
@@ -1506,8 +1506,8 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          {
             // MERGES DATA, memcpy
 #ifdef USE_MEMCPY
-            //INT64 bytescopy = (pm - pl) * sizeof(UINDEX);
-            //aligned_block_copy_backwards((INT64*)pw, (INT64*)pl, bytescopy);
+            //int64_t bytescopy = (pm - pl) * sizeof(UINDEX);
+            //aligned_block_copy_backwards((int64_t*)pw, (int64_t*)pl, bytescopy);
             //   
             memcpy(pw, pl, (pm-pl) * sizeof(UINDEX));
 
@@ -1561,7 +1561,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
    //-----------------------------------------------------------------------------------------------
    // T= data type == int16,int32,uint32,int64.uint64
-   // UINDEX = INT32 or INT64
+   // UINDEX = int32_t or int64_t
    template <typename T, typename UINDEX>
    static void 
    amergesort0_(UINDEX *pl, UINDEX *pr, T *v, UINDEX *pw)
@@ -1663,7 +1663,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeString(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeString(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1682,7 +1682,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeUnicode(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeUnicode(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1700,7 +1700,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeVoid(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeVoid(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1718,7 +1718,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename T, typename UINDEX>
    static void
-   ParMergeNormal(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeNormal(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1736,7 +1736,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename T, typename UINDEX> 
    static void
-   ParMergeFloat(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeFloat(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1756,7 +1756,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeMergeString(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeMergeString(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1792,10 +1792,10 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       //}
 
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || STRING_LT(pValue + (*pm)*strlen, pValue + (*pm-1)*strlen, strlen)) {
+      if (true || STRING_LT(pValue + (*pm)*strlen, pValue + (*pm-1)*strlen, strlen)) {
 
-         //printf("%lld %lld %lld %lld\n", (INT64)pValue[*pl], (INT64)pValue[*(pm - 1)], (INT64)pValue[*pm], (INT64)pValue[*(pr - 1)]);
-         //printf("%lld %lld %lld %lld %lld\n", (INT64)*pl, (INT64)*(pm - 2), (INT64)*(pm - 1), (INT64)*pm, (INT64)*(pr - 1));
+         //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
+         //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
 
          memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -1819,7 +1819,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          //printf("last items %lld %lld %lld\n", pk[-3], pk[-2], pk[-1]);
       }
       else {
-         PLOGGING("**Already sorted string %lld\n", (INT64)(*pm));
+         PLOGGING("**Already sorted string %lld\n", (int64_t)(*pm));
 
       }
 
@@ -1831,7 +1831,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeMergeUnicode(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeMergeUnicode(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1844,10 +1844,10 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       UINDEX *pi, *pj, *pk, *pm;
       pm = pl + ((pr - pl) >> 1);
 
-      if (TRUE || UNICODE_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
+      if (true || UNICODE_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
 
-         //printf("%lld %lld %lld %lld\n", (INT64)pValue[*pl], (INT64)pValue[*(pm - 1)], (INT64)pValue[*pm], (INT64)pValue[*(pr - 1)]);
-         //printf("%lld %lld %lld %lld %lld\n", (INT64)*pl, (INT64)*(pm - 2), (INT64)*(pm - 1), (INT64)*pm, (INT64)*(pr - 1));
+         //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
+         //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
 
          memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -1871,7 +1871,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          //printf("last items %lld %lld %lld\n", pk[-3], pk[-2], pk[-1]);
       }
       else {
-         PLOGGING("**Already sorted unicode %lld\n", (INT64)(*pm));
+         PLOGGING("**Already sorted unicode %lld\n", (int64_t)(*pm));
 
 
       }
@@ -1882,7 +1882,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Called to combine the result of the left and right merge
    template <typename UINDEX>
    static void
-   ParMergeMergeVoid(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeMergeVoid(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1896,7 +1896,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       pm = pl + ((pr - pl) >> 1);
 
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || VOID_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
+      if (true || VOID_LT(pValue + (*pm)*strlen, pValue + (*pm - 1)*strlen, strlen)) {
 
          memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -1920,7 +1920,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          //printf("last items %lld %lld %lld\n", pk[-3], pk[-2], pk[-1]);
       }
       else {
-         PLOGGING("**Already sorted void %lld\n", (INT64)(*pm));
+         PLOGGING("**Already sorted void %lld\n", (int64_t)(*pm));
 
       }
 
@@ -1929,12 +1929,12 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
    //---------------------------------------------------------------------------
    // Called to combine the result of the left and right merge
-   // T is type to sort -- INT32, Float64, etc.
-   // UINDEX is the argsort index -- INT32 or INT64 often
+   // T is type to sort -- int32_t, Float64, etc.
+   // UINDEX is the argsort index -- int32_t or int64_t often
    //
    template <typename T, typename UINDEX>
    static void
-   ParMergeMerge(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1) {
+   ParMergeMerge(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1) {
       UINDEX *pl, *pr;
 
       UINDEX* pWorkSpace = (UINDEX*)pWorkSpace1;
@@ -1971,10 +1971,10 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
       // quickcheck to see if we have to copy
       // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-      if (TRUE || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)])) {
+      if (true || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)])) {
 
-         //printf("%lld %lld %lld %lld\n", (INT64)pValue[*pl], (INT64)pValue[*(pm - 1)], (INT64)pValue[*pm], (INT64)pValue[*(pr - 1)]);
-         //printf("%lld %lld %lld %lld %lld\n", (INT64)*pl, (INT64)*(pm - 2), (INT64)*(pm - 1), (INT64)*pm, (INT64)*(pr - 1));
+         //printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr - 1)]);
+         //printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1), (int64_t)*pm, (int64_t)*(pr - 1));
 
          memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -1998,14 +1998,14 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          //printf("last items %lld %lld %lld\n", pk[-3], pk[-2], pk[-1]);
       }
       else {
-         PLOGGING("**Already sorted %lld\n", (INT64)(*pm));
+         PLOGGING("**Already sorted %lld\n", (int64_t)(*pm));
       }
 
    }
 
 
-   typedef void(*MERGE_STEP_ONE)(void* pValue, void* pToSort, INT64 num, INT64 strlen, void* pWorkSpace);
-   typedef void(*MERGE_STEP_TWO)(void* pValue1, void* pToSort1, INT64 totalLen, INT64 strlen, void* pWorkSpace1);
+   typedef void(*MERGE_STEP_ONE)(void* pValue, void* pToSort, int64_t num, int64_t strlen, void* pWorkSpace);
+   typedef void(*MERGE_STEP_TWO)(void* pValue1, void* pToSort1, int64_t totalLen, int64_t strlen, void* pWorkSpace1);
    //--------------------------------------------------------------------
    struct MERGE_STEP_ONE_CALLBACK {
       MERGE_STEP_ONE MergeCallbackOne;
@@ -2013,19 +2013,19 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
       void* pValues;
       void* pToSort;
-      INT64 ArrayLength;
+      int64_t ArrayLength;
 
       // set to 0 if not a string, otherwise the string length
-      INT64 StrLen;
+      int64_t StrLen;
 
       void* pWorkSpace;
-      INT64 MergeBlocks;
-      INT64 TypeSizeInput;
-      INT64 TypeSizeOutput;
+      int64_t MergeBlocks;
+      int64_t TypeSizeInput;
+      int64_t TypeSizeOutput;
 
       // used to synchronize parallel merges
-      INT64 EndPositions[8];
-      INT64 Level[3];
+      int64_t EndPositions[8];
+      int64_t Level[3];
 
    } stParMergeCallback;
 
@@ -2033,12 +2033,12 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
    //------------------------------------------------------------------------------
    //  Concurrent callback from multiple threads
-   static BOOL ParMergeThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
+   static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
       MERGE_STEP_ONE_CALLBACK* Callback = (MERGE_STEP_ONE_CALLBACK*)pstWorkerItem->WorkCallbackArg;
-      BOOL didSomeWork = FALSE;
+      bool didSomeWork = false;
 
-      INT64 index;
-      INT64 workBlock;
+      int64_t index;
+      int64_t workBlock;
 
 
       // As long as there is work to do
@@ -2049,17 +2049,17 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          //PLOGGING("[%d] DoWork start loop -- %lld  index: %lld\n", core, workIndex, index);
 
          // the very first index starts at 0
-         INT64 pFirst = 0;
+         int64_t pFirst = 0;
          
          if (index >= 1) {
             pFirst = Callback->EndPositions[index - 1];
          }
 
-         INT64 pSecond = Callback->EndPositions[index];
+         int64_t pSecond = Callback->EndPositions[index];
          char* pToSort1 = (char*)(Callback->pToSort);
 
-         INT64 MergeSize = (pSecond - pFirst);
-         INT64 OffsetSize = pFirst;
+         int64_t MergeSize = (pSecond - pFirst);
+         int64_t OffsetSize = pFirst;
          PLOGGING("%d : MergeOne index: %llu  %lld  %lld  %lld\n", core, index, pFirst, MergeSize, OffsetSize);
 
          // Workspace uses half the size
@@ -2068,10 +2068,10 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
          Callback->MergeCallbackOne(Callback->pValues, pToSort1 + (OffsetSize * Callback->TypeSizeOutput), MergeSize, Callback->StrLen, pWorkSpace1);
 
-         INT64 bitshift = 1LL << index;
+         int64_t bitshift = 1LL << index;
          
          // Now find the buddy bit (adjacent bit)
-         INT64 buddy = 0;
+         int64_t buddy = 0;
          if (index & 1) {
             buddy = 1LL << (index-1);
          }
@@ -2080,7 +2080,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          }
 
          // Get back which bits were set before the OR operation
-         INT64 result = FMInterlockedOr(&Callback->Level[0], bitshift);
+         int64_t result = FMInterlockedOr(&Callback->Level[0], bitshift);
 
          // Check if our buddy was already set
          PLOGGING("index: %lld  %lld %lld -- %s\n", index, buddy, (result & buddy), buddy == (result & buddy) ? "GOOD" : "WAIT");
@@ -2172,7 +2172,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          }
 
          // Indicate we completed a block
-         didSomeWork = TRUE;
+         didSomeWork = true;
 
          // tell others we completed this work block
          pstWorkerItem->CompleteWorkBlock();
@@ -2194,22 +2194,22 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    typedef int(*SINGLE_MERGESORT)(
       void*          pValuesT,
       void*          pToSortU,
-      INT64          arrayLength,
-      INT64          strlen,
+      int64_t          arrayLength,
+      int64_t          strlen,
       PAR_SORT_TYPE  sortType);
    
    //------------------------------------------------------------------------
    // single threaded version
    // T is the dtype int32/float32/float64/etc.
-   // UINDEX is either INT32 or INT64
+   // UINDEX is either int32_t or int64_t
    // Returns -1 on failure
    template <typename T, typename UINDEX>
    static int
    single_amergesort(
       void*          pValuesT,
       void*          pToSortU,
-      INT64          arrayLength,
-      INT64          strlen,
+      int64_t          arrayLength,
+      int64_t          strlen,
       PAR_SORT_TYPE  sortType)
    {
       T*             pValues = (T*)pValuesT;
@@ -2255,14 +2255,14 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    template <typename T, typename UINDEX> 
    static int
    par_amergesort(
-      INT64*         pCutOffs,      // May be NULL (if so no partitions)
-      INT64          cutOffLength,
+      int64_t*         pCutOffs,      // May be NULL (if so no partitions)
+      int64_t          cutOffLength,
 
       T*             pValues,
       UINDEX*        pToSort, 
 
-      INT64          arrayLength,
-      INT64          strlen, 
+      int64_t          arrayLength,
+      int64_t          strlen, 
       PAR_SORT_TYPE  sortType)
    {
       if (pCutOffs) {
@@ -2270,16 +2270,16 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
          struct stPSORT {
             SINGLE_MERGESORT  funcSingleMerge;
-            INT64*            pCutOffs;       // May be NULL (if so no partitions)
-            INT64             cutOffLength;
+            int64_t*            pCutOffs;       // May be NULL (if so no partitions)
+            int64_t             cutOffLength;
 
             char*             pValues;
             char*             pToSort;
-            INT64             strlen;
+            int64_t             strlen;
             PAR_SORT_TYPE     sortType;
 
-            INT64             sizeofT;
-            INT64             sizeofUINDEX;
+            int64_t             sizeofT;
+            int64_t             sizeofUINDEX;
 
          } psort;
 
@@ -2300,11 +2300,11 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          }
 
          // Use threads per partition
-         auto lambdaPSCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+         auto lambdaPSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
             stPSORT* callbackArg = (stPSORT*)callbackArgT;
-            INT64 t = workIndex;
-            INT64 partLength;
-            INT64 partStart;
+            int64_t t = workIndex;
+            int64_t partLength;
+            int64_t partStart;
 
             if (t == 0) {
                partStart = 0;
@@ -2326,7 +2326,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
                callbackArg->strlen,
                callbackArg->sortType);
 
-            return TRUE;
+            return true;
          };
 
          g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPSCallback, &psort);
@@ -2341,7 +2341,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          // Allocate all memory up front?
          //UINDEX* pWorkSpace = (UINDEX*)WORKSPACE_FREE(((arrayLength / 2) + 256)* sizeof(UINDEX));
          void* pWorkSpace = NULL;
-         UINT64 allocSize = arrayLength * sizeof(UINDEX);
+         uint64_t allocSize = arrayLength * sizeof(UINDEX);
 
          //(UINDEX*)WORKSPACE_ALLOC(arrayLength * sizeof(UINDEX));
          pWorkSpace=WorkSpaceAllocLarge(allocSize);
@@ -2443,7 +2443,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
             }
 
             // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, FALSE);
+            g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, false);
 
          }
 
@@ -2474,7 +2474,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // TODO: Make multithreaded like
    template <typename T>
    static int
-   SortInPlace(void* pDataIn1, INT64 arraySize1, SORT_MODE mode) {
+   SortInPlace(void* pDataIn1, int64_t arraySize1, SORT_MODE mode) {
 
       int result = 0;
 
@@ -2506,7 +2506,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    // Sorts in place
    template <typename T>
    static int
-   SortInPlaceFloat(void* pDataIn1, INT64 arraySize1, SORT_MODE mode) {
+   SortInPlaceFloat(void* pDataIn1, int64_t arraySize1, SORT_MODE mode) {
 
       int result = 0;
 
@@ -2526,7 +2526,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       }
 
       if (result != 0) {
-         printf("**Error sorting.  size %llu   mode %d\n", (INT64)arraySize1, mode);
+         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
       }
 
       return result;
@@ -2536,7 +2536,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    template <typename T, typename UINDEX>
    static int
    SortIndex(
-      INT64* pCutOffs, INT64 cutOffLength, void* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode) {
+      int64_t* pCutOffs, int64_t cutOffLength, void* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode) {
 
       int result = 0;
 
@@ -2559,7 +2559,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       }
 
       if (result != 0) {
-         printf("**Error sorting.  size %llu   mode %d\n", (INT64)arraySize1, mode);
+         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
       }
 
       return result;
@@ -2570,7 +2570,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename T, typename UINDEX>
    static int
-   SortIndexFloat(INT64* pCutOffs, INT64 cutOffLength, void* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode) {
+   SortIndexFloat(int64_t* pCutOffs, int64_t cutOffLength, void* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode) {
 
       int result = 0;
 
@@ -2590,7 +2590,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
       }
 
       if (result != 0) {
-         printf("**Error sorting.  size %llu   mode %d\n", (INT64)arraySize1, mode);
+         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
       }
 
       return result;
@@ -2600,7 +2600,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename UINDEX>
    static int
-   SortIndexString(INT64* pCutOffs, INT64 cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
+   SortIndexString(int64_t* pCutOffs, int64_t cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
 
       int result = 0;
       switch (mode) {
@@ -2618,7 +2618,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename UINDEX>
    static int
-   SortIndexUnicode(INT64* pCutOffs, INT64 cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
+   SortIndexUnicode(int64_t* pCutOffs, int64_t cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
 
       int result = 0;
       switch (mode) {
@@ -2635,7 +2635,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
    //-----------------------------------------------------------------------------------------------
    template <typename UINDEX>
    static int
-   SortIndexVoid(INT64* pCutOffs, INT64 cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
+   SortIndexVoid(int64_t* pCutOffs, int64_t cutOffLength, const char* pDataIn1, UINDEX* toSort, UINDEX arraySize1, SORT_MODE mode, UINDEX strlen) {
 
       int result = 0;
       switch (mode) {
@@ -2653,7 +2653,7 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
 
 //================================================================================================
 //===============================================================================
-   static void SortArray(void* pDataIn1, INT64 arraySize1, INT32 arrayType1, SORT_MODE mode) {
+   static void SortArray(void* pDataIn1, int64_t arraySize1, int32_t arrayType1, SORT_MODE mode) {
       switch (arrayType1) {
       case NPY_STRING:
          SortInPlace<char>(pDataIn1, arraySize1, mode);
@@ -2662,28 +2662,28 @@ aheapsort_float(T *vv, UINDEX *tosort, UINDEX n)
          SortInPlace<bool>(pDataIn1, arraySize1, mode);
          break;
       case NPY_INT8:
-         SortInPlace<INT8>(pDataIn1, arraySize1, mode);
+         SortInPlace<int8_t>(pDataIn1, arraySize1, mode);
          break;
       case NPY_INT16:
-         SortInPlace<INT16>(pDataIn1, arraySize1, mode);
+         SortInPlace<int16_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_INT32:
-         SortInPlace<INT32>(pDataIn1, arraySize1, mode);
+         SortInPlace<int32_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_INT64:
-         SortInPlace<INT64>(pDataIn1, arraySize1, mode);
+         SortInPlace<int64_t>(pDataIn1, arraySize1, mode);
          break;
       case NPY_UINT8:
-         SortInPlace<UINT8>(pDataIn1, arraySize1, mode);
+         SortInPlace<uint8_t>(pDataIn1, arraySize1, mode);
          break;
       case NPY_UINT16:
-         SortInPlace<UINT16>(pDataIn1, arraySize1, mode);
+         SortInPlace<uint16_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_UINT32:
-         SortInPlace<UINT32>(pDataIn1, arraySize1, mode);
+         SortInPlace<uint32_t>(pDataIn1, arraySize1, mode);
          break;
       CASE_NPY_UINT64:
-         SortInPlace<UINT64>(pDataIn1, arraySize1, mode);
+         SortInPlace<uint64_t>(pDataIn1, arraySize1, mode);
          break;
       case NPY_FLOAT:
          SortInPlaceFloat<float>(pDataIn1, arraySize1, mode);
@@ -2711,11 +2711,11 @@ PyObject* SortInPlace(PyObject *self, PyObject *args) {
 
    if (!PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode)) return NULL;
 
-   INT32 arrayType1 = PyArray_TYPE(inArr1);
+   int32_t arrayType1 = PyArray_TYPE(inArr1);
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
 
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
    void* pDataIn1 = PyArray_BYTES(inArr1);
 
    //printf("Arary size %llu  type %d\n", arraySize1, arrayType1);
@@ -2746,18 +2746,18 @@ PyObject* SortInPlaceIndirect(PyObject *self, PyObject *args) {
 
    if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &inArr1, &PyArray_Type, &inSort)) return NULL;
 
-   INT32 arrayType1 = PyArray_TYPE(inArr1);
-   INT32 sortType = PyArray_TYPE(inSort);
+   int32_t arrayType1 = PyArray_TYPE(inArr1);
+   int32_t sortType = PyArray_TYPE(inSort);
 
-   INT64 arraySize1 = ArrayLength(inArr1);
-   INT64 sortSize = ArrayLength(inSort);
+   int64_t arraySize1 = ArrayLength(inArr1);
+   int64_t sortSize = ArrayLength(inSort);
 
 
    if (arrayType1 == NPY_INT32 && sortType == NPY_INT32) {
-      INT32* pDataIn = (INT32*)PyArray_BYTES(inArr1);
-      INT32* pSort = (INT32*)PyArray_BYTES(inSort);
+      int32_t* pDataIn = (int32_t*)PyArray_BYTES(inArr1);
+      int32_t* pSort = (int32_t*)PyArray_BYTES(inSort);
 
-      INT32* inverseSort = (INT32*)WORKSPACE_ALLOC(sortSize * sizeof(INT32));
+      int32_t* inverseSort = (int32_t*)WORKSPACE_ALLOC(sortSize * sizeof(int32_t));
       for (int i = 0; i < sortSize; i++) {
          inverseSort[pSort[i]] = i;
       }
@@ -2769,29 +2769,29 @@ PyObject* SortInPlaceIndirect(PyObject *self, PyObject *args) {
       WORKSPACE_FREE(inverseSort);
    }
    else if (arrayType1 == NPY_INT32 && sortType == NPY_INT64) {
-      INT32* pDataIn = (INT32*)PyArray_BYTES(inArr1);
-      INT64* pSort = (INT64*)PyArray_BYTES(inSort);
+      int32_t* pDataIn = (int32_t*)PyArray_BYTES(inArr1);
+      int64_t* pSort = (int64_t*)PyArray_BYTES(inSort);
 
-      INT64* inverseSort = (INT64*)WORKSPACE_ALLOC(sortSize * sizeof(INT64));
-      for (INT64 i = 0; i < sortSize; i++) {
+      int64_t* inverseSort = (int64_t*)WORKSPACE_ALLOC(sortSize * sizeof(int64_t));
+      for (int64_t i = 0; i < sortSize; i++) {
          inverseSort[pSort[i]] = i;
       }
 
       for (int i = 0; i < arraySize1; i++) {
-         pDataIn[i] = (INT32)inverseSort[pDataIn[i]];
+         pDataIn[i] = (int32_t)inverseSort[pDataIn[i]];
       }
       WORKSPACE_FREE(inverseSort);
 
    } else if (arrayType1 == NPY_INT64 && sortType == NPY_INT64) {
-      INT64* pDataIn = (INT64*)PyArray_BYTES(inArr1);
-      INT64* pSort = (INT64*)PyArray_BYTES(inSort);
+      int64_t* pDataIn = (int64_t*)PyArray_BYTES(inArr1);
+      int64_t* pSort = (int64_t*)PyArray_BYTES(inSort);
 
-      INT64* inverseSort = (INT64*)WORKSPACE_ALLOC(sortSize * sizeof(INT64));
-      for (INT64 i = 0; i < sortSize; i++) {
+      int64_t* inverseSort = (int64_t*)WORKSPACE_ALLOC(sortSize * sizeof(int64_t));
+      for (int64_t i = 0; i < sortSize; i++) {
          inverseSort[pSort[i]] = i;
       }
 
-      for (INT64 i = 0; i < arraySize1; i++) {
+      for (int64_t i = 0; i < arraySize1; i++) {
          pDataIn[i] = inverseSort[pDataIn[i]];
       }
       WORKSPACE_FREE(inverseSort);
@@ -2815,11 +2815,11 @@ PyObject* Sort(PyObject *self, PyObject *args) {
 
    if (!PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode)) return NULL;
 
-   INT32 arrayType1 = PyArray_TYPE(inArr1);
+   int32_t arrayType1 = PyArray_TYPE(inArr1);
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
 
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
 
    // The output is a boolean where the nth item was found
    PyArrayObject* duplicateArray = AllocateNumpyArray(ndim, dims, arrayType1);
@@ -2832,7 +2832,7 @@ PyObject* Sort(PyObject *self, PyObject *args) {
    void* pDataIn1 = PyArray_BYTES(inArr1);
    void* pDataOut1 = PyArray_BYTES(duplicateArray);
 
-   INT64 itemSize = NpyItemSize((PyObject*)inArr1);
+   int64_t itemSize = NpyItemSize((PyObject*)inArr1);
 
    memcpy(pDataOut1, pDataIn1, arraySize1 * itemSize);
 
@@ -2845,18 +2845,18 @@ PyObject* Sort(PyObject *self, PyObject *args) {
 
 //------------------------------------------------------------------------------------------
 // Internal and can be called from groupby
-// caller must allocate the pDataOut1 as INT64 with size arraySize1
-// UINDEX = INT32 or INT64
+// caller must allocate the pDataOut1 as int64_t with size arraySize1
+// UINDEX = int32_t or int64_t
 template <typename UINDEX>
 static void SortIndex(
-   INT64*      pCutOffs,
-   INT64       cutOffLength,
+   int64_t*      pCutOffs,
+   int64_t       cutOffLength,
 
    void*       pDataIn1,
    UINDEX      arraySize1, 
    UINDEX*     pDataOut1, 
    SORT_MODE   mode, 
-   INT32       arrayType1, 
+   int32_t       arrayType1, 
    UINDEX      strlen) {
 
    switch (arrayType1) {
@@ -2871,28 +2871,28 @@ static void SortIndex(
       break;
    case NPY_BOOL:
    case NPY_INT8:
-      SortIndex<INT8, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<int8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    case NPY_INT16:
-      SortIndex<INT16, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<int16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_INT32:
-      SortIndex<INT32, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<int32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_INT64:
-      SortIndex<INT64, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<int64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    case NPY_UINT8:
-      SortIndex<UINT8, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<uint8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    case NPY_UINT16:
-      SortIndex<UINT16, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<uint16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_UINT32:
-      SortIndex<UINT32, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<uint32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    CASE_NPY_UINT64:
-      SortIndex<UINT64, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+      SortIndex<uint64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
       break;
    case NPY_FLOAT:
       SortIndexFloat<float, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
@@ -2910,16 +2910,16 @@ static void SortIndex(
 }
 
 //================================================================================
-typedef int(*IS_SORTED_FUNC)(const char* pDataIn1, INT64 arraySize1, INT64 strlennotused);
+typedef int(*IS_SORTED_FUNC)(const char* pDataIn1, int64_t arraySize1, int64_t strlennotused);
 //-----------------------------------------------------------------------------------------------
 template <typename T>
 static int
-IsSortedFloat(const char* pDataIn1, INT64 arraySize1, INT64 strlennotused) {
+IsSortedFloat(const char* pDataIn1, int64_t arraySize1, int64_t strlennotused) {
 
    int result = 0;
    T* pData = (T*)pDataIn1;
 
-   INT64 i = arraySize1 - 1;
+   int64_t i = arraySize1 - 1;
 
    while ((i > 0) && (pData[i] != pData[i])) {
       i--;
@@ -2936,12 +2936,12 @@ IsSortedFloat(const char* pDataIn1, INT64 arraySize1, INT64 strlennotused) {
 //-----------------------------------------------------------------------------------------------
 template <typename T>
 static int
-IsSorted(const char* pDataIn1, INT64 arraySize1, INT64 strlennotused) {
+IsSorted(const char* pDataIn1, int64_t arraySize1, int64_t strlennotused) {
 
    int result = 0;
    T* pData = (T*)pDataIn1;
 
-   INT64 i = arraySize1 - 1;
+   int64_t i = arraySize1 - 1;
 
    while ((i > 0) && pData[i] >= pData[i - 1]) {
       i--;
@@ -2953,11 +2953,11 @@ IsSorted(const char* pDataIn1, INT64 arraySize1, INT64 strlennotused) {
 
 //-----------------------------------------------------------------------------------------------
 static int
-IsSortedString(const char* pData, INT64 arraySize1, INT64 strlen) {
+IsSortedString(const char* pData, int64_t arraySize1, int64_t strlen) {
 
    int result = 0;
 
-   INT64 i = arraySize1 - 1;
+   int64_t i = arraySize1 - 1;
 
    while ((i > 0) && !(STRING_LT(&pData[i*strlen], &pData[(i - 1)*strlen], strlen))) {
       i--;
@@ -2969,11 +2969,11 @@ IsSortedString(const char* pData, INT64 arraySize1, INT64 strlen) {
 
 //-----------------------------------------------------------------------------------------------
 static int
-IsSortedUnicode(const char* pData, INT64 arraySize1, INT64 strlen) {
+IsSortedUnicode(const char* pData, int64_t arraySize1, int64_t strlen) {
 
    int result = 0;
 
-   INT64 i = arraySize1 - 1;
+   int64_t i = arraySize1 - 1;
 
    while ((i > 0) && !(UNICODE_LT(&pData[i*strlen], &pData[(i - 1)*strlen], strlen))) {
       i--;
@@ -2984,11 +2984,11 @@ IsSortedUnicode(const char* pData, INT64 arraySize1, INT64 strlen) {
 
 //-----------------------------------------------------------------------------------------------
 static int
-IsSortedVoid(const char* pData, INT64 arraySize1, INT64 strlen) {
+IsSortedVoid(const char* pData, int64_t arraySize1, int64_t strlen) {
 
    int result = 0;
 
-   INT64 i = arraySize1 - 1;
+   int64_t i = arraySize1 - 1;
 
    while ((i > 0) && !(VOID_LT(&pData[i*strlen], &pData[(i - 1)*strlen], strlen))) {
       i--;
@@ -3007,50 +3007,50 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
 
    if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr1)) return NULL;
 
-   INT32 arrayType1 = PyArray_TYPE(inArr1);
+   int32_t arrayType1 = PyArray_TYPE(inArr1);
    int ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
 
-   INT64 itemSize = PyArray_ITEMSIZE(inArr1);
+   int64_t itemSize = PyArray_ITEMSIZE(inArr1);
 
    if (ndim != 1 || itemSize != PyArray_STRIDE(inArr1, 0)) {
       PyErr_Format(PyExc_ValueError, "IsSorted arrays must be one dimensional and contiguous.  ndim is %d\n", ndim);
       return NULL;
    }
 
-   INT64 arraySize1 = CalcArrayLength(ndim, dims);
+   int64_t arraySize1 = CalcArrayLength(ndim, dims);
    void* pDataIn1 = PyArray_BYTES(inArr1);
 
    LOGGING("issorted size %llu  type %d\n", arraySize1, arrayType1);
 
-   INT64 result = 0;
+   int64_t result = 0;
    IS_SORTED_FUNC pSortedFunc = NULL;
 
    switch (arrayType1) {
    case NPY_BOOL:
    case NPY_INT8:
-      pSortedFunc = IsSorted<INT8>;
+      pSortedFunc = IsSorted<int8_t>;
       break;
    case NPY_INT16:
-      pSortedFunc = IsSorted<INT16>;
+      pSortedFunc = IsSorted<int16_t>;
       break;
    CASE_NPY_INT32:
-      pSortedFunc = IsSorted<INT32>;
+      pSortedFunc = IsSorted<int32_t>;
       break;
    CASE_NPY_INT64:
-      pSortedFunc = IsSorted<INT64>;
+      pSortedFunc = IsSorted<int64_t>;
       break;
    case NPY_UINT8:
-      pSortedFunc = IsSorted<UINT8>;
+      pSortedFunc = IsSorted<uint8_t>;
       break;
    case NPY_UINT16:
-      pSortedFunc = IsSorted<UINT16>;
+      pSortedFunc = IsSorted<uint16_t>;
       break;
    CASE_NPY_UINT32:
-      pSortedFunc = IsSorted<UINT32>;
+      pSortedFunc = IsSorted<uint32_t>;
       break;
    CASE_NPY_UINT64:
-      pSortedFunc = IsSorted<UINT64>;
+      pSortedFunc = IsSorted<uint64_t>;
       break;
    case NPY_FLOAT:
       pSortedFunc = IsSortedFloat<float>;
@@ -3079,15 +3079,15 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
 
    // MT callback
    struct IsSortedCallbackStruct {
-      INT64             IsSorted;
+      int64_t             IsSorted;
       IS_SORTED_FUNC    pSortedFunc;
       const char*       pDataIn1;
-      INT64             ArraySize;
-      INT64             ItemSize;
+      int64_t             ArraySize;
+      int64_t             ItemSize;
    } stISCallback{ 1, pSortedFunc, (const char*)pDataIn1, arraySize1, itemSize };
 
    // This is the routine that will be called back from multiple threads
-   auto lambdaISCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+   auto lambdaISCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
       IsSortedCallbackStruct* cb = (IsSortedCallbackStruct*)callbackArgT;
 
       // check if short circuited (any segment not sorted)
@@ -3099,14 +3099,14 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
          }
          int result = cb->pSortedFunc(cb->pDataIn1 + (start * cb->ItemSize), length, cb->ItemSize);
 
-         // on success, return TRUE 
-         if (result) return TRUE;
+         // on success, return true 
+         if (result) return true;
 
-         // on failure, set the failure flag and return FALSE
+         // on failure, set the failure flag and return false
          cb->IsSorted = 0;
       }
 
-      return FALSE;
+      return false;
    };
 
    // A zero length array is considered sorted
@@ -3129,9 +3129,9 @@ PyObject* IsSorted(PyObject *self, PyObject *args) {
 
 //===============================================================================
 // checks for kwargs cutoff
-// if exists, and is INT64, returns pointer and length of cutoffs
+// if exists, and is int64_t, returns pointer and length of cutoffs
 // cutoffLength of -1 indicates an error
-INT64* GetCutOffs(PyObject *kwargs, INT64& cutoffLength) {
+int64_t* GetCutOffs(PyObject *kwargs, int64_t& cutoffLength) {
    // Check for cutoffs kwarg to see if going into parallel mode
    if (kwargs && PyDict_Check(kwargs)) {
       PyArrayObject* pCutOffs = NULL;
@@ -3143,9 +3143,9 @@ INT64* GetCutOffs(PyObject *kwargs, INT64& cutoffLength) {
          switch (PyArray_TYPE(pCutOffs)) {
          CASE_NPY_INT64:
             cutoffLength = ArrayLength(pCutOffs);
-            return (INT64*)PyArray_BYTES(pCutOffs);
+            return (int64_t*)PyArray_BYTES(pCutOffs);
          default:
-            printf("Bad cutoff dtype... make sure INT64\n");
+            printf("Bad cutoff dtype... make sure int64_t\n");
             cutoffLength = -1;
             return NULL;
          }
@@ -3158,7 +3158,7 @@ INT64* GetCutOffs(PyObject *kwargs, INT64& cutoffLength) {
 //===============================================================================
 
 template<typename UINDEX>
-static BOOL ARangeCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
+static bool ARangeCallback(void* callbackArgT, int core, int64_t start, int64_t length) {
 
    UINDEX* pDataOut = (UINDEX*)callbackArgT;
    UINDEX istart = (UINDEX)start;
@@ -3168,12 +3168,12 @@ static BOOL ARangeCallback(void* callbackArgT, int core, INT64 start, INT64 leng
       pDataOut[i] = i;
    }
 
-   return TRUE;
+   return true;
 }
 
 
-// index must be INT32 or INT64
-static PyArrayObject* GetKwargIndex(PyObject *kwargs, INT64& indexLength, int &dtype) {
+// index must be int32_t or int64_t
+static PyArrayObject* GetKwargIndex(PyObject *kwargs, int64_t& indexLength, int &dtype) {
    // Check for 'index' kwarg to see if prime lexsort
    if (kwargs && PyDict_Check(kwargs)) {
       PyArrayObject* pStartIndex = NULL;
@@ -3192,7 +3192,7 @@ static PyArrayObject* GetKwargIndex(PyObject *kwargs, INT64& indexLength, int &d
             dtype = NPY_INT32;
             return pStartIndex;
          default:
-            printf("Bad index dtype... make sure INT64 or INT32\n");
+            printf("Bad index dtype... make sure int64_t or int32_t\n");
             indexLength = -1;
             return NULL;
          }
@@ -3228,29 +3228,29 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
    CMultiListPrepare mlp(args);
 
    if (mlp.aInfo && mlp.tupleSize > 0) {
-      INT64    arraySize1 = mlp.totalRows;
+      int64_t    arraySize1 = mlp.totalRows;
 
-      INT64    cutOffLength = 0;
-      INT64*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
+      int64_t    cutOffLength = 0;
+      int64_t*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
 
       if (pCutOffs && pCutOffs[cutOffLength - 1] != arraySize1) {
          PyErr_Format(PyExc_ValueError, "LexSort last cutoff length does not match array length %lld", arraySize1);
          return NULL;
       }
       if (cutOffLength == -1) {
-         PyErr_Format(PyExc_ValueError, "LexSort 'cutoffs' must be an array of type INT64");
+         PyErr_Format(PyExc_ValueError, "LexSort 'cutoffs' must be an array of type int64_t");
          return NULL;
       }
 
       int indexDType = 0;
-      INT64 indexLength = 0;
+      int64_t indexLength = 0;
 
       PyArrayObject* index = GetKwargIndex(kwargs, indexLength, indexDType);
 
       PyArrayObject* result = NULL;
       
       if (indexLength == -1) {
-         PyErr_Format(PyExc_ValueError, "LexSort 'index' must be an array of type INT64 or INT32");
+         PyErr_Format(PyExc_ValueError, "LexSort 'index' must be an array of type int64_t or int32_t");
          return NULL;
       }
 
@@ -3261,12 +3261,12 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
          }
 
          if (sizeof(UINDEX) == 8 && indexDType != NPY_INT64) {
-            PyErr_Format(PyExc_ValueError, "LexSort 'index' is not INT64");
+            PyErr_Format(PyExc_ValueError, "LexSort 'index' is not int64_t");
             return NULL;
          }
 
          if (sizeof(UINDEX) == 4 && indexDType != NPY_INT32) {
-            PyErr_Format(PyExc_ValueError, "LexSort 'index' is not INT32");
+            PyErr_Format(PyExc_ValueError, "LexSort 'index' is not int32_t");
             return NULL;
          }
 
@@ -3290,11 +3290,11 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
             // For cutoffs, prep the indexes with 0:n for each partition
             UINDEX* pCounter = pDataOut;
 
-            INT64 startPos = 0;
-            for (INT64 j = 0; j < cutOffLength; j++) {
+            int64_t startPos = 0;
+            for (int64_t j = 0; j < cutOffLength; j++) {
 
-               INT64 endPos = pCutOffs[j];
-               INT64 partitionLength = endPos - startPos;
+               int64_t endPos = pCutOffs[j];
+               int64_t partitionLength = endPos - startPos;
                for (UINDEX i = 0; i < partitionLength; i++) {
                   *pCounter++ = i;
                }
@@ -3311,7 +3311,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
 
          if (pCutOffs) {
             // Turn off caching of large memory allocs
-            g_cMathWorker->NoCaching = TRUE;
+            g_cMathWorker->NoCaching = true;
          }
 
          // When multiple arrays are passed, we sort in order of how it is passed
@@ -3323,7 +3323,7 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
          }
 
          if (pCutOffs) {
-            g_cMathWorker->NoCaching = FALSE;
+            g_cMathWorker->NoCaching = false;
          }
          return (PyObject*)result;
       }
@@ -3335,26 +3335,26 @@ PyObject* LexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
 
 
 //===============================================================================
-// Returns INT32
+// Returns int32_t
 PyObject* LexSort32(PyObject *self, PyObject *args, PyObject *kwargs) {
 
-   return LexSort<INT32>(self, args, kwargs);
+   return LexSort<int32_t>(self, args, kwargs);
 }
 
 
 //===============================================================================
-// Returns INT64
+// Returns int64_t
 PyObject* LexSort64(PyObject *self, PyObject *args, PyObject *kwargs) {
 
-   return LexSort<INT64>(self, args, kwargs);
+   return LexSort<int64_t>(self, args, kwargs);
 }
 
 
 //===============================================================================
 //===============================================================================
 // checks for kwargs filter
-// if exists, and is BOOL, returns pointer and length of bool
-static bool* GetFilter(PyObject *kwargs, INT64& filterLength) {
+// if exists, and is bool, returns pointer and length of bool
+static bool* GetFilter(PyObject *kwargs, int64_t& filterLength) {
    // Check for cutoffs kwarg to see if going into parallel mode
    if (kwargs && PyDict_Check(kwargs)) {
       PyArrayObject* pFilter = NULL;
@@ -3375,7 +3375,7 @@ static bool* GetFilter(PyObject *kwargs, INT64& filterLength) {
 }
 
 
-static INT64 GetBaseIndex(PyObject *kwargs) {
+static int64_t GetBaseIndex(PyObject *kwargs) {
    if (kwargs && PyDict_Check(kwargs)) {
       PyObject* pBaseIndex = NULL;
       // Borrowed reference
@@ -3397,10 +3397,10 @@ static INT64 GetBaseIndex(PyObject *kwargs) {
 // Group via lexsort
 // CountOut
 //================================================================================
-//typedef INT64 *(GROUP_INDEX_FUNC)()
+//typedef int64_t *(GROUP_INDEX_FUNC)()
 
 template <typename T, typename UINDEX>
-static INT64 GroupIndexStep2(
+static int64_t GroupIndexStep2(
    void*       pDataIn1,
    UINDEX      arraySize1,
    UINDEX*     pDataIndexIn,
@@ -3408,7 +3408,7 @@ static INT64 GroupIndexStep2(
    UINDEX*     pFirstOut,
    UINDEX*     pCountOut,
    bool*       pFilter,
-   INT64       base_index,
+   int64_t       base_index,
    UINDEX      strlen = 0) {
 
    T*          pDataIn = (T*)pDataIn1;
@@ -3536,7 +3536,7 @@ static INT64 GroupIndexStep2(
 
 
 template <typename T, typename UINDEX>
-static INT64 GroupIndexStep2String(
+static int64_t GroupIndexStep2String(
    void*       pDataIn1,
    UINDEX      arraySize1,
    UINDEX*     pDataIndexIn,
@@ -3544,8 +3544,8 @@ static INT64 GroupIndexStep2String(
    UINDEX*     pFirstOut,
    UINDEX*     pCountOut,
    bool*       pFilter,
-   INT64       base_index,
-   INT64       strlen) {
+   int64_t       base_index,
+   int64_t       strlen) {
 
    T*          pDataIn = (T*)pDataIn1;
    UINDEX      curIndex = pDataIndexIn[0];
@@ -3582,35 +3582,35 @@ static INT64 GroupIndexStep2String(
    return curGroup;
 }
 
-typedef INT64(*GROUP_INDEX_FUNC)(
+typedef int64_t(*GROUP_INDEX_FUNC)(
    void*       pDataIn1,
-   INT64       arraySize1V,
+   int64_t       arraySize1V,
    void*       pDataIndexInV,
    void*       pGroupOutV,
    void*       pFirstOutV,
    void*       pCountOutV,
    bool*       pFilter,       // optional
-   INT64       base_index,
-   INT64       strlen);
+   int64_t       base_index,
+   int64_t       strlen);
 
 
 //------------------------------------------------------------------------------------------
 // Internal and can be called from groupby
-// caller must allocate the pGroupOut as INT32 or INT64 with size arraySize1
-// UINDEX = INT32 or INT64
+// caller must allocate the pGroupOut as int32_t or int64_t with size arraySize1
+// UINDEX = int32_t or int64_t
 template <typename UINDEX>
-static INT64 GroupIndex(
+static int64_t GroupIndex(
    void*       pDataIn1,
-   INT64       arraySize1V,
+   int64_t       arraySize1V,
    void*       pDataIndexInV,
    void*       pGroupOutV,
    void*       pFirstOutV,
    void*       pCountOutV,
    bool*       pFilter,       // optional
-   INT64       base_index,
-   INT64       strlen) {
+   int64_t       base_index,
+   int64_t       strlen) {
 
-   INT64       uniqueCount = 0;
+   int64_t       uniqueCount = 0;
 
    UINDEX*     pDataIndexIn = (UINDEX*)pDataIndexInV;
    UINDEX*     pGroupOut = (UINDEX*)pGroupOutV;
@@ -3621,19 +3621,19 @@ static INT64 GroupIndex(
    switch (strlen) {
    case 1:
       uniqueCount =
-         GroupIndexStep2<INT8, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
+         GroupIndexStep2<int8_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
       break;
    case 2:
       uniqueCount =
-         GroupIndexStep2<INT16, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
+         GroupIndexStep2<int16_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
       break;
    case 4:
       uniqueCount =
-         GroupIndexStep2<INT32, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
+         GroupIndexStep2<int32_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
       break;
    case 8:
       uniqueCount =
-         GroupIndexStep2<INT64, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
+         GroupIndexStep2<int64_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter, base_index, 0);
       break;
    default:
       uniqueCount =
@@ -3657,20 +3657,20 @@ static PyObject* GroupFromLexSortInternal(
    void*       pValues,
    npy_intp    itemSizeValues) {
 
-   INT64    cutOffLength = 0;
-   INT64*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
+   int64_t    cutOffLength = 0;
+   int64_t*   pCutOffs = GetCutOffs(kwargs, cutOffLength);
 
-   INT64    filterLength = 0;
+   int64_t    filterLength = 0;
    bool*    pFilter = GetFilter(kwargs, filterLength);
 
-   INT64    base_index = GetBaseIndex(kwargs);
+   int64_t    base_index = GetBaseIndex(kwargs);
 
 
    if (pCutOffs && pCutOffs[cutOffLength - 1] != indexLength) {
       return PyErr_Format(PyExc_ValueError, "GroupFromLexSort last cutoff length does not match array length %lld", indexLength);
    }
    if (cutOffLength == -1) {
-      return PyErr_Format(PyExc_ValueError, "GroupFromLexSort 'cutoffs' must be an array of type INT64");
+      return PyErr_Format(PyExc_ValueError, "GroupFromLexSort 'cutoffs' must be an array of type int64_t");
    }
    if (pFilter && filterLength != indexLength) {
       return PyErr_Format(PyExc_ValueError, "GroupFromLexSort filter length does not match array length %lld", indexLength);
@@ -3678,7 +3678,7 @@ static PyObject* GroupFromLexSortInternal(
 
    // The countout always reserves the zero bin (even for when base_index =0) for filtering out
    // TODO: Change this to use type npy_intp and check for overflow.
-   INT64 worstCase = indexLength + 1 + cutOffLength;
+   int64_t worstCase = indexLength + 1 + cutOffLength;
 
    PyArrayObject* const keys = AllocateNumpyArray(1, (npy_intp*)&indexLengthValues, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
    PyArrayObject* const first = AllocateNumpyArray(1, (npy_intp*)&indexLength, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
@@ -3698,24 +3698,24 @@ static PyObject* GroupFromLexSortInternal(
    UINDEX* pFirstOut = (UINDEX*)PyArray_BYTES(first);
    UINDEX* pCountOut = (UINDEX*)PyArray_BYTES(count);
 
-   INT64 uniqueCount = 0;
+   int64_t uniqueCount = 0;
    GROUP_INDEX_FUNC  gpfunc = GroupIndex<UINDEX>;
 
    if (pCutOffs) {
       PyArrayObject* uniqueCounts = AllocateNumpyArray(1, (npy_intp*)&cutOffLength, NPY_INT64);
-      INT64*         pUniqueCounts = (INT64*)PyArray_BYTES(uniqueCounts);
+      int64_t*         pUniqueCounts = (int64_t*)PyArray_BYTES(uniqueCounts);
 
       // Turn off caching of large memory allocs
-      g_cMathWorker->NoCaching = TRUE;
+      g_cMathWorker->NoCaching = true;
 
       PLOGGING("partition version col: %lld  %p  %p  %p\n", cutOffLength, pToSort, pToSort + arrayLength, pValues);
 
       struct stPGROUP {
          GROUP_INDEX_FUNC  funcSingleGroup;
-         INT64*            pUniqueCounts;
+         int64_t*            pUniqueCounts;
 
-         INT64*            pCutOffs;   
-         INT64             cutOffLength;
+         int64_t*            pCutOffs;   
+         int64_t             cutOffLength;
 
          char*             pValues;
          char*             pIndex;
@@ -3723,9 +3723,9 @@ static PyObject* GroupFromLexSortInternal(
          char*             pFirstOut;
          char*             pCountOut;
          bool*             pFilter;
-         INT64             base_index;
-         INT64             strlen;
-         INT64             sizeofUINDEX;
+         int64_t             base_index;
+         int64_t             strlen;
+         int64_t             sizeofUINDEX;
 
       } pgroup;
 
@@ -3743,16 +3743,16 @@ static PyObject* GroupFromLexSortInternal(
       pgroup.pFilter = pFilter;
       pgroup.base_index = base_index;
       pgroup.strlen = itemSizeValues;
-      const INT64 INDEX_SIZE = (INT64)sizeof(UINDEX);
+      const int64_t INDEX_SIZE = (int64_t)sizeof(UINDEX);
 
       pgroup.sizeofUINDEX = INDEX_SIZE;
 
       // Use threads per partition
-      auto lambdaPSCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+      auto lambdaPSCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
          stPGROUP* callbackArg = (stPGROUP*)callbackArgT;
-         INT64 t = workIndex;
-         INT64 partLength;
-         INT64 partStart;
+         int64_t t = workIndex;
+         int64_t partLength;
+         int64_t partStart;
 
          if (t == 0) {
             partStart = 0;
@@ -3765,7 +3765,7 @@ static PyObject* GroupFromLexSortInternal(
 
          PLOGGING("[%lld] start: %lld  length: %lld\n", t, partStart, partLength);
 
-         INT64 shift = 
+         int64_t shift = 
          // shift the data pointers to match the partition
          // call a single threaded merge
          callbackArg->pUniqueCounts[t]=
@@ -3780,14 +3780,14 @@ static PyObject* GroupFromLexSortInternal(
             0,       //callbackArg->base_index, fix for countout
             callbackArg->strlen);
 
-         return TRUE;
+         return true;
       };
 
       g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPSCallback, &pgroup);
-      g_cMathWorker->NoCaching = FALSE;
+      g_cMathWorker->NoCaching = false;
 
       // TODO: make global routine
-      INT64 totalUniques = 0;
+      int64_t totalUniques = 0;
       for (int i = 0; i < cutOffLength; i++) {
          totalUniques += pUniqueCounts[i];
          pUniqueCounts[i] = totalUniques;
@@ -3804,10 +3804,10 @@ static PyObject* GroupFromLexSortInternal(
 
       // ANOTHER PARALEL ROUTINE to copy
       struct stPGROUPADD {
-         INT64*            pUniqueCounts;
+         int64_t*            pUniqueCounts;
 
-         INT64*            pCutOffs;       // May be NULL (if so no partitions)
-         INT64             cutOffLength;
+         int64_t*            pCutOffs;       // May be NULL (if so no partitions)
+         int64_t             cutOffLength;
 
          char*             pIndex;
          char*             pKeyOut;
@@ -3818,8 +3818,8 @@ static PyObject* GroupFromLexSortInternal(
          char*             pCountReduced;
          bool*             pFilter;
 
-         INT64             base_index;
-         INT64             sizeofUINDEX;
+         int64_t             base_index;
+         int64_t             sizeofUINDEX;
 
       } pgroupadd;
 
@@ -3838,7 +3838,7 @@ static PyObject* GroupFromLexSortInternal(
       pgroupadd.pCountReduced = (char*)PyArray_BYTES(countReduced);
 
       // skip first value since reserved for zero bin (and assign it 0)
-      for (INT64 c = 0; c < INDEX_SIZE; c++) {
+      for (int64_t c = 0; c < INDEX_SIZE; c++) {
          *pgroupadd.pCountReduced++ = 0;
       }
 
@@ -3846,12 +3846,12 @@ static PyObject* GroupFromLexSortInternal(
       pgroupadd.sizeofUINDEX = sizeof(UINDEX);
 
       // Use threads per partition
-      auto lambdaPGADDCallback = [](void* callbackArgT, int core, INT64 workIndex) -> BOOL {
+      auto lambdaPGADDCallback = [](void* callbackArgT, int core, int64_t workIndex) -> bool {
          stPGROUPADD* callbackArg = (stPGROUPADD*)callbackArgT;
-         INT64 t = workIndex;
-         INT64 partLength;
-         INT64 partStart;
-         INT64 uniquesBefore;
+         int64_t t = workIndex;
+         int64_t partLength;
+         int64_t partStart;
+         int64_t uniquesBefore;
 
          if (t == 0) {
             partStart = 0;
@@ -3866,40 +3866,40 @@ static PyObject* GroupFromLexSortInternal(
          //printf("[%lld] start: %lld  length: %lld  ubefore: %lld\n", t, partStart, partLength, uniquesBefore);
 
          if (callbackArg->sizeofUINDEX == 4) {
-            INT32* pKey = (INT32*)callbackArg->pKeyOut;
+            int32_t* pKey = (int32_t*)callbackArg->pKeyOut;
 
             // the iGroup is fixed up
-            INT32* pIndex = (INT32*)callbackArg->pIndex;
+            int32_t* pIndex = (int32_t*)callbackArg->pIndex;
             
             // pFirst is reduced to iFirstKey (only the uniques)
-            INT32* pFirst = (INT32*)callbackArg->pFirstOut; 
-            INT32* pFirstReduced = (INT32*)callbackArg->pFirstReduced;  
+            int32_t* pFirst = (int32_t*)callbackArg->pFirstOut; 
+            int32_t* pFirstReduced = (int32_t*)callbackArg->pFirstReduced;  
 
             // becomes nCount and the very first is reserved for zero bin
             // holds all the uniques + 1 for the zero bin.
-            INT32* pCount = (INT32*)callbackArg->pCountOut;
-            INT32* pCountReduced = (INT32*)callbackArg->pCountReduced;
+            int32_t* pCount = (int32_t*)callbackArg->pCountOut;
+            int32_t* pCountReduced = (int32_t*)callbackArg->pCountReduced;
 
-            INT32  ubefore = (INT32)uniquesBefore;
+            int32_t  ubefore = (int32_t)uniquesBefore;
 
             if (t != 0) {
                pKey += partStart;
                pIndex += partStart;
 
-               for (INT64 i = 0; i < partLength; i++) {
-                  pKey[i] += ((INT32)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
-                  pIndex[i] += (INT32)partStart;
+               for (int64_t i = 0; i < partLength; i++) {
+                  pKey[i] += ((int32_t)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
+                  pIndex[i] += (int32_t)partStart;
                }
             }
             else {
                pKey += partStart;
 
-               for (INT64 i = 0; i < partLength; i++) {
-                  pKey[i] += ((INT32)partStart + 1); // start at 1, becomes ikey
+               for (int64_t i = 0; i < partLength; i++) {
+                  pKey[i] += ((int32_t)partStart + 1); // start at 1, becomes ikey
                }
             }
 
-            INT64 uniqueLength = callbackArg->pUniqueCounts[t] - uniquesBefore;
+            int64_t uniqueLength = callbackArg->pUniqueCounts[t] - uniquesBefore;
             //printf("first reduced %d %lld\n", ubefore, uniqueLength);
             pFirst += partStart;
             pFirstReduced += ubefore;
@@ -3910,49 +3910,49 @@ static PyObject* GroupFromLexSortInternal(
             // very first [0] is for zero bin
             //pCount++;
 
-            for (INT64 i = 0; i < uniqueLength; i++) {
-               pFirstReduced[i] = pFirst[i] + (INT32)partStart;
-               //printf("setting %lld ", (INT64)pCount[i]);
+            for (int64_t i = 0; i < uniqueLength; i++) {
+               pFirstReduced[i] = pFirst[i] + (int32_t)partStart;
+               //printf("setting %lld ", (int64_t)pCount[i]);
                pCountReduced[i] = pCount[i];
             }
 
          }
          else {
 
-            INT64* pKey = (INT64*)callbackArg->pKeyOut;
+            int64_t* pKey = (int64_t*)callbackArg->pKeyOut;
 
             // the iGroup is fixed up
-            INT64* pIndex = (INT64*)callbackArg->pIndex;
+            int64_t* pIndex = (int64_t*)callbackArg->pIndex;
 
             // pFirst is reduced to iFirstKey (only the uniques)
-            INT64* pFirst = (INT64*)callbackArg->pFirstOut;
-            INT64* pFirstReduced = (INT64*)callbackArg->pFirstReduced;
+            int64_t* pFirst = (int64_t*)callbackArg->pFirstOut;
+            int64_t* pFirstReduced = (int64_t*)callbackArg->pFirstReduced;
 
             // becomes nCount and the very first is reserved for zero bin
             // holds all the uniques + 1 for the zero bin.
-            INT64* pCount = (INT64*)callbackArg->pCountOut;
-            INT64* pCountReduced = (INT64*)callbackArg->pCountReduced;
+            int64_t* pCount = (int64_t*)callbackArg->pCountOut;
+            int64_t* pCountReduced = (int64_t*)callbackArg->pCountReduced;
 
-            INT64  ubefore = (INT64)uniquesBefore;
+            int64_t  ubefore = (int64_t)uniquesBefore;
 
             if (t != 0) {
                pKey += partStart;
                pIndex += partStart;
 
-               for (INT64 i = 0; i < partLength; i++) {
-                  pKey[i] += ((INT64)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
-                  pIndex[i] += (INT64)partStart;
+               for (int64_t i = 0; i < partLength; i++) {
+                  pKey[i] += ((int64_t)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
+                  pIndex[i] += (int64_t)partStart;
                }
             }
             else {
                pKey += partStart;
 
-               for (INT64 i = 0; i < partLength; i++) {
-                  pKey[i] += ((INT64)partStart + 1); // start at 1, becomes ikey
+               for (int64_t i = 0; i < partLength; i++) {
+                  pKey[i] += ((int64_t)partStart + 1); // start at 1, becomes ikey
                }
             }
 
-            INT64 uniqueLength = callbackArg->pUniqueCounts[t] - uniquesBefore;
+            int64_t uniqueLength = callbackArg->pUniqueCounts[t] - uniquesBefore;
             //printf("first reduced %d %lld\n", ubefore, uniqueLength);
             pFirst += partStart;
             pFirstReduced += ubefore;
@@ -3963,15 +3963,15 @@ static PyObject* GroupFromLexSortInternal(
             // very first [0] is for zero bin
             //pCount++;
 
-            for (INT64 i = 0; i < uniqueLength; i++) {
-               pFirstReduced[i] = pFirst[i] + (INT64)partStart;
-               //printf("setting %lld ", (INT64)pCount[i]);
+            for (int64_t i = 0; i < uniqueLength; i++) {
+               pFirstReduced[i] = pFirst[i] + (int64_t)partStart;
+               //printf("setting %lld ", (int64_t)pCount[i]);
                pCountReduced[i] = pCount[i];
             }
 
          }
 
-         return TRUE;
+         return true;
       };
       g_cMathWorker->DoMultiThreadedWork((int)cutOffLength, lambdaPGADDCallback, &pgroupadd);
 
@@ -4007,7 +4007,7 @@ static PyObject* GroupFromLexSortInternal(
       // memcpy..
       // also count invalid bin
       PyArrayObject* firstReduced = AllocateNumpyArray(1, (npy_intp*)&uniqueCount, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
-      INT64 copySize = sizeof(UINDEX) * uniqueCount;
+      int64_t copySize = sizeof(UINDEX) * uniqueCount;
       memcpy(PyArray_BYTES(firstReduced), pFirstOut, copySize);
 
       uniqueCount++;
@@ -4033,7 +4033,7 @@ static PyObject* GroupFromLexSortInternal(
 //     Checks for cutoffs
 //     If no cutoffs
 //     
-//     Arg1: lex=INT32/INT64 result from lexsort
+//     Arg1: lex=int32_t/int64_t result from lexsort
 //     Arg2: value array that was sorted -- if it came from a list, convert it to a void type
 //
 // Returns 3 arrays
@@ -4071,11 +4071,11 @@ PyObject* GroupFromLexSort(PyObject *self, PyObject *args, PyObject *kwargs) {
 
    switch (dtype) {
    CASE_NPY_INT32:
-      return GroupFromLexSortInternal<INT32>(kwargs, (INT32*)pIndex, arrLength, arrLengthValues,  pValues, itemSize);
+      return GroupFromLexSortInternal<int32_t>(kwargs, (int32_t*)pIndex, arrLength, arrLengthValues,  pValues, itemSize);
       break;
 
    CASE_NPY_INT64:
-      return GroupFromLexSortInternal<INT64>(kwargs, (INT64*)pIndex, arrLength, arrLengthValues, pValues, itemSize);
+      return GroupFromLexSortInternal<int64_t>(kwargs, (int64_t*)pIndex, arrLength, arrLengthValues, pValues, itemSize);
       break;
 
    default:

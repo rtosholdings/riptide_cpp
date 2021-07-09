@@ -10,23 +10,23 @@
 //#define LOGGING printf
 
 //--------------------------------------------------------------------------
-typedef  void(*REINDEXCALLBACK)(void* pDataOut, void* pDataIn, void* pIndex1, INT64 indexLen, INT64 itemSize);
+typedef  void(*REINDEXCALLBACK)(void* pDataOut, void* pDataIn, void* pIndex1, int64_t indexLen, int64_t itemSize);
 
 //===============================================================================================================
 //--------------------------------------------------------
-// T is the type of the index -- usually INT32 or INT64
+// T is the type of the index -- usually int32_t or INT64
 // U is a datatype = to the itemsize
 // The INDEXER is auto incremented by its type size
 // The Out is auto incremented by itemsize
 // The pDataIn MUST be passed as the base pointer
 // size is the block size
 template<typename T, typename U>
-void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, INT64 size, INT64 itemSize) {
+void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, int64_t size, int64_t itemSize) {
    U* pOut = (U*)pDataOut;
    U* pIn = (U*)pDataIn;
    T* pIndex = (T*)pIndex1;
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       T index = pIndex[i];
       pOut[i] = pIn[index];
    }
@@ -34,18 +34,18 @@ void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, INT64 size, INT64
 }
 
 //--------------------------------------------------------
-// T is the type of the index -- usually INT32 or INT64
+// T is the type of the index -- usually int32_t or INT64
 // U is a datatype = to the itemsize
 template<typename T>
-void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, INT64 size, INT64 itemSize) {
+void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, int64_t size, int64_t itemSize) {
    char* pOut = (char*)pDataOut;
    char* pIn = (char*)pDataIn;
    T* pIndex = (T*)pIndex1;
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       T index = pIndex[i];
 
-      for (INT64 j = 0; j < itemSize; j++) {
+      for (int64_t j = 0; j < itemSize; j++) {
          pOut[i*itemSize + j] = pIn[index*itemSize + j];
 
       }
@@ -55,14 +55,14 @@ void ReIndexData(void* pDataOut, void* pDataIn, void* pIndex1, INT64 size, INT64
 
 
 //--------------------------------------------------------
-// T is the type of the index -- usually INT32 or INT64
+// T is the type of the index -- usually int32_t or INT64
 template<typename T>
-REINDEXCALLBACK ReIndexDataStep1(INT64 itemSize) {
+REINDEXCALLBACK ReIndexDataStep1(int64_t itemSize) {
    switch (itemSize) {
    case 1:
-      return ReIndexData<T, BYTE>;
+      return ReIndexData<T, int8_t>;
    case 2:
-      return ReIndexData<T, INT16>;
+      return ReIndexData<T, int16_t>;
    case 4:
       return ReIndexData<T, float>;
    case 8:
@@ -77,17 +77,19 @@ REINDEXCALLBACK ReIndexDataStep1(INT64 itemSize) {
 }
 
 //=========================================================
-REINDEXCALLBACK ReIndexer(INT64 itemSize, int dtypeIndex) {
+REINDEXCALLBACK ReIndexer(int64_t itemSize, int dtypeIndex) {
 
-   // Get the dtype for the INDEXER (should be INT32 or INT64)
+   // Get the dtype for the INDEXER (should be int32_t or INT64)
    switch (dtypeIndex) {
 
    CASE_NPY_INT32:
    CASE_NPY_UINT32:
-      return ReIndexDataStep1<INT32>(itemSize);
+      return ReIndexDataStep1<int32_t>(itemSize);
    CASE_NPY_UINT64:
+   
    CASE_NPY_INT64:
-      return ReIndexDataStep1<INT64>(itemSize);
+   
+      return ReIndexDataStep1<int64_t>(itemSize);
    case NPY_FLOAT:
       // allow matlab style float indexing?
       //return ReIndexDataStep1<float>(pDataOut, pDataIn, pIndex, size, itemSize);
@@ -108,10 +110,10 @@ struct RIDX_CALLBACK {
    char* pDataOut;
    char* pDataIn;
    char* pIndex1;
-   INT64 indexLen;
-   INT64 itemSize;
+   int64_t indexLen;
+   int64_t itemSize;
 
-   INT64 indexTypeSize;
+   int64_t indexTypeSize;
 
 } stRICallback;
 
@@ -119,26 +121,26 @@ struct RIDX_CALLBACK {
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL ReIndexThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool ReIndexThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = false;
    RIDX_CALLBACK* OldCallback = (RIDX_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
    char* pDataIn = (char *)OldCallback->pDataIn;
    char* pDataIndex = (char *)OldCallback->pIndex1;
    char* pDataOut = (char*)OldCallback->pDataOut;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
-      INT64 offsetAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->itemSize;
-      INT64 indexAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->indexTypeSize;
+      int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->itemSize;
+      int64_t indexAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->indexTypeSize;
 
       OldCallback->reIndexCallback(pDataOut + offsetAdj, pDataIn, pDataIndex + indexAdj, lenX, stRICallback.itemSize);
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -161,7 +163,7 @@ PyObject* ReIndex(PyObject *self, PyObject *args) {
    if (mlp.aInfo && mlp.tupleSize > 1) {
 
       // Bug bug -- arraysize should come from first arg and must <= second arg
-      INT64 arraySize1 = mlp.totalRows;
+      int64_t arraySize1 = mlp.totalRows;
 
       PyArrayObject* result = AllocateLikeResize(mlp.aInfo[1].pObject, arraySize1);
 
@@ -217,16 +219,16 @@ PyObject* ReIndex(PyObject *self, PyObject *args) {
 
 
 //=================================================================================================================
-typedef void(*REMAP_INDEX)(void* pInput1, void* pOutput1, INT64 length, INT32* pMapper, INT64 maplength);
+typedef void(*REMAP_INDEX)(void* pInput1, void* pOutput1, int64_t length, int32_t* pMapper, int64_t maplength);
 
 //--------------------------------------------------------------------------------
 template<typename T, typename U>
-void ReMapIndex(void* pInput1, void* pOutput1, INT64 length, INT32* pMapper, INT64 maplength) {
+void ReMapIndex(void* pInput1, void* pOutput1, int64_t length, int32_t* pMapper, int64_t maplength) {
 
    T* pInput = (T*)pInput1;
    U* pOutput = (U*)pOutput1;
 
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
       pOutput[i] = (U)(pMapper[pInput[i]]);
    }
 
@@ -234,22 +236,23 @@ void ReMapIndex(void* pInput1, void* pOutput1, INT64 length, INT32* pMapper, INT
 
 
 //--------------------------------------------------------
-// T is the type of the index -- usually INT32 or INT64
+// T is the type of the index -- usually int32_t or INT64
 template<typename T>
 REMAP_INDEX ReMapIndexStep1(int numpyOutputType) {
 
    switch (numpyOutputType) {
    case NPY_INT8:
-      return ReMapIndex<T, INT8>;
+      return ReMapIndex<T, int8_t>;
       break;
    case NPY_INT16:
-      return ReMapIndex<T, INT16>;
+      return ReMapIndex<T, int16_t>;
       break;
    CASE_NPY_INT32:
-      return ReMapIndex<T, INT32>;
+      return ReMapIndex<T, int32_t>;
       break;
    CASE_NPY_INT64:
-      return ReMapIndex<T, INT64>;
+   
+      return ReMapIndex<T, int64_t>;
       break;
    default:
       printf("ReMapIndexStep1 does not understand type %d\n", numpyOutputType);
@@ -285,7 +288,7 @@ PyObject* ReMapIndex(PyObject *self, PyObject *args) {
 
    if (PyArray_TYPE(remapArr1) != NPY_INT32) {
 
-      PyErr_Format(PyExc_ValueError, "third arg array must be NPY_INT32 -- not %d", PyArray_TYPE(remapArr1));
+      PyErr_Format(PyExc_ValueError, "third arg array must be NPY_int32_t -- not %d", PyArray_TYPE(remapArr1));
    }
    else {
       int numpyInType = PyArray_TYPE(inArr1);
@@ -295,16 +298,17 @@ PyObject* ReMapIndex(PyObject *self, PyObject *args) {
 
       switch (numpyInType) {
       case NPY_INT8:
-         func = ReMapIndexStep1<INT8>(numpyOutType);
+         func = ReMapIndexStep1<int8_t>(numpyOutType);
          break;
       case NPY_INT16:
-         func = ReMapIndexStep1<INT16>(numpyOutType);
+         func = ReMapIndexStep1<int16_t>(numpyOutType);
          break;
       CASE_NPY_INT32:
-         func = ReMapIndexStep1<INT32>(numpyOutType);
+         func = ReMapIndexStep1<int32_t>(numpyOutType);
          break;
       CASE_NPY_INT64:
-         func = ReMapIndexStep1<INT64>(numpyOutType);
+      
+         func = ReMapIndexStep1<int64_t>(numpyOutType);
          break;
       default:
          printf("ReMapIndexStep1 does not understand type %d\n", numpyOutType);
@@ -315,10 +319,10 @@ PyObject* ReMapIndex(PyObject *self, PyObject *args) {
          void *pInput = PyArray_BYTES(inArr1);
          void *pOutput = PyArray_BYTES(outArr1);
          void* pRemap = PyArray_BYTES(remapArr1);
-         INT64 length = ArrayLength(inArr1);
-         INT64 mapLength = ArrayLength(remapArr1);
+         int64_t length = ArrayLength(inArr1);
+         int64_t mapLength = ArrayLength(remapArr1);
 
-         func(pInput, pOutput, length, (INT32*)pRemap, mapLength);
+         func(pInput, pOutput, length, (int32_t*)pRemap, mapLength);
       }
    }
 
@@ -331,14 +335,14 @@ PyObject* ReMapIndex(PyObject *self, PyObject *args) {
 
 
 //=================================================================================================================
-typedef PyObject*(*NAN_INF_COUNT)(void* pDataIn1, void* pIndex, INT64 arraySize1, int numpyInType);
+typedef PyObject*(*NAN_INF_COUNT)(void* pDataIn1, void* pIndex, int64_t arraySize1, int numpyInType);
 
 //--------------------------------------------------------
 // T is the value type (int,float, bool) and matches numpyInType
-// U is the type of the index -- usually INT32 or INT64
+// U is the type of the index -- usually int32_t or INT64
 //-----------------------------------------------------------------------------------------------
 template <typename T, typename U> PyObject*
-NanInfCount(void* pDataIn1, void* pIndex1, INT64 arraySize1, int numpyInType) {
+NanInfCount(void* pDataIn1, void* pIndex1, int64_t arraySize1, int numpyInType) {
 
    void* pDefault = GetDefaultForType(numpyInType);
    T defaultNan = *(T*)pDefault;
@@ -346,13 +350,13 @@ NanInfCount(void* pDataIn1, void* pIndex1, INT64 arraySize1, int numpyInType) {
    T* pData = (T*)pDataIn1;
    U* pIndex = (U*)pIndex1;
 
-   INT64 nancount = 0;
-   INT64 posInfCount = 0;
-   INT64 negInfCount = 0;
+   int64_t nancount = 0;
+   int64_t posInfCount = 0;
+   int64_t negInfCount = 0;
 
 
    if (numpyInType == NPY_FLOAT || numpyInType == NPY_DOUBLE || numpyInType == NPY_LONGDOUBLE) {
-      INT64 i = arraySize1 - 1;
+      int64_t i = arraySize1 - 1;
 
       // Scan from back
       while ((i >= 0) && pData[pIndex[i]] != pData[pIndex[i]]) {
@@ -374,14 +378,14 @@ NanInfCount(void* pDataIn1, void* pIndex1, INT64 arraySize1, int numpyInType) {
 
    }
 
-   // BOOL cannot have invalid
+   // bool cannot have invalid
    else if (numpyInType > 0) {
 
       // check for integer which can have invalid in front     
       if (numpyInType & 1) {
          // SCAN FORWARD
          //printf("***scan forward\n");
-         INT64 i = arraySize1 - 1;
+         int64_t i = arraySize1 - 1;
          int j = 0;
 
          while ((j <= i) && pData[pIndex[j]] == defaultNan) {
@@ -391,7 +395,7 @@ NanInfCount(void* pDataIn1, void* pIndex1, INT64 arraySize1, int numpyInType) {
       }
       else {
          //printf("***scan backward\n");
-         INT64 i = arraySize1 - 1;
+         int64_t i = arraySize1 - 1;
 
          // check for default value?
          while ((i >= 0) && pData[pIndex[i]] == defaultNan) {
@@ -407,7 +411,7 @@ NanInfCount(void* pDataIn1, void* pIndex1, INT64 arraySize1, int numpyInType) {
 }
 
 //------------------------------------------------------------------------------
-// U is the index type: INT32 or INT64
+// U is the index type: int32_t or INT64
 // Returns NULL if no routine
 template<typename U> NAN_INF_COUNT
 GetNanInfCount(int numpyInType) {
@@ -416,28 +420,30 @@ GetNanInfCount(int numpyInType) {
    switch (numpyInType) {
    case NPY_BOOL:
    case NPY_INT8:
-      result = NanInfCount<INT8, U>;
+      result = NanInfCount<int8_t, U>;
       break;
    case NPY_INT16:
-      result = NanInfCount<INT16, U>;
+      result = NanInfCount<int16_t, U>;
       break;
    CASE_NPY_INT32:
-      result = NanInfCount<INT32, U>;
+      result = NanInfCount<int32_t, U>;
       break;
    CASE_NPY_INT64:
-      result = NanInfCount<INT64, U>;
+   
+      result = NanInfCount<int64_t, U>;
       break;
    case NPY_UINT8:
-      result = NanInfCount<UINT8, U>;
+      result = NanInfCount<uint8_t, U>;
       break;
    case NPY_UINT16:
-      result = NanInfCount<UINT16, U>;
+      result = NanInfCount<uint16_t, U>;
       break;
    CASE_NPY_UINT32:
-      result = NanInfCount<UINT32, U>;
+      result = NanInfCount<uint32_t, U>;
       break;
    CASE_NPY_UINT64:
-      result = NanInfCount<UINT64, U>;
+   
+      result = NanInfCount<uint64_t, U>;
       break;
    case NPY_FLOAT:
       result = NanInfCount<float, U>;
@@ -468,22 +474,23 @@ PyObject* NanInfCountFromSort(PyObject *self, PyObject *args) {
       if (mlp.aInfo[0].ArrayLength == mlp.aInfo[1].ArrayLength) {
          void* pDataIn1 = mlp.aInfo[0].pData;
          void* pIndex1 = mlp.aInfo[1].pData;
-         INT64 arraySize1 = mlp.aInfo[0].ArrayLength;
+         int64_t arraySize1 = mlp.aInfo[0].ArrayLength;
          int numpyInType = mlp.aInfo[0].NumpyDType;
          int numpyIndexType = mlp.aInfo[1].NumpyDType;
 
-         NAN_INF_COUNT func = NULL;
+         NAN_INF_COUNT func = nullptr;
 
          switch (numpyIndexType) {
          CASE_NPY_INT32:
-            func = GetNanInfCount<INT32>(numpyInType);
+            func = GetNanInfCount<int32_t>(numpyInType);
             break;
          CASE_NPY_INT64:
-            func = GetNanInfCount<INT64>(numpyInType);
+         
+            func = GetNanInfCount<int64_t>(numpyInType);
             break;
          }
 
-         if (func != NULL) {
+         if (func != nullptr) {
             return func(pDataIn1, pIndex1, arraySize1, numpyInType);
          }
 
@@ -508,8 +515,8 @@ PyObject* NanInfCountFromSort(PyObject *self, PyObject *args) {
 //=================================================================================================
 //=================================================================================================
 
-typedef void(*MAKE_BINS_SORTED)(void* pDataIn1, void* pIndex1, void* pOut1, INT64 length, double* pBin1, INT64 maxbin, INT64 nancount, INT64 infcount, INT64 neginfcount);
-typedef void(*MAKE_BINS_BSEARCH)(void* pDataIn1, void* pOut1, INT64 start, INT64 length, void* pBin1, INT64 maxbin, int numpyInType);
+typedef void(*MAKE_BINS_SORTED)(void* pDataIn1, void* pIndex1, void* pOut1, int64_t length, double* pBin1, int64_t maxbin, int64_t nancount, int64_t infcount, int64_t neginfcount);
+typedef void(*MAKE_BINS_BSEARCH)(void* pDataIn1, void* pOut1, int64_t start, int64_t length, void* pBin1, int64_t maxbin, int numpyInType);
 
 
 //=================================================================================================
@@ -517,14 +524,14 @@ typedef void(*MAKE_BINS_BSEARCH)(void* pDataIn1, void* pOut1, INT64 start, INT64
 // U is the sort index type (often INT32)
 // Returns pOut1 wihch can be INT8,INT16,INT32
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename T, typename U, typename V>
-void MakeBinsSorted(void* pDataIn1, void* pSortIndex1, void* pOut1, INT64 length, double* pBin1, INT64 maxbin, INT64 nancount, INT64 infcount, INT64 neginfcount) {
+void MakeBinsSorted(void* pDataIn1, void* pSortIndex1, void* pOut1, int64_t length, double* pBin1, int64_t maxbin, int64_t nancount, int64_t infcount, int64_t neginfcount) {
    T* pData = (T*)pDataIn1;
    U* pIndex = (U*)pSortIndex1;
    V* pOut = (V*)pOut1;
 
-   INT64 i = 0;
+   int64_t i = 0;
 
    LOGGING("Array length %lld   bin length %lld   nancount %lld  neginfcount%lld\n", length, maxbin, nancount, neginfcount);
 
@@ -543,7 +550,7 @@ void MakeBinsSorted(void* pDataIn1, void* pSortIndex1, void* pOut1, INT64 length
    }
 
    // TODO: multithread optimize this section
-   INT64 newlength = length - (nancount + infcount);
+   int64_t newlength = length - (nancount + infcount);
    V bin = 0;
    double compare = pBin1[bin];
    //printf("comparing0 to %lld  %lf\n", (INT64)bin, compare);
@@ -587,7 +594,7 @@ void MakeBinsSorted(void* pDataIn1, void* pSortIndex1, void* pOut1, INT64 length
             // move to next bin
             ++bin;
             compare = pBin1[bin];
-            LOGGING("comparing to %lld %lld  %lf  %lf\n", i, (INT64)bin, (double)pData[index], compare);
+            LOGGING("comparing to %lld %lld  %lf  %lf\n", i, (int64_t)bin, (double)pData[index], compare);
          }
          if (bin >= maxbin) {
             break;
@@ -606,7 +613,7 @@ void MakeBinsSorted(void* pDataIn1, void* pSortIndex1, void* pOut1, INT64 length
 }
 
 //------------------------------------------------------------------------------
-// U is the value index type: INT32 or INT64
+// U is the value index type: int32_t or INT64
 // V is the bin index type: INT8, INT16, INT32, INT64
 // Returns NULL if no routine
 template<typename U, typename V> MAKE_BINS_SORTED
@@ -616,28 +623,30 @@ GetMakeBinsSorted(int numpyInType) {
    switch (numpyInType) {
    case NPY_BOOL:
    case NPY_INT8:
-      result = MakeBinsSorted<INT8, U, V>;
+      result = MakeBinsSorted<int8_t, U, V>;
       break;
    case NPY_INT16:
-      result = MakeBinsSorted<INT16, U, V>;
+      result = MakeBinsSorted<int16_t, U, V>;
       break;
    CASE_NPY_INT32:
-      result = MakeBinsSorted<INT32, U, V>;
+      result = MakeBinsSorted<int32_t, U, V>;
       break;
    CASE_NPY_INT64:
-      result = MakeBinsSorted<INT64, U, V>;
+   
+      result = MakeBinsSorted<int64_t, U, V>;
       break;
    case NPY_UINT8:
-      result = MakeBinsSorted<UINT8, U, V>;
+      result = MakeBinsSorted<uint8_t, U, V>;
       break;
    case NPY_UINT16:
-      result = MakeBinsSorted<UINT16, U, V>;
+      result = MakeBinsSorted<uint16_t, U, V>;
       break;
    CASE_NPY_UINT32:
-      result = MakeBinsSorted<UINT32, U, V>;
+      result = MakeBinsSorted<uint32_t, U, V>;
       break;
    CASE_NPY_UINT64:
-      result = MakeBinsSorted<UINT64, U, V>;
+   
+      result = MakeBinsSorted<uint64_t, U, V>;
       break;
    case NPY_FLOAT:
       result = MakeBinsSorted<float, U, V>;
@@ -680,9 +689,9 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
       &PyTuple_Type, &counts,
       &binMode)) return NULL;
 
-   INT64 nancount = 0;
-   INT64 infcount = 0;
-   INT64 neginfcount = 0;
+   int64_t nancount = 0;
+   int64_t infcount = 0;
+   int64_t neginfcount = 0;
 
    if (!PyArg_ParseTuple((PyObject*)counts, "LLL", &nancount, &infcount, &neginfcount)) return NULL;
 
@@ -696,9 +705,9 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
 
       int numpyInType = PyArray_TYPE(inArr1);
       int numpyIndexType = PyArray_TYPE(indexArr1);
-      INT64 binSize = ArrayLength(binArr1);
+      int64_t binSize = ArrayLength(binArr1);
 
-      // Choose INT8,INT16,INT32 for bin mode
+      // Choose INT8,INT16,int32_t for bin mode
       int binmode = 0;
       if (binSize > 100) {
          binmode = 1;
@@ -715,33 +724,34 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
       CASE_NPY_INT32:
          switch (binmode) {
          case 0:
-            func = GetMakeBinsSorted<INT32, INT8>(numpyInType);
+            func = GetMakeBinsSorted<int32_t, int8_t>(numpyInType);
             break;
          case 1:
-            func = GetMakeBinsSorted<INT32, INT16>(numpyInType);
+            func = GetMakeBinsSorted<int32_t, int16_t>(numpyInType);
             break;
          case 2:
-            func = GetMakeBinsSorted<INT32, INT32>(numpyInType);
+            func = GetMakeBinsSorted<int32_t, int32_t>(numpyInType);
             break;
          case 3:
-            func = GetMakeBinsSorted<INT32, INT64>(numpyInType);
+            func = GetMakeBinsSorted<int32_t, int64_t>(numpyInType);
             break;
          }
          break;
 
       CASE_NPY_INT64:
+      
          switch (binmode) {
          case 0:
-            func = GetMakeBinsSorted<INT64, INT8>(numpyInType);
+            func = GetMakeBinsSorted<int64_t, int8_t>(numpyInType);
             break;
          case 1:
-            func = GetMakeBinsSorted<INT64, INT16>(numpyInType);
+            func = GetMakeBinsSorted<int64_t, int16_t>(numpyInType);
             break;
          case 2:
-            func = GetMakeBinsSorted<INT64, INT32>(numpyInType);
+            func = GetMakeBinsSorted<int64_t, int32_t>(numpyInType);
             break;
          case 3:
-            func = GetMakeBinsSorted<INT64, INT64>(numpyInType);
+            func = GetMakeBinsSorted<int64_t, int64_t>(numpyInType);
             break;
          }
          break;
@@ -788,9 +798,9 @@ PyObject* BinsToCutsSorted(PyObject *self, PyObject *args) {
 // U is the index type (often INT32)
 // Returns pOut1 wihch can be INT8,INT16,INT32
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename T, typename V, typename BINTYPE>
-void SearchSortedRight(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, void* pBin1T, INT64 maxbin1, int numpyInType) {
+void SearchSortedRight(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, void* pBin1T, int64_t maxbin1, int numpyInType) {
    const T* pData = (const T*)pDataIn1;
    pData = &pData[start];
 
@@ -808,7 +818,7 @@ void SearchSortedRight(void* pDataIn1, void* pOut1, const INT64 start, const INT
    LOGGING("SearchSortedLeft Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const T value = pData[i];
 
@@ -869,9 +879,9 @@ void SearchSortedRight(void* pDataIn1, void* pOut1, const INT64 start, const INT
 // U is the index type (often INT32)
 // Returns pOut1 wihch can be INT8,INT16,INT32
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename T, typename V, typename BINTYPE>
-void SearchSortedLeft(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, void* pBin1T, INT64 maxbin1, int numpyInType) {
+void SearchSortedLeft(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, void* pBin1T, int64_t maxbin1, int numpyInType) {
    const T* pData = (const T*)pDataIn1;
    pData = &pData[start];
 
@@ -889,7 +899,7 @@ void SearchSortedLeft(void* pDataIn1, void* pOut1, const INT64 start, const INT6
    LOGGING("SearchSortedLeft Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const T value = pData[i];
 
@@ -947,11 +957,11 @@ void SearchSortedLeft(void* pDataIn1, void* pOut1, const INT64 start, const INT6
 
 
 NPY_INLINE static int
-STRING_LTEQ(const char *s1, const char *s2, INT64 len1, INT64 len2)
+STRING_LTEQ(const char *s1, const char *s2, int64_t len1, int64_t len2)
 {
    const unsigned char *c1 = (unsigned char *)s1;
    const unsigned char *c2 = (unsigned char *)s2;
-   INT64 i;
+   int64_t i;
    if (len1 == len2) {
       for (i = 0; i < len1; ++i) {
          if (c1[i] != c2[i]) {
@@ -985,11 +995,11 @@ STRING_LTEQ(const char *s1, const char *s2, INT64 len1, INT64 len2)
 
 
 NPY_INLINE static int
-STRING_LT(const char *s1, const char *s2, INT64 len1, INT64 len2)
+STRING_LT(const char *s1, const char *s2, int64_t len1, int64_t len2)
 {
    const unsigned char *c1 = (unsigned char *)s1;
    const unsigned char *c2 = (unsigned char *)s2;
-   INT64 i;
+   int64_t i;
    if (len1 == len2) {
       for (i = 0; i < len1; ++i) {
          if (c1[i] != c2[i]) {
@@ -1022,11 +1032,11 @@ STRING_LT(const char *s1, const char *s2, INT64 len1, INT64 len2)
 
 
 NPY_INLINE static int
-STRING_GTEQ(const char *s1, const char *s2, INT64 len1, INT64 len2)
+STRING_GTEQ(const char *s1, const char *s2, int64_t len1, int64_t len2)
 {
    const unsigned char *c1 = (unsigned char *)s1;
    const unsigned char *c2 = (unsigned char *)s2;
-   INT64 i;
+   int64_t i;
    if (len1 == len2) {
       for (i = 0; i < len1; ++i) {
          if (c1[i] != c2[i]) {
@@ -1060,11 +1070,11 @@ STRING_GTEQ(const char *s1, const char *s2, INT64 len1, INT64 len2)
 
 
 NPY_INLINE static int
-STRING_GT(const char *s1, const char *s2, INT64 len1, INT64 len2)
+STRING_GT(const char *s1, const char *s2, int64_t len1, int64_t len2)
 {
    const unsigned char *c1 = (unsigned char *)s1;
    const unsigned char *c2 = (unsigned char *)s2;
-   INT64 i;
+   int64_t i;
    if (len1 == len2) {
       for (i = 0; i < len1; ++i) {
          if (c1[i] != c2[i]) {
@@ -1102,9 +1112,9 @@ STRING_GT(const char *s1, const char *s2, INT64 len1, INT64 len2)
 // OUT_TYPE is the output index type
 // Returns pOut1 wihch can be INT8,INT16,INT32,INT64
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename OUT_TYPE>
-void SearchSortedLeftString(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, char* pBin1T, INT64 maxbin1, INT64 itemSizeValue, INT64 itemSizeBin) {
+void SearchSortedLeftString(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, char* pBin1T, int64_t maxbin1, int64_t itemSizeValue, int64_t itemSizeBin) {
    const char* pData = (const char*)pDataIn1;
    pData = &pData[start];
 
@@ -1122,7 +1132,7 @@ void SearchSortedLeftString(void* pDataIn1, void* pOut1, const INT64 start, cons
    LOGGING("SearchSortedLeftString Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const char* value = &pData[i*itemSizeValue];
 
@@ -1184,9 +1194,9 @@ void SearchSortedLeftString(void* pDataIn1, void* pOut1, const INT64 start, cons
 // OUT_TYPE is the output index type
 // Returns pOut1 wihch can be INT8,INT16,INT32,INT64
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename OUT_TYPE>
-void MakeBinsBSearchString(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, char* pBin1T, INT64 maxbin1, INT64 itemSizeValue, INT64 itemSizeBin) {
+void MakeBinsBSearchString(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, char* pBin1T, int64_t maxbin1, int64_t itemSizeValue, int64_t itemSizeBin) {
    const char* pData = (const char*)pDataIn1;
    pData = &pData[start];
 
@@ -1204,7 +1214,7 @@ void MakeBinsBSearchString(void* pDataIn1, void* pOut1, const INT64 start, const
    LOGGING("MakeBinsBSearchString Array length %lld   bin length %lld    itemsizebin:%lld  itemsizevalue:%lld\n", length, maxbin1, itemSizeBin, itemSizeValue);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const char* value = &pData[i * itemSizeValue];
 
@@ -1269,9 +1279,9 @@ void MakeBinsBSearchString(void* pDataIn1, void* pOut1, const INT64 start, const
 // OUT_TYPE is the output index type
 // Returns pOut1 wihch can be INT8,INT16,INT32,INT64
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename T, typename OUT_TYPE, typename BINTYPE>
-void MakeBinsBSearchFloat(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, void* pBin1T, INT64 maxbin1, int numpyInType) {
+void MakeBinsBSearchFloat(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, void* pBin1T, int64_t maxbin1, int numpyInType) {
    const T* pData = (const T*)pDataIn1;
    pData = &pData[start];
 
@@ -1289,7 +1299,7 @@ void MakeBinsBSearchFloat(void* pDataIn1, void* pOut1, const INT64 start, const 
    LOGGING("MakeBinsBSearchFloat Array length %lld   bin length %lld    bintype %d\n", length, maxbin1, numpyInType);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const T value = pData[i];
       if (std::isfinite(value) && value >= veryfirst && value <= verylast) {
@@ -1350,11 +1360,11 @@ void MakeBinsBSearchFloat(void* pDataIn1, void* pOut1, const INT64 start, const 
 // T is the value type
 // OUT_TYPE is the bin index type: INT8, INT16, INT32, INT64
 // U is the index type (often INT32)
-// Returns pOut1 wihch can be INT8,INT16,INT32,INT64 (the OUT_TYPE)
+// Returns pOut1 wihch can be INT8,INT16,INT32,int64_t (the OUT_TYPE)
 //
-// NOTE: Uses double to separate bins but this does not have resolution for INT64 nanos
+// NOTE: Uses double to separate bins but this does not have resolution for int64_t nanos
 template<typename T, typename OUT_TYPE, typename BINTYPE>
-void MakeBinsBSearch(void* pDataIn1, void* pOut1, const INT64 start, const INT64 length, void* pBin1T, INT64 maxbin1, int numpyInType) {
+void MakeBinsBSearch(void* pDataIn1, void* pOut1, const int64_t start, const int64_t length, void* pBin1T, int64_t maxbin1, int numpyInType) {
    const T* pData = (const T*)pDataIn1;
    pData = &pData[start];
 
@@ -1374,7 +1384,7 @@ void MakeBinsBSearch(void* pDataIn1, void* pOut1, const INT64 start, const INT64
    LOGGING("MakeBinsBSearch Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
    // Now assign a valid bin to the good data in the middle
-   for (INT64 i = 0; i < length; i++) {
+   for (int64_t i = 0; i < length; i++) {
 
       const T value = pData[i];
 
@@ -1430,7 +1440,7 @@ void MakeBinsBSearch(void* pDataIn1, void* pOut1, const INT64 start, const INT64
 }
 
 //------------------------------------------------------------------------------
-// BINTYPE is the value index type: INT32 or INT64
+// BINTYPE is the value index type: int32_t or INT64
 // OUT_TYPE is the bin index type: INT8, INT16, INT32, INT64
 // Returns NULL if no routine
 template<typename OUT_TYPE, typename BINTYPE> MAKE_BINS_BSEARCH
@@ -1441,28 +1451,30 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       switch (numpyInType) {
       case NPY_BOOL:
       case NPY_INT8:
-         result = MakeBinsBSearch<INT8, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<int8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_INT16:
-         result = MakeBinsBSearch<INT16, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<int16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT32:
-         result = MakeBinsBSearch<INT32, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<int32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT64:
-         result = MakeBinsBSearch<INT64, OUT_TYPE, BINTYPE>;
+      
+         result = MakeBinsBSearch<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
-         result = MakeBinsBSearch<UINT8, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<uint8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT16:
-         result = MakeBinsBSearch<UINT16, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<uint16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT32:
-         result = MakeBinsBSearch<UINT32, OUT_TYPE, BINTYPE>;
+         result = MakeBinsBSearch<uint32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT64:
-         result = MakeBinsBSearch<UINT64, OUT_TYPE, BINTYPE>;
+      
+         result = MakeBinsBSearch<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
          result = MakeBinsBSearchFloat<float, OUT_TYPE, BINTYPE>;
@@ -1483,28 +1495,30 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       switch (numpyInType) {
       case NPY_BOOL:
       case NPY_INT8:
-         result = SearchSortedLeft<INT8, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<int8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_INT16:
-         result = SearchSortedLeft<INT16, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<int16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT32:
-         result = SearchSortedLeft<INT32, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<int32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT64:
-         result = SearchSortedLeft<INT64, OUT_TYPE, BINTYPE>;
+      
+         result = SearchSortedLeft<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
-         result = SearchSortedLeft<UINT8, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<uint8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT16:
-         result = SearchSortedLeft<UINT16, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<uint16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT32:
-         result = SearchSortedLeft<UINT32, OUT_TYPE, BINTYPE>;
+         result = SearchSortedLeft<uint32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT64:
-         result = SearchSortedLeft<UINT64, OUT_TYPE, BINTYPE>;
+      
+         result = SearchSortedLeft<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
          result = SearchSortedLeft<float, OUT_TYPE, BINTYPE>;
@@ -1525,28 +1539,30 @@ GetMakeBinsBSearchPart2(int numpyInType, int searchMode) {
       switch (numpyInType) {
       case NPY_BOOL:
       case NPY_INT8:
-         result = SearchSortedRight<INT8, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<int8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_INT16:
-         result = SearchSortedRight<INT16, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<int16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT32:
-         result = SearchSortedRight<INT32, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<int32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_INT64:
-         result = SearchSortedRight<INT64, OUT_TYPE, BINTYPE>;
+      
+         result = SearchSortedRight<int64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT8:
-         result = SearchSortedRight<UINT8, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<uint8_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_UINT16:
-         result = SearchSortedRight<UINT16, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<uint16_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT32:
-         result = SearchSortedRight<UINT32, OUT_TYPE, BINTYPE>;
+         result = SearchSortedRight<uint32_t, OUT_TYPE, BINTYPE>;
          break;
       CASE_NPY_UINT64:
-         result = SearchSortedRight<UINT64, OUT_TYPE, BINTYPE>;
+      
+         result = SearchSortedRight<uint64_t, OUT_TYPE, BINTYPE>;
          break;
       case NPY_FLOAT:
          result = SearchSortedRight<float, OUT_TYPE, BINTYPE>;
@@ -1573,19 +1589,22 @@ GetMakeBinsBSearch(int numpyInType, int binType, int searchMode) {
       
    switch (binType) {
    case NPY_INT8:
-      result = GetMakeBinsBSearchPart2<OUT_TYPE, INT8>(numpyInType, searchMode);
+      result = GetMakeBinsBSearchPart2<OUT_TYPE, int8_t>(numpyInType, searchMode);
       break;
    case NPY_INT16:
-      result = GetMakeBinsBSearchPart2<OUT_TYPE, INT16>(numpyInType, searchMode);
+      result = GetMakeBinsBSearchPart2<OUT_TYPE, int16_t>(numpyInType, searchMode);
       break;
    CASE_NPY_INT32:
-      result = GetMakeBinsBSearchPart2<OUT_TYPE, INT32>(numpyInType, searchMode);
+      result = GetMakeBinsBSearchPart2<OUT_TYPE, int32_t>(numpyInType, searchMode);
       break;
+      // NO UINT8/16/32?
    CASE_NPY_INT64:
-      result = GetMakeBinsBSearchPart2<OUT_TYPE, INT64>(numpyInType, searchMode);
+   
+      result = GetMakeBinsBSearchPart2<OUT_TYPE, int64_t>(numpyInType, searchMode);
       break;
    CASE_NPY_UINT64:
-      result = GetMakeBinsBSearchPart2<OUT_TYPE, UINT64>(numpyInType, searchMode);
+   
+      result = GetMakeBinsBSearchPart2<OUT_TYPE, uint64_t>(numpyInType, searchMode);
       break;
    case NPY_FLOAT:
       result = GetMakeBinsBSearchPart2<OUT_TYPE, float>(numpyInType, searchMode);
@@ -1629,9 +1648,9 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
    int binType = PyArray_TYPE(binArr1);
 
    int numpyInType = PyArray_TYPE(inArr1);
-   INT64 binSize = ArrayLength(binArr1);
+   int64_t binSize = ArrayLength(binArr1);
 
-   // Choose INT8,INT16,INT32 for bin mode
+   // Choose INT8,INT16,int32_t for bin mode
    int binmode = 0;
    if (binSize > 100) {
       binmode = 1;
@@ -1643,12 +1662,12 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
       }
    }
 
-   BOOL isString = FALSE;
+   bool isString = false;
 
    if (numpyInType == binType) {
       // string or unicode comparison
       if (numpyInType == NPY_STRING || numpyInType == NPY_UNICODE) {
-         isString = TRUE;
+         isString = true;
       }
    }
 
@@ -1656,16 +1675,16 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
 
    switch (binmode) {
    case 0:
-      func = GetMakeBinsBSearch<INT8>(numpyInType, binType, searchMode);
+      func = GetMakeBinsBSearch<int8_t>(numpyInType, binType, searchMode);
       break;
    case 1:
-      func = GetMakeBinsBSearch<INT16>(numpyInType, binType, searchMode);
+      func = GetMakeBinsBSearch<int16_t>(numpyInType, binType, searchMode);
       break;
    case 2:
-      func = GetMakeBinsBSearch<INT32>(numpyInType, binType, searchMode);
+      func = GetMakeBinsBSearch<int32_t>(numpyInType, binType, searchMode);
       break;
    case 3:
-      func = GetMakeBinsBSearch<INT64>(numpyInType, binType, searchMode);
+      func = GetMakeBinsBSearch<int64_t>(numpyInType, binType, searchMode);
       break;
    }
 
@@ -1694,17 +1713,17 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
                void* pDataOut;
                void* pDataIn1;
                void* pBin1;
-               INT64 binSize;
+               int64_t binSize;
                int   numpyInType;
                int   binmode;
-               INT64 inputItemSize;
-               INT64 searchItemSize;
+               int64_t inputItemSize;
+               int64_t searchItemSize;
             };
 
             BSearchCallbackStruct stBSearchCallback;
 
             // This is the routine that will be called back from multiple threads
-            auto lambdaBSearchCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+            auto lambdaBSearchCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
                BSearchCallbackStruct* callbackArg = (BSearchCallbackStruct*)callbackArgT;
 
                //printf("[%d] Bsearch string %lld %lld\n", core, start, length);
@@ -1712,16 +1731,16 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
 
                   switch (callbackArg->binmode) {
                   case 0:
-                     MakeBinsBSearchString<INT8>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
+                     MakeBinsBSearchString<int8_t>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
                      break;
                   case 1:
-                     MakeBinsBSearchString<INT16>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
+                     MakeBinsBSearchString<int16_t>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
                      break;
                   case 2:
-                     MakeBinsBSearchString<INT32>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
+                     MakeBinsBSearchString<int32_t>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
                      break;
                   case 3:
-                     MakeBinsBSearchString<INT64>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
+                     MakeBinsBSearchString<int64_t>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, (char*)callbackArg->pBin1, callbackArg->binSize, callbackArg->inputItemSize, callbackArg->searchItemSize);
                      break;
                   }
                }
@@ -1743,7 +1762,7 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
 
                }
                //callbackArg->func(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, callbackArg->pBin1, callbackArg->binSize, callbackArg->numpyInType);
-               return TRUE;
+               return true;
             };
 
             stBSearchCallback.pDataOut = PyArray_BYTES(result);
@@ -1755,7 +1774,7 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
             stBSearchCallback.inputItemSize = PyArray_ITEMSIZE(inArr1);
             stBSearchCallback.searchItemSize = PyArray_ITEMSIZE(binArr1);
 
-            INT64 lengthData = ArrayLength(inArr1);
+            int64_t lengthData = ArrayLength(inArr1);
             g_cMathWorker->DoMultiThreadedChunkWork(lengthData, lambdaBSearchCallback, &stBSearchCallback);
 
          }
@@ -1766,20 +1785,20 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
                void* pDataOut;
                void* pDataIn1;
                void* pBin1;
-               INT64 binSize;
+               int64_t binSize;
                int   numpyInType;
             };
 
             BSearchCallbackStruct stBSearchCallback;
 
             // This is the routine that will be called back from multiple threads
-            auto lambdaBSearchCallback = [](void* callbackArgT, int core, INT64 start, INT64 length) -> BOOL {
+            auto lambdaBSearchCallback = [](void* callbackArgT, int core, int64_t start, int64_t length) -> bool {
                BSearchCallbackStruct* callbackArg = (BSearchCallbackStruct*)callbackArgT;
 
                //printf("[%d] Bsearch %lld %lld\n", core, start, length);
 
                callbackArg->func(callbackArg->pDataIn1, callbackArg->pDataOut, start, length, callbackArg->pBin1, callbackArg->binSize, callbackArg->numpyInType);
-               return TRUE;
+               return true;
             };
 
             stBSearchCallback.pDataOut = PyArray_BYTES(result);
@@ -1789,7 +1808,7 @@ PyObject* BinsToCutsBSearch(PyObject *self, PyObject *args) {
             stBSearchCallback.numpyInType = numpyInType;
             stBSearchCallback.func = func;
 
-            INT64 lengthData = ArrayLength(inArr1);
+            int64_t lengthData = ArrayLength(inArr1);
             g_cMathWorker->DoMultiThreadedChunkWork(lengthData, lambdaBSearchCallback, &stBSearchCallback);
          }
 

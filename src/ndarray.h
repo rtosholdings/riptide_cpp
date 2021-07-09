@@ -4,8 +4,8 @@
 extern Py_ssize_t
 GetNdArrayLen(PyObject *self);
 
-extern INT64
-CopyNdArrayToBuffer(PyObject *self, char* destBuffer, INT64 len);
+extern int64_t
+CopyNdArrayToBuffer(PyObject *self, char* destBuffer, int64_t len);
 
 
 

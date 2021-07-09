@@ -10,18 +10,18 @@
 const int Size = 8;
 
 // The ISO polynomial, defined in ISO 3309 and used in HDLC.
-const UINT64 ISO = 0xD800000000000000;
+const uint64_t ISO = 0xD800000000000000;
 
 // The ISO polynomial, defined in ISO 3309 and used in HDLC.
-const UINT64 ECMA = 0xC96C5795D7870F42;
+const uint64_t ECMA = 0xC96C5795D7870F42;
 
-// returns array of 256 UINT64
-static UINT64* makeTable(UINT64 poly)
+// returns array of 256 uint64_t
+static uint64_t* makeTable(uint64_t poly)
 {
-   UINT64* t = new UINT64[256];
+   uint64_t* t = new uint64_t[256];
    for (int i = 0; i < 256; i++)
    {
-      UINT64 crc = (UINT64)i;
+      uint64_t crc = (uint64_t)i;
       for (int j = 0; j < 8; j++)
       {
          if ((crc & 1) == 1)
@@ -36,26 +36,26 @@ static UINT64* makeTable(UINT64 poly)
    return t;
 }
 
-// returns array of 8 PUINT64 ->  256
-static UINT64** createTables(int sizeInner, int sizeOuter)
+// returns array of 8 uint64_t* ->  256
+static uint64_t** createTables(int sizeInner, int sizeOuter)
 {
-   PUINT64* l = new PUINT64[sizeOuter];
+   uint64_t** l = new uint64_t*[sizeOuter];
    for (int i = 0; i < sizeOuter; i++)
    {
-      l[i] = new UINT64[sizeInner];
+      l[i] = new uint64_t[sizeInner];
    }
 
    return l;
 }
 
-// returns array of 8 PUINT64 ->  256
-static const UINT64** makeSlicingBy8Table(UINT64* t)
+// returns array of 8 uint64_t* ->  256
+static const uint64_t** makeSlicingBy8Table(uint64_t* t)
 {
-   UINT64** helperTable = createTables(256, 8);
+   uint64_t** helperTable = createTables(256, 8);
    helperTable[0] = t;
    for (int i = 0; i < 256; i++)
    {
-      UINT64 crc = t[i];
+      uint64_t crc = t[i];
       for (int j = 1; j < 8; j++)
       {
          crc = t[crc & 0xff] ^ (crc >> 8);
@@ -63,22 +63,22 @@ static const UINT64** makeSlicingBy8Table(UINT64* t)
       }
    }
 
-   return (const UINT64**)helperTable;
+   return (const uint64_t**)helperTable;
 }
 
-static const UINT64** slicing8TableISO = makeSlicingBy8Table(makeTable(ISO));
-static const UINT64** slicing8TableECMA =  makeSlicingBy8Table(makeTable(ECMA));
+static const uint64_t** slicing8TableISO = makeSlicingBy8Table(makeTable(ISO));
+static const uint64_t** slicing8TableECMA =  makeSlicingBy8Table(makeTable(ECMA));
 
 
 // Call with crc=0 to init or previous crc to chain
 // et tab to slicing8TableECMA
-static UINT64 CalculateCRC64(UINT64 crc, const UINT64* tab, UINT8* p, INT64 Length)
+static uint64_t CalculateCRC64(uint64_t crc, const uint64_t* tab, uint8_t* p, int64_t Length)
 {
    crc = ~crc;
-   UINT8*  pEnd = p + Length;
+   uint8_t*  pEnd = p + Length;
    while (Length >= 64)
    {
-      const UINT64** helperTable;
+      const uint64_t** helperTable;
       if (tab == slicing8TableECMA[0])
          helperTable = slicing8TableECMA;
       else if (tab == slicing8TableISO[0])
@@ -89,8 +89,8 @@ static UINT64 CalculateCRC64(UINT64 crc, const UINT64* tab, UINT8* p, INT64 Leng
       while (Length >= 8)
       {
          // TODO: this can be vectorized
-         crc ^= ((UINT64)p[0]) | ((UINT64)p[1]) << 8 | ((UINT64)p[2]) << 16 | ((UINT64)p[3]) << 24 |
-            ((UINT64)p[4]) << 32 | ((UINT64)p[5]) << 40 | ((UINT64)p[6]) << 48 | ((UINT64)p[7]) << 56;
+         crc ^= ((uint64_t)p[0]) | ((uint64_t)p[1]) << 8 | ((uint64_t)p[2]) << 16 | ((uint64_t)p[3]) << 24 |
+            ((uint64_t)p[4]) << 32 | ((uint64_t)p[5]) << 40 | ((uint64_t)p[6]) << 48 | ((uint64_t)p[7]) << 56;
          crc = helperTable[7][crc & 0xff] ^
             helperTable[6][(crc >> 8) & 0xff] ^
             helperTable[5][(crc >> 16) & 0xff] ^
@@ -108,7 +108,7 @@ static UINT64 CalculateCRC64(UINT64 crc, const UINT64* tab, UINT8* p, INT64 Leng
    // For smaller sizes
    while (p < pEnd)
    {
-      crc = tab[((UINT8)crc) ^ *p] ^ (crc >> 8);
+      crc = tab[((uint8_t)crc) ^ *p] ^ (crc >> 8);
       p++;
    }
 
@@ -117,7 +117,7 @@ static UINT64 CalculateCRC64(UINT64 crc, const UINT64* tab, UINT8* p, INT64 Leng
 
 
 // Returns a 64bit CRC value using ECMA
-// Could return UINT64 value instead, but for equality comparison it does not matter
+// Could return uint64_t value instead, but for equality comparison it does not matter
 PyObject *
 CalculateCRC(PyObject *self, PyObject *args) {
    PyArrayObject *inArr1 = NULL;
@@ -135,10 +135,10 @@ CalculateCRC(PyObject *self, PyObject *args) {
    }
 
    void* pDataIn1 = PyArray_BYTES(inArr1);
-   INT64 arraySize = ArrayLength(inArr1) * PyArray_ITEMSIZE(inArr1);
+   int64_t arraySize = ArrayLength(inArr1) * PyArray_ITEMSIZE(inArr1);
 
    // TOOD: in future can pass ISO table as well
-   UINT64 crc_value = CalculateCRC64(0, slicing8TableECMA[0], (UINT8*)pDataIn1, arraySize);
+   uint64_t crc_value = CalculateCRC64(0, slicing8TableECMA[0], (uint8_t*)pDataIn1, arraySize);
    return PyLong_FromLongLong(crc_value);
 }
 

@@ -10,292 +10,292 @@ enum HASH_MODE {
 };
 
 struct UINT128 {
-   UINT64   _val1;
-   UINT64   _val2;
+   uint64_t   _val1;
+   uint64_t   _val2;
 } ;
 
 
 void* IsMemberHashMK32(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT32* pOutput,
-   INT8* pBooleanOutput,
-   INT64 sizeType,
-   INT64 hintSize,
+   int32_t* pOutput,
+   int8_t* pBooleanOutput,
+   int64_t sizeType,
+   int64_t hintSize,
    HASH_MODE hashMode);
 
 
-INT64 IsMemberHashCategorical(
-   INT64 size1,
+int64_t IsMemberHashCategorical(
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT32* pOutput,
-   INT sizeType,
+   int32_t* pOutput,
+   int32_t sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize);
+   int64_t hintSize);
 
-INT64 IsMemberHashCategorical64(
-   INT64 size1,
+int64_t IsMemberHashCategorical64(
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT64* pOutput,
-   INT sizeType,
+   int64_t* pOutput,
+   int32_t sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize);
+   int64_t hintSize);
 
 
 template<typename U>
 void* IsMemberHash32(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
    U* pOutput,
-   INT8* pBooleanOutput,
-   INT sizeType,
+   int8_t* pBooleanOutput,
+   int32_t sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize);
+   int64_t hintSize);
 
 void* IsMemberHash64(
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT64* pOutput,
-   INT8* pBooleanOutput,
-   INT sizeType,
+   int64_t* pOutput,
+   int8_t* pBooleanOutput,
+   int32_t sizeType,
    HASH_MODE hashMode,
-   INT64 hintSize);
+   int64_t hintSize);
 
-INT64 IsMemberCategoricalHashStringPre(
+int64_t IsMemberCategoricalHashStringPre(
    PyArrayObject** indexArray,
    PyArrayObject* inArr1,
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode);
+   int64_t hintSize,
+   bool isUnicode);
 
 
 void IsMemberHashString32Pre(
    PyArrayObject** indexArray,
    PyArrayObject* inArr1,
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
-   INT8* pBooleanOutput,
+   int8_t* pBooleanOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode);
+   int64_t hintSize,
+   bool isUnicode);
 
 void IsMemberHashMKPre(
    PyArrayObject** indexArray,
-   INT64 size1,
+   int64_t size1,
    void* pInput1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
-   INT8* pBooleanOutput,
-   INT64 totalItemSize,
-   INT64 hintSize,
+   int8_t* pBooleanOutput,
+   int64_t totalItemSize,
+   int64_t hintSize,
    HASH_MODE hashMode);
 
 
 
 void IsMemberHashString64(
-   INT64 size1,
-   INT64 strWidth1,
+   int64_t size1,
+   int64_t strWidth1,
    const char* pInput1,
-   INT64 size2,
-   INT64 strWidth2,
+   int64_t size2,
+   int64_t strWidth2,
    const char* pInput2,
-   INT64* pOutput,
-   INT8* pBooleanOutput,
+   int64_t* pOutput,
+   int8_t* pBooleanOutput,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   BOOL isUnicode);
+   int64_t hintSize,
+   bool isUnicode);
 
 
 template<typename U, typename V>
 void FindLastMatchCategorical(
-   INT64    arraySize1,
-   INT64    arraySize2,
+   int64_t    arraySize1,
+   int64_t    arraySize2,
    U*       pKey1,
    U*       pKey2,
    V*       pVal1,
    V*       pVal2,
    U*       pLocationOutput,
-   INT64    totalUniqueSize);
+   int64_t    totalUniqueSize);
 
 
 template<typename KEY_TYPE>
-BOOL MergePreBinned(
-   INT64 size1,
+bool MergePreBinned(
+   int64_t size1,
    KEY_TYPE*    pKey1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    KEY_TYPE*    pKey2,
    void* pInVal2,
    KEY_TYPE*    pOutput,
-   INT64 totalUniqueSize,
+   int64_t totalUniqueSize,
    HASH_MODE hashMode,
-   INT dtype);
+   int32_t dtype);
 
 
 
-BOOL AlignHashMK32(
-   INT64 size1,
+bool AlignHashMK32(
+   int64_t size1,
    void* pInput1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
    void* pInVal2,
-   INT32* pOutput,
-   INT64 totalItemSize,
+   int32_t* pOutput,
+   int64_t totalItemSize,
    HASH_MODE hashMode,
-   INT dtype,
+   int32_t dtype,
    bool isForward,
    bool allowExact);
 
-BOOL AlignHashMK64(
-   INT64 size1,
+bool AlignHashMK64(
+   int64_t size1,
    void* pInput1,
    void* pInVal1,
-   INT64 size2,
+   int64_t size2,
    void* pInput2,
    void* pInVal2,
-   INT64* pOutput,
-   INT64 totalItemSize,
+   int64_t* pOutput,
+   int64_t totalItemSize,
    HASH_MODE hashMode,
-   INT dtype,
+   int32_t dtype,
    bool isForward,
    bool allowExact);
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 template<typename INDEX_TYPE>
-UINT64 GroupByInternal(
+uint64_t GroupByInternal(
    void** pFirstArrayVoid,
    void** pHashTableAny,
-   INT64* hashTableSize,
+   int64_t* hashTableSize,
 
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    INDEX_TYPE* pIndexArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 //===================================================================================================
-// Declare callback for either INT32 or INT64
-typedef  UINT64(*GROUPBYCALL)(
-   INT64  partitionLength, // may be 0
-   INT64* pCutOffs,        // may be NULL
-   INT64 totalRows,
-   INT64 totalItemSize,
+// Declare callback for either int32_t or int64_t
+typedef  uint64_t(*GROUPBYCALL)(
+   int64_t  partitionLength, // may be 0
+   int64_t* pCutOffs,        // may be NULL
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    void* pIndexArray,
    PyArrayObject** pFirstArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 
-UINT64 GroupBy32(
-   INT64  partitionLength, // may be 0
-   INT64* pCutOffs,        // may be NULL
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy32(
+   int64_t  partitionLength, // may be 0
+   int64_t* pCutOffs,        // may be NULL
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    void* pIndexArray,
    PyArrayObject** pFirstArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
-UINT64 GroupBy64(
-   INT64  partitionLength, // may be 0
-   INT64* pCutOffs,        // may be NULL
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy64(
+   int64_t  partitionLength, // may be 0
+   int64_t* pCutOffs,        // may be NULL
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
    void* pIndexArray,
    PyArrayObject** pFirstArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 GroupBy32Super(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy32Super(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
-   INT32* pIndexArray,
-   INT32* pNextArray,
-   INT32* pUniqueArray,
-   INT32* pUniqueCountArray,
+   int32_t* pIndexArray,
+   int32_t* pNextArray,
+   int32_t* pUniqueArray,
+   int32_t* pUniqueCountArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 GroupBy64Super(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t GroupBy64Super(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
    int coreType,
-   INT64* pIndexArray,
-   INT64* pNextArray,
-   INT64* pUniqueArray,
-   INT64* pUniqueCountArray,
+   int64_t* pIndexArray,
+   int64_t* pNextArray,
+   int64_t* pUniqueArray,
+   int64_t* pUniqueCountArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 Unique32(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t Unique32(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT32* pIndexArray,
-   INT32* pCountArray,
+   int32_t* pIndexArray,
+   int32_t* pCountArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
-UINT64 Unique64(
-   INT64 totalRows,
-   INT64 totalItemSize,
+uint64_t Unique64(
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pCountArray,
+   int64_t* pIndexArray,
+   int64_t* pCountArray,
    HASH_MODE hashMode,
-   INT64   hintSize,
+   int64_t   hintSize,
    bool* pBoolFilter);
 
 //-----------------------------------------------------------------------------------------
@@ -304,47 +304,47 @@ void MultiKeyRollingStep2Delete(
 
 //-----------------------------------------------------------------------------------------
 void* MultiKeyRollingStep2(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pRunningCountArray,
+   int64_t* pIndexArray,
+   int64_t* pRunningCountArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
-   UINT64* numUnique,
+   int64_t hintSize,
+   uint64_t* numUnique,
    void* pHashLinearLast);
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void* MultiKeyHash32(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT32* pIndexArray,
-   INT32* pRunningCountArray,
-   INT32* pPrevArray,
-   INT32* pNextArray,
-   INT32* pFirstArray,
+   int32_t* pIndexArray,
+   int32_t* pRunningCountArray,
+   int32_t* pPrevArray,
+   int32_t* pNextArray,
+   int32_t* pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter);
 
 //-----------------------------------------------------------------------------------------
 //  Based on the sizeType it will call different hash functions
 void* MultiKeyHash64(
-   INT64 totalRows,
-   INT64 totalItemSize,
+   int64_t totalRows,
+   int64_t totalItemSize,
    const char* pInput1,
 
-   INT64* pIndexArray,
-   INT64* pRunningCountArray,
-   INT64* pPrevArray,
-   INT64* pNextArray,
-   INT64* pFirstArray,
+   int64_t* pIndexArray,
+   int64_t* pRunningCountArray,
+   int64_t* pPrevArray,
+   int64_t* pNextArray,
+   int64_t* pFirstArray,
    HASH_MODE hashMode,
-   INT64 hintSize,
+   int64_t hintSize,
    bool* pBoolFilter);
 
 //---------------------------------------
@@ -362,8 +362,8 @@ void* MultiKeyHash64(
 
 
 //----------------------------------------
-// T: INT8,INT16,INT32,INT64, string?
-// U: INT8, INT16, INT32 or INT64  (indexing)
+// T: int8_t,int16_t,int32_t,int64_t, string?
+// U: int8_t, int16_t, int32_t or int64_t  (indexing)
 
 template<typename T, typename U>
 class CHashLinear {
@@ -435,19 +435,19 @@ public:
    void*       pHashTableAny;
 
    // Max number of unique values possible
-   INT64       NumEntries;
+   int64_t       NumEntries;
 
    // Actualy unique
-   UINT64      NumUnique;
+   uint64_t      NumUnique;
 
    // Number of collisions
-   UINT64      NumCollisions;
+   uint64_t      NumCollisions;
 
    // Hashsize chosen based on input size
-   UINT64      HashSize;
+   uint64_t      HashSize;
 
    // to determine if hash location has been visited
-   UINT64*     pBitFields;
+   uint64_t*     pBitFields;
 
    // Remember the size we allocated for bitfields
    size_t      BitAllocSize = 0;
@@ -458,11 +458,11 @@ public:
 
    const U     BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
-   BOOL        Deallocate = TRUE;
+   bool        Deallocate = true;
 
 public:
-   // Parallel hashing does not want memory deallocated so it will set deallocate to FALSE
-   CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, BOOL deallocate=TRUE) {
+   // Parallel hashing does not want memory deallocated so it will set deallocate to false
+   CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate=true) {
       pHashTableAny = NULL;
       pBitFields = NULL;
 
@@ -479,22 +479,22 @@ public:
 
    ~CHashLinear() {
 
-      FreeMemory(FALSE);
+      FreeMemory(false);
    }
 
-   void FreeMemory(BOOL forceDeallocate);
+   void FreeMemory(bool forceDeallocate);
 
-   void AllocAndZeroBitFields(UINT64 hashSize);
+   void AllocAndZeroBitFields(uint64_t hashSize);
    char* AllocHashTable(size_t allocSize);
 
    void* AllocMemory(
-      INT64 numberOfEntries,
-      INT64 sizeofStruct,
-      INT64 sizeofExtraArray,
-      BOOL  isFloat);
+      int64_t numberOfEntries,
+      int64_t sizeofStruct,
+      int64_t sizeofExtraArray,
+      bool  isFloat);
 
    void MakeHash(
-      INT64 numberOfEntries,
+      int64_t numberOfEntries,
       T* pHashList);
 
 
@@ -502,62 +502,62 @@ public:
    //----------------------------------------------
    //-----------------------------------------------
    void MakeHashLocationFloat(
-      INT64 arraySize,
+      int64_t arraySize,
       T*    pHashList,
-      INT64 hintSize);
+      int64_t hintSize);
 
    //----------------------------------------------
-   INT64 IsMemberFloatCategorical(
-      INT64 arraySize,
+   int64_t IsMemberFloatCategorical(
+      int64_t arraySize,
       T*    pHashList,
       U*    pLocationOutput);
 
 
    //-----------------------------------------------
-   UINT64 GroupByFloat(
-      INT64 totalRows,
-      INT64 totalItemSize,
+   uint64_t GroupByFloat(
+      int64_t totalRows,
+      int64_t totalItemSize,
       T* pInput,
       int coreType,
       // Return values
       U* pIndexArray,
       U* &pFirstArray,
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
 
    //-----------------------------------------------
-   UINT64 GroupByItemSize(
-      INT64 totalRows,
-      INT64 totalItemSize,
+   uint64_t GroupByItemSize(
+      int64_t totalRows,
+      int64_t totalItemSize,
       T* pInput,
       int coreType,
       // Return values
       U* pIndexArray,
       U* &pFirstArray,
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
    //-----------------------------------------------
-   UINT64 GroupBy(
-      INT64 totalRows,
-      INT64 totalItemSize,
+   uint64_t GroupBy(
+      int64_t totalRows,
+      int64_t totalItemSize,
       const char* pInput,
       int coreType,
       // Return values
       U* pIndexArray,
       U* &pFirstArray,
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
 
    //-----------------------------------------------
-   UINT64 GroupBySuper(
-      INT64 totalRows,
-      INT64 totalItemSize,
+   uint64_t GroupBySuper(
+      int64_t totalRows,
+      int64_t totalItemSize,
       const char* pInput,
 
       int coreType,
@@ -568,14 +568,14 @@ public:
       U* pUniqueArray,
       U* pUniqueCountArray,
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
 
    //-----------------------------------------------
-   UINT64 Unique(
-      INT64 totalRows,
-      INT64 totalItemSize,
+   uint64_t Unique(
+      int64_t totalRows,
+      int64_t totalItemSize,
       const char* pInput,
 
       // Return values
@@ -584,24 +584,24 @@ public:
       U* pCountArray,
 
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
    //-----------------------------------------------
    void MultiKeyRolling(
-      INT64 totalRows,
-      INT64 totalItemSize,
+      int64_t totalRows,
+      int64_t totalItemSize,
       const char* pInput,
 
       // Return values
       U* pIndexArray,
       U* pRunningCountArray,
       HASH_MODE hashMode,
-      INT64 hintSize);
+      int64_t hintSize);
       
   void MakeHashLocationMultiKey(
-      INT64 totalRows,
-      INT64 totalItemSize,
+      int64_t totalRows,
+      int64_t totalItemSize,
       const char* pInput1,
 
       U* pIndexArray,
@@ -610,127 +610,127 @@ public:
       U* pNextArray,
       U* pFirstArray,
       HASH_MODE hashMode,
-      INT64 hintSize,
+      int64_t hintSize,
       bool* pBoolFilter);
 
    //----------------------------------------------
    void MakeHashLocationString(
-      INT64 arraySize,
+      int64_t arraySize,
       const char* pHashList,
-      INT64 strWidth,
-      INT64 hintSize,
-      BOOL  isUnicode);
+      int64_t strWidth,
+      int64_t hintSize,
+      bool  isUnicode);
 
    void InternalSetLocationString(
       U  i,
       HashLocation* pLocation,
       const char* strValue,
-      INT64 strWidth,
-      UINT64 hash);
+      int64_t strWidth,
+      uint64_t hash);
 
    void InternalSetLocationUnicode(
       U  i,
       HashLocation* pLocation,
       const char* strValue,
-      INT64 strWidth,
-      UINT64 hash);
+      int64_t strWidth,
+      uint64_t hash);
 
    void InternalGetLocationUnicode(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      UINT64 hash);
+      int64_t strWidth,
+      uint64_t hash);
 
    void InternalGetLocationString(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      UINT64 hash);
+      int64_t strWidth,
+      uint64_t hash);
 
    void InternalGetLocationUnicode2(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      INT64 strWidth2,
-      UINT64 hash);
+      int64_t strWidth,
+      int64_t strWidth2,
+      uint64_t hash);
 
    void InternalGetLocationString2(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      INT64 strWidth2,
-      UINT64 hash);
+      int64_t strWidth,
+      int64_t strWidth2,
+      uint64_t hash);
 
    void IsMemberString(
-      INT64 arraySize,
-      INT64 strWidth1,
-      INT64 strWidth2,
+      int64_t arraySize,
+      int64_t strWidth1,
+      int64_t strWidth2,
       const char* pHashList,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U*    pLocationOutput,
-      BOOL  isUnicode);
+      bool  isUnicode);
 
 
    void InternalGetLocationStringCategorical(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      UINT64 hash,
-      INT64* missed);
+      int64_t strWidth,
+      uint64_t hash,
+      int64_t* missed);
 
    void InternalGetLocationString2Categorical(
-      INT64  i,
+      int64_t  i,
       HashLocation* pLocation,
       U*    pLocationOutput,
       const char* strValue,
-      INT64 strWidth,
-      INT64 strWidth2,
-      UINT64 hash,
-      INT64 *missed);
+      int64_t strWidth,
+      int64_t strWidth2,
+      uint64_t hash,
+      int64_t *missed);
 
    //----------------------------------------------
    //----------------------------------------------
    //-----------------------------------------------
    void MakeHashLocationMK(
-      INT64 arraySize,
+      int64_t arraySize,
       T*    pInput,
-      INT64 totalItemSize,
-      INT64 hintSize);
+      int64_t totalItemSize,
+      int64_t hintSize);
 
 
    void MakeHashLocation(
-      INT64 arraySize,
+      int64_t arraySize,
       T*    pHashList,
-      INT64 hintSize);
+      int64_t hintSize);
 
    void InternalSetLocation(
       U  i,
       HashLocation* pLocation,
       T  item,
-      UINT64 hash);
+      uint64_t hash);
 
    //----------------------------------------------
    void InternalGetLocation(
       U  i,
       HashLocation* pLocation,
-      INT8* pBooleanOutput,
+      int8_t* pBooleanOutput,
       U* pLocationOutput,
       T  item,
-      UINT64 hash);
+      uint64_t hash);
 
 
    //----------------------------------------------
@@ -739,13 +739,13 @@ public:
       HashLocation* pLocation,
       U* pLocationOutput,
       T  item,
-      UINT64 hash,
-      INT64* missed);
+      uint64_t hash,
+      int64_t* missed);
 
 
    //----------------------------------------------
-   INT64 IsMemberCategorical(
-      INT64 arraySize,
+   int64_t IsMemberCategorical(
+      int64_t arraySize,
       T*    pHashList,
       U*    pLocationOutput);
 
@@ -753,72 +753,72 @@ public:
 
    //-----------------------------------------------
    template<typename V> void FindLastMatchMK(
-      INT64 arraySize1,
-      INT64 arraySize2,
+      int64_t arraySize1,
+      int64_t arraySize2,
       T*    pKey1,
       T*    pKey2,
       V*    pVal1,
       V*    pVal2,
       U*    pLocationOutput,
-      INT64 totalItemSize,
+      int64_t totalItemSize,
       bool allowExact);
 
    template<typename V> void FindNextMatchMK(
-      INT64 arraySize1,
-      INT64 arraySize2,
+      int64_t arraySize1,
+      int64_t arraySize2,
       T*    pKey1,
       T*    pKey2,
       V*    pVal1,
       V*    pVal2,
       U*    pLocationOutput,
-      INT64 totalItemSize,
+      int64_t totalItemSize,
       bool allowExact);
    //-----------------------------------------------
    //-----------------------------------------------
 
 
    void MakeHashFindNth(
-      INT64 arraySize,
+      int64_t arraySize,
       T*    pHashList,
 
-      // optional FOR BOOLEAN OR INDEX MASK
-      INT64 size2,
+      // optional FOR boolEAN OR INDEX MASK
+      int64_t size2,
       U*    pInput2,
 
-      INT8* pBooleanOutput,
-      INT64 n);
+      int8_t* pBooleanOutput,
+      int64_t n);
 
 
    void MakeHashFindNthFloat(
-      INT64 arraySize,
+      int64_t arraySize,
       T*    pHashList,
 
-      // optional FOR BOOLEAN OR INDEX MASK
-      INT64 size2,
+      // optional FOR boolEAN OR INDEX MASK
+      int64_t size2,
       U*    pInput2,
 
-      INT8* pBooleanOutput,
-      INT64 n);
+      int8_t* pBooleanOutput,
+      int64_t n);
 
 
    void InternalSetFindNth(
       U  i,
       FindNthEntry* pLocation,
-      INT8* pBooleanOutput,
-      INT64 n,
+      int8_t* pBooleanOutput,
+      int64_t n,
       T  item,
-      UINT64 hash);
+      uint64_t hash);
 
    //-----------------------------------------------
    //-----------------------------------------------
 
-   INT64 GetHashSize(INT64 numberOfEntries);
+   int64_t GetHashSize(int64_t numberOfEntries);
 
    //--------------------------------------------
    // Returns 1 if bit set otherwise 0
-   inline int IsBitSet(INT64 position) {
+   inline int IsBitSet(int64_t position) {
 
-      UINT64 index = position >> 6;
+      uint64_t index = position >> 6;
       if (pBitFields[index] & (1LL << (position & 63))) {
          return 1;
       }
@@ -830,17 +830,17 @@ public:
 
    //--------------------------------------------
    // set the bit to 1
-   inline void SetBit(INT64 position) {
+   inline void SetBit(int64_t position) {
 
-      INT64 index = position >> 6;
+      int64_t index = position >> 6;
       pBitFields[index] |= (1LL << (position & 63));
    }
 
    //--------------------------------------------
    // set the bit to 0
-   inline void ClearBit(INT64 position) {
+   inline void ClearBit(int64_t position) {
 
-      INT64 index = position >> 6;
+      int64_t index = position >> 6;
       pBitFields[index] &= ~(1LL << (position & 63));
    }
 };
@@ -848,43 +848,43 @@ public:
 
 
 template<typename T, typename U>
-static INT64 IsMemberStringCategorical(
+static int64_t IsMemberStringCategorical(
    void* pHashLinearVoid,
-   INT64 arraySize,
-   INT64 strWidth1,
-   INT64 strWidth2,
+   int64_t arraySize,
+   int64_t strWidth1,
+   int64_t strWidth2,
    const char* pHashList,
    void*    pLocationOutputU,
-   BOOL isUnicode);
+   bool isUnicode);
 
 
 //----------------------------------------------
 template<typename T, typename U>
 static void IsMemberMK(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    T*    pInput,
    T*    pInput2,
-   INT8* pBooleanOutput,
+   int8_t* pBooleanOutput,
    void* pLocationOutput,
-   INT64 totalItemSize);
+   int64_t totalItemSize);
 
 //----------------------------------------------
 template<typename T, typename U>
 static void IsMember(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashList,
-   INT8* pBooleanOutput,
+   int8_t* pBooleanOutput,
    void* pLocationOutputU);
 
 //----------------------------------------------
 template<typename T, typename U>
 static void IsMemberFloat(
    void* pHashLinearVoid,
-   INT64 arraySize,
+   int64_t arraySize,
    void* pHashList,
-   INT8* pBooleanOutput,
+   int8_t* pBooleanOutput,
    void* pLocationOutputU);
 
 

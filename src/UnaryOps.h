@@ -1,10 +1,11 @@
-
+#ifndef RIPTIDECPP_UNARYOPS_H
+#define RIPTIDECPP_UNARYOPS_H
 
 PyObject *
 BasicMathOneInput(PyObject *self, PyObject *args);
 
 PyObject *
-BasicMathOneInputFromNumber(PyArrayObject* inObject1, INT64 funcNumber, BOOL inplace);
+BasicMathOneInputFromNumber(PyArrayObject* inObject1, int64_t funcNumber, bool inplace);
 
 PyObject *
 BasicMathUnaryOp(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -20,6 +21,8 @@ struct UNARY_CALLBACK {
    char* pDataIn;
    char* pDataOut;
 
-   INT64 itemSizeIn;
-   INT64 itemSizeOut;
+   int64_t itemSizeIn;
+   int64_t itemSizeOut;
 };
+
+#endif

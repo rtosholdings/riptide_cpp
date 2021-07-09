@@ -101,21 +101,21 @@ template<typename T> static const inline double MaxOp(double x, double y) { if (
 template<typename T> static const inline T MaxOp(T x, T y) { if (x < y) return y; else return x; }
 //template<typename T> static const inline bool MulOp(bool x, bool y) { return x & y; }
 
-static const INT64 NAN_FOR_INT64 = (INT64)0x8000000000000000LL;
-static const INT64 NAN_FOR_INT32 = (INT32)0x80000000;
+static const int64_t NAN_FOR_INT64 = (int64_t)0x8000000000000000LL;
+static const int64_t NAN_FOR_INT32 = (int32_t)0x80000000;
 
 template<typename T> static const inline double DivOp(T x, T y) { return (double)x / (double)y; }
 template<typename T> static const inline float DivOp(float x, T y) { return x / y; }
 
 // Subtraction only two DateTimeNano subtractions
-template<typename T> static const inline double SubDateTimeOp(INT64 x, INT64 y) {
+template<typename T> static const inline double SubDateTimeOp(int64_t x, int64_t y) {
    if (x == 0 || y ==0 || x == NAN_FOR_INT64 || y == NAN_FOR_INT64) {
       return NAN;
    }
    return (double)( x - y); }
 
 // Subtraction only both sides checked
-template<typename T> static const inline double SubDateTimeOp(INT32 x, INT32 y) {
+template<typename T> static const inline double SubDateTimeOp(int32_t x, int32_t y) {
    if (x == 0 || y ==0 || x == NAN_FOR_INT32 || y == NAN_FOR_INT32) {
       return NAN;
    }
@@ -123,14 +123,14 @@ template<typename T> static const inline double SubDateTimeOp(INT32 x, INT32 y) 
 }
 
 // Subtract two dates to produce a DateSpan
-template<typename T> static const inline INT32 SubDatesOp(INT32 x, INT32 y) {
+template<typename T> static const inline int32_t SubDatesOp(int32_t x, int32_t y) {
    if (x == 0 || y == 0 || x == NAN_FOR_INT32 || y == NAN_FOR_INT32) {
       return 0;
    }
    return (x - y);
 }
 
-template<typename T> static const inline INT64 SubDatesOp(INT64 x, INT64 y) {
+template<typename T> static const inline int64_t SubDatesOp(int64_t x, int64_t y) {
    if (x == 0 || y == 0 || x == NAN_FOR_INT64 || y == NAN_FOR_INT64) {
       return 0;
    }
@@ -238,8 +238,8 @@ static const inline __m256d DIV_OP_256f64(__m256d x, __m256d y) { return _mm256_
 static const inline __m256d CONV_INT32_DOUBLE(__m128i* x) { return _mm256_cvtepi32_pd(*x); }
 
 //static const inline __m256d CONV_INT16_DOUBLE(__m128i x) { return _mm256_cvtepi16_pd(x); }
-//static const inline __m256d DIV_OP_256(const INT32 z, __m128i x, __m128i y) { return _mm256_div_pd(_mm256_cvtepi32_pd(x), _mm256_cvtepi32_pd(y)); }
-//static const inline __m256d DIV_OP_256(const INT64 z, __m128i x, __m128i y) { return _mm256_div_pd(_mm256_cvtepi64_pd(x), _mm256_cvtepi64_pd(y)); }
+//static const inline __m256d DIV_OP_256(const int32_t z, __m128i x, __m128i y) { return _mm256_div_pd(_mm256_cvtepi32_pd(x), _mm256_cvtepi32_pd(y)); }
+//static const inline __m256d DIV_OP_256(const int64_t z, __m128i x, __m128i y) { return _mm256_div_pd(_mm256_cvtepi64_pd(x), _mm256_cvtepi64_pd(y)); }
 
 
 static const inline __m256i AND_OP_256(__m256i x, __m256i y) { return _mm256_and_si256(x, y); }
@@ -249,15 +249,15 @@ static const inline __m256i ANDNOT_OP_256(__m256i x, __m256i y) { return _mm256_
 
 //_asm cvt2q
 //CVTDQ2PD
-//inline __m256d DIV_OP_256(const INT64 z, __m256i x, __m256i y) { return _mm256_div_pd(_mm256_cvtepi64_pd(x), _mm256_cvtepi64_pd(y)); }
+//inline __m256d DIV_OP_256(const int64_t z, __m256i x, __m256i y) { return _mm256_div_pd(_mm256_cvtepi64_pd(x), _mm256_cvtepi64_pd(y)); }
 
 template<typename T, typename U256> static const inline __m256  AddOp256(const float z,U256 x, U256 y) { return _mm256_add_ps(x, y); }
 template<typename T, typename U256> static const inline __m256d AddOp256(const double z, U256 x, U256 y) { return _mm256_add_pd(x, y); }
-template<typename T, typename U256> static const inline __m256i AddOp256(const INT32 z, U256 x, U256 y) { return _mm256_add_epi32(x, y); }
+template<typename T, typename U256> static const inline __m256i AddOp256(const int32_t z, U256 x, U256 y) { return _mm256_add_epi32(x, y); }
 
 
 template<typename T, typename MathFunctionPtr>
-FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 len, INT32 scalarMode) {
+FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t len, int32_t scalarMode) {
    T* pDataOut = (T*)pDataOutX;    
    T* pDataIn1 = (T*)pDataIn1X;      
    T* pDataIn2 = (T*)pDataIn2X;      
@@ -267,7 +267,7 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void
    switch (scalarMode) {
    case SCALAR_MODE::NO_SCALARS:
    {
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], pDataIn2[i]);
       }
       break;
@@ -275,7 +275,7 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void
    case SCALAR_MODE::FIRST_ARG_SCALAR:
    {
       T arg1 = *pDataIn1;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(arg1, pDataIn2[i]);
       }
       break;
@@ -283,8 +283,8 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void
    case SCALAR_MODE::SECOND_ARG_SCALAR:
    {
       T arg2 = *pDataIn2;
-      //printf("arg2 = %lld  %lld\n", (INT64)arg2, (INT64)pDataIn1[0]);
-      for (INT64 i = 0; i < len; i++) {
+      //printf("arg2 = %lld  %lld\n", (int64_t)arg2, (int64_t)pDataIn1[0]);
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], arg2);
       }
       break;
@@ -292,7 +292,7 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void
    default:
       T arg1 = *pDataIn1;
       T arg2 = *pDataIn2;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(arg1, arg2);
       }
       break;
@@ -303,7 +303,7 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void* pDataIn1X, void
 //=====================================================================================================
 // Used in division where the output is a double
 template<typename T, typename MathFunctionPtr>
-FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 len, INT32 scalarMode) {
+FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t len, int32_t scalarMode) {
    double* pDataOut = (double*)pDataOutX;
    T* pDataIn1 = (T*)pDataIn1X;
    T* pDataIn2 = (T*)pDataIn2X;
@@ -313,7 +313,7 @@ FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X
    switch (scalarMode) {
    case SCALAR_MODE::NO_SCALARS:
    {
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], pDataIn2[i]);
       }
       break;
@@ -321,7 +321,7 @@ FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X
    case SCALAR_MODE::FIRST_ARG_SCALAR:
    {
       T arg1 = *pDataIn1;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(arg1, pDataIn2[i]);
       }
       break;
@@ -329,7 +329,7 @@ FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X
    case SCALAR_MODE::SECOND_ARG_SCALAR:
    {
       T arg2 = *pDataIn2;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], arg2);
       }
       break;
@@ -337,7 +337,7 @@ FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X
    default:
       T arg1 = *pDataIn1;
       T arg2 = *pDataIn2;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(arg1, arg2);
       }
       break;
@@ -350,14 +350,14 @@ FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void* pDataIn1X
 //=====================================================================================================
 // Not symmetric -- arg1 must be first, arg2 must be second
 template<typename T, typename U256, const T MATH_OP(T, T), const U256 MATH_OP256(U256, U256)>
-inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 datalen, INT32 scalarMode) {
+inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t datalen, int32_t scalarMode) {
    T* pDataOut = (T*)pDataOutX;
    T* pDataIn1 = (T*)pDataIn1X;
    T* pDataIn2 = (T*)pDataIn2X;
 
-   const INT64 NUM_LOOPS_UNROLLED = 1;
-   const INT64 chunkSize = NUM_LOOPS_UNROLLED * (sizeof(U256) / sizeof(T));
-   INT64 perReg = sizeof(U256) / sizeof(T);
+   const int64_t NUM_LOOPS_UNROLLED = 1;
+   const int64_t chunkSize = NUM_LOOPS_UNROLLED * (sizeof(U256) / sizeof(T));
+   int64_t perReg = sizeof(U256) / sizeof(T);
 
    LOGGING("mathopfast datalen %llu  chunkSize %llu  perReg %llu\n", datalen, chunkSize, perReg);
 
@@ -391,7 +391,7 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
       }
 
       datalen = datalen & (chunkSize - 1);
-      for (INT64 i = 0; i < datalen; i++) {
+      for (int64_t i = 0; i < datalen; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], pDataIn2[i]);
       }
 
@@ -428,7 +428,7 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
          pDataOut = (T*)pOut_256;
       }
       datalen = datalen & (chunkSize - 1);
-      for (INT64 i = 0; i < datalen; i++) {
+      for (int64_t i = 0; i < datalen; i++) {
          pDataOut[i] = MATH_OP(arg1, pDataIn2[i]);
       }
       break;
@@ -441,12 +441,12 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
       if (pDataOut == pDataIn1) {
 
          // align the load to 32 byte boundary
-         INT64 babylen = (INT64)pDataIn1 & 31;
+         int64_t babylen = (int64_t)pDataIn1 & 31;
          if (babylen != 0) {
             // calc how much to align data
             babylen = (32 - babylen) / sizeof(T);
             if (babylen <= datalen) {
-               for (INT64 i = 0; i < babylen; i++) {
+               for (int64_t i = 0; i < babylen; i++) {
                   pDataIn1[i] = MATH_OP(pDataIn1[i], arg2);
                }
                pDataIn1 += babylen;
@@ -473,7 +473,7 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
             pDataIn1 = (T*)pIn1_256;
          }
          datalen = datalen & (chunkSize - 1);
-         for (INT64 i = 0; i < datalen; i++) {
+         for (int64_t i = 0; i < datalen; i++) {
             pDataIn1[i] = MATH_OP(pDataIn1[i], arg2);
          }
 
@@ -503,7 +503,7 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
             pDataOut = (T*)pOut_256;
          }
          datalen = datalen & (chunkSize - 1);
-         for (INT64 i = 0; i < datalen; i++) {
+         for (int64_t i = 0; i < datalen; i++) {
             pDataOut[i] = MATH_OP(pDataIn1[i], arg2);
          }
       }
@@ -517,21 +517,21 @@ inline void SimpleMathOpFast(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, 
 //=====================================================================================================
 // Flips arg1 and arg2 around for BITWISE_NOTAND
 template<typename T, typename U256, const T MATH_OP(T, T), const U256 MATH_OP256(U256, U256)>
-inline void SimpleMathOpFastReverse(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 datalen, INT32 scalarMode) {
+inline void SimpleMathOpFastReverse(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t datalen, int32_t scalarMode) {
    return SimpleMathOpFast<T, U256, MATH_OP, MATH_OP256>(pDataIn2X, pDataIn1X, pDataOutX, datalen, scalarMode);
 }
 
 //=====================================================================================================
 // Not symmetric -- arg1 must be first, arg2 must be second
 template<typename T, typename U256, const T MATH_OP(T, T), const U256 MATH_OP256(U256, U256)>
-inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 datalen, INT32 scalarMode) {
+inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t datalen, int32_t scalarMode) {
    T* pDataOut = (T*)pDataOutX;
    T* pDataIn1 = (T*)pDataIn1X;
    T* pDataIn2 = (T*)pDataIn2X;
 
-   const INT64 NUM_LOOPS_UNROLLED = 1;
-   const INT64 chunkSize = NUM_LOOPS_UNROLLED * (sizeof(U256) / sizeof(T));
-   INT64 perReg = sizeof(U256) / sizeof(T);
+   const int64_t NUM_LOOPS_UNROLLED = 1;
+   const int64_t chunkSize = NUM_LOOPS_UNROLLED * (sizeof(U256) / sizeof(T));
+   int64_t perReg = sizeof(U256) / sizeof(T);
 
    LOGGING("mathopfast datalen %llu  chunkSize %llu  perReg %llu\n", datalen, chunkSize, perReg);
 
@@ -564,7 +564,7 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
       }
 
       datalen = datalen & (chunkSize - 1);
-      for (INT64 i = 0; i < datalen; i++) {
+      for (int64_t i = 0; i < datalen; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], pDataIn2[i]);
       }
 
@@ -601,7 +601,7 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
          pDataOut = (T*)pOut_256;
       }
       datalen = datalen & (chunkSize - 1);
-      for (INT64 i = 0; i < datalen; i++) {
+      for (int64_t i = 0; i < datalen; i++) {
          pDataOut[i] = MATH_OP(arg1, pDataIn2[i]);
       }
       break;
@@ -614,12 +614,12 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
       if (pDataOut == pDataIn1) {
 
          // align the load to 32 byte boundary
-         INT64 babylen = (INT64)pDataIn1 & 31;
+         int64_t babylen = (int64_t)pDataIn1 & 31;
          if (babylen != 0) {
             // calc how much to align data
             babylen = (32 - babylen) / sizeof(T);
             if (babylen <= datalen) {
-               for (INT64 i = 0; i < babylen; i++) {
+               for (int64_t i = 0; i < babylen; i++) {
                   pDataIn1[i] = MATH_OP(pDataIn1[i], arg2);
                }
                pDataIn1 += babylen;
@@ -647,7 +647,7 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
             pDataIn1 = (T*)pIn1_256;
          }
          datalen = datalen & (chunkSize - 1);
-         for (INT64 i = 0; i < datalen; i++) {
+         for (int64_t i = 0; i < datalen; i++) {
             pDataIn1[i] = MATH_OP(pDataIn1[i], arg2);
          }
 
@@ -680,7 +680,7 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
             pDataOut = (T*)pOut_256;
          }
          datalen = datalen & (chunkSize - 1);
-         for (INT64 i = 0; i < datalen; i++) {
+         for (int64_t i = 0; i < datalen; i++) {
             pDataOut[i] = MATH_OP(pDataIn1[i], arg2);
          }
       }
@@ -695,14 +695,14 @@ inline void SimpleMathOpFastSymmetric(void* pDataIn1X, void* pDataIn2X, void* pD
 //=====================================================================================================
 
 template<typename T, typename U128, typename U256, typename MathFunctionPtr, typename MathFunctionConvert, typename MathFunctionPtr256>
-inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert MATH_CONV, MathFunctionPtr256 MATH_OP256, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, INT64 len, INT32 scalarMode) {
+inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert MATH_CONV, MathFunctionPtr256 MATH_OP256, void* pDataIn1X, void* pDataIn2X, void* pDataOutX, int64_t len, int32_t scalarMode) {
    double* pDataOut = (double*)pDataOutX;
    T* pDataIn1 = (T*)pDataIn1X;
    T* pDataIn2 = (T*)pDataIn2X;
    const double dummy = 0;
 
-   INT64 chunkSize = (sizeof(U256)) / sizeof(double);
-   INT64 perReg = sizeof(U256) / sizeof(double);
+   int64_t chunkSize = (sizeof(U256)) / sizeof(double);
+   int64_t perReg = sizeof(U256) / sizeof(double);
 
    LOGGING("mathopfastDouble len %llu  chunkSize %llu  perReg %llu\n", len, chunkSize, perReg);
 
@@ -732,7 +732,7 @@ inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert 
       }
 
       len = len & (chunkSize - 1);
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], pDataIn2[i]);
       }
 
@@ -741,7 +741,7 @@ inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert 
    case SCALAR_MODE::FIRST_ARG_SCALAR:
    {
       T arg1 = *pDataIn1;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(arg1, pDataIn2[i]);
       }
       break;
@@ -749,7 +749,7 @@ inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert 
    case SCALAR_MODE::SECOND_ARG_SCALAR:
    {
       T arg2 = *pDataIn2;
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          pDataOut[i] = MATH_OP(pDataIn1[i], arg2);
       }
       break;
@@ -761,7 +761,7 @@ inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert 
 
 
 template<typename T, typename U128, typename U256>
-static void SimpleMathOpFastDivDouble(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpFastDivDouble(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpFastDouble<T, U128, U256, const double(*)(T, T), const U256(*)(U128*), const U256(*)(U256, U256)>(DivOp<T>, CONV_INT32_DOUBLE,  DIV_OP_256f64, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
@@ -769,78 +769,78 @@ static void SimpleMathOpFastDivDouble(void* pDataIn1, void* pDataIn2, void* pDat
 //--------------------------------------------------------------------------------------
 
 template<typename T>
-static void SimpleMathOpSlowAdd(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowAdd(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(AddOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowSub(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowSub(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(SubOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowMul(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowMul(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(MulOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowDivFloat(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowDivFloat(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const float(*)(float, T)>(DivOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowDiv(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowDiv(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlowDouble<T, const double(*)(T, T)>(DivOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 
 template<typename T>
-static void SimpleMathOpSubDateTime(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSubDateTime(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlowDouble<T, const double(*)(T, T)>(SubDateTimeOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSubDates(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSubDates(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(SubDatesOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowFloorDiv(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowFloorDiv(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(FloorDivOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowMod(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowMod(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(ModOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowLog(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowLog(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(LogOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowPower(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowPower(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(PowerOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowRemainder(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowRemainder(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(REMAINDER_OP<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowFmod(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowFmod(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(FMOD_OP<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowMin(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowMin(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(MinOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
 template<typename T>
-static void SimpleMathOpSlowMax(void* pDataIn1, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+static void SimpleMathOpSlowMax(void* pDataIn1, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
    return SimpleMathOpSlow<T, const T(*)(T, T)>(MaxOp<T>, pDataIn1, pDataIn2, pDataOut, len, scalarMode);
 }
 
@@ -852,36 +852,40 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       *wantedOutType = numpyInType1;
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) *wantedOutType = numpyInType2;
       switch (*wantedOutType) {
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, OrOp<INT8>, OR_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
       case NPY_FLOAT:  return SimpleMathOpFastSymmetric<float, __m256, AddOp<float>, ADD_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFastSymmetric<double, __m256d, AddOp<double>, ADD_OP_256f64>;
          // proof of concept for i32 addition loop
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, AddOp<INT32>, ADD_OP_256i32>;
-      CASE_NPY_INT64:  return SimpleMathOpFastSymmetric<INT64, __m256i, AddOp<INT64>, ADD_OP_256i64>;
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, AddOp<INT16>, ADD_OP_256i16>;
-      case NPY_INT8:   return SimpleMathOpFastSymmetric<INT8,  __m256i, AddOp<INT8>, ADD_OP_256i8>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AddOp<int32_t>, ADD_OP_256i32>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, AddOp<int64_t>, ADD_OP_256i64>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, AddOp<int16_t>, ADD_OP_256i16>;
+      case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t,  __m256i, AddOp<int8_t>, ADD_OP_256i8>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MUL:
       *wantedOutType = numpyInType1;
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) *wantedOutType = numpyInType2;
       switch (*wantedOutType) {
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, AndOp<INT8>, AND_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       case NPY_FLOAT:  return SimpleMathOpFastSymmetric<float, __m256, MulOp<float>, MUL_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFastSymmetric<double, __m256d, MulOp<double>, MUL_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, MulOp<INT32>, MUL_OP_256i32>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MulOp<int32_t>, MUL_OP_256i32>;
 
-      //CASE_NPY_INT64:  return SimpleMathOpFast<INT64, __m256i, MulOp<INT64>, MUL_OP_256i64>;
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, MulOp<INT16>, MUL_OP_256i16>;
+      //CASE_NPY_INT64:   return SimpleMathOpFast<int64_t, __m256i, MulOp<int64_t>, MUL_OP_256i64>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MulOp<int16_t>, MUL_OP_256i16>;
 
       // Below the intrinsic to multiply is slower so we disabled it (really wants 32bit -> 64bit)
-      //CASE_NPY_UINT32:  return SimpleMathOpFastMul<UINT32, __m256i>;
+      //CASE_NPY_UINT32:  return SimpleMathOpFastMul<uint32_t, __m256i>;
       // TODO: 64bit multiply can be done with algo..
       // lo1 * lo2 + (lo1 * hi2) << 32 + (hi1 *lo2) << 32)
-      CASE_NPY_UINT64: return SimpleMathOpFastSymmetric<UINT64, __m256i, MulOp<UINT64>, MUL_OP_256u64>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpFastSymmetric<uint64_t, __m256i, MulOp<uint64_t>, MUL_OP_256u64>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUB:
       *wantedOutType = numpyInType1;
@@ -889,12 +893,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_FLOAT:  return SimpleMathOpFast<float, __m256, SubOp<float>, SUB_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFast<double, __m256d, SubOp<double>, SUB_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFast<INT32, __m256i, SubOp<INT32>, SUB_OP_256i32>;
-      CASE_NPY_INT64:  return SimpleMathOpFast<INT64, __m256i, SubOp<INT64>, SUB_OP_256i64>;
-      case NPY_INT16:  return SimpleMathOpFast<INT16, __m256i, SubOp<INT16>, SUB_OP_256i16>;
-      case NPY_INT8:   return SimpleMathOpFast<INT8,  __m256i, SubOp<INT8>,  SUB_OP_256i8>;
+      CASE_NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, SubOp<int32_t>, SUB_OP_256i32>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFast<int64_t, __m256i, SubOp<int64_t>, SUB_OP_256i64>;
+      case NPY_INT16:  return SimpleMathOpFast<int16_t, __m256i, SubOp<int16_t>, SUB_OP_256i16>;
+      case NPY_INT8:   return SimpleMathOpFast<int8_t,  __m256i, SubOp<int8_t>,  SUB_OP_256i8>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::MIN:
@@ -905,14 +911,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       // TODO: Vector routine needs to be written
       case NPY_FLOAT:  return SimpleMathOpSlowMin<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMin<double>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, MinOp<INT32>, MIN_OPi32>;
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, MinOp<INT16>, MIN_OPi16>;
-      case NPY_INT8:   return SimpleMathOpFastSymmetric<INT8, __m256i, MinOp<INT8>, MIN_OPi8>;
-      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<UINT32, __m256i, MinOp<UINT32>, MIN_OPu32>;
-      case NPY_UINT16:  return SimpleMathOpFastSymmetric<UINT16, __m256i, MinOp<UINT16>, MIN_OPu16>;
-      case NPY_UINT8:   return SimpleMathOpFastSymmetric<UINT8, __m256i, MinOp<UINT8>, MIN_OPu8>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MinOp<int32_t>, MIN_OPi32>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MinOp<int16_t>, MIN_OPi16>;
+      case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t, __m256i, MinOp<int8_t>, MIN_OPi8>;
+      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MinOp<uint32_t>, MIN_OPu32>;
+      case NPY_UINT16:  return SimpleMathOpFastSymmetric<uint16_t, __m256i, MinOp<uint16_t>, MIN_OPu16>;
+      case NPY_UINT8:   return SimpleMathOpFastSymmetric<uint8_t, __m256i, MinOp<uint8_t>, MIN_OPu8>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MAX:
       // This is max for two arrays
@@ -922,14 +928,14 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       // TODO: Vector routine needs to be written
       case NPY_FLOAT:  return SimpleMathOpSlowMax<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMax<double>;
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, MaxOp<INT32>, MAX_OPi32>;
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, MaxOp<INT16>, MAX_OPi16>;
-      case NPY_INT8:   return SimpleMathOpFastSymmetric<INT8, __m256i, MaxOp<INT8>, MAX_OPi8>;
-      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<UINT32, __m256i, MaxOp<UINT32>, MAX_OPu32>;
-      case NPY_UINT16:  return SimpleMathOpFastSymmetric<UINT16, __m256i, MaxOp<UINT16>, MAX_OPu16>;
-      case NPY_UINT8:   return SimpleMathOpFastSymmetric<UINT8, __m256i, MaxOp<UINT8>, MAX_OPu8>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, MaxOp<int32_t>, MAX_OPi32>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, MaxOp<int16_t>, MAX_OPi16>;
+      case NPY_INT8:   return SimpleMathOpFastSymmetric<int8_t, __m256i, MaxOp<int8_t>, MAX_OPi8>;
+      CASE_NPY_UINT32:  return SimpleMathOpFastSymmetric<uint32_t, __m256i, MaxOp<uint32_t>, MAX_OPu32>;
+      case NPY_UINT16:  return SimpleMathOpFastSymmetric<uint16_t, __m256i, MaxOp<uint16_t>, MAX_OPu16>;
+      case NPY_UINT8:   return SimpleMathOpFastSymmetric<uint8_t, __m256i, MaxOp<uint8_t>, MAX_OPu8>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::DIV:
@@ -943,17 +949,17 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
       case NPY_FLOAT:  return SimpleMathOpFast<float, __m256, DivOp<float>, DIV_OP_256f32>;
       case NPY_DOUBLE: return SimpleMathOpFast<double, __m256d, DivOp<double>, DIV_OP_256f64>;
-      CASE_NPY_INT32:  return SimpleMathOpFastDivDouble<INT32, __m128i, __m256d>;
+      CASE_NPY_INT32:  return SimpleMathOpFastDivDouble<int32_t, __m128i, __m256d>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::LOGICAL_AND:
       *wantedOutType = numpyInType1;
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) *wantedOutType = numpyInType2;
       switch (*wantedOutType) {
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, AndOp<INT8>, AND_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_AND:
       *wantedOutType = numpyInType1;
@@ -961,23 +967,26 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, AndOp<INT8>, AND_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, AndOp<INT16>, AND_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, AndOp<int16_t>, AND_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, AndOp<INT32>, AND_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, AndOp<int32_t>, AND_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<INT64, __m256i, AndOp<INT64>, AND_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, AndOp<int64_t>, AND_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::LOGICAL_OR:
       *wantedOutType = numpyInType1;
       if (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR) *wantedOutType = numpyInType2;
       switch (*wantedOutType) {
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, OrOp<INT8>, OR_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_OR:
       *wantedOutType = numpyInType1;
@@ -985,15 +994,18 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, OrOp<INT8>, OR_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, OrOp<INT16>, OR_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, OrOp<int16_t>, OR_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, OrOp<INT32>, OR_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, OrOp<int32_t>, OR_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<INT64, __m256i, OrOp<INT64>, OR_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, OrOp<int64_t>, OR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_XOR:
       *wantedOutType = numpyInType1;
@@ -1001,15 +1013,18 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, XorOp<INT8>, XOR_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, XorOp<INT16>, XOR_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, XorOp<INT32>, XOR_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<INT64, __m256i, XorOp<INT64>, XOR_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::BITWISE_XOR_SPECIAL:
@@ -1018,15 +1033,18 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFastSymmetric<INT8, __m256i, XorOp<INT8>, XOR_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFastSymmetric<INT16, __m256i, XorOp<INT16>, XOR_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<INT32, __m256i, XorOp<INT32>, XOR_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFastSymmetric<int32_t, __m256i, XorOp<int32_t>, XOR_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastSymmetric<INT64, __m256i, XorOp<INT64>, XOR_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastSymmetric<int64_t, __m256i, XorOp<int64_t>, XOR_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_ANDNOT:
       *wantedOutType = numpyInType1;
@@ -1034,15 +1052,18 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFastReverse<INT8, __m256i, AndNotOp<INT8>, ANDNOT_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFastReverse<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFastReverse<INT16, __m256i, AndNotOp<INT16>, ANDNOT_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFastReverse<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFastReverse<INT32, __m256i, AndNotOp<INT32>, ANDNOT_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFastReverse<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFastReverse<INT64, __m256i, AndNotOp<INT64>, ANDNOT_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFastReverse<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::BITWISE_NOTAND:
       *wantedOutType = numpyInType1;
@@ -1050,24 +1071,27 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
       switch (*wantedOutType) {
       case NPY_INT8:
       case NPY_UINT8:
-      case NPY_BOOL:   return SimpleMathOpFast<INT8, __m256i, AndNotOp<INT8>, ANDNOT_OP_256>;
+      case NPY_BOOL:   return SimpleMathOpFast<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
       case NPY_UINT16:
-      case NPY_INT16:  return SimpleMathOpFast<INT16, __m256i, AndNotOp<INT16>, ANDNOT_OP_256>;
+      case NPY_INT16:  return SimpleMathOpFast<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
       CASE_NPY_UINT32:
-      CASE_NPY_INT32:  return SimpleMathOpFast<INT32, __m256i, AndNotOp<INT32>, ANDNOT_OP_256>;
+      CASE_NPY_INT32:  return SimpleMathOpFast<int32_t, __m256i, AndNotOp<int32_t>, ANDNOT_OP_256>;
       CASE_NPY_UINT64:
-      case NPY_INT64:  return SimpleMathOpFast<INT64, __m256i, AndNotOp<INT64>, ANDNOT_OP_256>;
+      
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpFast<int64_t, __m256i, AndNotOp<int64_t>, ANDNOT_OP_256>;
       }
-      return NULL;
+      return nullptr;
 
    }
 
-   return NULL;
+   return nullptr;
 }
 
 
 //==========================================================
-// May return NULL if it cannot handle type or function
+// May return nullptr if it cannot handle type or function
 static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
    switch (func) {
    case MATH_OPERATION::ADD:
@@ -1078,14 +1102,19 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowAdd<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowAdd<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowAdd<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowAdd<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowAdd<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowAdd<UINT32>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowAdd<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowAdd<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowAdd<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowAdd<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowAdd<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowAdd<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowAdd<int64_t>;
+      CASE_NPY_UINT32:
+         return SimpleMathOpSlowAdd<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowAdd<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowAdd<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowAdd<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowAdd<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowAdd<uint16_t>;
       case NPY_STRING:
          if (numpyInType1 == numpyInType2 && scalarMode == SCALAR_MODE::NO_SCALARS) {
 
@@ -1098,7 +1127,7 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
          }
          break;
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUB:
       *wantedOutType = numpyInType1;
@@ -1108,17 +1137,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowSub<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowSub<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowSub<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowSub<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowSub<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowSub<UINT32>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowSub<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowSub<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowSub<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowSub<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowSub<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowSub<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowSub<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowSub<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowSub<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowSub<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowSub<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowSub<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowSub<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
 
    case MATH_OPERATION::MUL:
@@ -1129,17 +1162,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowMul<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowMul<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowMul<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowMul<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowMul<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowMul<UINT32>;
-      case NPY_UINT64: return SimpleMathOpSlowMul<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowMul<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowMul<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowMul<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowMul<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowMul<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowMul<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowMul<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowMul<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowMul<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowMul<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowMul<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowMul<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::DIV:
       *wantedOutType = NPY_DOUBLE;
@@ -1155,35 +1192,44 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowDivFloat<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowDiv<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowDiv<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowDiv<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowDiv<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowDiv<UINT32>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowDiv<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowDiv<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowDiv<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowDiv<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowDiv<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowDiv<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowDiv<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowDiv<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowDiv<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowDiv<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowDiv<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowDiv<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowDiv<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUBDATETIMES:
       *wantedOutType = NPY_DOUBLE;
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
-      CASE_NPY_INT32:  return SimpleMathOpSubDateTime<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSubDateTime<INT64>;
+      CASE_NPY_INT32:  return SimpleMathOpSubDateTime<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSubDateTime<int64_t>;
       }
       printf("bad call to subdatetimes %d %d\n", numpyInType2 , numpyInType1);
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::SUBDATES:
       *wantedOutType = NPY_INT32;
       switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1) {
-      CASE_NPY_INT32:  return SimpleMathOpSubDates<INT32>;
-      CASE_NPY_INT64:  *wantedOutType = NPY_INT64; return SimpleMathOpSubDates<INT64>;
+      CASE_NPY_INT32:  return SimpleMathOpSubDates<int32_t>;
+      CASE_NPY_INT64:
+      
+         *wantedOutType = NPY_INT64;
+         return SimpleMathOpSubDates<int64_t>;
       }
       printf("bad call to subdates %d %d\n", numpyInType2, numpyInType1);
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::FLOORDIV:
       *wantedOutType = numpyInType1;
@@ -1194,19 +1240,23 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowFloorDiv<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowFloorDiv<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowFloorDiv<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowFloorDiv<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowFloorDiv<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowFloorDiv<UINT32>;
-      case NPY_UINT64: return SimpleMathOpSlowFloorDiv<UINT64>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowFloorDiv<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowFloorDiv<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowFloorDiv<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowFloorDiv<uint64_t>;
 
 #ifndef RT_COMPILER_CLANG  // possible error with int8 array and np.floor_divide() with vextractps instruction
-      case NPY_INT8:   return SimpleMathOpSlowFloorDiv<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowFloorDiv<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowFloorDiv<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowFloorDiv<UINT16>;
+      case NPY_INT8:   return SimpleMathOpSlowFloorDiv<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowFloorDiv<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowFloorDiv<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowFloorDiv<uint16_t>;
 #endif
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::MOD:
       *wantedOutType = numpyInType1;
@@ -1216,17 +1266,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowRemainder<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowRemainder<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowRemainder<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowMod<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowMod<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowMod<UINT32>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowMod<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowMod<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowMod<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowMod<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowMod<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowMod<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowMod<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowMod<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowMod<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowMod<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowMod<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowMod<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowMod<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::POWER:
       *wantedOutType = numpyInType1;
@@ -1236,17 +1290,21 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_FLOAT:  return SimpleMathOpSlowPower<float>;
       case NPY_DOUBLE: return SimpleMathOpSlowPower<double>;
       case NPY_LONGDOUBLE: return SimpleMathOpSlowPower<long double>;
-      CASE_NPY_INT32:  return SimpleMathOpSlowPower<INT32>;
-      CASE_NPY_INT64:  return SimpleMathOpSlowPower<INT64>;
-      CASE_NPY_UINT32: return SimpleMathOpSlowPower<UINT32>;
-      CASE_NPY_UINT64: return SimpleMathOpSlowPower<UINT64>;
-      case NPY_INT8:   return SimpleMathOpSlowPower<INT8>;
-      case NPY_INT16:  return SimpleMathOpSlowPower<INT16>;
-      case NPY_UINT8:  return SimpleMathOpSlowPower<UINT8>;
-      case NPY_UINT16: return SimpleMathOpSlowPower<UINT16>;
+      CASE_NPY_INT32:  return SimpleMathOpSlowPower<int32_t>;
+      CASE_NPY_INT64:
+      
+         return SimpleMathOpSlowPower<int64_t>;
+      CASE_NPY_UINT32: return SimpleMathOpSlowPower<uint32_t>;
+      CASE_NPY_UINT64:
+      
+         return SimpleMathOpSlowPower<uint64_t>;
+      case NPY_INT8:   return SimpleMathOpSlowPower<int8_t>;
+      case NPY_INT16:  return SimpleMathOpSlowPower<int16_t>;
+      case NPY_UINT8:  return SimpleMathOpSlowPower<uint8_t>;
+      case NPY_UINT16: return SimpleMathOpSlowPower<uint16_t>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::REMAINDER:
       *wantedOutType = numpyInType1;
@@ -1257,7 +1315,7 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_LONGDOUBLE: return SimpleMathOpSlowRemainder<long double>;
 
       }
-      return NULL;
+      return nullptr;
 
    case MATH_OPERATION::FMOD:
       *wantedOutType = numpyInType1;
@@ -1268,11 +1326,11 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
       case NPY_LONGDOUBLE: return SimpleMathOpSlowFmod<long double>;
 
       }
-      return NULL;
+      return nullptr;
 
    }
 
-   return NULL;
+   return nullptr;
 }
 
 //---------------------------------
@@ -1289,9 +1347,11 @@ static int GetNonAmbiguousDtype(int dtype) {
       dtype = 6;
       break;
    CASE_NPY_INT64:
+   
       dtype = 9;
       break;
    CASE_NPY_UINT64:
+   
       dtype = 10;
       break;
    }
@@ -1301,7 +1361,7 @@ static int GetNonAmbiguousDtype(int dtype) {
 //--------------------------------------------------------------------
 // Check to see if we can compute this
 static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInType1, int numpyInType2, int numpyOutType, int* wantedOutType) {
-   ANY_TWO_FUNC pTwoFunc = NULL;
+   ANY_TWO_FUNC pTwoFunc = nullptr;
 
    LOGGING("CheckMathTwo %d  scalar:%d  type1:%d  type2:%d\n", func, scalarMode, numpyInType1, numpyInType2);
 
@@ -1332,7 +1392,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
 
          // Try to get fast one first
          pTwoFunc = GetSimpleMathOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetSimpleMathOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1345,7 +1405,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
       case MATH_OPERATION::CMP_LT:
       case MATH_OPERATION::CMP_LTE:
          pTwoFunc = GetComparisonOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetComparisonOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1369,7 +1429,7 @@ static ANY_TWO_FUNC CheckMathOpTwoInputs(int func, int scalarMode, int numpyInTy
 
          // Try to get fast one first
          pTwoFunc = GetSimpleMathOpFast(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
-         if (pTwoFunc == NULL) {
+         if (pTwoFunc == nullptr) {
             pTwoFunc = GetSimpleMathOpSlow(func, scalarMode, numpyInType1, numpyInType2, numpyOutType, wantedOutType);
          }
          break;
@@ -1461,13 +1521,13 @@ public:
          if (dtype <= NPY_ULONGLONG) {
             // this path includes bools
             int overflow = 0;
-            INT64 val = PyLong_AsLongLongAndOverflow(scalarObject, &overflow);
-            INT64 log2 = 64;
+            int64_t val = PyLong_AsLongLongAndOverflow(scalarObject, &overflow);
+            int64_t log2 = 64;
             if (!overflow) {
                int issigned = 0;
                if (val < 0) {
                   issigned = 1;   
-                  // Handle case of -128 which can exist in an INT8
+                  // Handle case of -128 which can exist in an int8_t
                   val = -(val + 1);
                }
                // Check for 0 due to builtin_clz issue
@@ -1497,7 +1557,7 @@ public:
                }
                int convertType1 = dtype;
                int convertType2 = scalar_dtype;
-               BOOL result = GetUpcastType(dtype, scalar_dtype, convertType1, convertType2, funcNumber);
+               bool result = GetUpcastType(dtype, scalar_dtype, convertType1, convertType2, funcNumber);
                LOGGING("Getting upcast %d %d, result %d  convert:%d\n", dtype, scalar_dtype, result, convertType1);
                if (result) {
                   return convertType1;
@@ -1542,7 +1602,7 @@ public:
             LOGGING("scalars dont match %d %d\n", scalarType, dtype);
             int convertType1 = dtype;
             int convertType2 = scalarType;
-            BOOL result = GetUpcastType(dtype, scalarType, convertType1, convertType2, funcNumber);
+            bool result = GetUpcastType(dtype, scalarType, convertType1, convertType2, funcNumber);
             if (result) {
                return convertType1;
             }
@@ -1554,7 +1614,7 @@ public:
 
    //-------------------------------------------------------------------
    // 
-   // returns NULL on failure
+   // returns nullptr on failure
    PyObject* PossiblyConvertString(int newType, int oldType, PyObject* inObject) {
       if (newType == NPY_UNICODE && oldType == NPY_STRING) {
          if (PyUnicode_Check(inObject)) {
@@ -1573,7 +1633,7 @@ public:
             }
          }
       } 
-      return NULL;
+      return nullptr;
    }
 
    //-------------------------------------------------------------------
@@ -1602,18 +1662,18 @@ public:
 
    //-------------------------------------------------------------------
    // Arg1: defaultScalarType currently not used
-   // returns FALSE on failure
-   BOOL CheckInputs(PyObject* args, int defaultScalarType, INT64 funcNumber) {
+   // returns false on failure
+   bool CheckInputs(PyObject* args, int defaultScalarType, int64_t funcNumber) {
       if (!PyTuple_CheckExact(args)) {
          PyErr_Format(PyExc_ValueError, "BasicMath arguments needs to be a tuple");
-         return FALSE;
+         return false;
       }
 
       tupleSize = Py_SIZE(args);
 
       if (tupleSize != (expectedTupleSize - 1) && tupleSize != expectedTupleSize) {
          PyErr_Format(PyExc_ValueError, "BasicMath only takes two or three arguments instead of %llu args", tupleSize);
-         return FALSE;
+         return false;
       }
 
       // PyTuple_GetItem will not increment the ref count
@@ -1635,11 +1695,11 @@ public:
 
    // Called from low level __add__ hook
    // If output is set, it came from an inplace operation and the ref count does not need to be incremented
-   BOOL CheckInputs(PyObject* input1, PyObject* input2, PyObject* output, INT64 funcNumber) {
+   bool CheckInputs(PyObject* input1, PyObject* input2, PyObject* output, int64_t funcNumber) {
       tupleSize = 2;
       inObject1 = input1;
       inObject2 = input2;
-      if (output != NULL) {
+      if (output != nullptr) {
          outputObject = output;
          // This will force the output type
          numpyOutType = PyArray_TYPE((PyArrayObject*)outputObject);
@@ -1650,11 +1710,11 @@ public:
 
    //----------------------------------------
    // Input: numpyInType1 and numpyInType2 must be set
-   // Returns FALSE on error
+   // Returns false on error
    // 
-   BOOL CheckUpcast() {
+   bool CheckUpcast() {
       // Check if we need to upcast one or both of the arrays
-      // BOOL, NPY_INT8, NPY_UINT8
+      // bool, NPY_INT8, NPY_UINT8
       if (numpyInType1 != numpyInType2) {
          // Remove the ambiguous type
          if (numpyInType1 == 7 || numpyInType1 == 8) {
@@ -1676,7 +1736,7 @@ public:
          if (numpyInType1 != numpyInType2) {
             int convertType1 = numpyInType1;
             int convertType2 = numpyInType2;
-            BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
+            bool result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
             if (result) {
                if (numpyInType1 != convertType1 && convertType1 <= NPY_LONGDOUBLE) {
                   // Convert
@@ -1684,7 +1744,7 @@ public:
                   PyObject* newarray1 = ConvertSafeInternal(inArr, convertType1);
                   if (!newarray1) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   toDelete3 = newarray1;
                   FillArray1(newarray1);
@@ -1696,7 +1756,7 @@ public:
                   PyObject* newarray2 = ConvertSafeInternal(inArr2, convertType2);
                   if (!newarray2) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   toDelete4 = newarray2;
                   FillArray2(newarray2);
@@ -1704,23 +1764,23 @@ public:
             }
             else {
                LOGGING("BasicMath cannot upcast %d vs %d\n", numpyInType1, numpyInType2);
-               return FALSE;
+               return false;
             }
 
          }
       }
-      return TRUE;
+      return true;
    }
 
 
    // Common routine from array_ufunc or lower level slot hook
    // inObject1 is set and will get analyzed
    // inObject2 is set and will get analyzed
-   // funcNumber is passed because certain comparisons with INT64 <-> UINT64 dont need to get upcast to float64
-   BOOL CheckInputsInternal(int defaultScalarType, INT64 funcNumber) {
+   // funcNumber is passed because certain comparisons with int64_t <-> uint64_t dont need to get upcast to float64
+   bool CheckInputsInternal(int defaultScalarType, int64_t funcNumber) {
 
-      BOOL isArray1 = IsFastArrayOrNumpy((PyArrayObject*)inObject1);
-      BOOL isArray2 = IsFastArrayOrNumpy((PyArrayObject*)inObject2);
+      bool isArray1 = IsFastArrayOrNumpy((PyArrayObject*)inObject1);
+      bool isArray2 = IsFastArrayOrNumpy((PyArrayObject*)inObject2);
       isScalar1 = !isArray1;
       isScalar2 = !isArray2;
 
@@ -1730,12 +1790,12 @@ public:
             LOGGING("Converting object1 to array %s\n", inObject1->ob_type->tp_name);
             // Convert to temp array that must be deleted
             toDelete1 =
-            inObject1 = PyArray_FromAny(inObject1, NULL, 0, 0, NPY_ARRAY_ENSUREARRAY, NULL);
-            if (inObject1 == NULL) {
-               return FALSE;
+            inObject1 = PyArray_FromAny(inObject1, nullptr, 0, 0, NPY_ARRAY_ENSUREARRAY, nullptr);
+            if (inObject1 == nullptr) {
+               return false;
             }
-            isArray1 = TRUE;
-            isScalar1 = FALSE;
+            isArray1 = true;
+            isScalar1 = false;
          }
          else if (isArray2 && !outputObject) {
             // 
@@ -1751,7 +1811,7 @@ public:
                   PyObject* newarray2 = ConvertSafeInternal((PyArrayObject*)inObject2, newType);
                   if (!newarray2) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   // remember to delete temp array
                   toDelete1 =
@@ -1761,9 +1821,9 @@ public:
                else {
                   // Handle conversion from string to unicode here
                   toDelete1 = PossiblyConvertString(newType, oldType, inObject2);
-                  if (!toDelete1) return FALSE;
+                  if (!toDelete1) return false;
                   inObject2 = toDelete1;
-                  return FALSE; // until we handle string compares
+                  return false; // until we handle string compares
                }
             
             }
@@ -1776,12 +1836,12 @@ public:
          if (!isScalar2) {
             LOGGING("Converting object2 to array %s\n", inObject2->ob_type->tp_name);
             toDelete2 =
-            inObject2 = PyArray_FromAny(inObject2, NULL, 0, 0, NPY_ARRAY_ENSUREARRAY, NULL);
-            if (inObject2 == NULL) {
-               return FALSE;
+            inObject2 = PyArray_FromAny(inObject2, nullptr, 0, 0, NPY_ARRAY_ENSUREARRAY, nullptr);
+            if (inObject2 == nullptr) {
+               return false;
             }
-            isArray2 = TRUE;
-            isScalar2 = FALSE;
+            isArray2 = true;
+            isScalar2 = false;
          }
          else if (isArray1 && !outputObject) {
             // 
@@ -1795,7 +1855,7 @@ public:
                   PyObject* newarray1 = ConvertSafeInternal((PyArrayObject*)inObject1, newType);
                   if (!newarray1) {
                      // Failed to convert
-                     return FALSE;
+                     return false;
                   }
                   // remember to delete temp array
                   toDelete2 =
@@ -1804,9 +1864,9 @@ public:
                else {
                   // Handle conversion from string to unicode here
                   toDelete2 =PossiblyConvertString(newType, oldType, inObject1);
-                  if (!toDelete2) return FALSE;
+                  if (!toDelete2) return false;
                   inObject1 = toDelete2;
-                  return FALSE;
+                  return false;
                }
             }
          }
@@ -1832,15 +1892,15 @@ public:
          // Or the scalar is a larger integer and the second array is a small integer, or unisgned
 
          // pDataIn1 will be set pointing to 256 bit value
-         BOOL bResult=
+         bool bResult=
          ConvertScalarObject(inObject1, &m256Scalar1, numpyInType2, &pDataIn1, &itemSize1);
 
-         LOGGING("Converting first scalar type to %d, bresult: %d,  value: %lld  inObject1: %s\n", numpyInType2, bResult, *(INT64*)&m256Scalar1, inObject1->ob_type->tp_name);
+         LOGGING("Converting first scalar type to %d, bresult: %d,  value: %lld  inObject1: %s\n", numpyInType2, bResult, *(int64_t*)&m256Scalar1, inObject1->ob_type->tp_name);
 
          // TJD added this Dec 11, 2018
          numpyInType1 = numpyInType2;
 
-         if (!bResult) return FALSE;
+         if (!bResult) return false;
 
       }
       else {
@@ -1848,7 +1908,7 @@ public:
          FillArray1(inObject1);
          // Check strides
          if (ndim1 > 0 && itemSize1 != PyArray_STRIDE((PyArrayObject*)inArr, 0)) {
-            return FALSE;
+            return false;
          }
 
          //// check for a scalar passed as array of 1 item
@@ -1858,10 +1918,10 @@ public:
          //      scalarMode = SCALAR_MODE::FIRST_ARG_SCALAR;
 
          //      // NOTE: does not handle single array of bytes/unicode
-         //      BOOL bResult =
+         //      bool bResult =
          //         ConvertSingleItemArray(pDataIn1, GetArrDType(inArr), &m256Scalar1, numpyInType2);
 
-         //      if (!bResult) return FALSE;
+         //      if (!bResult) return false;
          //      pDataIn1 = &m256Scalar1;
          //   }
          //}
@@ -1880,12 +1940,12 @@ public:
          numpyInType2 = numpyInType1;
 
          // pDataIn2 will be set pointing to 256 bit value
-         BOOL bResult =
+         bool bResult =
          ConvertScalarObject(inObject2, &m256Scalar2, numpyInType1, &pDataIn2, &itemSize2);
 
-         LOGGING("Converting second scalar type to %d, bresult: %d,  value: %lld  type: %s\n", numpyInType1, bResult, *(INT64*)&m256Scalar2, inObject2->ob_type->tp_name);
+         LOGGING("Converting second scalar type to %d, bresult: %d,  value: %lld  type: %s\n", numpyInType1, bResult, *(int64_t*)&m256Scalar2, inObject2->ob_type->tp_name);
 
-         if (!bResult) return FALSE;
+         if (!bResult) return false;
 
       }
       else {
@@ -1894,7 +1954,7 @@ public:
 
          // Check strides
          if (ndim2 > 0 && itemSize2 != PyArray_STRIDE((PyArrayObject*)inArr2, 0)) {
-            return FALSE;
+            return false;
          }
 
          //// check for a scalar passed as array of 1 item
@@ -1903,10 +1963,10 @@ public:
          //      scalarMode = SCALAR_MODE::SECOND_ARG_SCALAR;
 
          //      // broadcastable check  -- we always checkd for 1?
-         //      BOOL bResult =
+         //      bool bResult =
          //         ConvertSingleItemArray(pDataIn1, GetArrDType(inArr), &m256Scalar1, numpyInType2);
 
-         //      if (!bResult) return FALSE;
+         //      if (!bResult) return false;
          //      pDataIn1 = &m256Scalar1;
          //   }
          //}
@@ -1931,14 +1991,14 @@ public:
                numpyInType1 = GetArrDType(inArr);
                int convertType1 = numpyInType1;
                int convertType2 = numpyInType2;
-               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
+               bool result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
                if (result) {
                   LOGGING("setting BM to first arg scalar from %d to %d.  ndim1: %d\n", numpyInType1, convertType1, ndim1);
                   // Convert
-                  BOOL bResult =
+                  bool bResult =
                      ConvertSingleItemArray(pDataIn1, numpyInType1, &m256Scalar1, convertType1);
 
-                  if (!bResult) return FALSE;
+                  if (!bResult) return false;
                   pDataIn1 = &m256Scalar1;
                   numpyInType1 = convertType1;
 
@@ -1948,7 +2008,7 @@ public:
                      PyObject* newarray2 = ConvertSafeInternal(inArr2, convertType2);
                      if (!newarray2) {
                         // Failed to convert
-                        return FALSE;
+                        return false;
                      }
                      toDelete4 = newarray2;
                      FillArray2(newarray2);
@@ -1956,7 +2016,7 @@ public:
 
                }
                else {
-                  return FALSE;
+                  return false;
                }
 
             }
@@ -1969,15 +2029,15 @@ public:
                numpyInType2 = GetArrDType(inArr2);
                int convertType1 = numpyInType1;
                int convertType2 = numpyInType2;
-               BOOL result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
+               bool result = GetUpcastType(numpyInType1, numpyInType2, convertType1, convertType2, funcNumber);
                if (result) {
                   LOGGING("setting BM to second arg scalar from %d to %d.  ndim2: %d\n", numpyInType2, convertType2, ndim2);
 
                   // Convert
-                  BOOL bResult =
+                  bool bResult =
                      ConvertSingleItemArray(pDataIn2, numpyInType2, &m256Scalar2, convertType2);
 
-                  if (!bResult) return FALSE;
+                  if (!bResult) return false;
                   pDataIn2 = &m256Scalar2;
                   numpyInType2 = convertType2;
 
@@ -1987,7 +2047,7 @@ public:
                      PyObject* newarray1 = ConvertSafeInternal(inArr, convertType1);
                      if (!newarray1) {
                         // Failed to convert
-                        return FALSE;
+                        return false;
                      }
                      toDelete2 = newarray1;
                      FillArray1(newarray1);
@@ -1995,29 +2055,29 @@ public:
 
                }
                else {
-                  return FALSE;
+                  return false;
                }
 
             }
             else {
                LOGGING("BasicMath needs matching 1 dim x 1 dim array   %llu x %llu.  Will punt to numpy.\n", len1, len2);
                //PyErr_Format(PyExc_ValueError, "GenericAnyTwoFunc needs 1 dim x 1 dim array   %d x %d", len1, len2);
-               return FALSE;
+               return false;
             }
          } else {
             // Check if we need to upcast one or both of the arrays
-            // BOOL, NPY_INT8, NPY_UINT8
-            if (!CheckUpcast()) return FALSE;
+            // bool, NPY_INT8, NPY_UINT8
+            if (!CheckUpcast()) return false;
          }
 
       }
 
 
-      return TRUE;
+      return true;
    }
 
    //-----------------------------------------------------------------------
-   // returns NULL on failure
+   // returns nullptr on failure
    // will ALLOCATE or use an existing numpy array
    PyArrayObject* CheckOutputs(int wantOutType) {
 
@@ -2032,28 +2092,28 @@ public:
          if (!PyArray_Check(outputObject)) {
             LOGGING("BasicMath needs third argument to be an array\n");
             PyErr_Format(PyExc_ValueError, "BasicMath needs third argument to be an array");
-            return NULL;
+            return nullptr;
          }
 
          if (PyArray_TYPE((PyArrayObject*)outputObject) != wantOutType) {
             LOGGING("BasicMath does not match output type %d vs %d\n", PyArray_TYPE((PyArrayObject*)outputObject) ,wantOutType);
             //PyErr_Format(PyExc_ValueError, "BasicMath does not match output type %d vs %d", PyArray_TYPE((PyArrayObject*)outputObject), wantOutType);
             // NOTE: Now handled in FastArray where we will copy result back into array
-            outputObject= NULL;
+            outputObject= nullptr;
          }
          else {
 
-            INT64 len3 = ArrayLength((PyArrayObject*)outputObject);
+            int64_t len3 = ArrayLength((PyArrayObject*)outputObject);
             LOGGING("oref %llu  len1:%lld  len2:%lld  len3: %lld\n", outputObject->ob_refcnt, len1, len2, len3);
             if (len3 < len2 || len3 < len1) {
                // something wrong with output size (gonna crash)
-               return NULL;
+               return nullptr;
             }
 
             if (PyArray_ITEMSIZE((PyArrayObject*)outputObject) != PyArray_STRIDE((PyArrayObject*)outputObject, 0)) {
                // output array is strided
                LOGGING("Punting because output array is strided\n");
-               return FALSE;
+               return nullptr;
             }
 
 
@@ -2074,33 +2134,33 @@ public:
          // a[1:] -= a[:-1]
          char* pOutput=PyArray_BYTES(returnObject);
          char* pOutputEnd = pOutput + ArrayLength(returnObject) * PyArray_ITEMSIZE(returnObject);
-         BOOL bOverlapProblem = FALSE;
+         bool bOverlapProblem = false;
 
          if (len1) {
             if (pDataIn1 > pOutput && pDataIn1 < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap in beginning for input1\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
             char* pTempEnd = (char*)pDataIn1 + (len1 * itemSize1);
             if (pTempEnd > pOutput && pTempEnd < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap at end for input1\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
          }
          if (len2) {
             if (pDataIn2 > pOutput && pDataIn2 < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap in beginning for input2\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
             char* pTempEnd = (char*)pDataIn2 + (len2 * itemSize2);
             if (pTempEnd > pOutput && pTempEnd < pOutputEnd) {
                printf("!!!warning: inplace operation has memory overlap at end for input2\n");
-               bOverlapProblem = TRUE;
+               bOverlapProblem = true;
             }
          }
 
          if (bOverlapProblem) {
-            return FALSE;
+            return nullptr;
          }
       }
       else {
@@ -2114,7 +2174,7 @@ public:
          } else
          // Check for functions that always output a boolean
          if (len1 >= len2) {
-            LOGGING("Going to allocate for len1 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim1, dims1 ? (INT64)dims1[0] : 0);
+            LOGGING("Going to allocate for len1 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim1, dims1 ? (int64_t)dims1[0] : 0);
             if (ndim1 > 1) {
                returnObject = AllocateNumpyArray(ndim1, dims1, wantOutType, 0, (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
             }
@@ -2123,7 +2183,7 @@ public:
             }
          }
          else {
-            LOGGING("Going to allocate for len2 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim2,  dims2 ? (INT64)dims2[0]: 0);
+            LOGGING("Going to allocate for len2 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim2,  dims2 ? (int64_t)dims2[0]: 0);
             if (ndim2 > 1) {
                returnObject = AllocateNumpyArray(ndim2, dims2, wantOutType, 0, (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
             }
@@ -2134,10 +2194,10 @@ public:
          CHECK_MEMORY_ERROR(returnObject);
       }
 
-      if (returnObject == NULL) {
+      if (returnObject == nullptr) {
          LOGGING("!!! BasicMath has no output\n");
          PyErr_Format(PyExc_ValueError, "BasicMath has no output (possibly out of memory)");
-         return NULL;
+         return nullptr;
       }
 
       LOGGING("Len1 %llu   len2  %llu  scalarmode:%d\n", len1, len2, scalarMode);
@@ -2160,37 +2220,37 @@ public:
    int            numpyInType2 = 0;
    npy_intp*      dims1 = 0;
    npy_intp*      dims2 = 0;
-   INT64          itemSize1 = 0;
-   INT64          itemSize2 = 0;
+   int64_t          itemSize1 = 0;
+   int64_t          itemSize2 = 0;
    // For 2 or 3 dim arrays, should be able to calculate length
-   INT64          len1 = 0;
-   INT64          len2 = 0;
+   int64_t          len1 = 0;
+   int64_t          len2 = 0;
    // flags are ANDED together to see if still F contiguous for > 1 dim output arrays
    int            flags1 = NPY_ARRAY_F_CONTIGUOUS;
    int            flags2 = NPY_ARRAY_F_CONTIGUOUS;
 
-   void*          pDataIn1 = NULL;
-   void*          pDataIn2 = NULL;
+   void*          pDataIn1 = nullptr;
+   void*          pDataIn2 = nullptr;
 
    // PyTuple_GetItem will not increment the ref count
-   PyObject*      inObject1 = NULL;
-   PyObject*      inObject2 = NULL;
+   PyObject*      inObject1 = nullptr;
+   PyObject*      inObject2 = nullptr;
 
-   PyObject*      toDelete1 = NULL;
-   PyObject*      toDelete2 = NULL;
-   PyObject*      toDelete3 = NULL;
-   PyObject*      toDelete4 = NULL;
+   PyObject*      toDelete1 = nullptr;
+   PyObject*      toDelete2 = nullptr;
+   PyObject*      toDelete3 = nullptr;
+   PyObject*      toDelete4 = nullptr;
 
    // often the same as inObject1/2 
-   PyArrayObject *inArr = NULL;
-   PyArrayObject *inArr2 = NULL;
+   PyArrayObject *inArr = nullptr;
+   PyArrayObject *inArr2 = nullptr;
 
-   PyArrayObject* returnObject = NULL;
-   PyObject*      outputObject = NULL;
+   PyArrayObject* returnObject = nullptr;
+   PyObject*      outputObject = nullptr;
 
-   INT32          scalarMode = SCALAR_MODE::NO_SCALARS;
-   BOOL           isScalar1 = FALSE;
-   BOOL           isScalar2 = FALSE;
+   int32_t          scalarMode = SCALAR_MODE::NO_SCALARS;
+   bool           isScalar1 = false;
+   bool           isScalar2 = false;
 
    Py_ssize_t     tupleSize = 0;
 
@@ -2199,7 +2259,7 @@ public:
 
    // For "where" the array size is already known
    // Set the expected length if known ahead of time
-   INT64          expectedLength = 0;
+   int64_t          expectedLength = 0;
 
 
 };
@@ -2209,26 +2269,26 @@ OLD_CALLBACK bmOldCallback;
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
-static BOOL BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, INT64 workIndex) {
-   BOOL didSomeWork = FALSE;
+static bool BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, int core, int64_t workIndex) {
+   bool didSomeWork = false;
    OLD_CALLBACK* OldCallback = (OLD_CALLBACK*)pstWorkerItem->WorkCallbackArg;
 
-   INT64 typeSizeIn = OldCallback->FunctionList->InputItemSize;
-   INT64 typeSizeOut = OldCallback->FunctionList->OutputItemSize;
+   int64_t typeSizeIn = OldCallback->FunctionList->InputItemSize;
+   int64_t typeSizeOut = OldCallback->FunctionList->OutputItemSize;
 
    char* pDataInX = (char *)OldCallback->pDataInBase1;
    char* pDataInX2 = (char *)OldCallback->pDataInBase2;
    char* pDataOutX = (char*)OldCallback->pDataOutBase1;
-   INT64 lenX;
-   INT64 workBlock;
+   int64_t lenX;
+   int64_t workBlock;
 
    // As long as there is work to do
    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0) {
 
       // Calculate how much to adjust the pointers to get to the data for this work block
-      INT64 offsetAdj = pstWorkerItem->BlockSize * workBlock * typeSizeIn;
-      INT64 outputAdj = pstWorkerItem->BlockSize * workBlock * typeSizeOut;
-      //INT64 outputAdj = offsetAdj;
+      int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * typeSizeIn;
+      int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * typeSizeOut;
+      //int64_t outputAdj = offsetAdj;
 
       THREADLOGGING("workblock %llu   len=%llu  offset=%llu \n", workBlock, lenX, offsetAdj);
       switch (OldCallback->ScalarMode) {
@@ -2255,7 +2315,7 @@ static BOOL BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, in
       }
 
       // Indicate we completed a block
-      didSomeWork = TRUE;
+      didSomeWork = true;
 
       // tell others we completed this work block
       pstWorkerItem->CompleteWorkBlock();
@@ -2268,14 +2328,14 @@ static BOOL BasicMathThreadCallback(struct stMATH_WORKER_ITEM* pstWorkerItem, in
 
 //------------------------------------------------------------------------------
 // 
-void WorkTwoStubCall(FUNCTION_LIST* anyTwoStubCall, void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode) {
+void WorkTwoStubCall(FUNCTION_LIST* anyTwoStubCall, void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode) {
 
    //printf("worktwostub %d\n", scalarMode);
 
    // Check if we can use worker threads
    stMATH_WORKER_ITEM* pWorkItem = g_cMathWorker->GetWorkItem(len);
 
-   if (pWorkItem == NULL) {
+   if (pWorkItem == nullptr) {
       // Threading not allowed for this work item, call it directly from main thread
       anyTwoStubCall->AnyTwoStubCall(pDataIn, pDataIn2, pDataOut, len, scalarMode);
       return;
@@ -2302,14 +2362,14 @@ void WorkTwoStubCall(FUNCTION_LIST* anyTwoStubCall, void* pDataIn, void* pDataIn
 // Called when two strings are added
 //
 PyObject* ConcatTwoStrings(
-   INT32 scalarMode,
+   int32_t scalarMode,
    char* pStr1,
    char* pStr2,
-   INT64 itemSize1,
-   INT64 itemSize2,
-   INT64 length) {
+   int64_t itemSize1,
+   int64_t itemSize2,
+   int64_t length) {
 
-   INT64  itemSizeOut = itemSize1 + itemSize2;
+   int64_t  itemSizeOut = itemSize1 + itemSize2;
 
    //printf("concat two strings %lld %lld\n", itemSize1, itemSize2);
 
@@ -2322,7 +2382,7 @@ PyObject* ConcatTwoStrings(
       switch (scalarMode) {
       case SCALAR_MODE::NO_SCALARS:
 
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             char* pOut1 = pOut + (itemSizeOut *i);
             char* pEndOut1 = pOut1 + itemSizeOut;
             char* pIn1 = pStr1 + (itemSize1 *i);
@@ -2345,7 +2405,7 @@ PyObject* ConcatTwoStrings(
          break;
 
       case SCALAR_MODE::FIRST_ARG_SCALAR:
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             char* pOut1 = pOut + (itemSizeOut *i);
             char* pEndOut1 = pOut1 + itemSizeOut;
             char* pIn1 = pStr1;
@@ -2368,7 +2428,7 @@ PyObject* ConcatTwoStrings(
          break;
 
       case SCALAR_MODE::SECOND_ARG_SCALAR:
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             char* pOut1 = pOut + (itemSizeOut *i);
             char* pEndOut1 = pOut1 + itemSizeOut;
             char* pIn1 = pStr1 + (itemSize1 *i);
@@ -2399,17 +2459,17 @@ PyObject* ConcatTwoStrings(
 // Called when two unicode are added
 //
 PyObject* ConcatTwoUnicodes(
-   INT32 scalarMode,
-   UINT32* pStr1,
-   UINT32* pStr2,
-   INT64 itemSize1,
-   INT64 itemSize2,
-   INT64 length) {
+   int32_t scalarMode,
+   uint32_t* pStr1,
+   uint32_t* pStr2,
+   int64_t itemSize1,
+   int64_t itemSize2,
+   int64_t length) {
 
    itemSize1 = itemSize1 / 4;
    itemSize2 = itemSize2 / 4;
 
-   INT64  itemSizeOut = itemSize1 + itemSize2;
+   int64_t  itemSizeOut = itemSize1 + itemSize2;
 
    //printf("concat two unicode %lld %lld\n", itemSize1, itemSize2);
 
@@ -2417,16 +2477,16 @@ PyObject* ConcatTwoUnicodes(
    CHECK_MEMORY_ERROR(pNewString);
 
    if (pNewString) {
-      UINT32 *pOut = (UINT32*)PyArray_BYTES(pNewString);
+      uint32_t *pOut = (uint32_t*)PyArray_BYTES(pNewString);
       switch (scalarMode) {
       case SCALAR_MODE::NO_SCALARS:
-         for (INT64 i = 0; i < length; i++) {
-            UINT32* pOut1 = pOut + (itemSizeOut *i);
-            UINT32* pEndOut1 = pOut1 + itemSizeOut;
-            UINT32* pIn1 = pStr1 + (itemSize1 *i);
-            UINT32* pEnd1 = pIn1 + itemSize1;
-            UINT32* pIn2 = pStr2 + (itemSize2 *i);
-            UINT32* pEnd2 = pIn2 + itemSize2;
+         for (int64_t i = 0; i < length; i++) {
+            uint32_t* pOut1 = pOut + (itemSizeOut *i);
+            uint32_t* pEndOut1 = pOut1 + itemSizeOut;
+            uint32_t* pIn1 = pStr1 + (itemSize1 *i);
+            uint32_t* pEnd1 = pIn1 + itemSize1;
+            uint32_t* pIn2 = pStr2 + (itemSize2 *i);
+            uint32_t* pEnd2 = pIn2 + itemSize2;
 
             //printf("%lld %lld ", i, pEndOut1 - pOut1);
 
@@ -2447,13 +2507,13 @@ PyObject* ConcatTwoUnicodes(
          }
          break;
       case SCALAR_MODE::FIRST_ARG_SCALAR:
-         for (INT64 i = 0; i < length; i++) {
-            UINT32* pOut1 = pOut + (itemSizeOut *i);
-            UINT32* pEndOut1 = pOut1 + itemSizeOut;
-            UINT32* pIn1 = pStr1;
-            UINT32* pEnd1 = pIn1 + itemSize1;
-            UINT32* pIn2 = pStr2 + (itemSize2 *i);
-            UINT32* pEnd2 = pIn2 + itemSize2;
+         for (int64_t i = 0; i < length; i++) {
+            uint32_t* pOut1 = pOut + (itemSizeOut *i);
+            uint32_t* pEndOut1 = pOut1 + itemSizeOut;
+            uint32_t* pIn1 = pStr1;
+            uint32_t* pEnd1 = pIn1 + itemSize1;
+            uint32_t* pIn2 = pStr2 + (itemSize2 *i);
+            uint32_t* pEnd2 = pIn2 + itemSize2;
 
             //printf("%lld %lld ", i, pEndOut1 - pOut1);
 
@@ -2474,13 +2534,13 @@ PyObject* ConcatTwoUnicodes(
          }
          break;
       case SCALAR_MODE::SECOND_ARG_SCALAR:
-         for (INT64 i = 0; i < length; i++) {
-            UINT32* pOut1 = pOut + (itemSizeOut *i);
-            UINT32* pEndOut1 = pOut1 + itemSizeOut;
-            UINT32* pIn1 = pStr1 + (itemSize1 *i);
-            UINT32* pEnd1 = pIn1 + itemSize1;
-            UINT32* pIn2 = pStr2;
-            UINT32* pEnd2 = pIn2 + itemSize2;
+         for (int64_t i = 0; i < length; i++) {
+            uint32_t* pOut1 = pOut + (itemSizeOut *i);
+            uint32_t* pEndOut1 = pOut1 + itemSizeOut;
+            uint32_t* pIn1 = pStr1 + (itemSize1 *i);
+            uint32_t* pEnd1 = pIn1 + itemSize1;
+            uint32_t* pIn2 = pStr2;
+            uint32_t* pEnd2 = pIn2 + itemSize2;
 
             //printf("%lld %lld ", i, pEndOut1 - pOut1);
 
@@ -2509,9 +2569,9 @@ PyObject* ConcatTwoUnicodes(
 
 //-------------------------------------------------------------
 // Called when adding two strings
-// May return NULL on failure, else new string array
+// May return nullptr on failure, else new string array
 static PyObject* PossiblyAddUnicode(CTwoInputs&  twoInputs) {
-   INT32 inType = -1;
+   int32_t inType = -1;
 
    if (twoInputs.scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR && (twoInputs.numpyInType2 == NPY_STRING || twoInputs.numpyInType2 == NPY_UNICODE)) {
       inType = twoInputs.numpyInType2;
@@ -2542,14 +2602,14 @@ static PyObject* PossiblyAddUnicode(CTwoInputs&  twoInputs) {
          //printf("before call\n");
          return ConcatTwoUnicodes(
             twoInputs.scalarMode,
-            (UINT32*)twoInputs.pDataIn1,
-            (UINT32*)twoInputs.pDataIn2,
+            (uint32_t*)twoInputs.pDataIn1,
+            (uint32_t*)twoInputs.pDataIn2,
             twoInputs.itemSize1,
             twoInputs.itemSize2,
             twoInputs.len1 >= twoInputs.len2 ? twoInputs.len1 : twoInputs.len2);
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 //-----------------------------------------------------------------------------------
@@ -2563,7 +2623,7 @@ static PyObject* PossiblyAddUnicode(CTwoInputs&  twoInputs) {
 //
 // If NONE is returned, punt to numpy
 PyObject *
-TwoInputsInternal(CTwoInputs&  twoInputs, INT64 funcNumber) {
+TwoInputsInternal(CTwoInputs&  twoInputs, int64_t funcNumber) {
 
    // SPECIAL HOOK FOR ADDING TWO STRINGS -------------------------
    if (funcNumber == MATH_OPERATION::ADD) {
@@ -2572,14 +2632,14 @@ TwoInputsInternal(CTwoInputs&  twoInputs, INT64 funcNumber) {
    }
 
    // Now check if we can perform the function requested
-   ANY_TWO_FUNC pTwoFunc = NULL;
+   ANY_TWO_FUNC pTwoFunc = nullptr;
    int wantedOutputType = -1;
 
    pTwoFunc=
    CheckMathOpTwoInputs((int)funcNumber, twoInputs.scalarMode, twoInputs.numpyInType1, twoInputs.numpyInType2, twoInputs.numpyOutType, &wantedOutputType);
 
    // Place holder for output array
-   PyArrayObject* outputArray = NULL;
+   PyArrayObject* outputArray = nullptr;
 
    //if (pTwoFunc && wantedOutputType != -1 && twoInputs.numpyOutType == wantedOutputType) {
    //   printf("Wanted output type %d does not match %d\n", wantedOutputType, numpyOutputType);
@@ -2651,13 +2711,13 @@ TwoInputsInternal(CTwoInputs&  twoInputs, INT64 funcNumber) {
 // If NONE is returned, punt to numpy
 PyObject *
 BasicMathTwoInputs(PyObject *self, PyObject *args) {
-   PyObject* tuple = NULL;
-   INT64 funcNumber;
-   INT64 numpyOutputType;
+   PyObject* tuple = nullptr;
+   int64_t funcNumber;
+   int64_t numpyOutputType;
 
    if (Py_SIZE(args) != 3) {
       PyErr_Format(PyExc_ValueError, "BasicMathTwoInputs requires three inputs: tuple, long, long");
-      return NULL;
+      return nullptr;
    }
 
    tuple = PyTuple_GET_ITEM(args, 0);
@@ -2666,14 +2726,14 @@ BasicMathTwoInputs(PyObject *self, PyObject *args) {
 
    if (!PyTuple_CheckExact(tuple)) {
       PyErr_Format(PyExc_ValueError, "BasicMathTwoInputs arguments needs to be a tuple");
-      return NULL;
+      return nullptr;
    }
 
    // Examine data
    CTwoInputs  twoInputs((int)numpyOutputType, (int)funcNumber);
 
    // Check the inputs to see if the user request makes sense
-   BOOL result =
+   bool result =
    twoInputs.CheckInputs(tuple, 0, funcNumber);
 
    if (result) {
@@ -2687,14 +2747,14 @@ BasicMathTwoInputs(PyObject *self, PyObject *args) {
 
 //-----------------------------------------------------------------------------------
 // Called internally when type class numbermethod called
-// inputOut can be NULL if there is no output array
+// inputOut can be nullptr if there is no output array
 PyObject *
-BasicMathTwoInputsFromNumber(PyObject* input1, PyObject* input2, PyObject* output, INT64 funcNumber) {
+BasicMathTwoInputsFromNumber(PyObject* input1, PyObject* input2, PyObject* output, int64_t funcNumber) {
 
    CTwoInputs  twoInputs((int)0, (int)funcNumber);
 
    // Check the inputs to see if the user request makes sense
-   BOOL result = FALSE;
+   bool result = false;
    result = twoInputs.CheckInputs(input1, input2, output, funcNumber);
 
    if (result) {
@@ -2709,31 +2769,31 @@ BasicMathTwoInputsFromNumber(PyObject* input1, PyObject* input2, PyObject* outpu
 
 // MT callback
 struct WhereCallbackStruct {
-   INT8*    pBooleanMask;  // condition
+   int8_t*    pBooleanMask;  // condition
    void*    pValuesOut; 
    void*    pChoice1;
    void*    pChoice2;
-   INT64    itemSize;      // of output array, used for strings
-   INT64    strideSize1;
-   INT64    strideSize2;
-   INT64    strideSize3;
-   INT32    scalarMode;
+   int64_t    itemSize;      // of output array, used for strings
+   int64_t    strideSize1;
+   int64_t    strideSize2;
+   int64_t    strideSize3;
+   int32_t    scalarMode;
 };
 
 
 template<typename T>
-BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
+bool WhereCallback(void* callbackArgT, int core, int64_t start, int64_t length) {
 
    WhereCallbackStruct* pCallback = (WhereCallbackStruct*)callbackArgT;
    bool*   pCondition = (bool*)pCallback->pBooleanMask;
    T*       pOutput = (T*)pCallback->pValuesOut;
    T*       pInput1 = (T*)pCallback->pChoice1;
    T*       pInput2 = (T*)pCallback->pChoice2;
-   INT64    strides1 = pCallback->strideSize1;
-   INT64    strides2 = pCallback->strideSize2;
-   INT64    strides3 = pCallback->strideSize3;
+   int64_t    strides1 = pCallback->strideSize1;
+   int64_t    strides2 = pCallback->strideSize2;
+   int64_t    strides3 = pCallback->strideSize3;
 
-   INT64    itemSize = pCallback->itemSize;
+   int64_t    itemSize = pCallback->itemSize;
    pCondition = &pCondition[start];
    pOutput = &pOutput[start];
 
@@ -2762,18 +2822,18 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
 
          // calculate the address delta since we know input1 and input2 are the same itemsize
          // assumes 64bit addressing
-         UINT64 delta = pInput2 - pInput1;
-         UINT64 ulength = (UINT64)length;
+         uint64_t delta = pInput2 - pInput1;
+         uint64_t ulength = (uint64_t)length;
 
-         for (UINT64 i = 0; i < ulength; i++) {
+         for (uint64_t i = 0; i < ulength; i++) {
             // The condition is either 1 or 0.  if 1 we use the address delta to get from input2 to input1
-            UINT64 test = pCondition[i] == 0;
+            uint64_t test = pCondition[i] == 0;
             pOutput[i]= pInput1[i + delta * test];
          }
 
          // This is slower on msft windows compiler
          // does not produce cmove (conditional move instruction)
-         //for (UINT64 i = 0; i < ulength; i++) {
+         //for (uint64_t i = 0; i < ulength; i++) {
          //   // The condition is either 1 or 0.  if 1 we use the address delta to get from input2 to input1
          //   T* address = pCondition[i] ? pInput1 : pInput2;
          //   pOutput[i] = address[i];
@@ -2784,7 +2844,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       case SCALAR_MODE::FIRST_ARG_SCALAR:
       {
          T input1 = pInput1[0];
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             pOutput[i] = pCondition[i] ? input1 : pInput2[i];
          }
       }
@@ -2792,7 +2852,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       case SCALAR_MODE::SECOND_ARG_SCALAR:
       {
          T input2 = pInput2[0];
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             pOutput[i] = pCondition[i] ? pInput1[i] : input2;
          }
       }
@@ -2801,7 +2861,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       {
          T input1 = pInput1[0];
          T input2 = pInput2[0];
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             pOutput[i] = pCondition[i] ? input1 : input2;
          }
       }
@@ -2813,7 +2873,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       switch (pCallback->scalarMode) {
       case SCALAR_MODE::NO_SCALARS:
       {
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             if (pCondition[i]) {
                pOutput[i] = pInput1[i*strides1];
             }
@@ -2825,7 +2885,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       break;
       case SCALAR_MODE::FIRST_ARG_SCALAR:
       {
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             if (pCondition[i]) {
                pOutput[i] = pInput1[0];
             }
@@ -2837,7 +2897,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       break;
       case SCALAR_MODE::SECOND_ARG_SCALAR:
       {
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             if (pCondition[i]) {
                pOutput[i] = pInput1[i*strides1];
             }
@@ -2849,7 +2909,7 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       break;
       case SCALAR_MODE::BOTH_SCALAR:
       {
-         for (INT64 i = 0; i < length; i++) {
+         for (int64_t i = 0; i < length; i++) {
             if (pCondition[i]) {
                pOutput[i] = pInput1[0];
             }
@@ -2862,25 +2922,25 @@ BOOL WhereCallback(void* callbackArgT, int core, INT64 start, INT64 length) {
       }
    }
    
-   return TRUE;
+   return true;
 }
 
 //========================================================================
 // callback return for strings or odd itemsizes
-BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length) {
+bool WhereCallbackString(void* callbackArgT, int core, int64_t start, int64_t length) {
 
    WhereCallbackStruct* pCallback = (WhereCallbackStruct*)callbackArgT;
-   INT8*    pCondition = pCallback->pBooleanMask;
+   int8_t*    pCondition = pCallback->pBooleanMask;
    char*    pOutput = (char*)pCallback->pValuesOut;
    char*    pInput1 = (char*)pCallback->pChoice1;
    char*    pInput2 = (char*)pCallback->pChoice2;
-   INT64    itemSize = pCallback->itemSize;
+   int64_t    itemSize = pCallback->itemSize;
 
    // BUG BUG what if... itemsize is small?
    switch (pCallback->scalarMode) {
    case SCALAR_MODE::NO_SCALARS:
    {
-      for (INT64 i = start; i < (start + length); i++) {
+      for (int64_t i = start; i < (start + length); i++) {
          if (pCondition[i]) {
             memcpy(&pOutput[i*itemSize], &pInput1[i*itemSize], itemSize);
          }
@@ -2892,7 +2952,7 @@ BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length
    break;
    case SCALAR_MODE::FIRST_ARG_SCALAR:
    {
-      for (INT64 i = start; i < (start + length); i++) {
+      for (int64_t i = start; i < (start + length); i++) {
          if (pCondition[i]) {
             memcpy(&pOutput[i*itemSize], pInput1, itemSize);
          }
@@ -2904,7 +2964,7 @@ BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length
    break;
    case SCALAR_MODE::SECOND_ARG_SCALAR:
    {
-      for (INT64 i = start; i < (start + length); i++) {
+      for (int64_t i = start; i < (start + length); i++) {
          if (pCondition[i]) {
             memcpy(&pOutput[i*itemSize], &pInput1[i*itemSize], itemSize);
          }
@@ -2916,7 +2976,7 @@ BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length
    break;
    case SCALAR_MODE::BOTH_SCALAR:
    {
-      for (INT64 i = start; i < (start + length); i++) {
+      for (int64_t i = start; i < (start + length); i++) {
          if (pCondition[i]) {
             memcpy(&pOutput[i*itemSize], pInput1, itemSize);
          }
@@ -2927,7 +2987,7 @@ BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length
    }
    break;
    }
-   return TRUE;
+   return true;
 }
 
 
@@ -2942,10 +3002,10 @@ BOOL WhereCallbackString(void* callbackArgT, int core, INT64 start, INT64 length
 //
 PyObject *
 Where(PyObject *self, PyObject *args) {
-   PyArrayObject *inBool1 = NULL;
-   PyObject* tuple = NULL;
-   INT64 numpyOutputType;
-   INT64 numpyItemSize;
+   PyArrayObject *inBool1 = nullptr;
+   PyObject* tuple = nullptr;
+   int64_t numpyOutputType;
+   int64_t numpyItemSize;
 
    if (!PyArg_ParseTuple(
       args, "O!OLL",
@@ -2954,30 +3014,30 @@ Where(PyObject *self, PyObject *args) {
       &numpyOutputType,
       &numpyItemSize)) {
 
-      return NULL;
+      return nullptr;
    }
 
    if (!PyTuple_CheckExact(tuple)) {
       PyErr_Format(PyExc_ValueError, "Where: second argument needs to be a tuple");
-      return NULL;
+      return nullptr;
    }
 
    if (PyArray_TYPE(inBool1) != 0) {
       PyErr_Format(PyExc_ValueError, "Where: first argument must be a boolean array");
-      return NULL;
+      return nullptr;
    }
 
    // Examine data
    CTwoInputs  twoInputs( (int)numpyOutputType, 0);
 
    // get length of boolean array
-   INT64 length = ArrayLength(inBool1);
+   int64_t length = ArrayLength(inBool1);
    twoInputs.expectedLength = length;
 
    LOGGING("Where: Examining data for func types: %d %d\n", twoInputs.numpyInType1, twoInputs.numpyInType2);
 
    // Check the inputs to see if the user request makes sense
-   BOOL result = FALSE;
+   bool result = false;
 
    result = twoInputs.CheckInputs(tuple, 0, MATH_OPERATION::WHERE);
 
@@ -2986,7 +3046,7 @@ Where(PyObject *self, PyObject *args) {
       LOGGING("Where input: scalarmode: %d  in1:%d in2:%d  out:%d  length: %lld  itemsize: %lld\n", twoInputs.scalarMode, twoInputs.numpyInType1, twoInputs.numpyInType2, twoInputs.numpyOutType, length, numpyItemSize);
 
       // Place holder for output array
-      PyArrayObject* outputArray = NULL;
+      PyArrayObject* outputArray = nullptr;
 
       outputArray =
          AllocateNumpyArray(1, (npy_intp*)&length, (int)numpyOutputType, numpyItemSize);
@@ -2994,17 +3054,17 @@ Where(PyObject *self, PyObject *args) {
       CHECK_MEMORY_ERROR(outputArray);
 
       if (outputArray) {
-         INT8* pCondition = (INT8*)PyArray_BYTES(inBool1);
+         int8_t* pCondition = (int8_t*)PyArray_BYTES(inBool1);
          void* pOutput = PyArray_BYTES(outputArray);
 
          // for scalar strings, the item size is twoInputs.itemSize1
-         INT64 itemSize1 = twoInputs.itemSize1;
-         INT64 itemSize2 = twoInputs.itemSize2;
+         int64_t itemSize1 = twoInputs.itemSize1;
+         int64_t itemSize2 = twoInputs.itemSize2;
          char* pInput1 = (char*)twoInputs.pDataIn1;
          char* pInput2 = (char*)twoInputs.pDataIn2;
 
-         char* extraAlloc1 = NULL;
-         char* extraAlloc2 = NULL;
+         char* extraAlloc1 = nullptr;
+         char* extraAlloc2 = nullptr;
 
          // If we have scalar strings, we must make sure the length is the same
          if (numpyOutputType == NPY_STRING || numpyOutputType == NPY_UNICODE) {
@@ -3048,16 +3108,16 @@ Where(PyObject *self, PyObject *args) {
 
          switch (numpyItemSize) {
          case 1:
-            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<INT8>, &WCBS);
+            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int8_t>, &WCBS);
             break;
          case 2:
-            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<INT16>, &WCBS);
+            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int16_t>, &WCBS);
             break;
          case 4:
-            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<INT32>, &WCBS);
+            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int32_t>, &WCBS);
             break;
          case 8:
-            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<INT64>, &WCBS);
+            g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int64_t>, &WCBS);
             break;
          default:
             g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallbackString, &WCBS);
@@ -3068,14 +3128,14 @@ Where(PyObject *self, PyObject *args) {
          if (extraAlloc1) {
             free(extraAlloc1);
          }
-         if (extraAlloc2 == NULL) {
+         if (extraAlloc2 == nullptr) {
             free(extraAlloc2);
          }
          return (PyObject*)outputArray;
       }
 
       PyErr_Format(PyExc_ValueError, "Where could not allocate a numpy array");
-      return NULL;
+      return nullptr;
 
    }
 

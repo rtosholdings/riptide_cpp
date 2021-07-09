@@ -58,11 +58,11 @@ PyArray_Descr* g_pDescrULongLong = NULL;
 
 //----------------------------------------------------------------------------------
 // Lookup to go from 1 byte to 8 byte boolean values
-INT64 gBooleanLUT64[256];
-INT32 gBooleanLUT32[16];
+int64_t gBooleanLUT64[256];
+int32_t gBooleanLUT32[16];
 
-INT64 gBooleanLUT64Inverse[256];
-INT32 gBooleanLUT32Inverse[16];
+int64_t gBooleanLUT64Inverse[256];
+int32_t gBooleanLUT32Inverse[16];
 
 // upcast table from 0-13
 struct stUpCast {
@@ -141,7 +141,7 @@ const char* gNumpyTypeToString[NUMPY_LAST_TYPE] = {
    "NPY_HALF" };
 
 
-INT32 gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
+int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
    1, //NPY_BOOL =     0,
    1, //NPY_BYTE,      1
    1, //NPY_UBYTE,     2
@@ -180,7 +180,7 @@ INT32 gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
 // Pass in a type such as np.int32 and a NPY_INT32 will be returned
 // returns -1 on failure adn set error string
 // otherwise returns NPY_TYPE
-INT32 TypeToDtype(PyTypeObject *out_dtype) {
+int32_t TypeToDtype(PyTypeObject *out_dtype) {
 
    if (PyType_Check(out_dtype)) {
       for (int i = 0; i < 24; i++) {
@@ -192,7 +192,7 @@ INT32 TypeToDtype(PyTypeObject *out_dtype) {
    }
 
    PyErr_SetString(PyExc_ValueError,
-      "DType conversion failed");
+                   "DType conversion failed");
 
    return -1;
 }
@@ -201,9 +201,9 @@ INT32 TypeToDtype(PyTypeObject *out_dtype) {
 // Return the objects dtype
 // Returns -1 on types > NPY_VOID suchas NPY_DATETIME,
 // otherwise the type number such as NPY_INT32 or NPY_FLOAT
-INT32 ObjectToDtype(PyArrayObject* obj) {
+int32_t ObjectToDtype(PyArrayObject* obj) {
 
-   INT32 result = PyArray_TYPE(obj);
+   int32_t result = PyArray_TYPE(obj);
 
    // NOTE: This code does not handle NPY_DATETIME, NPY_TIMEDELTA, etc.
    if (result < 0 || result > NPY_VOID) return -1;
@@ -213,17 +213,17 @@ INT32 ObjectToDtype(PyArrayObject* obj) {
 
 //------------------------------------------------------------
 // gets the itemsize for ndarray, useful for chararray
-// INT32 = 4
-// INT64 = 8
+// int32_t = 4
+// int64_t = 8
 // FLOAT32 = 4
 // '|S5' = 5 for chararry
-INT64 NpyItemSize(PyObject *self) {
+int64_t NpyItemSize(PyObject *self) {
    return PyArray_ITEMSIZE((PyArrayObject*)self);
 }
 
 //------------------------------------------------------------
 // Returns a string description of the numpy type
-const char* NpyToString(INT32 numpyType) {
+const char* NpyToString(int32_t numpyType) {
    if (numpyType < 0 || numpyType >= NUMPY_LAST_TYPE) {
       return "<unknown>";
    }
@@ -234,7 +234,7 @@ const char* NpyToString(INT32 numpyType) {
 
 //------------------------------------------------------------
 // Returns 0 for chars, strings, or unsupported types
-INT32 NpyToSize(INT32 numpyType) {
+int32_t NpyToSize(int32_t numpyType) {
 
    if (numpyType < 0 || numpyType >= NUMPY_LAST_TYPE) {
       return 0;
@@ -267,8 +267,8 @@ PyArrayObject* EnsureContiguousArray(PyArrayObject* inObject) {
 //----------------------------------------------------------------
 // Calculate the total number of bytes used by the array.
 // TODO: Need to extend this to accomodate strided arrays.
-INT64 CalcArrayLength(int ndim, npy_intp* dims) {
-   INT64 length = 1;
+int64_t CalcArrayLength(int ndim, npy_intp* dims) {
+   int64_t length = 1;
 
    // handle case of zero length array
    if (dims && ndim > 0) {
@@ -285,7 +285,7 @@ INT64 CalcArrayLength(int ndim, npy_intp* dims) {
 
 //----------------------------------------------------------------
 // calcluate the total number of bytes used
-INT64 ArrayLength(PyArrayObject* inArr) {
+int64_t ArrayLength(PyArrayObject* inArr) {
 
    int ndim = PyArray_NDIM(inArr);
    npy_intp* dims = PyArray_DIMS(inArr);
@@ -356,7 +356,7 @@ extern "C" {
       // Attempt to recycle, if succeeds, the refnct will be incremented so we can hold on
       if (!RecycleNumpyInternal((PyArrayObject*)object)) {
          PyArrayObject* pArray = (PyArrayObject*)object;
-		 LOG_ALLOC("freeing %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
+         LOG_ALLOC("freeing %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
          g_FastArrayInstanceDeallocate(object);
       } // else we are keeping it around
    }
@@ -476,48 +476,48 @@ PyFunctionObject* GetFunctionObject(PyObject* arg1) {
 //-----------------------------------------------------------------------------------
 // This routine is not finished
 void* GetFunctionName(PyObject *arg1) {
-   PyFunctionObject* function = NULL;
-   const char* functionName = NULL;
-   if (PyCFunction_Check(arg1)) {
-      PyCFunctionObject* f = (PyCFunctionObject*)arg1;
-      functionName = f->m_ml->ml_name;
-      //printf("CFunction %s\n", f->m_ml->ml_name);
-   }
+PyFunctionObject* function = NULL;
+const char* functionName = NULL;
+if (PyCFunction_Check(arg1)) {
+PyCFunctionObject* f = (PyCFunctionObject*)arg1;
+functionName = f->m_ml->ml_name;
+//printf("CFunction %s\n", f->m_ml->ml_name);
+}
 
-   function = GetFunctionObject(arg1);
+function = GetFunctionObject(arg1);
 
-   if (!function) {
+if (!function) {
 
-      // Supply a temp name here
-      functionName = "Test";
+// Supply a temp name here
+functionName = "Test";
 
-      // TODO: If this is a ufunc, the __call__ wil exist
-      // Also, can get the function name (a PyUnicodeString pbject)
-      //functionName = PyObject_GetAttrString(arg1, "__name__")
+// TODO: If this is a ufunc, the __call__ wil exist
+// Also, can get the function name (a PyUnicodeString pbject)
+//functionName = PyObject_GetAttrString(arg1, "__name__")
 
-      //// Check for __call__ from ufunc
-      //PyObject* callfunc = PyObject_GetAttrString(arg1, "__call__");
+//// Check for __call__ from ufunc
+//PyObject* callfunc = PyObject_GetAttrString(arg1, "__call__");
 
-      //LOGGING("call is at %p\n", callfunc);
+//LOGGING("call is at %p\n", callfunc);
 
-      //if (!callfunc || !PyCallable_Check(callfunc)) {
-      //   PyTypeObject* type = (PyTypeObject*)PyObject_Type(arg1);
+//if (!callfunc || !PyCallable_Check(callfunc)) {
+//   PyTypeObject* type = (PyTypeObject*)PyObject_Type(arg1);
 
-      //   PyErr_Format(PyExc_ValueError, "Argument must be a function or a method not %s.  Call was found at %p\n", type->tp_name, callfunc);
-      //   return NULL;
-      //}
+//   PyErr_Format(PyExc_ValueError, "Argument must be a function or a method not %s.  Call was found at %p\n", type->tp_name, callfunc);
+//   return NULL;
+//}
 
-      //function = GetFunctionObject(callfunc);
-      //arg1 = callfunc;
+//function = GetFunctionObject(callfunc);
+//arg1 = callfunc;
 
-      //// Dont need to hold onto ref count
-      //Py_DecRef(callfunc);
-   }
+//// Dont need to hold onto ref count
+//Py_DecRef(callfunc);
+}
 
-   if (function) {
-      // copy this immediately?
-      functionName = DumpPyObject(function->func_qualname);
-   }
+if (function) {
+// copy this immediately?
+functionName = DumpPyObject(function->func_qualname);
+}
 }
 */
 
@@ -571,13 +571,13 @@ PyObject* LedgerFunction(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 
-INT64 g_TotalAllocs = 0;
+int64_t g_TotalAllocs = 0;
 
 //-----------------------------------------------------------------------------------
-PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT64 itemsize, BOOL fortran_array, npy_intp* strides) {
+PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, bool fortran_array, npy_intp* strides) {
 
    PyArrayObject* returnObject = nullptr;
-   const INT64    len = CalcArrayLength(ndim, dims);
+   const int64_t    len = CalcArrayLength(ndim, dims);
    bool           commonArray = false;
 
    // PyArray_New (and the functions it wraps) don't truly respect the 'flags' argument
@@ -610,7 +610,7 @@ PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT
    }
 
    // Make one dimension size on stack
-   volatile INT64 dimensions[1] = { len };
+   volatile int64_t dimensions[1] = { len };
 
    // This is the safest way...
    if (!dims) {
@@ -625,13 +625,13 @@ PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT
    if (commonArray) {
       // NOTE: We now directly allocate a FastArray
       returnObject = (PyArrayObject*)PyArray_New(allocType, ndim, dims, numpyType, NULL, nullptr, 0,
-         array_flags, nullptr);
+                                                 array_flags, nullptr);
 
       if (!returnObject) {
          // GCNOW (attempt to free memory) and try again
          GarbageCollect(0, false);
          returnObject = (PyArrayObject*)PyArray_New(allocType, ndim, dims, numpyType, NULL, nullptr, 0,
-            array_flags, nullptr);
+                                                    array_flags, nullptr);
       }
    }
    else {
@@ -679,7 +679,7 @@ PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT
    }
 
    if (!returnObject) {
-      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (INT64)dims[0]);
+      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (int64_t)dims[0]);
       return nullptr;
    }
 
@@ -689,7 +689,7 @@ PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT
    return returnObject;
 }
 
-PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyType, INT64 itemsize, char* data, int array_flags, npy_intp* strides)
+PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, char* data, int array_flags, npy_intp* strides)
 {
    // If there's no data, short-circuit and return nullptr;
    // we could call the regular AllocateNumpyArray() function but this
@@ -700,12 +700,12 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyTy
    }
 
    PyArrayObject* returnObject = nullptr;
-   const INT64    len = CalcArrayLength(ndim, dims);
+   const int64_t    len = CalcArrayLength(ndim, dims);
 
    // This is the safest way...
    if (!dims) {
       // Make one dimension size on stack
-      INT64 dimensions[1] = { len };
+      int64_t dimensions[1] = { len };
 
       // Happens with a=FA([]); 100*a;
       //printf("dims was null when allocating\n");
@@ -759,7 +759,7 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyTy
    
 
    if (!returnObject) {
-      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (INT64)dims[0]);
+      printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (int64_t)dims[0]);
       return nullptr;
    }
 
@@ -772,7 +772,7 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyTy
 
 //-----------------------------------------------------------------------------------
 // Check recycle pool
-PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, INT32 numpyType) {
+PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType) {
    const int ndim = PyArray_NDIM(inArr);
    npy_intp* const dims = PyArray_DIMS(inArr);
 
@@ -807,7 +807,7 @@ PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, INT32 numpyType) {
 //-----------------------------------------------------------------------------------
 // Check recycle pool
 PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize) {
-   INT32 numpyType = PyArray_TYPE(inArr);
+   int32_t numpyType = PyArray_TYPE(inArr);
 
    PyArrayObject* result = NULL;
 
@@ -816,7 +816,7 @@ PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize) {
       return nullptr;
    }
    else if (PyTypeNum_ISSTRING(numpyType)) {
-      INT64 itemSize = NpyItemSize((PyObject*)inArr);
+      int64_t itemSize = NpyItemSize((PyObject*)inArr);
       result = AllocateNumpyArray(1, &rowSize, numpyType, itemSize);
    }
    else {
@@ -838,27 +838,27 @@ PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize) {
 PyObject* Empty(PyObject *self, PyObject *args) {
    PyObject*   inDimensions;
    int         dtype;
-   INT64       itemsize;
+   int64_t       itemsize;
    PyObject*   isFortran;
 
    if (!PyArg_ParseTuple(args, "O!iLO!",
-         &PyList_Type, &inDimensions,
-         &dtype,
-         &itemsize,
-         &PyBool_Type, &isFortran)) return NULL;
+                         &PyList_Type, &inDimensions,
+                         &dtype,
+                         &itemsize,
+                         &PyBool_Type, &isFortran)) return NULL;
 
    const bool is_fortran = isFortran == Py_True;
 
-   INT64 dims = PyList_GET_SIZE(inDimensions);
+   int64_t dims = PyList_GET_SIZE(inDimensions);
    if (dims != 1) {
       Py_IncRef(Py_None);
       return Py_None;
    }
 
 #if NPY_SIZEOF_PY_INTPTR_T == NPY_SIZEOF_LONG
-   #define PyLong_AsNPY_INTPAndOverflow PyLong_AsLongAndOverflow
+#define PyLong_AsNPY_INTPAndOverflow PyLong_AsLongAndOverflow
 #elif defined(PY_LONG_LONG) && (NPY_SIZEOF_PY_INTPTR_T == NPY_SIZEOF_LONGLONG)
-   #define PyLong_AsNPY_INTPAndOverflow PyLong_AsLongLongAndOverflow
+#define PyLong_AsNPY_INTPAndOverflow PyLong_AsLongLongAndOverflow
 #else
 #error Unable to determine how to parse PyLong to npy_intp with overflow-checking.
 #endif
@@ -876,8 +876,8 @@ PyObject* Empty(PyObject *self, PyObject *args) {
 }
 
 
-INT32 GetArrDType(PyArrayObject* inArr) {
-   INT32 dtype = PyArray_TYPE(inArr);
+int32_t GetArrDType(PyArrayObject* inArr) {
+   int32_t dtype = PyArray_TYPE(inArr);
 #if defined(RT_OS_WINDOWS)
 
    if (dtype == NPY_INT) {
@@ -888,12 +888,12 @@ INT32 GetArrDType(PyArrayObject* inArr) {
    }
 
 #else
-if (dtype == NPY_LONGLONG) {
-   dtype = NPY_INT64;
-}
-if (dtype == NPY_ULONGLONG) {
-   dtype = NPY_UINT64;
-}
+   if (dtype == NPY_LONGLONG) {
+      dtype = NPY_INT64;
+   }
+   if (dtype == NPY_ULONGLONG) {
+      dtype = NPY_UINT64;
+   }
 #endif
 
    return dtype;
@@ -907,7 +907,7 @@ if (dtype == NPY_ULONGLONG) {
 // pDest: to be filled in
 // numpyOutType: type to convert to
 //
-// Returns TRUE on success, FALSE otherwise
+// Returns true on success, false otherwise
 // On Return fills in pDest with int
 //
 // NOTE: Does not handle strings yet
@@ -925,59 +925,61 @@ if (dtype == NPY_ULONGLONG) {
 // NPY_FLOAT      11
 // NPY_DOUBLE     12
 // NPY_LONGDOUBLE 13
-BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, INT16 numpyOutType) {
+bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyOutType) {
 
-   INT64 value = 0;
+   int64_t value = 0;
    double fvalue=0;
 
    switch (numpyInType) {
 
-      case NPY_BOOL:
-         value = (INT64)*(BOOL*)pInput;
-         fvalue =(double) value;
-         break;
-      case NPY_INT8:
-         value = (INT64)*(INT8*)pInput;
-         fvalue = (double)value;
-         break;
-      case NPY_UINT8:
-         value = (INT64)*(UINT8*)pInput;
-         fvalue = (double)value;
-         break;
-      case NPY_INT16:
-         value = (INT64)*(INT16*)pInput;
-         fvalue = (double)value;
-         break;
-      case NPY_UINT16:
-         value = (INT64)*(UINT16*)pInput;
-         fvalue = (double)value;
-         break;
-      CASE_NPY_UINT32:
-         value = (INT64)*(UINT32*)pInput;
-         fvalue = (double)value;
-         break;
-      CASE_NPY_INT32:
-         value = (INT64)*(INT32*)pInput;
-         fvalue = (double)value;
-         break;
-      CASE_NPY_UINT64:
-         value = (INT64)*(UINT64*)pInput;
-         fvalue = (double)value;
-         break;
-      CASE_NPY_INT64:
-         value = (INT64)*(INT64*)pInput;
-         fvalue = (double)value;
-         break;
-      case NPY_FLOAT32:
-         fvalue = (double)*(float*)pInput;
-         value = (INT64)fvalue;
-         break;
-      case NPY_FLOAT64:
-         fvalue = (double)*(double*)pInput;
-         value = (INT64)fvalue;
-         break;
-      default:
-         return FALSE;
+   case NPY_BOOL:
+      value = (int64_t)*(bool*)pInput;
+      fvalue =(double) value;
+      break;
+   case NPY_INT8:
+      value = (int64_t)*(int8_t*)pInput;
+      fvalue = (double)value;
+      break;
+   case NPY_UINT8:
+      value = (int64_t)*(uint8_t*)pInput;
+      fvalue = (double)value;
+      break;
+   case NPY_INT16:
+      value = (int64_t)*(int16_t*)pInput;
+      fvalue = (double)value;
+      break;
+   case NPY_UINT16:
+      value = (int64_t)*(uint16_t*)pInput;
+      fvalue = (double)value;
+      break;
+   CASE_NPY_UINT32:
+      value = (int64_t)*(uint32_t*)pInput;
+      fvalue = (double)value;
+      break;
+   CASE_NPY_INT32:
+      value = (int64_t)*(int32_t*)pInput;
+      fvalue = (double)value;
+      break;
+   CASE_NPY_UINT64:
+   
+      value = (int64_t)*(uint64_t*)pInput;
+      fvalue = (double)value;
+      break;
+   CASE_NPY_INT64:
+   
+      value = (int64_t)*(int64_t*)pInput;
+      fvalue = (double)value;
+      break;
+   case NPY_FLOAT32:
+      fvalue = (double)*(float*)pInput;
+      value = (int64_t)fvalue;
+      break;
+   case NPY_FLOAT64:
+      fvalue = (double)*(double*)pInput;
+      value = (int64_t)fvalue;
+      break;
+   default:
+      return false;
 
    }
 
@@ -985,18 +987,20 @@ BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, IN
    case NPY_BOOL:
    case NPY_INT8:
    case NPY_UINT8:
-      pDest->i = _mm256_set1_epi8((INT8)value);
+      pDest->i = _mm256_set1_epi8((int8_t)value);
       break;
    case NPY_INT16:
    case NPY_UINT16:
-      pDest->i = _mm256_set1_epi16((INT16)value);
+      pDest->i = _mm256_set1_epi16((int16_t)value);
       break;
    CASE_NPY_UINT32:
    CASE_NPY_INT32:
-      pDest->i = _mm256_set1_epi32((INT32)value);
+      pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
    CASE_NPY_UINT64:
+   
    CASE_NPY_INT64:
+   
       pDest->ci.i1 = _mm_set1_epi64x(value);
       pDest->ci.i2 = _mm_set1_epi64x(value);
       break;
@@ -1009,11 +1013,11 @@ BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, IN
       break;
    default:
       printf("unknown scalar type in convertScalarObject %d\n", numpyOutType);
-      return FALSE;
+      return false;
       break;
    }
 
-   return TRUE;
+   return true;
 }
 
 
@@ -1023,7 +1027,7 @@ BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, IN
 // The output of pDest holds the value represented in a 256bit AVX2 register
 //
 // RETURNS:
-// TRUE on success
+// true on success
 // *ppDataIn points to scalar object
 // pItemSize set to 0 unless a string or unicode
 //
@@ -1031,17 +1035,17 @@ BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, IN
 // If inObject1 is a string or unicode, then ppDataIn is filled in with the itemsize
 //
 // NOTE: Cannot handle numpy scalar types like numpy.int32
-BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, INT16 numpyOutType, void** ppDataIn, INT64 *pItemSize) {
+bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutType, void** ppDataIn, int64_t *pItemSize) {
 
    *pItemSize = 0;
    *ppDataIn = pDest;
 
-   BOOL isNumpyScalarInteger = PyArray_IsScalar((inObject1), Integer);
+   bool isNumpyScalarInteger = PyArray_IsScalar((inObject1), Integer);
    bool isPyBool = PyBool_Check(inObject1);
    LOGGING("In convert scalar object!  %d %d %d\n", numpyOutType, isNumpyScalarInteger, isPyBool);
 
    if (isPyBool || PyArray_IsScalar((inObject1), Bool)) {
-      INT64 value = 1;
+      int64_t value = 1;
       if (isPyBool) {
          if (inObject1 == Py_False)
             value = 0;
@@ -1056,18 +1060,20 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, INT16 numpyOutTyp
       case NPY_BOOL:
       case NPY_INT8:
       case NPY_UINT8:
-         pDest->i = _mm256_set1_epi8((INT8)value);
+         pDest->i = _mm256_set1_epi8((int8_t)value);
          break;
       case NPY_INT16:
       case NPY_UINT16:
-         pDest->i = _mm256_set1_epi16((INT16)value);
+         pDest->i = _mm256_set1_epi16((int16_t)value);
          break;
       CASE_NPY_UINT32:
       CASE_NPY_INT32:
-         pDest->i = _mm256_set1_epi32((INT32)value);
+         pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
       CASE_NPY_UINT64:
+      
       CASE_NPY_INT64:
+
          pDest->ci.i1 = _mm_set1_epi64x(value);
          pDest->ci.i2 = _mm_set1_epi64x(value);
          break;
@@ -1079,176 +1085,181 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, INT16 numpyOutTyp
          break;
       default:
          printf("unknown bool scalar type in convertScalarObject %d\n", numpyOutType);
-         return FALSE;
+         return false;
       }
    }
- else
-    if (PyLong_Check(inObject1) || isNumpyScalarInteger) {
+   else
+   {
+      if (PyLong_Check(inObject1) || isNumpyScalarInteger) {
 
-       int overflow = 0;
-       INT64 value;
-       UINT64 value2;
+         int overflow = 0;
+         int64_t value;
+         uint64_t value2;
 
-       if (!isNumpyScalarInteger) {
-          value = PyLong_AsLongLongAndOverflow(inObject1, &overflow);
+         if (!isNumpyScalarInteger) {
+            value = PyLong_AsLongLongAndOverflow(inObject1, &overflow);
 
-          // overflow of 1 indicates past LONG_MAX
-          // overflow of -1 indicate past LONG_MIN which we do not handle
-          // PyLong_AsLongLong will RAISE an overflow exception
+            // overflow of 1 indicates past LONG_MAX
+            // overflow of -1 indicate past LONG_MIN which we do not handle
+            // PyLong_AsLongLong will RAISE an overflow exception
 
-          // If the value is negative, conversion to unsigned not allowed
-          if (value >= 0 || overflow == 1) {
-             value2 = PyLong_AsUnsignedLongLongMask(inObject1);
-          }
-          else {
-             value2 = (UINT64)value;
-          }
-       }
-       else {
-          PyArray_Descr* dtype = PyArray_DescrFromScalar(inObject1);
-          //// NOTE: memory leak here?
-          if (dtype->type_num <= NPY_LONGDOUBLE) {
-             if (g_pDescrLongLong == NULL) {
-                g_pDescrLongLong = PyArray_DescrNewFromType(NPY_LONGLONG);
-                g_pDescrULongLong = PyArray_DescrNewFromType(NPY_ULONGLONG);
-             }
+            // If the value is negative, conversion to unsigned not allowed
+            if (value >= 0 || overflow == 1) {
+               value2 = PyLong_AsUnsignedLongLongMask(inObject1);
+            }
+            else {
+               value2 = (uint64_t)value;
+            }
+         }
+         else {
+            PyArray_Descr* dtype = PyArray_DescrFromScalar(inObject1);
+            //// NOTE: memory leak here?
+            if (dtype->type_num <= NPY_LONGDOUBLE) {
+               if (g_pDescrLongLong == NULL) {
+                  g_pDescrLongLong = PyArray_DescrNewFromType(NPY_LONGLONG);
+                  g_pDescrULongLong = PyArray_DescrNewFromType(NPY_ULONGLONG);
+               }
 
-             PyArray_CastScalarToCtype(inObject1, &value, g_pDescrLongLong);
-             PyArray_CastScalarToCtype(inObject1, &value2, g_pDescrULongLong);
-          }
-          else {
-             // datetime64 falls into here
-             LOGGING("!!punting on scalar type is %d\n", dtype->type_num);
-             return FALSE;
-          }
-       }
+               PyArray_CastScalarToCtype(inObject1, &value, g_pDescrLongLong);
+               PyArray_CastScalarToCtype(inObject1, &value2, g_pDescrULongLong);
+            }
+            else {
+               // datetime64 falls into here
+               LOGGING("!!punting on scalar type is %d\n", dtype->type_num);
+               return false;
+            }
+         }
 
-       switch (numpyOutType) {
-       case NPY_BOOL:
-       case NPY_INT8:
-          pDest->i = _mm256_set1_epi8((INT8)value);
-          break;
-       case NPY_UINT8:
-          pDest->i = _mm256_set1_epi8((UINT8)value2);
-          break;
-       case NPY_INT16:
-          pDest->i = _mm256_set1_epi16((INT16)value);
-          break;
-       case NPY_UINT16:
-          pDest->i = _mm256_set1_epi16((UINT16)value2);
-          break;
-       CASE_NPY_INT32:
-          pDest->i = _mm256_set1_epi32((INT32)value);
-          break;
-       CASE_NPY_UINT32:
-          pDest->i = _mm256_set1_epi32((UINT32)value2);
-          break;
-       CASE_NPY_INT64:
-          pDest->ci.i1 = _mm_set1_epi64x(value);
-          pDest->ci.i2 = _mm_set1_epi64x(value);
-          break;
-       CASE_NPY_UINT64:
-          pDest->ci.i1 = _mm_set1_epi64x(value2);
-          pDest->ci.i2 = _mm_set1_epi64x(value2);
-          break;
-       case NPY_FLOAT32:
-          pDest->s = _mm256_set1_ps((float)value);
-          break;
-       case NPY_FLOAT64:
-          pDest->d = _mm256_set1_pd((double)value);
-          break;
-       default:
-          printf("unknown long scalar type in convertScalarObject %d\n", numpyOutType);
-          return FALSE;
-       }
-    }
-    else if (PyFloat_Check(inObject1) || PyArray_IsScalar((inObject1), Floating)) {
+         switch (numpyOutType) {
+         case NPY_BOOL:
+         case NPY_INT8:
+            pDest->i = _mm256_set1_epi8((int8_t)value);
+            break;
+         case NPY_UINT8:
+            pDest->i = _mm256_set1_epi8((uint8_t)value2);
+            break;
+         case NPY_INT16:
+            pDest->i = _mm256_set1_epi16((int16_t)value);
+            break;
+         case NPY_UINT16:
+            pDest->i = _mm256_set1_epi16((uint16_t)value2);
+            break;
+         CASE_NPY_INT32:
+            pDest->i = _mm256_set1_epi32((int32_t)value);
+            break;
+         CASE_NPY_UINT32:
+            pDest->i = _mm256_set1_epi32((uint32_t)value2);
+            break;
+         CASE_NPY_INT64:
+         
+            pDest->ci.i1 = _mm_set1_epi64x(value);
+            pDest->ci.i2 = _mm_set1_epi64x(value);
+            break;
+         CASE_NPY_UINT64:
+         
+            pDest->ci.i1 = _mm_set1_epi64x(value2);
+            pDest->ci.i2 = _mm_set1_epi64x(value2);
+            break;
+         case NPY_FLOAT32:
+            pDest->s = _mm256_set1_ps((float)value);
+            break;
+         case NPY_FLOAT64:
+            pDest->d = _mm256_set1_pd((double)value);
+            break;
+         default:
+            printf("unknown long scalar type in convertScalarObject %d\n", numpyOutType);
+            return false;
+         }
+      }
+      else if (PyFloat_Check(inObject1) || PyArray_IsScalar((inObject1), Floating)) {
 
-       double value = PyFloat_AsDouble(inObject1);
+         double value = PyFloat_AsDouble(inObject1);
 
-       switch (numpyOutType) {
-       case NPY_BOOL:
-       case NPY_INT8:
-          pDest->i = _mm256_set1_epi8((INT8)value);
-          break;
-       case NPY_UINT8:
-          pDest->i = _mm256_set1_epi8((UINT8)value);
-          break;
-       case NPY_INT16:
-          pDest->i = _mm256_set1_epi16((INT16)value);
-          break;
-       case NPY_UINT16:
-          pDest->i = _mm256_set1_epi16((UINT16)value);
-          break;
-       CASE_NPY_UINT32:
-          pDest->i = _mm256_set1_epi32((UINT32)value);
-          break;
-       CASE_NPY_INT32:
-          pDest->i = _mm256_set1_epi32((INT32)value);
-          break;
-       CASE_NPY_UINT64:
-          pDest->ci.i1 = _mm_set1_epi64x((UINT64)value);
-          pDest->ci.i2 = _mm_set1_epi64x((UINT64)value);
-          break;
-       CASE_NPY_INT64:
-          pDest->ci.i1 = _mm_set1_epi64x((INT64)value);
-          pDest->ci.i2 = _mm_set1_epi64x((INT64)value);
-          break;
-       case NPY_FLOAT32:
-          pDest->s = _mm256_set1_ps((float)value);
-          break;
-       case NPY_FLOAT64:
-          pDest->d = _mm256_set1_pd((double)value);
-          break;
-       case NPY_LONGDOUBLE:
-          pDest->d = _mm256_set1_pd((double)(long double)value);
-          break;
-       default:
-          printf("unknown float scalar type in convertScalarObject %d\n", numpyOutType);
-          return FALSE;
-       }
+         switch (numpyOutType) {
+         case NPY_BOOL:
+         case NPY_INT8:
+            pDest->i = _mm256_set1_epi8((int8_t)value);
+            break;
+         case NPY_UINT8:
+            pDest->i = _mm256_set1_epi8((uint8_t)value);
+            break;
+         case NPY_INT16:
+            pDest->i = _mm256_set1_epi16((int16_t)value);
+            break;
+         case NPY_UINT16:
+            pDest->i = _mm256_set1_epi16((uint16_t)value);
+            break;
+         CASE_NPY_UINT32:
+            pDest->i = _mm256_set1_epi32((uint32_t)value);
+            break;
+         CASE_NPY_INT32:
+            pDest->i = _mm256_set1_epi32((int32_t)value);
+            break;
+         CASE_NPY_UINT64:
+         
+            pDest->ci.i1 = _mm_set1_epi64x((uint64_t)value);
+            pDest->ci.i2 = _mm_set1_epi64x((uint64_t)value);
+            break;
+         CASE_NPY_INT64:
+         
+            pDest->ci.i1 = _mm_set1_epi64x((int64_t)value);
+            pDest->ci.i2 = _mm_set1_epi64x((int64_t)value);
+            break;
+         case NPY_FLOAT32:
+            pDest->s = _mm256_set1_ps((float)value);
+            break;
+         case NPY_FLOAT64:
+            pDest->d = _mm256_set1_pd((double)value);
+            break;
+         case NPY_LONGDOUBLE:
+            pDest->d = _mm256_set1_pd((double)(long double)value);
+            break;
+         default:
+            printf("unknown float scalar type in convertScalarObject %d\n", numpyOutType);
+            return false;
+         }
 
-    }
-    else if (PyBytes_Check(inObject1)) {
-       // happens when pass in b'test'
-       *pItemSize = PyBytes_GET_SIZE(inObject1);
-       *ppDataIn = PyBytes_AS_STRING(inObject1);
-       return TRUE;
-    }
-    else if (PyUnicode_Check(inObject1)) {
-       // happens when pass in 'test'
-       *pItemSize = PyUnicode_GET_SIZE(inObject1) * 4;
-       // memory leak needs to be deleted
-       *ppDataIn = PyUnicode_AsUCS4Copy(inObject1);
-       return TRUE;
-    }
-    else if (PyArray_IsScalar(inObject1, Generic)) {
+      }
+      else if (PyBytes_Check(inObject1)) {
+         // happens when pass in b'test'
+         *pItemSize = PyBytes_GET_SIZE(inObject1);
+         *ppDataIn = PyBytes_AS_STRING(inObject1);
+         return true;
+      }
+      else if (PyUnicode_Check(inObject1)) {
+         // happens when pass in 'test'
+         *pItemSize = PyUnicode_GET_SIZE(inObject1) * 4;
+         // memory leak needs to be deleted
+         *ppDataIn = PyUnicode_AsUCS4Copy(inObject1);
+         return true;
+      }
+      else if (PyArray_IsScalar(inObject1, Generic)) {
 
-       // only integers are not subclassed in numpy world
-       if (PyArray_IsScalar((inObject1), Integer)) {
-          PyArray_Descr* dtype = PyArray_DescrFromScalar(inObject1);
+         // only integers are not subclassed in numpy world
+         if (PyArray_IsScalar((inObject1), Integer)) {
+            PyArray_Descr* dtype = PyArray_DescrFromScalar(inObject1);
 
-          // NOTE: memory leak here?
-          printf("!!integer scalar type is %d\n", dtype->type_num);
-          return FALSE;
-       }
-       else {
-          printf("!!unknown numpy scalar type in convertScalarObject %d --", numpyOutType);
-          return FALSE;
-       }
+            // NOTE: memory leak here?
+            printf("!!integer scalar type is %d\n", dtype->type_num);
+            return false;
+         }
+         else {
+            printf("!!unknown numpy scalar type in convertScalarObject %d --", numpyOutType);
+            return false;
+         }
 
-    }
+      }
 
-    else {
-       // Complex types hits here
-       LOGGING("!!unknown scalar type in convertScalarObject %d --", numpyOutType);
-       PyTypeObject* type = inObject1->ob_type;
-       LOGGING("type name is %s\n", type->tp_name);
-       return FALSE;
-    }
-
-    //printf("returning from scalar conversion\n");
-    return TRUE;
+      else {
+         // Complex types hits here
+         LOGGING("!!unknown scalar type in convertScalarObject %d --", numpyOutType);
+         PyTypeObject* type = inObject1->ob_type;
+         LOGGING("type name is %s\n", type->tp_name);
+         return false;
+      }
+   }
+   //printf("returning from scalar conversion\n");
+   return true;
 }
 
 
@@ -1257,12 +1268,12 @@ BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, INT16 numpyOutTyp
 static PyObject *
 ThreadingMode(PyObject *self, PyObject *args)
 {
-   INT64 threadmode;
+   int64_t threadmode;
 
    if (!PyArg_ParseTuple(args, "L", &threadmode)) return NULL;
 
-   BOOL previous = g_cMathWorker->NoThreading;
-   g_cMathWorker->NoThreading = (BOOL)threadmode;
+   bool previous = g_cMathWorker->NoThreading;
+   g_cMathWorker->NoThreading = (bool)threadmode;
 
    return PyLong_FromLong((int)previous);
 }
@@ -1308,7 +1319,7 @@ TestNumpy(PyObject *self, PyObject *args)
    if (PyLong_Check(scalarObject)) {
       // False/True will come as 0 and 1
       int overflow = 0;
-      INT64 val=PyLong_AsLongLongAndOverflow(scalarObject, &overflow);
+      int64_t val=PyLong_AsLongLongAndOverflow(scalarObject, &overflow);
       printf("long %lld\n", val);
 
    }
@@ -1323,7 +1334,7 @@ TestNumpy(PyObject *self, PyObject *args)
    if (PyArray_Check(scalarObject)) {
       PyArrayObject* arr = (PyArrayObject*)scalarObject;
 
-      printf("array itemsize=%lld, strides=%lld, flags=%d, length=%lld:\n", (INT64)PyArray_ITEMSIZE(arr), (INT64)(*PyArray_STRIDES(arr)), PyArray_FLAGS(arr), ArrayLength(arr));
+      printf("array itemsize=%lld, strides=%lld, flags=%d, length=%lld:\n", (int64_t)PyArray_ITEMSIZE(arr), (int64_t)(*PyArray_STRIDES(arr)), PyArray_FLAGS(arr), ArrayLength(arr));
 
       PyObject* pBase = PyArray_BASE((PyArrayObject*)scalarObject);
 
@@ -1375,10 +1386,10 @@ static bool g_IsPreciseTime = false;
 
 //------------------------------------
 // Returns windows time in Nanos
-__inline static UINT64 GetWindowsTime() {
+__inline static uint64_t GetWindowsTime() {
    FILETIME timeNow;
    g_GetSystemTime(&timeNow);
-   return (*(UINT64*)&timeNow * 100) - 11644473600000000000L;
+   return (*(uint64_t*)&timeNow * 100) - 11644473600000000000L;
 }
 
 //-------------------------------------------------------------------
@@ -1417,7 +1428,7 @@ static CTimeStamp* g_TimeStamp = new CTimeStamp();
 
 
 //---------------------------------------------------------
-// Returns and INT64 nanosecs since unix epoch
+// Returns and int64_t nanosecs since unix epoch
 static PyObject* GetNanoTime(PyObject* self, PyObject* args) {
 
    // return nano time since Unix Epoch
@@ -1425,7 +1436,7 @@ static PyObject* GetNanoTime(PyObject* self, PyObject* args) {
 }
 
 //---------------------------------------------------------
-// Returns and UINT64 timestamp counter
+// Returns and uint64_t timestamp counter
 static PyObject* GetTSC(PyObject* self, PyObject* args) {
 
    // return tsc
@@ -1458,7 +1469,7 @@ static __inline__ unsigned long long rdtsc(void)
 }
 
 //---------------------------------------------------------
-// Returns and UINT64 timestamp counter
+// Returns and uint64_t timestamp counter
 static PyObject* GetTSC(PyObject* self, PyObject* args) {
 
    // return tsc
@@ -1466,7 +1477,7 @@ static PyObject* GetTSC(PyObject* self, PyObject* args) {
 }
 
 //---------------------------------------------------------
-// Returns and INT64 nanosecs since unix epoch
+// Returns and int64_t nanosecs since unix epoch
 static PyObject* GetNanoTime(PyObject* self, PyObject* args) {
 
    // return nano time since Unix Epoch
@@ -1478,7 +1489,7 @@ static PyObject* GetNanoTime(PyObject* self, PyObject* args) {
 
 //---------------------------------------------------------
 // Returns nanoseconds since utc epoch
-UINT64 GetUTCNanos() {
+uint64_t GetUTCNanos() {
 #if defined(_WIN32)
    return GetWindowsTime();
 #else
@@ -1497,7 +1508,7 @@ static PyObject* GetThreadWakeUp(PyObject* self, PyObject* args) {
 //---------------------------------------------------------
 // Returns curent thread wakeup setting to existing
 static PyObject* SetThreadWakeUp(PyObject* self, PyObject* args) {
-   INT64 newWakeup = 1;
+   int64_t newWakeup = 1;
    if (!PyArg_ParseTuple(args, "L", &newWakeup)) {
       return NULL;
    }
@@ -1513,55 +1524,55 @@ PyObject* RecordArrayToColMajor(PyObject* self, PyObject* args);
 
 //--------------------------------------------------------
 const char* docstring_asarray =
-"Parameters\n"
-"----------\n"
-"a : array_like\n"
-"   Input data, in any form that can be converted to an array.This\n"
-"   includes lists, lists of tuples, tuples, tuples of tuples, tuples\n"
-"   of lists and ndarrays.\n"
-"dtype : data - type, optional\n"
-"   By default, the data - type is inferred from the input data.\n"
-"order : {'C', 'F'}, optional\n"
-"   Whether to use row - major(C - style) or\n"
-"   column - major(Fortran - style) memory representation.\n"
-"   Defaults to 'C'.\n"
-"\n"
-"Returns\n"
-"-------\n"
-"out : ndarray or FastArray\n"
-"   Array interpretation of 'a'.  No copy is performed if the input\n"
-"   is already an ndarray or FastArray with matching dtype and order.\n"
-"   If 'a' is a subclass of ndarray, a base class ndarray is returned.\n"
-"\n"
-"See Also\n"
-"--------\n"
-"asfastarray : Similar function which always returns a FastArray.\n";
+   "Parameters\n"
+   "----------\n"
+   "a : array_like\n"
+   "   Input data, in any form that can be converted to an array.This\n"
+   "   includes lists, lists of tuples, tuples, tuples of tuples, tuples\n"
+   "   of lists and ndarrays.\n"
+   "dtype : data - type, optional\n"
+   "   By default, the data - type is inferred from the input data.\n"
+   "order : {'C', 'F'}, optional\n"
+   "   Whether to use row - major(C - style) or\n"
+   "   column - major(Fortran - style) memory representation.\n"
+   "   Defaults to 'C'.\n"
+   "\n"
+   "Returns\n"
+   "-------\n"
+   "out : ndarray or FastArray\n"
+   "   Array interpretation of 'a'.  No copy is performed if the input\n"
+   "   is already an ndarray or FastArray with matching dtype and order.\n"
+   "   If 'a' is a subclass of ndarray, a base class ndarray is returned.\n"
+   "\n"
+   "See Also\n"
+   "--------\n"
+   "asfastarray : Similar function which always returns a FastArray.\n";
 
 
 const char* docstring_asfastarray =
-"Parameters\n"
-"----------\n"
-"a : array_like\n"
-"   Input data, in any form that can be converted to an array.This\n"
-"   includes lists, lists of tuples, tuples, tuples of tuples, tuples\n"
-"   of lists and ndarrays.\n"
-"dtype : data - type, optional\n"
-"   By default, the data - type is inferred from the input data.\n"
-"order : {'C', 'F'}, optional\n"
-"   Whether to use row - major(C - style) or\n"
-"   column - major(Fortran - style) memory representation.\n"
-"   Defaults to 'C'.\n"
-"\n"
-"Returns\n"
-"-------\n"
-"out : FastArray\n"
-"   Array interpretation of 'a'.  No copy is performed if the input\n"
-"   is already an ndarray or FastArray with matching dtype and order.\n"
-"   If 'a' is a subclass of ndarray, a base class ndarray is returned.\n"
-"\n"
-"See Also\n"
-"--------\n"
-"asarray : Similar function.\n";
+   "Parameters\n"
+   "----------\n"
+   "a : array_like\n"
+   "   Input data, in any form that can be converted to an array.This\n"
+   "   includes lists, lists of tuples, tuples, tuples of tuples, tuples\n"
+   "   of lists and ndarrays.\n"
+   "dtype : data - type, optional\n"
+   "   By default, the data - type is inferred from the input data.\n"
+   "order : {'C', 'F'}, optional\n"
+   "   Whether to use row - major(C - style) or\n"
+   "   column - major(Fortran - style) memory representation.\n"
+   "   Defaults to 'C'.\n"
+   "\n"
+   "Returns\n"
+   "-------\n"
+   "out : FastArray\n"
+   "   Array interpretation of 'a'.  No copy is performed if the input\n"
+   "   is already an ndarray or FastArray with matching dtype and order.\n"
+   "   If 'a' is a subclass of ndarray, a base class ndarray is returned.\n"
+   "\n"
+   "See Also\n"
+   "--------\n"
+   "asarray : Similar function.\n";
 
 
 /* ==== Set up the methods table ====================== */
@@ -1617,7 +1628,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "MergeBinnedAndSorted", MergeBinnedAndSorted, METH_VARARGS, "MergeBinnedAndSorted calculation" },
 
    { "GroupByPack32", GroupByPack32, METH_VARARGS, "GroupByPack32 data from int to float, etc" },
-      //{ "GroupByOp32", GroupByOp32, METH_VARARGS, "GroupByOp32 data from int to float, etc" },
+   //{ "GroupByOp32", GroupByOp32, METH_VARARGS, "GroupByOp32 data from int to float, etc" },
    { "GroupByAll32", GroupByAll32, METH_VARARGS, "GroupByAll32 data from int to float, etc" },
    { "GroupByAll64", GroupByAll64, METH_VARARGS, "GroupByAll64 data from int to float, etc" },
    { "GroupByAllPack32", GroupByAllPack32, METH_VARARGS, "GroupByAllPack32 data from int to float, etc" },
@@ -1661,7 +1672,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
    { "BasicMathTwoInputs", BasicMathTwoInputs, METH_VARARGS, "BasicMathTwoInputs functionality" },
 
 
-      // for low level python hooks
+   // for low level python hooks
    { "BasicMathHook", BasicMathHook, METH_VARARGS, "BasicMathHook functionality (pass in fastarray class, FA, np.ndarray)" },
 
    { "LedgerFunction", (PyCFunction)LedgerFunction, METH_VARARGS | METH_KEYWORDS, "LedgerFunction calculation" },
@@ -1718,15 +1729,15 @@ static PyModuleDef CSigMathUtilModule = {
 // For Python version 3,  PyInit_{module_name} must be used as this function is called when the module is imported
 PyMODINIT_FUNC PyInit_riptide_cpp() {
 
-   INT32 count = 0;
+   int32_t count = 0;
 
    // Count up the
    for (int i = 0; i < 1000; i++) {
-if (CSigMathUtilMethods[i].ml_name == NULL) {
-   break;
-}
+      if (CSigMathUtilMethods[i].ml_name == NULL) {
+         break;
+      }
 
-count++;
+      count++;
    }
 
    LOGGING("FASTMATH: Found %d methods\n", count);
@@ -1734,7 +1745,7 @@ count++;
    InitRecycler();
 
    // allocate plus one because last one is sentinel fulled with nulls
-   INT64 allocSize = sizeof(PyMethodDef) * (count + 1);
+   int64_t allocSize = sizeof(PyMethodDef) * (count + 1);
 
    // Allocate a new array
    PyMethodDef* pNewMethods = (PyMethodDef*)PYTHON_ALLOC(allocSize);
@@ -1769,14 +1780,14 @@ count++;
 
    // Build LUTs used in comparisons after mask generated
    for (int i = 0; i < 256; i++) {
-      BYTE* pDest = (BYTE*)&gBooleanLUT64[i];
+      unsigned char* pDest = (unsigned char*)&gBooleanLUT64[i];
       for (int j = 0; j < 8; j++) {
          *pDest++ = ((i >> j) & 1);
       }
    }
    // Build LUTs
    for (int i = 0; i < 16; i++) {
-      BYTE* pDest = (BYTE*)&gBooleanLUT32[i];
+      unsigned char* pDest = (unsigned char*)&gBooleanLUT32[i];
       for (int j = 0; j < 4; j++) {
          *pDest++ = ((i >> j) & 1);
       }
@@ -1802,102 +1813,102 @@ count++;
             pRow->dtype2 = convertType2;
          }
          else
-         if (convertType2 == 0) {
-            // bool converts to anything
-            pRow->dtype1 = convertType1;
-            pRow->dtype2 = convertType1;
-         }
-         else
-         // Check for long upcasting?
-         if (convertType1 > convertType2) {
-            if (convertType1 == NPY_ULONGLONG) {
-               // check for signed value
-               if ((convertType2 & 1) == 1) {
-                  pRow->dtype1 = NPY_FLOAT64;
-                  pRow->dtype2 = NPY_FLOAT64;
-               }
-               else {
-                  pRow->dtype1 = NPY_ULONGLONG;
-                  pRow->dtype2 = NPY_ULONGLONG;
-               }
+            if (convertType2 == 0) {
+               // bool converts to anything
+               pRow->dtype1 = convertType1;
+               pRow->dtype2 = convertType1;
             }
-            else {
-               // if the higher is unsigned and the other is signed go up one
-               if (convertType1 < NPY_ULONGLONG && (convertType1 & 1) == 0 && (convertType2 & 1) == 1) {
-
-                  // Choose the higher dtype +1
-                  pRow->dtype1 = convertType1 + 1;
-                  pRow->dtype2 = convertType1 + 1;
-
-                  // Handle ambiguous dtype upcast (going from int to long does nothing on some C compilers)
-                  if (sizeof(long) == 4) {
-                     if (convertType1 == NPY_INT || convertType1 == NPY_UINT) {
-                        pRow->dtype1 = convertType1 + 3;
-                        pRow->dtype2 = convertType1 + 3;
+            else
+               // Check for long upcasting?
+               if (convertType1 > convertType2) {
+                  if (convertType1 == NPY_ULONGLONG) {
+                     // check for signed value
+                     if ((convertType2 & 1) == 1) {
+                        pRow->dtype1 = NPY_FLOAT64;
+                        pRow->dtype2 = NPY_FLOAT64;
+                     }
+                     else {
+                        pRow->dtype1 = NPY_ULONGLONG;
+                        pRow->dtype2 = NPY_ULONGLONG;
                      }
                   }
                   else {
-                     if (convertType1 == NPY_LONG || convertType1 == NPY_ULONG) {
-                        pRow->dtype1 = convertType1 + 3;
-                        pRow->dtype2 = convertType1 + 3;
-                     }
-                  }
-               }
-               else {
-                  // Choose the higher dtype
-                  pRow->dtype1 = convertType1;
-                  pRow->dtype2 = convertType1;
-               }
-            }
-         }
-         else {
-            if (convertType1 == convertType2) {
-               pRow->dtype1 = convertType2;
-               pRow->dtype2 = convertType2;
-            }
-            else {
-               // convertType2 is larger
-               if (convertType2 == NPY_ULONGLONG) {
-                  // check for signed value
-                  if ((convertType1 & 1) == 1) {
-                     pRow->dtype1 = NPY_FLOAT64;
-                     pRow->dtype2 = NPY_FLOAT64;
-                  }
-                  else {
-                     pRow->dtype2 = NPY_ULONGLONG;
-                     pRow->dtype1 = NPY_ULONGLONG;
-                  }
-               }
-               else {
-                  // Check for signed/unsigned integer
-                  if (convertType2 < NPY_ULONGLONG && (convertType2 & 1) == 0 && (convertType1 & 1) == 1) {
+                     // if the higher is unsigned and the other is signed go up one
+                     if (convertType1 < NPY_ULONGLONG && (convertType1 & 1) == 0 && (convertType2 & 1) == 1) {
 
-                     // Choose the higher dtype +1
-                     pRow->dtype1 = convertType2 + 1;
-                     pRow->dtype2 = convertType2 + 1;
+                        // Choose the higher dtype +1
+                        pRow->dtype1 = convertType1 + 1;
+                        pRow->dtype2 = convertType1 + 1;
 
-                     // Handle ambiguous dtype upcast
-                     if (sizeof(long) == 4) {
-                        if (convertType2 == NPY_INT || convertType2 == NPY_UINT) {
-                           pRow->dtype1 = convertType2 + 3;
-                           pRow->dtype2 = convertType2 + 3;
+                        // Handle ambiguous dtype upcast (going from int to long does nothing on some C compilers)
+                        if (sizeof(long) == 4) {
+                           if (convertType1 == NPY_INT || convertType1 == NPY_UINT) {
+                              pRow->dtype1 = convertType1 + 3;
+                              pRow->dtype2 = convertType1 + 3;
+                           }
+                        }
+                        else {
+                           if (convertType1 == NPY_LONG || convertType1 == NPY_ULONG) {
+                              pRow->dtype1 = convertType1 + 3;
+                              pRow->dtype2 = convertType1 + 3;
+                           }
                         }
                      }
                      else {
-                        if (convertType2 == NPY_LONG || convertType2 == NPY_ULONG) {
-                           pRow->dtype1 = convertType2 + 3;
-                           pRow->dtype2 = convertType2 + 3;
-                        }
+                        // Choose the higher dtype
+                        pRow->dtype1 = convertType1;
+                        pRow->dtype2 = convertType1;
                      }
                   }
-                  else {
-                     // Choose the higher dtype
+               }
+               else {
+                  if (convertType1 == convertType2) {
                      pRow->dtype1 = convertType2;
                      pRow->dtype2 = convertType2;
                   }
+                  else {
+                     // convertType2 is larger
+                     if (convertType2 == NPY_ULONGLONG) {
+                        // check for signed value
+                        if ((convertType1 & 1) == 1) {
+                           pRow->dtype1 = NPY_FLOAT64;
+                           pRow->dtype2 = NPY_FLOAT64;
+                        }
+                        else {
+                           pRow->dtype2 = NPY_ULONGLONG;
+                           pRow->dtype1 = NPY_ULONGLONG;
+                        }
+                     }
+                     else {
+                        // Check for signed/unsigned integer
+                        if (convertType2 < NPY_ULONGLONG && (convertType2 & 1) == 0 && (convertType1 & 1) == 1) {
+
+                           // Choose the higher dtype +1
+                           pRow->dtype1 = convertType2 + 1;
+                           pRow->dtype2 = convertType2 + 1;
+
+                           // Handle ambiguous dtype upcast
+                           if (sizeof(long) == 4) {
+                              if (convertType2 == NPY_INT || convertType2 == NPY_UINT) {
+                                 pRow->dtype1 = convertType2 + 3;
+                                 pRow->dtype2 = convertType2 + 3;
+                              }
+                           }
+                           else {
+                              if (convertType2 == NPY_LONG || convertType2 == NPY_ULONG) {
+                                 pRow->dtype1 = convertType2 + 3;
+                                 pRow->dtype2 = convertType2 + 3;
+                              }
+                           }
+                        }
+                        else {
+                           // Choose the higher dtype
+                           pRow->dtype1 = convertType2;
+                           pRow->dtype2 = convertType2;
+                        }
+                     }
+                  }
                }
-            }
-         }
       }
    }
 
@@ -1925,7 +1936,7 @@ count++;
    if (!mod_dict)
    {
       LOGGING("Unable to get the module dictionary for the riptide_cpp module.\n")
-      return NULL;
+         return NULL;
    }
 
    if (!RegisterSdsPythonTypes(mod_dict))
@@ -1942,20 +1953,20 @@ count++;
 }
 
 //-------------------------------------------------------------------------
-//INT64 default1 = -9223372036854775808L;
-static INT64  gDefaultInt64 = 0x8000000000000000;
-static INT32  gDefaultInt32 = 0x80000000;
-static UINT16 gDefaultInt16 = 0x8000;
-static UINT8  gDefaultInt8 = 0x80;
+//int64_t default1 = -9223372036854775808L;
+static int64_t  gDefaultInt64 = 0x8000000000000000;
+static int32_t  gDefaultInt32 = 0x80000000;
+static uint16_t gDefaultInt16 = 0x8000;
+static uint8_t  gDefaultInt8 = 0x80;
 
-static UINT64 gDefaultUInt64 = 0xFFFFFFFFFFFFFFFF;
-static UINT32 gDefaultUInt32 = 0xFFFFFFFF;
-static UINT16 gDefaultUInt16 = 0xFFFF;
-static UINT8  gDefaultUInt8 = 0xFF;
+static uint64_t gDefaultUInt64 = 0xFFFFFFFFFFFFFFFF;
+static uint32_t gDefaultUInt32 = 0xFFFFFFFF;
+static uint16_t gDefaultUInt16 = 0xFFFF;
+static uint8_t  gDefaultUInt8 = 0xFF;
 
 static float  gDefaultFloat = NAN;
 static double gDefaultDouble = NAN;
-static INT8   gDefaultBool = 0;
+static int8_t   gDefaultBool = 0;
 static char   gString[1024] = { 0,0,0,0 };
 
 //----------------------------------------------------
@@ -1970,28 +1981,43 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_LONGDOUBLE:
    case NPY_DOUBLE: pgDefault = &gDefaultDouble;
       break;
-   // BOOL should not really have an invalid value inhabiting the type
-   case NPY_BOOL:   pgDefault = &gDefaultBool;
+      // BOOL should not really have an invalid value inhabiting the type
+   case NPY_BOOL:
+      pgDefault = &gDefaultBool;
       break;
-   case NPY_BYTE:   pgDefault = &gDefaultInt8;
+   case NPY_BYTE:
+      pgDefault = &gDefaultInt8;
       break;
-   case NPY_INT16:  pgDefault = &gDefaultInt16;
+   case NPY_INT16:
+      pgDefault = &gDefaultInt16;
       break;
-   CASE_NPY_INT32:  pgDefault = &gDefaultInt32;
+   CASE_NPY_INT32: 
+//   case NPY_INT: This is the same numeric value as NPY_INT32 above
+      pgDefault = &gDefaultInt32;
       break;
-   CASE_NPY_INT64:  pgDefault = &gDefaultInt64;
+   CASE_NPY_INT64:
+   
+      pgDefault = &gDefaultInt64;
       break;
-   case NPY_UINT8:  pgDefault = &gDefaultUInt8;
+   case NPY_UINT8:
+      pgDefault = &gDefaultUInt8;
       break;
-   case NPY_UINT16: pgDefault = &gDefaultUInt16;
+   case NPY_UINT16:
+      pgDefault = &gDefaultUInt16;
       break;
-   CASE_NPY_UINT32: pgDefault = &gDefaultUInt32;
+   CASE_NPY_UINT32:
+//   case NPY_UINT: This is the same numeric value as NPY_UINT32 above
+      pgDefault = &gDefaultUInt32;
       break;
-   CASE_NPY_UINT64: pgDefault = &gDefaultUInt64;
+   CASE_NPY_UINT64:
+   
+      pgDefault = &gDefaultUInt64;
       break;
-   case NPY_STRING: pgDefault = &gString;
+   case NPY_STRING:
+      pgDefault = &gString;
       break;
-   case NPY_UNICODE: pgDefault = &gString;
+   case NPY_UNICODE:
+      pgDefault = &gString;
       break;
    default:
       printf("!!! likely problem in GetDefaultForType\n");
@@ -2003,28 +2029,28 @@ void* GetDefaultForType(int numpyInType) {
 int GetNumpyType(bool value) {
    return NPY_BOOL;
 }
-int GetNumpyType(INT8 value) {
+int GetNumpyType(int8_t value) {
    return NPY_INT8;
 }
-int GetNumpyType(INT16 value) {
+int GetNumpyType(int16_t value) {
    return NPY_INT16;
 }
-int GetNumpyType(INT32 value) {
+int GetNumpyType(int32_t value) {
    return NPY_INT32;
 }
-int GetNumpyType(INT64 value) {
+int GetNumpyType(int64_t value) {
    return NPY_INT64;
 }
-int GetNumpyType(UINT8 value) {
+int GetNumpyType(uint8_t value) {
    return NPY_UINT8;
 }
-int GetNumpyType(UINT16 value) {
+int GetNumpyType(uint16_t value) {
    return NPY_UINT16;
 }
-int GetNumpyType(UINT32 value) {
+int GetNumpyType(uint32_t value) {
    return NPY_UINT32;
 }
-int GetNumpyType(UINT64 value) {
+int GetNumpyType(uint64_t value) {
    return NPY_UINT64;
 }
 int GetNumpyType(float value) {
@@ -2041,14 +2067,14 @@ int GetNumpyType(char* value) {
 }
 
 //-------------------------------------
-// Returns FALSE if cannot upcast
+// Returns false if cannot upcast
 // Input: numpyInType1, numpyInType2
 // Output: convertType1, convertType2
-BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, INT64 funcNumber) {
+bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber) {
    if (numpyInType1 == numpyInType2) {
       convertType1 = numpyInType1;
       convertType2 = numpyInType1;
-      return TRUE;
+      return true;
    }
    if (numpyInType1 >=0 && numpyInType1 <= NPY_LONGDOUBLE && numpyInType2 >= 0 && numpyInType2 <= NPY_LONGDOUBLE) {
       stUpCast* pUpcast;
@@ -2061,7 +2087,7 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
       }
       convertType1 = pUpcast->dtype1;
       convertType2 = pUpcast->dtype2;
-      return TRUE;
+      return true;
    }
    else {
       // check for strings..
@@ -2069,19 +2095,19 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
          if (numpyInType2 == NPY_STRING) {
             convertType1 = NPY_UNICODE;
             convertType2 = NPY_UNICODE;
-            return TRUE;
+            return true;
          }
       }
       if (numpyInType2 == NPY_UNICODE) {
          if (numpyInType1 == NPY_STRING) {
             convertType1 = NPY_UNICODE;
             convertType2 = NPY_UNICODE;
-            return TRUE;
+            return true;
          }
       }
       convertType1 = -1;
       convertType2 = -1;
-      return FALSE;
+      return false;
    }
 }
 
@@ -2099,14 +2125,14 @@ BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
 //    Example: a=arange(20).reshape(5,4)[::-1] or a=arange(20).reshape(5,4)[::2]
 // Returns:
 //  ndim:   number of dimensions
-//  stride: stride to use if contig is TRUE
+//  stride: stride to use if contig is true
 //  direction: 0 - neither RowMajor or ColMajor (fully contiguous)
 //     > 0 RowMajor with value being the dimension where contiguous breaks
 //     < 0 ColMajor with -value being the dimension where contiguous breaks
-//  return value 0: one loop can process all data, FALSE = multiple loops
+//  return value 0: one loop can process all data, false = multiple loops
 //  NOTE: if return value is 0 and itemsze == stride, then vector math possible
 //
-int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride) {
+int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride) {
    stride = PyArray_ITEMSIZE(inArray);
    int direction = 0;
    ndim = PyArray_NDIM(inArray);
@@ -2115,7 +2141,7 @@ int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride) {
       if (ndim > 1) {
          // at least two strides
          int ndims = PyArray_NDIM(inArray);
-         INT64 lastStride = PyArray_STRIDE(inArray, ndims - 1);
+         int64_t lastStride = PyArray_STRIDE(inArray, ndims - 1);
          if (lastStride == stride) {
             // contiguous with one of the dimensions having length 1
          }
@@ -2124,7 +2150,7 @@ int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride) {
                // Row Major - 'C' Style
                // work backwards
                int currentdim = ndims - 1;
-               INT64 curStrideLen = lastStride;
+               int64_t curStrideLen = lastStride;
                while (currentdim != 0) {
                   curStrideLen *= PyArray_DIM(inArray, currentdim);
                   LOGGING("'C' %lld vs %lld  dim: %lld  stride: %lld \n", curStrideLen, PyArray_STRIDE(inArray, currentdim - 1), PyArray_DIM(inArray, currentdim - 1), lastStride);
@@ -2138,7 +2164,7 @@ int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride) {
             else {
                // Col Major - 'F' Style
                int currentdim = 0;
-               INT64 curStrideLen = stride;
+               int64_t curStrideLen = stride;
                while (currentdim != (ndims - 1)) {
                   curStrideLen *= PyArray_DIM(inArray, currentdim);
                   LOGGING("'F' %lld vs %lld  dim:  %lld   stride: %lld \n", curStrideLen, PyArray_STRIDE(inArray, currentdim + 1), PyArray_DIM(inArray, currentdim + 1), stride);
