@@ -175,6 +175,7 @@ dmypy.json
 # IDE settings
 .idea
 .vs
+.vscode/
 
 # OS-specific metadata files
 .DS_Store
