@@ -20,19 +20,19 @@ struct stGroupByReturn {
 
    union {
       PyArrayObject*    outArray;
-      INT64             didWork;
+      int64_t             didWork;
    };
 
    // for multithreaded sum this is set
    void*             pOutArray;
 
-   INT32*            pCountOut;
+   int32_t*            pCountOut;
 
-   INT32             numpyOutType;
-   INT32             funcNum;
+   int32_t             numpyOutType;
+   int32_t             funcNum;
 
-   INT64             binLow;
-   INT64             binHigh;
+   int64_t             binLow;
+   int64_t             binHigh;
 
    union {
       GROUPBY_TWO_FUNC  pFunction;
@@ -47,18 +47,18 @@ struct stGroupByReturn {
 struct stGroupBy32 {
 
    ArrayInfo* aInfo;
-   INT64    tupleSize;
- /*  INT32    numpyOutType;
-   INT32    reserved;
+   int64_t    tupleSize;
+ /*  int32_t    numpyOutType;
+   int32_t    reserved;
  */  
    void*    pDataIn2;
-   INT64    itemSize2;
+   int64_t    itemSize2;
 
-   INT64    uniqueRows;
-   INT64    totalInputRows;
+   int64_t    uniqueRows;
+   int64_t    totalInputRows;
 
    TYPE_OF_FUNCTION_CALL   typeOfFunctionCall;
-   INT64    funcParam;
+   int64_t    funcParam;
    void*    pKey;
    void*    pGroup;
    void*    pFirst;

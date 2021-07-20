@@ -35,21 +35,21 @@ static inline void STOREU(__m256* x, __m256 y) { _mm256_storeu_ps((float*)x, y);
 static inline void STOREU(__m256i* x, __m256i y) { _mm256_storeu_si256((__m256i*)x, y); }
 #endif
 
-static inline __m256i MIN_OP(INT8  z, __m256i x, __m256i y)  { return _mm256_min_epi8(x, y); }
-static inline __m256i MIN_OP(UINT8  z, __m256i x, __m256i y) { return _mm256_min_epu8(x, y); }
-static inline __m256i MIN_OP(UINT16 z, __m256i x, __m256i y) { return _mm256_min_epu16(x, y); }
-static inline __m256i MIN_OP(INT16 z, __m256i x, __m256i y)  { return _mm256_min_epi16(x, y); }
-static inline __m256i MIN_OP(INT32 z, __m256i x, __m256i y)  { return _mm256_min_epi32(x, y); }
-static inline __m256i MIN_OP(UINT32 z, __m256i x, __m256i y) { return _mm256_min_epu32(x, y); }
+static inline __m256i MIN_OP(int8_t  z, __m256i x, __m256i y)  { return _mm256_min_epi8(x, y); }
+static inline __m256i MIN_OP(uint8_t  z, __m256i x, __m256i y) { return _mm256_min_epu8(x, y); }
+static inline __m256i MIN_OP(uint16_t z, __m256i x, __m256i y) { return _mm256_min_epu16(x, y); }
+static inline __m256i MIN_OP(int16_t z, __m256i x, __m256i y)  { return _mm256_min_epi16(x, y); }
+static inline __m256i MIN_OP(int32_t z, __m256i x, __m256i y)  { return _mm256_min_epi32(x, y); }
+static inline __m256i MIN_OP(uint32_t z, __m256i x, __m256i y) { return _mm256_min_epu32(x, y); }
 static inline __m256  MIN_OP(float z, __m256 x, __m256 y)    { return _mm256_min_ps(x, y); }
 static inline __m256d MIN_OP(double z, __m256d x, __m256d y) { return _mm256_min_pd(x, y); }
 
-static inline __m256i MAX_OP(INT8  z, __m256i x, __m256i y) { return _mm256_max_epi8(x, y); }
-static inline __m256i MAX_OP(UINT8  z, __m256i x, __m256i y) { return _mm256_max_epu8(x, y); }
-static inline __m256i MAX_OP(UINT16 z, __m256i x, __m256i y) { return _mm256_max_epu16(x, y); }
-static inline __m256i MAX_OP(INT16 z, __m256i x, __m256i y) { return _mm256_max_epi16(x, y); }
-static inline __m256i MAX_OP(INT32 z, __m256i x, __m256i y) { return _mm256_max_epi32(x, y); }
-static inline __m256i MAX_OP(UINT32 z, __m256i x, __m256i y) { return _mm256_max_epu32(x, y); }
+static inline __m256i MAX_OP(int8_t  z, __m256i x, __m256i y) { return _mm256_max_epi8(x, y); }
+static inline __m256i MAX_OP(uint8_t  z, __m256i x, __m256i y) { return _mm256_max_epu8(x, y); }
+static inline __m256i MAX_OP(uint16_t z, __m256i x, __m256i y) { return _mm256_max_epu16(x, y); }
+static inline __m256i MAX_OP(int16_t z, __m256i x, __m256i y) { return _mm256_max_epi16(x, y); }
+static inline __m256i MAX_OP(int32_t z, __m256i x, __m256i y) { return _mm256_max_epi32(x, y); }
+static inline __m256i MAX_OP(uint32_t z, __m256i x, __m256i y) { return _mm256_max_epu32(x, y); }
 static inline __m256  MAX_OP(float z, __m256 x, __m256 y) { return _mm256_max_ps(x, y); }
 static inline __m256d MAX_OP(double z, __m256d x, __m256d y) { return _mm256_max_pd(x, y); }
 
@@ -110,21 +110,21 @@ static inline __m256d FMIN_OP(double z, __m256d x, __m256d y)
 }
 
 // 128 versions---
-static inline __m128i MIN_OP128(INT8  z, __m128i x, __m128i y) { return _mm_min_epi8(x, y); }
-static inline __m128i MIN_OP128(UINT8  z, __m128i x, __m128i y) { return _mm_min_epu8(x, y); }
-static inline __m128i MIN_OP128(UINT16 z, __m128i x, __m128i y) { return _mm_min_epu16(x, y); }
-static inline __m128i MIN_OP128(INT16 z, __m128i x, __m128i y) { return _mm_min_epi16(x, y); }
-static inline __m128i MIN_OP128(INT32 z, __m128i x, __m128i y) { return _mm_min_epi32(x, y); }
-static inline __m128i MIN_OP128(UINT32 z, __m128i x, __m128i y) { return _mm_min_epu32(x, y); }
+static inline __m128i MIN_OP128(int8_t  z, __m128i x, __m128i y) { return _mm_min_epi8(x, y); }
+static inline __m128i MIN_OP128(uint8_t  z, __m128i x, __m128i y) { return _mm_min_epu8(x, y); }
+static inline __m128i MIN_OP128(uint16_t z, __m128i x, __m128i y) { return _mm_min_epu16(x, y); }
+static inline __m128i MIN_OP128(int16_t z, __m128i x, __m128i y) { return _mm_min_epi16(x, y); }
+static inline __m128i MIN_OP128(int32_t z, __m128i x, __m128i y) { return _mm_min_epi32(x, y); }
+static inline __m128i MIN_OP128(uint32_t z, __m128i x, __m128i y) { return _mm_min_epu32(x, y); }
 static inline __m128  MIN_OP128(float z, __m128 x, __m128 y) { return _mm_min_ps(x, y); }
 static inline __m128d MIN_OP128(double z, __m128d x, __m128d y) { return _mm_min_pd(x, y); }
 
-static inline __m128i MAX_OP128(INT8  z, __m128i x, __m128i y) { return _mm_max_epi8(x, y); }
-static inline __m128i MAX_OP128(UINT8  z, __m128i x, __m128i y) { return _mm_max_epu8(x, y); }
-static inline __m128i MAX_OP128(UINT16 z, __m128i x, __m128i y) { return _mm_max_epu16(x, y); }
-static inline __m128i MAX_OP128(INT16 z, __m128i x, __m128i y) { return _mm_max_epi16(x, y); }
-static inline __m128i MAX_OP128(INT32 z, __m128i x, __m128i y) { return _mm_max_epi32(x, y); }
-static inline __m128i MAX_OP128(UINT32 z, __m128i x, __m128i y) { return _mm_max_epu32(x, y); }
+static inline __m128i MAX_OP128(int8_t  z, __m128i x, __m128i y) { return _mm_max_epi8(x, y); }
+static inline __m128i MAX_OP128(uint8_t  z, __m128i x, __m128i y) { return _mm_max_epu8(x, y); }
+static inline __m128i MAX_OP128(uint16_t z, __m128i x, __m128i y) { return _mm_max_epu16(x, y); }
+static inline __m128i MAX_OP128(int16_t z, __m128i x, __m128i y) { return _mm_max_epi16(x, y); }
+static inline __m128i MAX_OP128(int32_t z, __m128i x, __m128i y) { return _mm_max_epi32(x, y); }
+static inline __m128i MAX_OP128(uint32_t z, __m128i x, __m128i y) { return _mm_max_epu32(x, y); }
 static inline __m128  MAX_OP128(float z, __m128 x, __m128 y) { return _mm_max_ps(x, y); }
 static inline __m128d MAX_OP128(double z, __m128d x, __m128d y) { return _mm_max_pd(x, y); }
 
@@ -163,19 +163,19 @@ struct stArgScatterGatherFunc {
    NPY_TYPES inputType;
 
    // the core (if any) making this calculation
-   INT32 core;
+   int32_t core;
 
    // used for nans, how many non nan values
-   INT64 lenOut;
+   int64_t lenOut;
 
    // holds worst case
    long double resultOut;
 
    // index location output for argmin/argmax
-   INT64  resultOutArgInt64;
+   int64_t  resultOutArgInt64;
 };
 
-typedef INT64(*ARG_SCATTER_GATHER_FUNC)(void* pDataIn, INT64 len, INT64 fixup, stArgScatterGatherFunc* pstScatterGatherFunc);
+typedef int64_t(*ARG_SCATTER_GATHER_FUNC)(void* pDataIn, int64_t len, int64_t fixup, stArgScatterGatherFunc* pstScatterGatherFunc);
 
 
 //============================================================================================
@@ -186,7 +186,7 @@ class ReduceArgMax final
 {
    //--------------------------------------------------------------------------------------------
    template<typename T >
-   static INT64 non_vector(void* pDataIn, INT64 len, INT64 fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
+   static int64_t non_vector(void* pDataIn, int64_t len, int64_t fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
 
       T* pIn = (T*)pDataIn;
       T* pStart = pIn;
@@ -196,7 +196,7 @@ class ReduceArgMax final
 
       // Always set first item
       T result = *pIn++;
-      INT64 resultOutArgInt64 = 0;
+      int64_t resultOutArgInt64 = 0;
 
       while (pIn < pEnd) {
          // get the minimum
@@ -237,11 +237,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -258,7 +262,7 @@ class ReduceArgMin final
    //--------------------------------------------------------------------------------------------
    // The result is the index location of the minimum value
    template<typename T >
-   static INT64 non_vector(void* pDataIn, INT64 len, INT64 fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
+   static int64_t non_vector(void* pDataIn, int64_t len, int64_t fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
 
       T* pIn = (T*)pDataIn;
       T* pStart = pIn;
@@ -268,7 +272,7 @@ class ReduceArgMin final
 
       // Always set first item
       T result = *pIn++;
-      INT64 resultOutArgInt64 = 0;
+      int64_t resultOutArgInt64 = 0;
 
       while (pIn < pEnd) {
          // get the minimum
@@ -309,11 +313,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -333,14 +341,14 @@ class ReduceNanargmax final
    // There are no invalids for bool type (do not call this routine)
    // nan floats require using x==x and failing to detect
    template<typename T >
-   static INT64 non_vector(void* pDataIn, INT64 len, INT64 fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
+   static int64_t non_vector(void* pDataIn, int64_t len, int64_t fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
 
       T* pIn = (T*)pDataIn;
       const T* const pStart = pIn;
       const T* const pEnd = pIn + len;
 
       // Default to nothing found
-      INT64 resultOutArgInt64 = -1;
+      int64_t resultOutArgInt64 = -1;
       T result = 0;
 
       // TODO: Seems like we should have special support for T=bool below (so that values are clamped to 0/1,
@@ -406,11 +414,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -430,14 +442,14 @@ class ReduceNanargmin final
    // There are no invalids for bool type (do not call this routine)
    // nan floats require using x==x and failing to detect
    template<typename T >
-   static INT64 non_vector(void* pDataIn, INT64 len, INT64 fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
+   static int64_t non_vector(void* pDataIn, int64_t len, int64_t fixup, stArgScatterGatherFunc* pstScatterGatherFunc) {
 
       T* pIn = (T*)pDataIn;
       const T* const pStart = pIn;
       const T* const pEnd = pIn + len;
 
       // Default to nothing found
-      INT64 resultOutArgInt64 = -1;
+      int64_t resultOutArgInt64 = -1;
       T result = 0;
 
       // TODO: Seems like we should have special support for T=bool below (so that values are clamped to 0/1,
@@ -502,11 +514,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -522,7 +538,7 @@ class ReduceMax final
 {
    //--------------------------------------------------------------------------------------------
    template<typename T >
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       const T* const pEnd = pIn + len;
 
@@ -541,7 +557,7 @@ class ReduceMax final
       // Check for previous scattering.  If we are the first one
       if (pstScatterGatherFunc->lenOut == 0) {
          pstScatterGatherFunc->resultOut = (double)result;
-         pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
       }
       else {
          // in case of nan when calling max (instead of nanmax), preserve nans
@@ -550,7 +566,7 @@ class ReduceMax final
          }
 
          T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-         pstScatterGatherFunc->resultOutInt64 = (INT64)(MAXF(previous, result));
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)(MAXF(previous, result));
       }
       pstScatterGatherFunc->lenOut += len;
       return (double)pstScatterGatherFunc->resultOutInt64;
@@ -558,7 +574,7 @@ class ReduceMax final
 
    //--------------------------------------------------------------------------------------------
    template<typename T, typename U256, typename U128 >
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
 
@@ -569,8 +585,8 @@ class ReduceMax final
       // For float64 this is 32/ 4
       // for int16 this is 128 / 16
       // for int8  this is 256 / 32
-      static constexpr INT64 chunkSize = (sizeof(U256) * 8) / sizeof(T);
-      static constexpr INT64 perReg = sizeof(U256) / sizeof(T);
+      static constexpr int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
+      static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
       if (len >= chunkSize) {
          pEnd = &pIn[chunkSize * (len / chunkSize)];
@@ -622,12 +638,12 @@ class ReduceMax final
       // Check for previous scattering.  If we are the first one
       if (pstScatterGatherFunc->lenOut == 0) {
          pstScatterGatherFunc->resultOut = (double)result;
-         pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
       }
       else {
          pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, (double)result);
          T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-         pstScatterGatherFunc->resultOutInt64 = (INT64)(MAXF(previous, result));
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)(MAXF(previous, result));
       }
       pstScatterGatherFunc->lenOut += len;
       return pstScatterGatherFunc->resultOut;
@@ -646,11 +662,15 @@ public:
       case NPY_INT8:   return avx2<int8_t, __m256i, __m128i>;
       case NPY_INT16:  return avx2<int16_t, __m256i, __m128i>;
       CASE_NPY_INT32:  return avx2<int32_t, __m256i, __m128i>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return avx2<uint32_t, __m256i, __m128i>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -666,7 +686,7 @@ class ReduceMin final
 {
    //--------------------------------------------------------------------------------------------
    template<typename T >
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       const T* const pEnd = pIn + len;
 
@@ -685,7 +705,7 @@ class ReduceMin final
       // Check for previous scattering.  If we are the first one
       if (pstScatterGatherFunc->lenOut == 0) {
          pstScatterGatherFunc->resultOut = (double)result;
-         pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
       }
       else {
          // in case of nan when calling min (instead of nanmin), preserve nans
@@ -693,7 +713,7 @@ class ReduceMin final
             pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
          }
          T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-         pstScatterGatherFunc->resultOutInt64 = (INT64)(MINF(previous, result));
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)(MINF(previous, result));
       }
       pstScatterGatherFunc->lenOut += len;
       return (double)pstScatterGatherFunc->resultOutInt64;
@@ -702,7 +722,7 @@ class ReduceMin final
 
    //--------------------------------------------------------------------------------------------
    template<typename T, typename U256, typename U128 >
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
 
@@ -713,8 +733,8 @@ class ReduceMin final
       // For float64 this is 32/ 4
       // for int16 this is 128 / 16
       // for int8  this is 256 / 32
-      const INT64 chunkSize = (sizeof(U256) * 8) / sizeof(T);
-      const INT64 perReg = sizeof(U256) / sizeof(T);
+      const int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
+      const int64_t perReg = sizeof(U256) / sizeof(T);
 
       //printf("hit this %lld %lld\n", len, chunkSize);
       if (len >= chunkSize) {
@@ -743,7 +763,7 @@ class ReduceMin final
          m0 = MIN_OP(result, m0, m1);  m2 = MIN_OP(result, m2, m3);  m4 = MIN_OP(result, m4, m5);  m6 = MIN_OP(result, m6, m7);
          m0 = MIN_OP(result, m0, m2);  m4 = MIN_OP(result, m4, m6);  m0 = MIN_OP(result, m0, m4);
 
-         if (FALSE) {
+         if (false) {
             // Older path
             // Write 256 bits into memory
             __m256i temp;
@@ -795,14 +815,14 @@ class ReduceMin final
       // Check for previous scattering.  If we are the first one
       if (pstScatterGatherFunc->lenOut == 0) {
          pstScatterGatherFunc->resultOut = (double)result;
-         pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
          //printf("minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut, (double)result, pstScatterGatherFunc->resultOutInt64);
       }
       else {
          //printf("minop !0 %lf %lf\n", pstScatterGatherFunc->resultOut, (double)result);
          pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
          T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-         pstScatterGatherFunc->resultOutInt64 = (INT64)(MINF(previous, result));
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)(MINF(previous, result));
       }
       pstScatterGatherFunc->lenOut += len;
       return pstScatterGatherFunc->resultOut;
@@ -812,7 +832,7 @@ class ReduceMin final
    //--------------------------------------------------------------------------------------------
    // This routine only support floats
    template<typename T, typename U256, typename U128 >
-   static double avx2_nan_aware(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2_nan_aware(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
 
@@ -821,8 +841,8 @@ class ReduceMin final
 
       // For float32 this is 64 /8 since sizeof(float) = 4
       // For float64 this is 32/ 4
-      const INT64 chunkSize = (sizeof(U256) * 8) / sizeof(T);
-      const INT64 perReg = sizeof(U256) / sizeof(T);
+      const int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
+      const int64_t perReg = sizeof(U256) / sizeof(T);
 
       //printf("hit this %lld %lld\n", len, chunkSize);
       if (len >= chunkSize) {
@@ -889,7 +909,7 @@ class ReduceMin final
             m0 = MIN_OP(result, m0, m1);  m2 = MIN_OP(result, m2, m3);  m4 = MIN_OP(result, m4, m5);  m6 = MIN_OP(result, m6, m7);
             m0 = MIN_OP(result, m0, m2);  m4 = MIN_OP(result, m4, m6);  m0 = MIN_OP(result, m0, m4);
 
-            if (FALSE) {
+            if (false) {
                // Older path
                // Write 256 bits into memory
                __m256i temp;
@@ -956,7 +976,7 @@ class ReduceMin final
       // Check for previous scattering.  If we are the first one
       if (pstScatterGatherFunc->lenOut == 0) {
          pstScatterGatherFunc->resultOut = (double)result;
-         pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+         pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
          //printf("minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut, (double)result, pstScatterGatherFunc->resultOutInt64);
       }
       else {
@@ -964,7 +984,7 @@ class ReduceMin final
          if (result == result) {
             pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
             T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (INT64)(MINF(previous, result));
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)(MINF(previous, result));
          }
          else {
             // we know this if a float
@@ -1000,11 +1020,15 @@ public:
       case NPY_INT8:   return avx2<int8_t, __m256i, __m128i>;
       case NPY_INT16:  return avx2<int16_t, __m256i, __m128i>;
       CASE_NPY_INT32:  return avx2<int32_t, __m256i, __m128i>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return avx2<uint32_t, __m256i, __m128i>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
       default:
          return nullptr;
       }
@@ -1020,7 +1044,7 @@ class ReduceNanMin final
 {
    // Simple, non-vectorized implementation of the nanmin (fmin) reduction operation.
    template<typename T >
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* const pEnd = pIn + len;
 
@@ -1061,7 +1085,7 @@ class ReduceNanMin final
          // If not, this chunk of the array was the first result so we can just store the results.
          if (pstScatterGatherFunc->lenOut == 0) {
             pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
 
             // Set 'lenOut' to 1. This field nominally stores the total number of non-NaN values
             // found in the array while performing the calculation; for the purposes of this reduction,
@@ -1073,7 +1097,7 @@ class ReduceNanMin final
             pstScatterGatherFunc->resultOut = (std::min)(pstScatterGatherFunc->resultOut, (double)result);
 
             T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (INT64)((std::min)(previous, result));
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::min)(previous, result));
          }
 
          return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1087,14 +1111,14 @@ class ReduceNanMin final
 
    // AVX2-based implementation of the nanmin (fmin) reduction operation.
    template<typename T >
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       // TEMP: Call the non-vectorized version of this operation until a vectorized version can be implemented.
       return non_vector<T>(pDataIn, len, pstScatterGatherFunc);
    }
 
    //--------------------------------------------------------------------------------------------
    template<typename T, typename U256>
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
 
@@ -1106,8 +1130,8 @@ class ReduceNanMin final
       // For float64 this is 32/ 4
       // for int16 this is 128 / 16
       // for int8  this is 256 / 32
-      static constexpr INT64 chunkSize = (sizeof(U256) * 8) / sizeof(T);
-      static constexpr INT64 perReg = sizeof(U256) / sizeof(T);
+      static constexpr int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
+      static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
       //printf("hit this %lld %lld\n", len, chunkSize);
       if (len >= chunkSize) {
@@ -1178,7 +1202,7 @@ class ReduceNanMin final
          // If not, this chunk of the array was the first result so we can just store the results.
          if (pstScatterGatherFunc->lenOut == 0) {
             pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
 
             // Set 'lenOut' to 1. This field nominally stores the total number of non-NaN values
             // found in the array while performing the calculation; for the purposes of this reduction,
@@ -1190,7 +1214,7 @@ class ReduceNanMin final
             pstScatterGatherFunc->resultOut = (std::min)(pstScatterGatherFunc->resultOut, (double)result);
 
             T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (INT64)((std::min)(previous, result));
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::min)(previous, result));
          }
 
          return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1216,11 +1240,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
 
       // bools are currently handled specially; we don't consider bool to have a nan/invalid value
       // so we utilize the normal reduction operation for it.
@@ -1241,7 +1269,7 @@ class ReduceNanMax final
 {
    // Simple, non-vectorized implementation of the nanmax (fmax) reduction operation.
    template<typename T >
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* const pEnd = pIn + len;
 
@@ -1282,7 +1310,7 @@ class ReduceNanMax final
          // If not, this chunk of the array was the first result so we can just store the results.
          if (pstScatterGatherFunc->lenOut == 0) {
             pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
 
             // Set 'lenOut' to 1. This field nominally stores the total number of non-NaN values
             // found in the array while performing the calculation; for the purposes of this reduction,
@@ -1294,7 +1322,7 @@ class ReduceNanMax final
             pstScatterGatherFunc->resultOut = (std::max)(pstScatterGatherFunc->resultOut, (double)result);
 
             T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (INT64)((std::max)(previous, result));
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::max)(previous, result));
          }
 
          return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1308,14 +1336,14 @@ class ReduceNanMax final
 
    // AVX2-based implementation of the nanmax (fmax) reduction operation.
    template<typename T >
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       // TEMP: Call the non-vectorized version of this operation until a vectorized version can be implemented.
       return non_vector<T>(pDataIn, len, pstScatterGatherFunc);
    }
 
    //--------------------------------------------------------------------------------------------
    template<typename T, typename U256>
-   static double avx2(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double avx2(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
 
@@ -1327,8 +1355,8 @@ class ReduceNanMax final
       // For float64 this is 32/ 4
       // for int16 this is 128 / 16
       // for int8  this is 256 / 32
-      static constexpr INT64 chunkSize = (sizeof(U256) * 8) / sizeof(T);
-      static constexpr INT64 perReg = sizeof(U256) / sizeof(T);
+      static constexpr int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
+      static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
       //printf("hit this %lld %lld\n", len, chunkSize);
       if (len >= chunkSize) {
@@ -1399,7 +1427,7 @@ class ReduceNanMax final
          // If not, this chunk of the array was the first result so we can just store the results.
          if (pstScatterGatherFunc->lenOut == 0) {
             pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (INT64)result;
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
 
             // Set 'lenOut' to 1. This field nominally stores the total number of non-NaN values
             // found in the array while performing the calculation; for the purposes of this reduction,
@@ -1411,7 +1439,7 @@ class ReduceNanMax final
             pstScatterGatherFunc->resultOut = (std::max)(pstScatterGatherFunc->resultOut, (double)result);
 
             T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (INT64)((std::max)(previous, result));
+            pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::max)(previous, result));
          }
 
          return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1437,11 +1465,15 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32:  return non_vector<int32_t>;
-      CASE_NPY_INT64:  return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+           return non_vector<int64_t>;
       case NPY_UINT8:  return non_vector<uint8_t>;
       case NPY_UINT16: return non_vector<uint16_t>;
       CASE_NPY_UINT32: return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
 
       // bools are currently handled specially; we don't consider bool to have a nan/invalid value
       // so we utilize the normal reduction operation for it.
@@ -1462,13 +1494,13 @@ class ReduceSum final
 {
    //--------------------------------------------------------------------------------------------
    template<typename T >
-   static double ReduceAddSlow(void* pDataIn, INT64 length, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddSlow(void* pDataIn, int64_t length, stScatterGatherFunc* pstScatterGatherFunc) {
       T* pIn = (T*)pDataIn;
       T* pEnd;
       double result = 0;
 
       if (pstScatterGatherFunc->inputType == NPY_BOOL) {
-         result = (double)SumBooleanMask((INT8*)pDataIn, length);
+         result = (double)SumBooleanMask((int8_t*)pDataIn, length);
       }
       else {
 
@@ -1486,14 +1518,14 @@ class ReduceSum final
       pstScatterGatherFunc->lenOut += length;
       //printf("float adding %lf to %lf\n", pstScatterGatherFunc->resultOut, result);
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return result;
 
    }
 
 
    //=============================================================================================
-   static double ReduceAddF32(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddF32(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double result = 0;
       float* pIn = (float*)pDataIn;
       float* pEnd;
@@ -1541,16 +1573,16 @@ class ReduceSum final
       pstScatterGatherFunc->lenOut += len;
       //printf("float adding %lf to %lf\n", pstScatterGatherFunc->resultOut, result);
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return result;
 
    }
 
    //--------------------------------------------------------------------------------------------
-   static double ReduceAddI32(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddI32(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double result = 0;
-      INT32* pIn = (INT32*)pDataIn;
-      INT32* pEnd;
+      int32_t* pIn = (int32_t*)pDataIn;
+      int32_t* pEnd;
       if (len >= 32) {
          pEnd = &pIn[32 * (len / 32)];
 
@@ -1600,7 +1632,7 @@ class ReduceSum final
       }
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
 
       return result;
 
@@ -1608,7 +1640,7 @@ class ReduceSum final
 
 
    //--------------------------------------------------------------------------------------------
-   static double ReduceAddD64(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddD64(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double result = 0;
       double* pIn = (double*)pDataIn;
       double* pEnd;
@@ -1662,7 +1694,7 @@ class ReduceSum final
       //printf("double adding %lf to %lf\n", pstScatterGatherFunc->resultOut, result);
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return result;
 
    }
@@ -1671,10 +1703,10 @@ class ReduceSum final
    //--------------------------------------------------------
    // TODO: Make this a template
    /*
-   static double ReduceAddI64(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddI64(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double result = 0;
-      INT64* pIn = (INT64*)pDataIn;
-      INT64* pEnd;
+      int64_t* pIn = (int64_t*)pDataIn;
+      int64_t* pEnd;
       if (len >= 32) {
          pEnd = &pIn[32 * (len / 32)];
 
@@ -1712,7 +1744,7 @@ class ReduceSum final
 
          _mm256_store_si256(&temp, m0);
 
-         INT64* pTemp = (INT64*)&temp;
+         int64_t* pTemp = (int64_t*)&temp;
          result = (double)pTemp[0];
          result += (double)pTemp[1];
          result += (double)pTemp[2];
@@ -1726,7 +1758,7 @@ class ReduceSum final
       }
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       //printf("reduceadd 1 sum %lld\n", pstScatterGatherFunc->resultOutInt64);
       //printf("reduceadd 1 sum %lf\n", pstScatterGatherFunc->resultOut);
       return result;
@@ -1736,7 +1768,7 @@ class ReduceSum final
 
    // Always returns a double which is U
    template <typename Input, typename Output>
-   static double ReduceAdd(void* pDataIn, INT64 length, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAdd(void* pDataIn, int64_t length, stScatterGatherFunc* pstScatterGatherFunc) {
       Output result = 0;
       Input* pIn = (Input*)pDataIn;
       Input* pEnd = &pIn[length];
@@ -1745,10 +1777,10 @@ class ReduceSum final
          result += *pIn++;
       }
 
-      //printf("reduceadd sum %lld\n", (INT64)result);
+      //printf("reduceadd sum %lld\n", (int64_t)result);
       pstScatterGatherFunc->lenOut += length;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return result;
 
    }
@@ -1756,11 +1788,11 @@ class ReduceSum final
 
    // Always returns a double
    // Double calculation in case of overflow
-   static double ReduceAddI64(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddI64(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double resultd = 0;
-      INT64 result = 0;
-      INT64* pIn = (INT64*)pDataIn;
-      INT64* pEnd = &pIn[len];
+      int64_t result = 0;
+      int64_t* pIn = (int64_t*)pDataIn;
+      int64_t* pEnd = &pIn[len];
 
       if (len >= 4) {
          __m128i m0 = _mm_loadu_si128((__m128i*)pIn);
@@ -1781,7 +1813,7 @@ class ReduceSum final
          // Add horizontally
          __m128i result128;
          _mm_storeu_si128(&result128, m0);
-         INT64* pResults = (INT64*)&result128;
+         int64_t* pResults = (int64_t*)&result128;
          // collect the 2
          result = pResults[0] + pResults[1];
 
@@ -1808,22 +1840,22 @@ class ReduceSum final
    // Always returns a double
    // Double calculation in case of overflow
    
-   static double ReduceAddU64(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceAddU64(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double resultd = 0;
-      UINT64 result = 0;
-      UINT64* pIn = (UINT64*)pDataIn;
-      UINT64* pEnd = &pIn[len];
+      uint64_t result = 0;
+      uint64_t* pIn = (uint64_t*)pDataIn;
+      uint64_t* pEnd = &pIn[len];
 
       while (pIn < pEnd) {
          // Calculate sum for integer and float
-         result += (UINT64)*pIn;
+         result += (uint64_t)*pIn;
          resultd += *pIn;
          ++pIn;
       }
 
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += resultd;
-      *(UINT64*)&pstScatterGatherFunc->resultOutInt64 += result;
+      *(uint64_t*)&pstScatterGatherFunc->resultOutInt64 += result;
       return resultd;
    }
 
@@ -1841,12 +1873,16 @@ public:
       case NPY_INT8:   return ReduceAddSlow<int8_t>;
       case NPY_INT16:  return ReduceAddSlow<int16_t>;
       CASE_NPY_INT32: return ReduceAddI32;
-      CASE_NPY_INT64: return ReduceAddI64;
+      CASE_NPY_INT64:
+      
+          return ReduceAddI64;
 
       case NPY_UINT8:   return ReduceAddSlow<uint8_t>;
       case NPY_UINT16:  return ReduceAddSlow<uint16_t>;
       CASE_NPY_UINT32:  return ReduceAddSlow<uint32_t>;
-      CASE_NPY_UINT64: return ReduceAddU64;
+      CASE_NPY_UINT64:
+      
+          return ReduceAddU64;
 
       default:
          return nullptr;
@@ -1864,12 +1900,12 @@ class ReduceNanSum final
 
    // Non-vectorized implementation of the nanmax (fmax) reduction.
    template<typename T>
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double result = 0;
-      INT64 count = 0;
+      int64_t count = 0;
       T* pIn = (T*)pDataIn;
 
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          if (invalid_for_type<T>::is_valid(pIn[i])) {
             result += pIn[i];
             count += 1;
@@ -1877,7 +1913,7 @@ class ReduceNanSum final
       }
       pstScatterGatherFunc->lenOut += count;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return result;
    }
 
@@ -1896,12 +1932,16 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32: return non_vector<int32_t>;
-      CASE_NPY_INT64: return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+          return non_vector<int64_t>;
 
       case NPY_UINT8:   return non_vector<uint8_t>;
       case NPY_UINT16:  return non_vector<uint16_t>;
       CASE_NPY_UINT32:  return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
 
       default:
          return nullptr;
@@ -1919,7 +1959,7 @@ class ReduceVariance final
    //-------------------------------------------------
    // Routine does not work on Linux: to be looked at
    template <typename T>
-   static double ReduceVar_TODO(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceVar_TODO(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double mean = pstScatterGatherFunc->meanCalculation;
       double result = 0;
 
@@ -1934,9 +1974,9 @@ class ReduceVariance final
          __m256d m2 = _mm256_setzero_pd();
          __m256d m3 = _mm256_set1_pd(mean);
 
-         INT64 len2 = len & ~3;
+         int64_t len2 = len & ~3;
 
-         for (INT64 i = 0; i < len2; i += 4) {
+         for (int64_t i = 0; i < len2; i += 4) {
             // Load 8 floats or 4 doubles
             // TODO: Use C++ 'if constexpr' here; if T = typeof(double), we can load the first vector with _mm256_loadu_pd();
             //       If T = typeof(float), load+convert the data with _mm256_cvtps_pd(_mm_loadu_pd(static_cast<double*>(&pIn[i])))
@@ -1962,39 +2002,39 @@ class ReduceVariance final
 
       }
 
-      for (INT64 i = 0; i < (len & 3); i++) {
+      for (int64_t i = 0; i < (len & 3); i++) {
          double temp = (double)pIn[i] - mean;
          result += (temp * temp);
       }
 
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return pstScatterGatherFunc->resultOut;
    }
 
    //----------------------------------
    // Multithreaded scatter gather calculation for variance core
    template <typename T>
-   static double ReduceVar(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceVar(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
 
       double mean = (double)pstScatterGatherFunc->meanCalculation;
       double result = 0;
 
       T* pIn = (T*)pDataIn;
 
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          double temp = (double)pIn[i] - mean;
          result += (temp * temp);
       }
       pstScatterGatherFunc->lenOut += len;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return pstScatterGatherFunc->resultOut;
    }
 
    //--------------------------------------------------------------------------------------------
-   static double ReduceVarF32(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double ReduceVarF32(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       double mean = (double)pstScatterGatherFunc->meanCalculation;
       double result = 0;
 
@@ -2060,12 +2100,16 @@ public:
       case NPY_INT8:   return ReduceVar<int8_t>;
       case NPY_INT16:  return ReduceVar<int16_t>;
       CASE_NPY_INT32: return ReduceVar<int32_t>;
-      CASE_NPY_INT64: return ReduceVar<int64_t>;
+      CASE_NPY_INT64:
+      
+          return ReduceVar<int64_t>;
 
       case NPY_UINT8:   return ReduceVar<uint8_t>;
       case NPY_UINT16:  return ReduceVar<uint16_t>;
       CASE_NPY_UINT32:  return ReduceVar<uint32_t>;
-      CASE_NPY_UINT64: return ReduceVar<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return ReduceVar<uint64_t>;
 
       default:
          return nullptr;
@@ -2083,15 +2127,15 @@ class ReduceNanVariance final
    
    // Multithread-able scatter gather calculation for NAN variance core
    template <typename T>
-   static double non_vector(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double non_vector(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
 
       double mean = (double)pstScatterGatherFunc->meanCalculation;
       double result = 0;
-      INT64 count = 0;
+      int64_t count = 0;
 
       const T* const pIn = (T*)pDataIn;
 
-      for (INT64 i = 0; i < len; i++) {
+      for (int64_t i = 0; i < len; i++) {
          if (invalid_for_type<T>::is_valid(pIn[i])) {
             double temp = (double)pIn[i] - mean;
             result += (temp * temp);
@@ -2101,7 +2145,7 @@ class ReduceNanVariance final
 
       pstScatterGatherFunc->lenOut += count;
       pstScatterGatherFunc->resultOut += result;
-      pstScatterGatherFunc->resultOutInt64 += (INT64)result;
+      pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
       return pstScatterGatherFunc->resultOut;
    }
 
@@ -2119,12 +2163,16 @@ public:
       case NPY_INT8:   return non_vector<int8_t>;
       case NPY_INT16:  return non_vector<int16_t>;
       CASE_NPY_INT32: return non_vector<int32_t>;
-      CASE_NPY_INT64: return non_vector<int64_t>;
+      CASE_NPY_INT64:
+      
+          return non_vector<int64_t>;
 
       case NPY_UINT8:   return non_vector<uint8_t>;
       case NPY_UINT16:  return non_vector<uint16_t>;
       CASE_NPY_UINT32:  return non_vector<uint32_t>;
-      CASE_NPY_UINT64: return non_vector<uint64_t>;
+      CASE_NPY_UINT64:
+      
+          return non_vector<uint64_t>;
 
       default:
          return nullptr;
@@ -2140,7 +2188,7 @@ public:
 class ReduceMean final
 {
    // Call SUM and then divide
-   static double wrapper(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double wrapper(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
 
       ReduceSum::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
       //printf("reduce mean dividing %lf by %lf\n", pstScatterGatherFunc->resultOut, (double)pstScatterGatherFunc->lenOut);
@@ -2170,7 +2218,7 @@ public:
  */
 class ReduceNanMean final
 {
-   static double wrapper(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double wrapper(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       ReduceNanSum::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
       //printf("Dviding %lf by %lf\n", pstScatterGatherFunc->resultOut, (double)pstScatterGatherFunc->lenOut);
       if (pstScatterGatherFunc->lenOut > 1) {
@@ -2199,7 +2247,7 @@ public:
  */
 class ReduceStdDev final
 {
-   static double wrapper(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double wrapper(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       const double variance = ReduceVariance::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
       return sqrt(variance);
    }
@@ -2220,7 +2268,7 @@ public:
  */
 class ReduceNanStdDev final
 {
-   static double wrapper(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc) {
+   static double wrapper(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc) {
       const double variance = ReduceNanVariance::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
       return sqrt(variance);
    }
@@ -2311,7 +2359,7 @@ static ANY_SCATTER_GATHER_FUNC  GetReduceFuncPtr(const NPY_TYPES inputType, cons
 // Arg3: ddof (delta degrees of freedom)
 // Returns: None on failure, else float
 //
-static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, const INT64 ddof = 1) {
+static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, const int64_t ddof = 1) {
 
    const NPY_TYPES numpyInType = (NPY_TYPES)ObjectToDtype(inArr1);
 
@@ -2327,7 +2375,7 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
    void* pDataIn = PyArray_BYTES(inArr1);
    int         ndim = PyArray_NDIM(inArr1);
    npy_intp* dims = PyArray_DIMS(inArr1);
-   INT64       len = CalcArrayLength(ndim, dims);
+   int64_t       len = CalcArrayLength(ndim, dims);
 
    if (len == 0) {
       // punt to numpy, often raises a ValueError
@@ -2362,7 +2410,7 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
    }
 
 
-   stScatterGatherFunc sgFunc = { (INT32)numpyInType, 0, 0, 0, 0, 0 };
+   stScatterGatherFunc sgFunc = { (int32_t)numpyInType, 0, 0, 0, 0, 0 };
 
    FUNCTION_LIST fl{};
    fl.AnyScatterGatherCall = pFunction;
@@ -2384,7 +2432,7 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
 
       if (sgFunc.lenOut > 0) {
          sgFunc.resultOut = sgFunc.resultOut / (double)sgFunc.lenOut;
-         sgFunc.resultOutInt64 = (INT64)sgFunc.resultOut;
+         sgFunc.resultOutInt64 = (int64_t)sgFunc.resultOut;
       }
       else {
          sgFunc.resultOut = 0;
@@ -2436,12 +2484,14 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
          // Check for overflow
          switch (numpyInType) {
          CASE_NPY_UINT64:
+         
             if (sgFunc.resultOut > 18446744073709551615.0) {
                LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                return PyFloat_FromDouble(sgFunc.resultOut);
             }
             break;
          CASE_NPY_INT64:
+         
             if (sgFunc.resultOut > 9223372036854775807.0 || sgFunc.resultOut < -9223372036854775808.0) {
                LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                return PyFloat_FromDouble(sgFunc.resultOut);
@@ -2453,7 +2503,8 @@ static PyObject* ReduceInternal(PyArrayObject* inArr1, REDUCE_FUNCTIONS func, co
 
       switch (numpyInType) {
       CASE_NPY_UINT64:
-         LOGGING("Returning %llu  vs  %lf for func %lld\n", (UINT64)sgFunc.resultOutInt64, sgFunc.resultOut, func);
+      
+         LOGGING("Returning %llu  vs  %lf for func %lld\n", (uint64_t)sgFunc.resultOutInt64, sgFunc.resultOut, func);
          return PyLong_FromUnsignedLongLong(sgFunc.resultOutInt64);
 
       case NPY_FLOAT:
@@ -2497,8 +2548,8 @@ PyObject*
 Reduce(PyObject* self, PyObject* args)
 {
    PyArrayObject* inArr1 = NULL;
-   INT64 tupleSize = Py_SIZE(args);
-   INT64 ddof = 1;
+   int64_t tupleSize = Py_SIZE(args);
+   int64_t ddof = 1;
 
    if (tupleSize == 3) {
       PyObject* ddofItem = (PyObject*)PyTuple_GET_ITEM(args, 2);
@@ -2522,7 +2573,7 @@ Reduce(PyObject* self, PyObject* args)
       if (PyArray_STRIDE(inArr1, 0) == PyArray_ITEMSIZE(inArr1)) {
          PyObject* object2 = PyTuple_GET_ITEM(args, 1);
          if (PyLong_Check(object2)) {
-            INT64 func = PyLong_AsLongLong(object2);
+            int64_t func = PyLong_AsLongLong(object2);
 
             // possible TODO: wrap result back into np scalar type             
             return ReduceInternal(inArr1, (REDUCE_FUNCTIONS)func, ddof);

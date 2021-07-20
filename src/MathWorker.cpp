@@ -46,20 +46,18 @@ TODO
 #  define MEM_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
 #endif
 
-typedef unsigned int U32;
-
 typedef struct {
-   U32 f1c;
-   U32 f1d;
-   U32 f7b;
-   U32 f7c;
+   uint32_t f1c;
+   uint32_t f1d;
+   uint32_t f7b;
+   uint32_t f7c;
 } ZSTD_cpuid_t;
 
 MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
-   U32 f1c = 0;
-   U32 f1d = 0;
-   U32 f7b = 0;
-   U32 f7c = 0;
+   uint32_t f1c = 0;
+   uint32_t f1d = 0;
+   uint32_t f7b = 0;
+   uint32_t f7c = 0;
 #ifdef _MSC_VER
    int reg[4];
    __cpuid((int*)reg, 0);
@@ -67,13 +65,13 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
       int const n = reg[0];
       if (n >= 1) {
          __cpuid((int*)reg, 1);
-         f1c = (U32)reg[2];
-         f1d = (U32)reg[3];
+         f1c = (uint32_t)reg[2];
+         f1d = (uint32_t)reg[3];
       }
       if (n >= 7) {
          __cpuidex((int*)reg, 7, 0);
-         f7b = (U32)reg[1];
-         f7c = (U32)reg[2];
+         f7b = (uint32_t)reg[1];
+         f7c = (uint32_t)reg[2];
       }
    }
 #elif defined(__i386__) && defined(__PIC__) && !defined(__clang__) && defined(__GNUC__)
@@ -81,7 +79,7 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
    * reserves ebx for use of its pic register so we must specially
    * handle the save and restore to avoid clobbering the register
    */
-   U32 n;
+   uint32_t n;
    __asm__(
       "pushl %%ebx\n\t"
       "cpuid\n\t"
@@ -90,7 +88,7 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
       : "a"(0)
       : "ecx", "edx");
    if (n >= 1) {
-      U32 f1a;
+      uint32_t f1a;
       __asm__(
          "pushl %%ebx\n\t"
          "cpuid\n\t"
@@ -109,14 +107,14 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
          : "edx");
    }
 #elif defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
-   U32 n;
+   uint32_t n;
    __asm__("cpuid" : "=a"(n) : "a"(0) : "ebx", "ecx", "edx");
    if (n >= 1) {
-      U32 f1a;
+      uint32_t f1a;
       __asm__("cpuid" : "=a"(f1a), "=c"(f1c), "=d"(f1d) : "a"(1) : "ebx");
    }
    if (n >= 7) {
-      U32 f7a;
+      uint32_t f7a;
       __asm__("cpuid"
          : "=a"(f7a), "=b"(f7b), "=c"(f7c)
          : "a"(7), "c"(0)
@@ -302,23 +300,23 @@ extern "C" {
    }
 
 
-   VOID Sleep(DWORD dwMilliseconds) {
+   void Sleep(unsigned int dwMilliseconds) {
       usleep(dwMilliseconds * 1000);
    }
 
-   BOOL CloseHandle(THANDLE hObject) {
-      return TRUE;
+   bool CloseHandle(THANDLE hObject) {
+      return true;
    }
 
    pid_t GetCurrentThread() {
       return gettid();
    }
 
-   UINT64 SetThreadAffinityMask(pid_t hThread, UINT64 dwThreadAffinityMask) {
+   uint64_t SetThreadAffinityMask(pid_t hThread, uint64_t dwThreadAffinityMask) {
    #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
       cpu_set_t cpuset;
 
-      UINT64 bitpos = 1;
+      uint64_t bitpos = 1;
       int count = 0;
 
       while (!(bitpos & dwThreadAffinityMask)) {
@@ -346,7 +344,7 @@ extern "C" {
       return 0;
    }
 
-   BOOL GetProcessAffinityMask(HANDLE hProcess, UINT64* lpProcessAffinityMask, UINT64* lpSystemAffinityMask) {
+   bool GetProcessAffinityMask(HANDLE hProcess, uint64_t* lpProcessAffinityMask, uint64_t* lpSystemAffinityMask) {
    #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
       cpu_set_t cpuset;
       sched_getaffinity(getpid(), sizeof(cpuset), &cpuset);
@@ -354,7 +352,7 @@ extern "C" {
       *lpProcessAffinityMask = 0;
       *lpSystemAffinityMask = 0;
 
-      UINT64 bitpos = 1;
+      uint64_t bitpos = 1;
       for (int i = 0; i < 63; i++) {
          if (CPU_ISSET(i, &cpuset)) {
             *lpProcessAffinityMask |= bitpos;
@@ -369,29 +367,29 @@ extern "C" {
       }
 
       //CPU_ISSET = 0xFF;
-      return TRUE;
+      return true;
    
    #else
    #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
-      return FALSE;
+      return false;
       
    #endif   // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
    }
 
 
-   HANDLE GetCurrentProcess(VOID) {
+   HANDLE GetCurrentProcess() {
       return NULL;
    }
 
-   DWORD  GetLastError(VOID) {
+   unsigned int  GetLastError() {
       return 0;
    }
 
-   HANDLE CreateThread(VOID* lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
+   HANDLE CreateThread(void* lpThreadAttributes, size_t dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter, unsigned int dwCreationFlags, uint32_t* lpThreadId) {
       return NULL;
    }
 
-   HMODULE LoadLibraryW(const WCHAR* lpLibFileName) {
+   HMODULE LoadLibraryW(const wchar_t* lpLibFileName) {
       return NULL;
    }
 
@@ -443,9 +441,9 @@ int GetProcCount() {
 
    HANDLE proc = GetCurrentProcess();
 
-   UINT64 mask1;
-   UINT64 mask2;
-   INT count;
+   uint64_t mask1;
+   uint64_t mask2;
+   int32_t count;
 
    count = 0;
    GetProcessAffinityMask(proc, &mask1, &mask2);

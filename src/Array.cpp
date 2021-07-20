@@ -10,11 +10,11 @@
 #define LOGGING(...)
 
 static
-INT64 FindMaxSize(PyObject* object) {
-   INT64 size = Py_SIZE(object);
-   INT64 maxsize = 0;
-   for (INT64 i = 0; i < size; i++) {
-      INT64 itemsize = Py_SIZE(PyList_GET_ITEM(object, i));
+int64_t FindMaxSize(PyObject* object) {
+   int64_t size = Py_SIZE(object);
+   int64_t maxsize = 0;
+   for (int64_t i = 0; i < size; i++) {
+      int64_t itemsize = Py_SIZE(PyList_GET_ITEM(object, i));
       if (itemsize > maxsize) maxsize = itemsize;
    }
    return maxsize;
@@ -30,7 +30,7 @@ PyObject* ConvertFloat64(PyObject* object) {
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_FLOAT64);
    double* pFloat64 = (double*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       pFloat64[i] = PyFloat_AsDouble(PyList_GET_ITEM(object, i));
    }
    return (PyObject*)pArray;
@@ -47,7 +47,7 @@ PyObject* ConvertFloat32(PyObject* object) {
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_FLOAT32);
    float* pFloat32 = (float*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       pFloat32[i] = (float)PyFloat_AsDouble(PyList_GET_ITEM(object, i));
    }
    return (PyObject*)pArray;
@@ -61,17 +61,17 @@ static
 PyObject* ConvertInt32(PyObject* object) {
    npy_intp size = Py_SIZE(object);
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_INT32);
-   INT32* pInt32 = (INT32*)PyArray_DATA(pArray);
+   int32_t* pInt32 = (int32_t*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       int overflow = 0;
-      INT64 val= PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(object, i), &overflow);
+      int64_t val= PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(object, i), &overflow);
       if (overflow || val < NPY_MIN_INT32 || val > NPY_MAX_INT32) {
          // Failure due to out of range
          Py_DecRef((PyObject*)pArray);
          return NULL;
       }
-      pInt32[i] = (INT32)val;
+      pInt32[i] = (int32_t)val;
    }
    return (PyObject*)pArray;
 }
@@ -82,9 +82,9 @@ static
 PyObject* ConvertInt64(PyObject* object) {
    npy_intp size = Py_SIZE(object);
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_INT64);
-   INT64* pInt64 = (INT64*)PyArray_DATA(pArray);
+   int64_t* pInt64 = (int64_t*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       int overflow = 0;
       // if overflow consider uint64?
       pInt64[i] = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(object, i), &overflow);
@@ -102,7 +102,7 @@ PyObject* ConvertBool(PyObject* object) {
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_BOOL);
    bool* pBool = (bool*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       pBool[i] = PyList_GET_ITEM(object, i) == Py_True;
    }
    return (PyObject*)pArray;
@@ -113,13 +113,13 @@ PyObject* ConvertBool(PyObject* object) {
 static
 PyObject* ConvertBytes(PyObject* object) {
    npy_intp size = Py_SIZE(object);
-   INT64 maxsize = FindMaxSize(object);
+   int64_t maxsize = FindMaxSize(object);
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_STRING, maxsize);
    char* pChar = (char*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       PyObject* item=PyList_GET_ITEM(object, i);
-      INT64 strSize = Py_SIZE(item);
+      int64_t strSize = Py_SIZE(item);
 
       // get pointer to string
       const char* pString = PyBytes_AS_STRING(item);
@@ -142,14 +142,14 @@ PyObject* ConvertBytes(PyObject* object) {
 static
 PyObject* ConvertUnicode(PyObject* object) {
    npy_intp size = Py_SIZE(object);
-   INT64 maxsize = FindMaxSize(object);
+   int64_t maxsize = FindMaxSize(object);
    PyArrayObject* pArray = AllocateNumpyArray(1, &size, NPY_UNICODE, maxsize*4);
-   UINT32* pChar = (UINT32*)PyArray_DATA(pArray);
+   uint32_t* pChar = (uint32_t*)PyArray_DATA(pArray);
 
-   for (INT64 i = 0; i < size; i++) {
+   for (int64_t i = 0; i < size; i++) {
       PyObject* item = PyList_GET_ITEM(object, i);
-      INT64 strSize = Py_SIZE(item);
-      UINT32* pDest = &pChar[i*maxsize];
+      int64_t strSize = Py_SIZE(item);
+      uint32_t* pDest = &pChar[i*maxsize];
 
       // get pointer to string
       PyUnicode_AsUCS4(item, pDest, maxsize, 0);
@@ -281,7 +281,7 @@ AsAnyArray(PyObject *self, PyObject *args, PyObject *kwargs) {
          PyObject* firstObject = PyList_GET_ITEM(object, 0);
          _typeobject* otype = firstObject->ob_type;
 
-         INT64 countsize = size - 1;
+         int64_t countsize = size - 1;
          while (countsize > 0) {
             if (otype != PyList_GET_ITEM(object, countsize)->ob_type) {
                LOGGING("Second type is %s\n", PyList_GET_ITEM(object, countsize)->ob_type->tp_name);
@@ -300,7 +300,7 @@ AsAnyArray(PyObject *self, PyObject *args, PyObject *kwargs) {
                   return ConvertBool(object);
                }
                else {
-                  // For Windows allocate NPY_INT32 and if out of range, switch to INT64
+                  // For Windows allocate NPY_INT32 and if out of range, switch to int64_t
                   if (sizeof(long) == 4) {
                      PyObject* result=ConvertInt32(object);
                      if (result) return result;

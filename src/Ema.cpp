@@ -20,7 +20,7 @@
 #define LOGGING(...)
 //#define LOGGING printf
 
-typedef void(*ROLLING_FUNC)(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize);
+typedef void(*ROLLING_FUNC)(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize);
 
 // These are non-groupby routine -- straight array
 enum ROLLING_FUNCTIONS {
@@ -50,12 +50,12 @@ enum EMA_FUNCTIONS {
 };
 
 //=========================================================================================================================
-typedef void(*EMA_BY_TWO_FUNC)(void* pKey, void* pAccumBin, void* pColumn, INT64 numUnique, INT64 totalInputRows, void* pTime, INT8* pIncludeMask, INT8* pResetMask, double decayRate);
+typedef void(*EMA_BY_TWO_FUNC)(void* pKey, void* pAccumBin, void* pColumn, int64_t numUnique, int64_t totalInputRows, void* pTime, int8_t* pIncludeMask, int8_t* pResetMask, double decayRate);
 
 struct stEmaReturn {
 
    PyArrayObject*    outArray;
-   INT32             numpyOutType;
+   int32_t             numpyOutType;
    EMA_BY_TWO_FUNC   pFunction;
    PyObject*         returnObject;
 };
@@ -65,18 +65,18 @@ struct stEmaReturn {
 struct stEma32 {
 
    ArrayInfo* aInfo;
-   INT64    tupleSize;
-   INT32    funcNum;
-   INT64    uniqueRows;
-   INT64    totalInputRows;
+   int64_t    tupleSize;
+   int32_t    funcNum;
+   int64_t    uniqueRows;
+   int64_t    totalInputRows;
 
    TYPE_OF_FUNCTION_CALL   typeOfFunctionCall;
    void*   pKey;
 
    // from params
    void*    pTime;
-   INT8*    inIncludeMask;
-   INT8*    inResetMask;
+   int8_t*    inIncludeMask;
+   int8_t*    inResetMask;
    double   doubleParam;
 
    stEmaReturn returnObjects[1];
@@ -96,10 +96,10 @@ public:
 
    // Pass in two vectors and return one vector
    // Used for operations like C = A + B
-   //typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode);
-   //typedef void(*ANY_ONE_FUNC)(void* pDataIn, void* pDataOut, INT64 len);
+   //typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode);
+   //typedef void(*ANY_ONE_FUNC)(void* pDataIn, void* pDataOut, int64_t len);
 
-   static void RollingSum(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingSum(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -107,12 +107,12 @@ public:
       U currentSum = 0;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          currentSum += pIn[i];
          pOut[i] = currentSum;
       }
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          currentSum += pIn[i];
 
          // subtract the item leaving the window
@@ -123,7 +123,7 @@ public:
    }
 
 
-   static void RollingNanSum(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingNanSum(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -135,7 +135,7 @@ public:
       if (invalid == invalid) {
          // NON_FLOAT
          // Priming of the summation
-         for (INT64 i = 0; i < len && i < windowSize; i++) {
+         for (int64_t i = 0; i < len && i < windowSize; i++) {
             T temp = pIn[i];
 
             if (temp != invalid) {
@@ -144,7 +144,7 @@ public:
             pOut[i] = currentSum;
          }
 
-         for (INT64 i = windowSize; i < len; i++) {
+         for (int64_t i = windowSize; i < len; i++) {
             T temp = pIn[i];
 
             if (temp != invalid)
@@ -161,7 +161,7 @@ public:
       else {
          // FLOAT
          // Priming of the summation
-         for (INT64 i = 0; i < len && i < windowSize; i++) {
+         for (int64_t i = 0; i < len && i < windowSize; i++) {
             T temp = pIn[i];
 
             if (temp == temp) {
@@ -170,7 +170,7 @@ public:
             pOut[i] = currentSum;
          }
 
-         for (INT64 i = windowSize; i < len; i++) {
+         for (int64_t i = windowSize; i < len; i++) {
             T temp = pIn[i];
 
             if (temp == temp)
@@ -187,7 +187,7 @@ public:
    }
 
 
-   static void RollingMean(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingMean(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -195,12 +195,12 @@ public:
       U currentSum = 0;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          currentSum += pIn[i];
          pOut[i] = currentSum / (i+1);
       }
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          currentSum += pIn[i];
 
          // subtract the item leaving the window
@@ -211,7 +211,7 @@ public:
    }
 
 
-   static void RollingNanMean(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingNanMean(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -220,7 +220,7 @@ public:
       U count = 0;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          T temp = pIn[i];
 
          if (temp == temp) {
@@ -230,7 +230,7 @@ public:
          pOut[i] = currentSum/count;
       }
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          T temp = pIn[i];
 
          if (temp == temp) {
@@ -251,7 +251,7 @@ public:
    }
 
 
-   static void RollingVar(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingVar(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -261,7 +261,7 @@ public:
       U delta;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          T item = pIn[i];
 
          delta = item - amean;
@@ -272,7 +272,7 @@ public:
 
       U count_inv = (U)1.0 / windowSize;
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          U item = (U)pIn[i];
          U old = (U)pIn[i - windowSize];
 
@@ -288,7 +288,7 @@ public:
 
 
 
-   static void RollingStd(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingStd(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -298,7 +298,7 @@ public:
       U delta;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          T item = pIn[i];
 
          delta = item - amean;
@@ -309,7 +309,7 @@ public:
 
       U count_inv = (U)1.0 / windowSize;
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          U item = (U)pIn[i];
          U old = (U)pIn[i - windowSize];
 
@@ -324,7 +324,7 @@ public:
    }
 
 
-   static void RollingNanVar(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingNanVar(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -335,7 +335,7 @@ public:
       U count = 0;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          U item = (U)pIn[i];
 
          if (item == item) {
@@ -352,7 +352,7 @@ public:
 
       U count_inv = (U)1.0 / windowSize;
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          U item = (U)pIn[i];
          U old = (U)pIn[i - windowSize];
 
@@ -404,7 +404,7 @@ public:
 
 
 
-   static void RollingNanStd(void* pDataIn, void* pDataOut, INT64 len, INT64 windowSize) {
+   static void RollingNanStd(void* pDataIn, void* pDataOut, int64_t len, int64_t windowSize) {
 
       T* pIn = (T*)pDataIn;
       U* pOut = (U*)pDataOut;
@@ -415,7 +415,7 @@ public:
       U count = 0;
 
       // Priming of the summation
-      for (INT64 i = 0; i < len && i < windowSize; i++) {
+      for (int64_t i = 0; i < len && i < windowSize; i++) {
          U item = (U)pIn[i];
 
          if (item == item) {
@@ -432,7 +432,7 @@ public:
 
       U count_inv = (U)1.0 / windowSize;
 
-      for (INT64 i = windowSize; i < len; i++) {
+      for (int64_t i = windowSize; i < len; i++) {
          U item = (U)pIn[i];
          U old = (U)pIn[i - windowSize];
 
@@ -483,7 +483,7 @@ public:
 
 
 
-   static ROLLING_FUNC GetRollingFunction(INT64 func) {
+   static ROLLING_FUNC GetRollingFunction(int64_t func) {
       switch (func) {
       case ROLLING_SUM: return RollingSum;
       case ROLLING_NANSUM: return RollingNanSum;
@@ -491,7 +491,7 @@ public:
       return NULL;
    }
 
-   static ROLLING_FUNC GetRollingFunction2(INT64 func) {
+   static ROLLING_FUNC GetRollingFunction2(int64_t func) {
       switch (func) {
       case ROLLING_MEAN: return RollingMean;
       case ROLLING_NANMEAN: return RollingNanMean;
@@ -507,39 +507,47 @@ public:
 
 
 
-ROLLING_FUNC GetRollingFunction(INT64 func, INT32 inputType) {
+ROLLING_FUNC GetRollingFunction(int64_t func, int32_t inputType) {
    switch (inputType) {
-   case NPY_BOOL:   return EmaBase<INT8, INT64>::GetRollingFunction(func);
+   case NPY_BOOL:   return EmaBase<int8_t, int64_t>::GetRollingFunction(func);
    case NPY_FLOAT:  return EmaBase<float, float>::GetRollingFunction(func);
    case NPY_DOUBLE: return EmaBase<double, double>::GetRollingFunction(func);
    case NPY_LONGDOUBLE: return EmaBase<long double, long double>::GetRollingFunction(func);
-   case NPY_INT8:   return EmaBase<INT8, INT64>::GetRollingFunction(func);
-   case NPY_INT16:  return EmaBase<INT16, INT64>::GetRollingFunction(func);
-   CASE_NPY_INT32:  return EmaBase<INT32, INT64>::GetRollingFunction(func);
-   CASE_NPY_UINT32: return EmaBase<UINT32, INT64>::GetRollingFunction(func);
-   CASE_NPY_INT64:  return EmaBase<INT64, INT64>::GetRollingFunction(func);
-   case NPY_UINT8:  return EmaBase<UINT8, INT64>::GetRollingFunction(func);
-   case NPY_UINT16: return EmaBase<UINT16, INT64>::GetRollingFunction(func);
-   CASE_NPY_UINT64: return EmaBase<UINT64, INT64>::GetRollingFunction(func);
+   case NPY_INT8:   return EmaBase<int8_t, int64_t>::GetRollingFunction(func);
+   case NPY_INT16:  return EmaBase<int16_t, int64_t>::GetRollingFunction(func);
+   CASE_NPY_INT32:  return EmaBase<int32_t, int64_t>::GetRollingFunction(func);
+   CASE_NPY_UINT32: return EmaBase<uint32_t, int64_t>::GetRollingFunction(func);
+   CASE_NPY_INT64:
+   
+      return EmaBase<int64_t, int64_t>::GetRollingFunction(func);
+   case NPY_UINT8:  return EmaBase<uint8_t, int64_t>::GetRollingFunction(func);
+   case NPY_UINT16: return EmaBase<uint16_t, int64_t>::GetRollingFunction(func);
+   CASE_NPY_UINT64:
+   
+      return EmaBase<uint64_t, int64_t>::GetRollingFunction(func);
    }
 
    return NULL;
 }
 
-ROLLING_FUNC GetRollingFunction2(INT64 func, INT32 inputType) {
+ROLLING_FUNC GetRollingFunction2(int64_t func, int32_t inputType) {
    switch (inputType) {
-   case NPY_BOOL:   return EmaBase<INT8, double>::GetRollingFunction2(func);
+   case NPY_BOOL:   return EmaBase<int8_t, double>::GetRollingFunction2(func);
    case NPY_FLOAT:  return EmaBase<float, float>::GetRollingFunction2(func);
    case NPY_DOUBLE: return EmaBase<double, double>::GetRollingFunction2(func);
    case NPY_LONGDOUBLE: return EmaBase<long double, long double>::GetRollingFunction2(func);
-   case NPY_INT8:   return EmaBase<INT8, double>::GetRollingFunction2(func);
-   case NPY_INT16:  return EmaBase<INT16, double>::GetRollingFunction2(func);
-   CASE_NPY_INT32:  return EmaBase<INT32, double>::GetRollingFunction2(func);
-   CASE_NPY_UINT32:  return EmaBase<UINT32, double>::GetRollingFunction2(func);
-   CASE_NPY_INT64:  return EmaBase<INT64, double>::GetRollingFunction2(func);
-   case NPY_UINT8:  return EmaBase<UINT8, double>::GetRollingFunction2(func);
-   case NPY_UINT16: return EmaBase<UINT16, double>::GetRollingFunction2(func);
-   CASE_NPY_UINT64: return EmaBase<UINT64, double>::GetRollingFunction2(func);
+   case NPY_INT8:   return EmaBase<int8_t, double>::GetRollingFunction2(func);
+   case NPY_INT16:  return EmaBase<int16_t, double>::GetRollingFunction2(func);
+   CASE_NPY_INT32:  return EmaBase<int32_t, double>::GetRollingFunction2(func);
+   CASE_NPY_UINT32:  return EmaBase<uint32_t, double>::GetRollingFunction2(func);
+   CASE_NPY_INT64:
+   
+      return EmaBase<int64_t, double>::GetRollingFunction2(func);
+   case NPY_UINT8:  return EmaBase<uint8_t, double>::GetRollingFunction2(func);
+   case NPY_UINT16: return EmaBase<uint16_t, double>::GetRollingFunction2(func);
+   CASE_NPY_UINT64:
+   
+      return EmaBase<uint64_t, double>::GetRollingFunction2(func);
    }
 
    return NULL;
@@ -558,8 +566,8 @@ PyObject *
 Rolling(PyObject *self, PyObject *args)
 {
    PyArrayObject* inArrObject = NULL;
-   INT64 func = 0;
-   INT64 param1 = 0;
+   int64_t func = 0;
+   int64_t param1 = 0;
 
    if (!PyArg_ParseTuple(
       args, "O!LL",
@@ -571,16 +579,16 @@ Rolling(PyObject *self, PyObject *args)
    }
 
    // TODO: determine based on function
-   INT32 numpyOutType = NPY_FLOAT64;
+   int32_t numpyOutType = NPY_FLOAT64;
 
    // In case user passes in sliced array or reversed array
    PyArrayObject* inArr = EnsureContiguousArray(inArrObject);
    if (!inArr) return NULL;
 
-   INT32 dType = PyArray_TYPE(inArr);
+   int32_t dType = PyArray_TYPE(inArr);
 
    PyArrayObject* outArray = NULL;
-   INT64 size = ArrayLength(inArr);
+   int64_t size = ArrayLength(inArr);
    ROLLING_FUNC pRollingFunc;
 
    numpyOutType = NPY_INT64;
@@ -639,17 +647,17 @@ Rolling(PyObject *self, PyObject *args)
 //-------------------------------------------------------------------
 // T = data type as input
 // U = data type as output
-// K = data type for indexing (often INT32* or INT8*)
+// K = data type for indexing (often int32_t* or int8_t*)
 template<typename T, typename U, typename K>
 static void CumSum(
    void*    pKeyT,
    void*    pAccumBin,
    void*    pColumn,
-   INT64    numUnique,
-   INT64    totalInputRows,
+   int64_t    numUnique,
+   int64_t    totalInputRows,
    void*    pTime1, // not used
-   INT8*    pIncludeMask,
-   INT8*    pResetMask,
+   int8_t*    pIncludeMask,
+   int8_t*    pResetMask,
    double   windowSize1) {
 
    T* pSrc = (T*)pColumn;
@@ -658,12 +666,12 @@ static void CumSum(
 
    U Invalid = GET_INVALID(pDest[0]);
 
-   INT32 windowSize = (INT32)windowSize1;
+   int32_t windowSize = (int32_t)windowSize1;
 
-   LOGGING("cumsum %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (INT64)Invalid, pIncludeMask, pResetMask);
+   LOGGING("cumsum %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
 
    // Alloc a workspace
-   INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+   int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
    U* pWorkSpace = (U*)WORKSPACE_ALLOC(size);
 
    // Default every bin to 0, including floats
@@ -694,7 +702,7 @@ static void CumSum(
             // Bin 0 is bad
             if (location >= GB_BASE_INDEX) {
                if (pIncludeMask[i] != 0) {
-                  //printf("adding %lld to %lld,", (INT64)pSrc[location], (INT64)pWorkSpace[location]);
+                  //printf("adding %lld to %lld,", (int64_t)pSrc[location], (int64_t)pWorkSpace[location]);
                   pWorkSpace[location] += (U)pSrc[i];
                }
                pDest[i] = pWorkSpace[location];
@@ -733,7 +741,7 @@ static void CumSum(
                pDest[i] = pWorkSpace[location];
             }
             else {
-               // out of range bin printf("!!!%d --- %lld\n", i, (INT64)Invalid);
+               // out of range bin printf("!!!%d --- %lld\n", i, (int64_t)Invalid);
                pDest[i] = Invalid;
             }
          }
@@ -749,17 +757,17 @@ static void CumSum(
 //-------------------------------------------------------------------
 // T = data type as input
 // U = data type as output
-// K = key index pointer type (INT32* or INT8*)
+// K = key index pointer type (int32_t* or int8_t*)
 template<typename T, typename U, typename K>
 static void CumProd(
    void*    pKeyT,
    void*    pAccumBin,
    void*    pColumn,
-   INT64    numUnique,
-   INT64    totalInputRows,
+   int64_t    numUnique,
+   int64_t    totalInputRows,
    void*    pTime1, // not used
-   INT8*    pIncludeMask,
-   INT8*    pResetMask,
+   int8_t*    pIncludeMask,
+   int8_t*    pResetMask,
    double   windowSize1) {
 
    T* pSrc = (T*)pColumn;
@@ -768,12 +776,12 @@ static void CumProd(
 
    U Invalid = GET_INVALID(pDest[0]);
 
-   INT32 windowSize = (INT32)windowSize1;
+   int32_t windowSize = (int32_t)windowSize1;
 
    LOGGING("cumprod %lld  %lld  %p  %p\n", numUnique, totalInputRows, pIncludeMask, pResetMask);
 
    // Alloc a workspace
-   INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+   int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
    U* pWorkSpace = (U*)WORKSPACE_ALLOC(size);
 
    // Default every bin to 1, including floats
@@ -871,17 +879,17 @@ static void CumProd(
 //-------------------------------------------------------------------
 // T = data type as input (NOT USED)
 // U = data type as output
-// K = key index pointer type (INT32* or INT8*)
+// K = key index pointer type (int32_t* or int8_t*)
 template<typename U, typename K>
 static void FindNth(
    void*    pKeyT,
    void*    pAccumBin,
    void*    pColumn,
-   INT64    numUnique,
-   INT64    totalInputRows,
+   int64_t    numUnique,
+   int64_t    totalInputRows,
    void*    pTime1, // not used
-   INT8*    pIncludeMask,
-   INT8*    pResetMask,
+   int8_t*    pIncludeMask,
+   int8_t*    pResetMask,
    double   windowSize1) {
 
    U* pDest = (U*)pAccumBin;
@@ -890,7 +898,7 @@ static void FindNth(
    LOGGING("FindNth %lld  %lld  %p  %p\n", numUnique, totalInputRows, pIncludeMask, pResetMask);
 
    // Alloc a workspace
-   INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+   int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
    U* pWorkSpace = (U*)WORKSPACE_ALLOC(size);
 
    memset(pWorkSpace, 0, size);
@@ -933,7 +941,7 @@ static void FindNth(
 // T = data type as input
 // U = data type as output (always double?)
 // V = time datatype
-// K = key index data type (INT32* or INT8*)
+// K = key index data type (int32_t* or int8_t*)
 // thus <float, double, int64> 
 template<typename T, typename U, typename V, typename K>
 class EmaByBase {
@@ -954,11 +962,11 @@ public:
       void*    pKeyT,
       void*    pAccumBin, 
       void*    pColumn, 
-      INT64    numUnique, 
-      INT64    totalInputRows, 
+      int64_t    numUnique, 
+      int64_t    totalInputRows, 
       void*    pTime1,
-      INT8*    pIncludeMask,
-      INT8*    pResetMask, 
+      int8_t*    pIncludeMask,
+      int8_t*    pResetMask, 
       double   decayRate) {
 
       T* pSrc = (T*)pColumn;
@@ -972,7 +980,7 @@ public:
       // lastEma -- type U
       // lastTime -- type V
 
-      INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+      int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
       U* pLastEma = (U*)WORKSPACE_ALLOC(size);
 
       // Default every bin to 0, including floats
@@ -1089,7 +1097,7 @@ public:
                if (location >= GB_BASE_INDEX) {
                   //printf("inputs: %lf  %lf  %lf  %lf  %lf\n", (double)pSrc[i], (double)pLastEma[location], (double)-decayRate, (double)pTime[i], (double)pLastTime[location] );
                   pLastEma[location] = pSrc[i] + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
-                  //printf("[%d][%d] %lf\n", i, (INT32)location, (double)pLastEma[location]);
+                  //printf("[%d][%d] %lf\n", i, (int32_t)location, (double)pLastEma[location]);
                   pLastTime[location] = pTime[i];
                   pDest[i] = pLastEma[location];
                }
@@ -1130,11 +1138,11 @@ public:
       void*    pKeyT,
       void*    pAccumBin,
       void*    pColumn,
-      INT64    numUnique,
-      INT64    totalInputRows,
+      int64_t    numUnique,
+      int64_t    totalInputRows,
       void*    pTime1,
-      INT8*    pIncludeMask,
-      INT8*    pResetMask,
+      int8_t*    pIncludeMask,
+      int8_t*    pResetMask,
       double   decayRate) {
 
       T* pSrc = (T*)pColumn;
@@ -1148,14 +1156,14 @@ public:
       // lastEma -- type U
       // lastTime -- type V
 
-      INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+      int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
       U* pLastEma = (U*)WORKSPACE_ALLOC(size);
 
       // Default every bin to 0, including floats
       //memset(pLastEma, 0, size);
       // the first value should be valid
       // go backwards so that first value is in there
-      for (INT64 i = totalInputRows - 1; i >= 0; i--)
+      for (int64_t i = totalInputRows - 1; i >= 0; i--)
       {
          K location = pKey[i];
          T value = pSrc[i];
@@ -1182,7 +1190,7 @@ public:
       else {
          largeNegative = (V)0x8000000000000000LL;
       }
-      for (INT64 i = 0; i < (numUnique + GB_BASE_INDEX); i++) {
+      for (int64_t i = 0; i < (numUnique + GB_BASE_INDEX); i++) {
          pLastTime[i] = largeNegative;
       }
 
@@ -1192,7 +1200,7 @@ public:
          // filter loop
          if (pResetMask != NULL) {
             // filter + reset
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
                // Bin 0 is bad
                if (location >= GB_BASE_INDEX) {
@@ -1222,7 +1230,7 @@ public:
          }
          else {
             // filter only
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
@@ -1250,7 +1258,7 @@ public:
       else {
          if (pResetMask != NULL) {
             // reset loop
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
@@ -1269,14 +1277,14 @@ public:
          }
          else {
             // plain loop (no reset / no filter)
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
                if (location >= GB_BASE_INDEX) {
                   T value = pSrc[i];
                   //double DW = exp(-decayRate * (pTime[i] - pLastTime[location])); 
-                  //printf("**dw %lf  %lld  %lld\n", DW, (INT64)pTime[i], (INT64)pLastTime[location]);
+                  //printf("**dw %lf  %lld  %lld\n", DW, (int64_t)pTime[i], (int64_t)pLastTime[location]);
                   EMA_NORMAL_FUNC
                }
                else {
@@ -1312,11 +1320,11 @@ public:
       void*    pKeyT,
       void*    pAccumBin,
       void*    pColumn,
-      INT64    numUnique,
-      INT64    totalInputRows,
+      int64_t    numUnique,
+      int64_t    totalInputRows,
       void*    pTime1,
-      INT8*    pIncludeMask,
-      INT8*    pResetMask,
+      int8_t*    pIncludeMask,
+      int8_t*    pResetMask,
       double   decayedWeight) {
 
       T* pSrc = (T*)pColumn;
@@ -1329,7 +1337,7 @@ public:
       // lastEma -- type U
       // lastTime -- type V
 
-      INT64 size = (numUnique + GB_BASE_INDEX) * sizeof(U);
+      int64_t size = (numUnique + GB_BASE_INDEX) * sizeof(U);
       U* pLastEma = (U*)WORKSPACE_ALLOC(size);
 
       // Default every bin to 0, including floats
@@ -1337,7 +1345,7 @@ public:
 
       // the first value should be valid
       // go backwards so that first value is in there
-      for (INT64 i = totalInputRows - 1; i >= 0; i--)
+      for (int64_t i = totalInputRows - 1; i >= 0; i--)
       {
          K location = pKey[i];
          T value = pSrc[i];
@@ -1350,7 +1358,7 @@ public:
          // filter loop
          if (pResetMask != NULL) {
             // filter + reset
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
                // Bin 0 is bad
                if (location >= GB_BASE_INDEX) {
@@ -1375,7 +1383,7 @@ public:
          }
          else {
             // filter only
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
@@ -1397,7 +1405,7 @@ public:
       else {
          if (pResetMask != NULL) {
             // reset loop
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
@@ -1415,13 +1423,13 @@ public:
          }
          else {
             // plain loop (no reset / no filter)
-            for (INT64 i = 0; i < totalInputRows; i++) {
+            for (int64_t i = 0; i < totalInputRows; i++) {
                K location = pKey[i];
 
                // Bin 0 is bad
                if (location >= GB_BASE_INDEX) {
                   T value = pSrc[i];
-                  //printf("**dw %d  %d   %lld %lld\n", i, (int)location, (INT64)value, (INT64)pLastEma[location]);
+                  //printf("**dw %d  %d   %lld %lld\n", i, (int)location, (int64_t)value, (int64_t)pLastEma[location]);
                   EMA_WEIGHTED_FUNC
                }
                else {
@@ -1466,10 +1474,14 @@ static EMA_BY_TWO_FUNC GetEmaByStep2(int timeType, EMA_FUNCTIONS func) {
    case NPY_FLOAT:  return EmaByBase<T, double, float, K>::GetFunc(func);
    case NPY_DOUBLE: return EmaByBase<T, double, double, K>::GetFunc(func);
    case NPY_LONGDOUBLE: return EmaByBase<T, long double, long double, K>::GetFunc(func);
-   CASE_NPY_INT32:  return EmaByBase<T, double, INT32, K>::GetFunc(func);
-   CASE_NPY_INT64:  return EmaByBase<T, double, INT64, K>::GetFunc(func);
-   CASE_NPY_UINT32: return EmaByBase<T, double, UINT32, K>::GetFunc(func);
-   CASE_NPY_UINT64: return EmaByBase<T, double, UINT64, K>::GetFunc(func);
+   CASE_NPY_INT32:  return EmaByBase<T, double, int32_t, K>::GetFunc(func);
+   CASE_NPY_INT64:
+   
+      return EmaByBase<T, double, int64_t, K>::GetFunc(func);
+   CASE_NPY_UINT32: return EmaByBase<T, double, uint32_t, K>::GetFunc(func);
+   CASE_NPY_UINT64:
+   
+          return EmaByBase<T, double, uint64_t, K>::GetFunc(func);
    }
    return NULL;
 
@@ -1489,16 +1501,20 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_FLOAT:  *outputType = NPY_FLOAT32; return CumSum<float, float, K>;
       case NPY_DOUBLE: *outputType = NPY_FLOAT64; return CumSum<double, double, K> ;
       case NPY_LONGDOUBLE: *outputType = NPY_FLOAT64; return CumSum<long double, long double, K>;
-      case NPY_BOOL:   *outputType = NPY_INT64; return CumSum<INT8, INT64, K>;
-      case NPY_INT8:   *outputType = NPY_INT64; return CumSum<INT8, INT64, K>;
-      case NPY_INT16:  *outputType = NPY_INT64; return CumSum<INT16, INT64, K>;
-      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumSum<INT32, INT64, K>;
-      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumSum<INT64, INT64, K>;
+      case NPY_BOOL:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
+      case NPY_INT8:   *outputType = NPY_INT64; return CumSum<int8_t, int64_t, K>;
+      case NPY_INT16:  *outputType = NPY_INT64; return CumSum<int16_t, int64_t, K>;
+      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumSum<int32_t, int64_t, K>;
+      CASE_NPY_INT64:
+      
+           *outputType = NPY_INT64; return CumSum<int64_t, int64_t, K>;
 
-      case NPY_UINT8:  *outputType = NPY_UINT64; return CumSum<UINT8,  UINT64, K>;
-      case NPY_UINT16: *outputType = NPY_UINT64; return CumSum<UINT16, UINT64, K>;
-      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumSum<UINT32, UINT64, K>;
-      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumSum<UINT64, UINT64, K>;
+      case NPY_UINT8:  *outputType = NPY_UINT64; return CumSum<uint8_t,  uint64_t, K>;
+      case NPY_UINT16: *outputType = NPY_UINT64; return CumSum<uint16_t, uint64_t, K>;
+      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumSum<uint32_t, uint64_t, K>;
+      CASE_NPY_UINT64:
+      
+          *outputType = NPY_UINT64; return CumSum<uint64_t, uint64_t, K>;
 
       }
       break;
@@ -1508,23 +1524,27 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
       case NPY_FLOAT:  *outputType = NPY_FLOAT32; return CumProd<float, float, K>;
       case NPY_DOUBLE: *outputType = NPY_FLOAT64; return CumProd<double, double, K>;
       case NPY_LONGDOUBLE: *outputType = NPY_FLOAT64; return CumProd<long double, long double, K>;
-      case NPY_BOOL:   *outputType = NPY_INT64; return CumProd<INT8, INT64, K>;
-      case NPY_INT8:   *outputType = NPY_INT64; return CumProd<INT8, INT64, K>;
-      case NPY_INT16:  *outputType = NPY_INT64; return CumProd<INT16, INT64, K>;
-      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumProd<INT32, INT64, K>;
-      CASE_NPY_INT64:  *outputType = NPY_INT64; return CumProd<INT64, INT64, K>;
+      case NPY_BOOL:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
+      case NPY_INT8:   *outputType = NPY_INT64; return CumProd<int8_t, int64_t, K>;
+      case NPY_INT16:  *outputType = NPY_INT64; return CumProd<int16_t, int64_t, K>;
+      CASE_NPY_INT32:  *outputType = NPY_INT64; return CumProd<int32_t, int64_t, K>;
+      CASE_NPY_INT64:
+      
+           *outputType = NPY_INT64; return CumProd<int64_t, int64_t, K>;
 
-      case NPY_UINT8:  *outputType = NPY_UINT64; return CumProd<UINT8, UINT64, K>;
-      case NPY_UINT16: *outputType = NPY_UINT64; return CumProd<UINT16, UINT64, K>;
-      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumProd<UINT32, UINT64, K>;
-      CASE_NPY_UINT64: *outputType = NPY_UINT64; return CumProd<UINT64, UINT64, K>;
+      case NPY_UINT8:  *outputType = NPY_UINT64; return CumProd<uint8_t, uint64_t, K>;
+      case NPY_UINT16: *outputType = NPY_UINT64; return CumProd<uint16_t, uint64_t, K>;
+      CASE_NPY_UINT32: *outputType = NPY_UINT64; return CumProd<uint32_t, uint64_t, K>;
+      CASE_NPY_UINT64:
+      
+          *outputType = NPY_UINT64; return CumProd<uint64_t, uint64_t, K>;
 
       }
       break;
 
 
    case EMA_FINDNTH:
-      *outputType = NPY_INT32; return FindNth< INT32, K>;
+      *outputType = NPY_INT32; return FindNth< int32_t, K>;
       break;
 
    case EMA_NORMAL:
@@ -1532,18 +1552,22 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
    case EMA_DECAY:
       *outputType = NPY_FLOAT64;
       switch (inputType) {
-      case NPY_BOOL:   return GetEmaByStep2<INT8, K>(timeType, func);
+      case NPY_BOOL:   return GetEmaByStep2<int8_t, K>(timeType, func);
       case NPY_FLOAT:  return GetEmaByStep2<float, K>(timeType, func);
       case NPY_DOUBLE: return GetEmaByStep2<double, K>(timeType, func);
       case NPY_LONGDOUBLE: return GetEmaByStep2<long double, K>(timeType, func);
-      case NPY_INT8:   return GetEmaByStep2<INT8, K>(timeType, func);
-      case NPY_INT16:  return GetEmaByStep2<INT16, K>(timeType, func);
-      CASE_NPY_INT32:  return GetEmaByStep2<INT32, K>(timeType, func);
-      CASE_NPY_INT64:  return GetEmaByStep2<INT64, K>(timeType, func);
-      case NPY_UINT8:  return GetEmaByStep2<UINT8, K>(timeType, func);
-      case NPY_UINT16: return GetEmaByStep2<UINT16, K>(timeType, func);
-      CASE_NPY_UINT32: return GetEmaByStep2<UINT32, K>(timeType, func);
-      CASE_NPY_UINT64: return GetEmaByStep2<UINT64, K>(timeType, func);
+      case NPY_INT8:   return GetEmaByStep2<int8_t, K>(timeType, func);
+      case NPY_INT16:  return GetEmaByStep2<int16_t, K>(timeType, func);
+      CASE_NPY_INT32:  return GetEmaByStep2<int32_t, K>(timeType, func);
+      CASE_NPY_INT64:
+      
+           return GetEmaByStep2<int64_t, K>(timeType, func);
+      case NPY_UINT8:  return GetEmaByStep2<uint8_t, K>(timeType, func);
+      case NPY_UINT16: return GetEmaByStep2<uint16_t, K>(timeType, func);
+      CASE_NPY_UINT32: return GetEmaByStep2<uint32_t, K>(timeType, func);
+      CASE_NPY_UINT64:
+      
+          return GetEmaByStep2<uint64_t, K>(timeType, func);
 
       }
       break;
@@ -1562,22 +1586,22 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int *outputType, int time
 // BOTH groupby versions call this routine
 // ** THIS ROUTINE IS CALLED FROM MULTIPLE CONCURRENT THREADS!
 // i is the column number
-void EmaByCall(void* pEmaBy, INT64 i) {
+void EmaByCall(void* pEmaBy, int64_t i) {
 
    stEma32* pstEma32 = (stEma32*)pEmaBy;
 
    ArrayInfo* aInfo = pstEma32->aInfo;
-   INT64 uniqueRows = pstEma32->uniqueRows;
+   int64_t uniqueRows = pstEma32->uniqueRows;
 
    EMA_FUNCTIONS func = (EMA_FUNCTIONS)pstEma32->funcNum;
 
    // Data in was passed
    void* pDataIn = aInfo[i].pData;
-   INT64 len = aInfo[i].ArrayLength;
+   int64_t len = aInfo[i].ArrayLength;
 
    PyArrayObject* outArray = pstEma32->returnObjects[i].outArray;
    EMA_BY_TWO_FUNC  pFunction = pstEma32->returnObjects[i].pFunction;
-   INT32 numpyOutType = pstEma32->returnObjects[i].numpyOutType;
+   int32_t numpyOutType = pstEma32->returnObjects[i].numpyOutType;
    TYPE_OF_FUNCTION_CALL typeCall = pstEma32->typeOfFunctionCall;
 
    if (outArray && pFunction) {
@@ -1627,7 +1651,7 @@ void EmaByCall(void* pEmaBy, INT64 i) {
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the columns in a dataset)
-// Arg2 = iKey = numpy array (INT32) which has the index to the unique keys (ikey from MultiKeyGroupBy32)
+// Arg2 = iKey = numpy array (int32_t) which has the index to the unique keys (ikey from MultiKeyGroupBy32)
 // Arg3 = integer unique rows
 // Arg4 = integer (function number to execute for cumsum, ema)
 // Arg5 = params for function must be (decay/window, time, includemask, resetmask)
@@ -1645,8 +1669,8 @@ EmaAll32(PyObject *self, PyObject *args)
    PyArrayObject *inResetMask = NULL;
 
    double doubleParam = 0.0;
-   INT64 unique_rows = 0;
-   INT64 funcNum = 0;
+   int64_t unique_rows = 0;
+   int64_t funcNum = 0;
 
    if (!PyArg_ParseTuple(
       args, "OO!LLO",
@@ -1664,13 +1688,14 @@ EmaAll32(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 iKeyType = PyArray_TYPE(iKey);
+   int32_t iKeyType = PyArray_TYPE(iKey);
 
    switch (iKeyType) {
    case NPY_INT8:
    case NPY_INT16:
    CASE_NPY_INT32:
    CASE_NPY_INT64:
+   
       break;
    default:
       PyErr_Format(PyExc_ValueError, "EmaAll32 key param must int8, int16, int32, int64");
@@ -1714,7 +1739,7 @@ EmaAll32(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT64 totalArrayLength = ArrayLength(iKey);
+   int64_t totalArrayLength = ArrayLength(iKey);
 
    if (inResetMask != NULL && (PyArray_TYPE(inResetMask) != 0 || ArrayLength(inResetMask) != totalArrayLength)) {
       PyErr_Format(PyExc_ValueError, "EmaAll32 inResetMask must be a bool mask of same size");
@@ -1731,10 +1756,10 @@ EmaAll32(PyObject *self, PyObject *args)
       return NULL;
    }
 
-   INT32 numpyInType2 = ObjectToDtype(iKey);
+   int32_t numpyInType2 = ObjectToDtype(iKey);
 
-   INT64 totalItemSize = 0;
-   ArrayInfo* aInfo = BuildArrayInfo(inList1, (INT64*)&tupleSize, &totalItemSize);
+   int64_t totalItemSize = 0;
+   ArrayInfo* aInfo = BuildArrayInfo(inList1, (int64_t*)&tupleSize, &totalItemSize);
 
    if (!aInfo) {
       PyErr_Format(PyExc_ValueError, "EmaAll32 failed to produce aInfo");
@@ -1747,15 +1772,15 @@ EmaAll32(PyObject *self, PyObject *args)
    stEma32* pstEma32 = (stEma32*)WORKSPACE_ALLOC((sizeof(stEma32) + 8 + sizeof(stEmaReturn))*tupleSize);
 
    pstEma32->aInfo = aInfo;
-   pstEma32->funcNum = (INT32)funcNum;
-   pstEma32->pKey = (INT32*)PyArray_BYTES(iKey);
+   pstEma32->funcNum = (int32_t)funcNum;
+   pstEma32->pKey = (int32_t*)PyArray_BYTES(iKey);
    pstEma32->tupleSize = tupleSize;
    pstEma32->uniqueRows = unique_rows;
    pstEma32->totalInputRows = totalArrayLength;
    pstEma32->doubleParam = doubleParam;
    pstEma32->pTime = inTime == NULL ? NULL : PyArray_BYTES(inTime);
-   pstEma32->inIncludeMask = inIncludeMask == NULL ? NULL : (INT8*)PyArray_BYTES(inIncludeMask);
-   pstEma32->inResetMask = inResetMask == NULL ? NULL : (INT8*)PyArray_BYTES(inResetMask);
+   pstEma32->inIncludeMask = inIncludeMask == NULL ? NULL : (int8_t*)PyArray_BYTES(inIncludeMask);
+   pstEma32->inResetMask = inResetMask == NULL ? NULL : (int8_t*)PyArray_BYTES(inResetMask);
    pstEma32->typeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_GROUPBY_FUNC;
 
    LOGGING("Ema unique %lld  total: %lld  arrays: %p %p %p\n", unique_rows, totalArrayLength, pstEma32->pTime, pstEma32->inIncludeMask, pstEma32->inResetMask);
@@ -1763,21 +1788,22 @@ EmaAll32(PyObject *self, PyObject *args)
    // Allocate all the memory and output arrays up front since Python is single threaded
    for (int i = 0; i < tupleSize; i++) {
       // TODO: determine based on function
-      INT32 numpyOutType = -1;
+      int32_t numpyOutType = -1;
 
       EMA_BY_TWO_FUNC  pFunction = NULL;
       switch (iKeyType) {
       case NPY_INT8:
-         pFunction = GetEmaByFunction<INT8>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
+         pFunction = GetEmaByFunction<int8_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
       case NPY_INT16:
-         pFunction = GetEmaByFunction<INT16>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
+         pFunction = GetEmaByFunction<int16_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
       CASE_NPY_INT32:
-         pFunction = GetEmaByFunction<INT32>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
+         pFunction = GetEmaByFunction<int32_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
       CASE_NPY_INT64:
-         pFunction = GetEmaByFunction<INT64>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
+      
+         pFunction = GetEmaByFunction<int64_t>(aInfo[i].NumpyDType, &numpyOutType, inTime == NULL ? -1 : PyArray_TYPE(inTime), (EMA_FUNCTIONS)funcNum);
          break;
       }
 
@@ -1839,7 +1865,7 @@ EmaAll32(PyObject *self, PyObject *args)
 // N: first dimension length
 // M: second dimension length (must be > 1)
 template<typename T>
-void mat_interp_extrap(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT64 M, INT32 clip) {
+void mat_interp_extrap(void* xT, void* xpT, void* ypT, void* outT, int64_t N, int64_t M, int32_t clip) {
 
    T* x = (T*)xT;
    T* xp = (T*)xpT;
@@ -1850,13 +1876,13 @@ void mat_interp_extrap(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT6
 
    if (!clip) {
       // auto increment xp and yp
-      for (INT64 i = 0; i < N; ++i, xp += M, yp += M) {
+      for (int64_t i = 0; i < N; ++i, xp += M, yp += M) {
          T xi = x[i];
          T result = mynan;
 
          if (xi == xi) {
             if (xi > xp[0]) {
-               INT64 j = 1;
+               int64_t j = 1;
                while (xi > xp[j] && j < M) j++;
                if (j == M) {
                   T right_slope = (yp[M - 1] - yp[M - 2]) / (xp[M - 1] - xp[M - 2]);
@@ -1877,13 +1903,13 @@ void mat_interp_extrap(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT6
    }
    else {
       // clipping
-      for (INT64 i = 0; i < N; ++i, xp += M, yp += M) {
+      for (int64_t i = 0; i < N; ++i, xp += M, yp += M) {
          T xi = x[i];
          T result=mynan;
 
          if (xi == xi) {
             if (xi > xp[0]) {
-               INT64 j = 1;
+               int64_t j = 1;
                while (xi > xp[j] && j < M) j++;
                if (j == M) {
                   result = yp[M - 1];
@@ -1904,7 +1930,7 @@ void mat_interp_extrap(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT6
 
 
 template<typename T>
-void mat_interp(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT64 M, INT32 clip) {
+void mat_interp(void* xT, void* xpT, void* ypT, void* outT, int64_t N, int64_t M, int32_t clip) {
 
    T* x = (T*)xT;
    T* xp = (T*)xpT;
@@ -1916,13 +1942,13 @@ void mat_interp(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT64 M, IN
    T mynan = std::numeric_limits<T>::quiet_NaN();
 
    if (!clip) {
-      for (INT64 i = 0; i < N; ++i) {
+      for (int64_t i = 0; i < N; ++i) {
          T xi = x[i];
          T result = mynan;
 
          if (xi == xi) {
             if (xi > xp0) {
-               INT64 j = 1;
+               int64_t j = 1;
                while (xi > xp[j] && j < M) j++;
                if (j == M) {
                   T right_slope = (yp[M - 1] - yp[M - 2]) / (xp[M - 1] - xp[M - 2]);
@@ -1942,13 +1968,13 @@ void mat_interp(void* xT, void* xpT, void* ypT, void* outT, INT64 N, INT64 M, IN
       }
    }
    else {
-      for (INT64 i = 0; i < N; ++i) {
+      for (int64_t i = 0; i < N; ++i) {
          T xi = x[i];
          T result = mynan;
 
          if (xi == xi) {
             if (xi > xp0) {
-               INT64 j = 1;
+               int64_t j = 1;
                while (xi > xp[j] && j < M) j++;
                if (j == M) {
                   // clipped
@@ -1975,10 +2001,10 @@ struct stInterp {
    char* xp;
    char* yp;
    char* out;
-   INT64 N;
-   INT64 M;
-   INT32 mode;
-   INT32 clip;
+   int64_t N;
+   int64_t M;
+   int32_t mode;
+   int32_t clip;
    int itemsize;
 };
 
@@ -1986,15 +2012,15 @@ struct stInterp {
 // multithreaded callback
 // move pointers to start offset
 // shrink N to what length is
-BOOL InterpolateExtrap(void* callbackArgT, int core, INT64 start, INT64 length) {
+bool InterpolateExtrap(void* callbackArgT, int core, int64_t start, int64_t length) {
    stInterp* pInterp = (stInterp*)callbackArgT;
-   INT64 M = pInterp->M;
-   INT64 N = pInterp->N;
-   INT32 clip = pInterp->clip;
+   int64_t M = pInterp->M;
+   int64_t N = pInterp->N;
+   int32_t clip = pInterp->clip;
 
-   INT64 fixup = start * pInterp->itemsize;
+   int64_t fixup = start * pInterp->itemsize;
    if (pInterp->mode == 2) {
-      INT64 fixup2d = start * pInterp->itemsize* M;
+      int64_t fixup2d = start * pInterp->itemsize* M;
       if (pInterp->itemsize == 8) {
          mat_interp_extrap<double>(
             pInterp->x + fixup,
@@ -2039,7 +2065,7 @@ BOOL InterpolateExtrap(void* callbackArgT, int core, INT64 start, INT64 length) 
       }
 
    }
-   return TRUE;
+   return true;
 }
 
 
@@ -2055,8 +2081,8 @@ BOOL InterpolateExtrap(void* callbackArgT, int core, INT64 start, INT64 length) 
    PyArrayObject* xp;
    PyArrayObject* yp;
    PyArrayObject* returnArray; // we allocate this
-   INT32 clip = 0;
-   INT32 mode = 0;
+   int32_t clip = 0;
+   int32_t mode = 0;
 
    if (!PyArg_ParseTuple(args, "O!O!O!|i",
       &PyArray_Type, &arr,
@@ -2091,8 +2117,8 @@ BOOL InterpolateExtrap(void* callbackArgT, int core, INT64 start, INT64 length) 
    }
    // NOTE: could check for strides also here
 
-   INT64 N = PyArray_DIM(arr, 0);
-   INT64 M = 0;
+   int64_t N = PyArray_DIM(arr, 0);
+   int64_t M = 0;
 
    if (mode == 2) {
       if ((N != PyArray_DIM(xp, 0)) || (N != PyArray_DIM(yp, 0))) {
@@ -2159,8 +2185,8 @@ BOOL InterpolateExtrap(void* callbackArgT, int core, INT64 start, INT64 length) 
  //  PyArrayObject* arrTime; xp;
  //  PyArrayObject* yp;
  //  PyArrayObject* returnArray; // we allocate this
- //  INT32 clip = 0;
- //  INT32 mode = 0;
+ //  int32_t clip = 0;
+ //  int32_t mode = 0;
 
  //  if (!PyArg_ParseTuple(args, "O!O!O!|i",
  //      &PyArray_Type, &arr,

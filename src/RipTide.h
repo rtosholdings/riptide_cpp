@@ -1,4 +1,5 @@
 #pragma once
+
 // Hack because debug builds force python36_d.lib
 #ifdef _DEBUG
 #undef _DEBUG
@@ -78,17 +79,17 @@ static const int MAX_NUMPY_TYPE = 24;
 
 // Conversion related routines
 extern stScalarType NpTypeObjects[MAX_NUMPY_TYPE];
-extern INT32 TypeToDtype(PyTypeObject *out_dtype);
-extern INT32 ObjectToDtype(PyArrayObject* obj);
+extern int32_t TypeToDtype(PyTypeObject *out_dtype);
+extern int32_t ObjectToDtype(PyArrayObject* obj);
 
-extern INT32 gNumpyTypeToSize[NUMPY_LAST_TYPE];
+extern int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE];
 
 // Boolean look up tables to go from packed bits to 1 bool per byte
-extern INT64 gBooleanLUT64[256];
-extern INT32 gBooleanLUT32[16];
+extern int64_t gBooleanLUT64[256];
+extern int32_t gBooleanLUT32[16];
 
-extern INT64 gBooleanLUT64Inverse[256];
-extern INT32 gBooleanLUT32Inverse[16];
+extern int64_t gBooleanLUT64Inverse[256];
+extern int32_t gBooleanLUT32Inverse[16];
 
 extern PyArray_Descr* g_pDescrLongLong;
 extern PyArray_Descr* g_pDescrULongLong;
@@ -99,8 +100,8 @@ typedef struct {
       npy_bool obval;
 } PyBoolScalarObject;
 
-extern BOOL GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, INT64 funcNumber);
-extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride);
+extern bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber);
+extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride);
 
 /**
  * @brief Calculate the number of elements in an array with the given dimensions.
@@ -110,11 +111,11 @@ extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, INT64& stride)
  * @return npy_intp The number of elements in the array.
  * @note Similar to the numpy PyArray_MultiplyList() function.
  */
-extern INT64 CalcArrayLength(int ndim, npy_intp* dims);
+extern int64_t CalcArrayLength(int ndim, npy_intp* dims);
 
 // for speed and to ensure dim of 0 has length of 0
-inline static INT64 CALC_ARRAY_LENGTH(int ndim, npy_intp* dims) {
-   INT64 length = 1;
+inline static int64_t CALC_ARRAY_LENGTH(int ndim, npy_intp* dims) {
+   int64_t length = 1;
 
    // handle case of zero length array
    if (dims && ndim > 0) {
@@ -142,7 +143,7 @@ inline static INT64 CALC_ARRAY_LENGTH(int ndim, npy_intp* dims) {
  * @return PyArrayObject* The allocated array object, or nullptr if an error occurred.
  * @note if the @p dtype is NPY_STRING or NPY_UNICODE -- then @p itemsize is valid.
  */
-extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyType, INT64 itemsize = 0, BOOL fortran_array = FALSE, npy_intp* strides = nullptr);
+extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize = 0, bool fortran_array = false, npy_intp* strides = nullptr);
 
 /**
  * @brief Allocate a numpy array (or FastArray) backed by an existing data buffer.
@@ -157,19 +158,19 @@ extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, INT32 numpyTy
  * @return PyObject* The allocated PyArrayObject object; or nullptr if @p data is nullptr or an error occurred.
  * @note if the @p dtype is NPY_STRING or NPY_UNICODE -- then @p itemsize is valid.
  */
-extern PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, INT32 numpyType, INT64 itemsize, char* data, int array_flags, npy_intp* strides = nullptr);
+extern PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, char* data, int array_flags, npy_intp* strides = nullptr);
 
-extern PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, INT32 numpyType);
+extern PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType);
 extern PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize);
 
-extern INT32 GetArrDType(PyArrayObject* inArr);
-extern BOOL ConvertScalarObject(PyObject* inObject1, _m256all* pDest, INT16 numpyType, void** pDataIn, INT64 *pItemSize);
-extern BOOL ConvertSingleItemArray(void* pInput, INT16 numpyInType, _m256all* pDest, INT16 numpyType);
+extern int32_t GetArrDType(PyArrayObject* inArr);
+extern bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyType, void** pDataIn, int64_t *pItemSize);
+extern bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, int16_t numpyType);
 extern PyArrayObject* EnsureContiguousArray(PyArrayObject* inObject);
 
-extern INT64 NpyItemSize(PyObject *self);
-extern const char* NpyToString(INT32 numpyType);
-extern INT32 NpyToSize(INT32 numpyType);
+extern int64_t NpyItemSize(PyObject *self);
+extern const char* NpyToString(int32_t numpyType);
+extern int32_t NpyToSize(int32_t numpyType);
 
 /**
  * @brief Calculate the number of elements in the given array.
@@ -178,17 +179,17 @@ extern INT32 NpyToSize(INT32 numpyType);
  * @return npy_intp The number of elements in the array.
  * @note Similar to the numpy PyArray_Size() function.
  */
-extern INT64 ArrayLength(PyArrayObject* inArr);
+extern int64_t ArrayLength(PyArrayObject* inArr);
 
 extern PyTypeObject*  g_FastArrayType;
 extern PyObject*  g_FastArrayModule;
 
-static inline BOOL IsFastArrayView(PyArrayObject* pArray) {
+static inline bool IsFastArrayView(PyArrayObject* pArray) {
    return (pArray->ob_base.ob_type == g_FastArrayType);
 }
 
 // Optimistic faster way to check for array (most common check)
-static inline BOOL IsFastArrayOrNumpy(PyArrayObject* pArray) {
+static inline bool IsFastArrayOrNumpy(PyArrayObject* pArray) {
    PyTypeObject* pto=   pArray->ob_base.ob_type;
    // consider pto->tp_base for Categoricals
    return ((pto == g_FastArrayType) || (pto == &PyArray_Type) || PyType_IsSubtype(pto, &PyArray_Type));
@@ -212,14 +213,14 @@ PyObject* SetFastArrayView(PyArrayObject* pArray);
 
 
 extern int GetNumpyType(bool value);
-extern int GetNumpyType(INT8 value);
-extern int GetNumpyType(INT16 value);
-extern int GetNumpyType(INT32 value);
-extern int GetNumpyType(INT64 value);
-extern int GetNumpyType(UINT8 value);
-extern int GetNumpyType(UINT16 value);
-extern int GetNumpyType(UINT32 value);
-extern int GetNumpyType(UINT64 value);
+extern int GetNumpyType(int8_t value);
+extern int GetNumpyType(int16_t value);
+extern int GetNumpyType(int32_t value);
+extern int GetNumpyType(int64_t value);
+extern int GetNumpyType(uint8_t value);
+extern int GetNumpyType(uint16_t value);
+extern int GetNumpyType(uint32_t value);
+extern int GetNumpyType(uint64_t value);
 extern int GetNumpyType(float value);
 extern int GetNumpyType(double value);
 extern int GetNumpyType(long double value);
@@ -227,7 +228,7 @@ extern int GetNumpyType(char* value);
 
 //---------------------------------------------------------
 // Returns nanoseconds since utc epoch
-extern UINT64 GetUTCNanos();
+extern uint64_t GetUTCNanos();
 
 template <typename T>
 static void* GetInvalid() {
@@ -236,7 +237,7 @@ static void* GetInvalid() {
 
 PyFunctionObject* GetFunctionObject(PyObject* arg1);
 
-// INT32 invalid index used
+// int32_t invalid index used
 #define INVALID_INDEX -214783648
 
 // mark invalid index with -1 because it will always

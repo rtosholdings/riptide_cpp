@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdlib>
-
+#include <cstdint>
 #include <iostream>
 #include <limits>
 
@@ -20,102 +20,13 @@
 
 #endif
 
-#ifndef CONST
-#define CONST               const
-#endif
-typedef char               CHAR;
-typedef short              SHORT;
-typedef long               LONG;
-#define VOID void
-typedef void *PVOID;
-
-//Type             LP64   Windows
-//char              8       8
-//short             16      16
-//int               32      32
-//long              64      32
-//long long         64      64
-//pointer           64      64
-
-
-typedef unsigned long       DWORD;
-typedef int                 BOOL;
-typedef unsigned char       BYTE;
-typedef BYTE                BOOLEAN;
-typedef unsigned short      WORD;
-typedef float               FLOAT;
-typedef FLOAT               *PFLOAT;
-typedef BOOL                *PBOOL;
-typedef BOOL                *LPBOOL;
-typedef BYTE                *PBYTE;
-typedef BYTE                *LPBYTE;
-typedef int                 *PINT;
-typedef int                 *LPINT;
-typedef WORD                *PWORD;
-typedef WORD                *LPWORD;
-//typedef long                *LPLONG;  // dangerous
-typedef DWORD               *PDWORD;
-typedef DWORD               *LPDWORD;
-typedef void                *LPVOID;
-typedef CONST void          *LPCVOID;
-
-typedef int                 INT;
-typedef unsigned int        UINT;
-typedef unsigned int       *PUINT;
-
-typedef signed char         INT8, *PINT8;
-typedef signed short        INT16, *PINT16;
-typedef signed int          INT32, *PINT32;
-typedef unsigned char       UINT8, *PUINT8;
-typedef unsigned short      UINT16, *PUINT16;
-typedef unsigned int        UINT32, *PUINT32;
-
-typedef long long           INT64, *PINT64;
-typedef unsigned long long  UINT64, *PUINT64;
-
-typedef long long           LONGLONG;
-typedef unsigned long long  ULONGLONG;
-
-typedef double    DOUBLE;
-typedef float     FLOAT;
-//
-// The following types are guaranteed to be signed and 32 bits wide.
-//
-
-typedef int      LONG32, *PLONG32;
-
-//
-// The following types are guaranteed to be unsigned and 32 bits wide.
-//
-
-typedef unsigned int  ULONG32, *PULONG32;
-typedef unsigned int  DWORD32, *PDWORD32;
-
-typedef long long           INT_PTR, *PINT_PTR;
-typedef unsigned long long  UINT_PTR, *PUINT_PTR;
-
-typedef long long           LONG_PTR, *PLONG_PTR;
-typedef unsigned long long  ULONG_PTR, *PULONG_PTR;
-
-typedef ULONG_PTR SIZE_T, *PSIZE_T;
-typedef LONG_PTR  SSIZE_T, *PSSIZE_T;
-
-typedef void *HANDLE;
-
-#define TRUE 1
-#define FALSE 0
-
-
-
-
+using HANDLE = void*;
 
 #define RtlEqualMemory(Destination,Source,Length) (!memcmp((Destination),(Source),(Length)))
 #define RtlMoveMemory(Destination,Source,Length) memmove((Destination),(Source),(Length))
 #define RtlCopyMemory(Destination,Source,Length) memcpy((Destination),(Source),(Length))
 #define RtlFillMemory(Destination,Length,Fill) memset((Destination),(Fill),(Length))
 #define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
-
-
 
 #if defined(_WIN32) && !defined(__GNUC__)
 #define WINAPI      __stdcall
@@ -129,7 +40,7 @@ typedef void *HANDLE;
 #define YieldProcessor _mm_pause
 #define InterlockedIncrement _InterlockedIncrement
 
-#define FMInterlockedOr(X,Y) _InterlockedOr64((INT64*)X,Y)
+#define FMInterlockedOr(X,Y) _InterlockedOr64((int64_t*)X,Y)
 
 #include <intrin.h>
 #ifndef SFW_ALIGN
@@ -159,6 +70,9 @@ typedef void *HANDLE;
 #define CASE_NPY_UINT64     case NPY_UINT64:   case NPY_ULONGLONG
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE
 
+using INT_PTR = ptrdiff_t;
+using DWORD = uint32_t;
+using LPVOID = void*;
 
 #define WINAPI
 #include <pthread.h>
@@ -386,13 +300,13 @@ enum MATH_OPERATION {
 
 struct stScatterGatherFunc {
    // numpy intput ttype
-   INT32 inputType;
+   int32_t inputType;
 
    // the core (if any) making this calculation
-   INT32 core;
+   int32_t core;
 
    // used for nans, how many non nan values
-   INT64 lenOut;
+   int64_t lenOut;
 
    // !!must be set when used by var and std
    double meanCalculation;
@@ -400,24 +314,24 @@ struct stScatterGatherFunc {
    double resultOut;
 
    // Separate output for min/max
-   INT64  resultOutInt64;
+   int64_t  resultOutInt64;
 
 };
 
 // Generic function declarations
 // The first one passes in a vector and returns a vector
 // Used for operations like B = MIN(A)
-typedef double(*ANY_SCATTER_GATHER_FUNC)(void* pDataIn, INT64 len, stScatterGatherFunc* pstScatterGatherFunc);
+typedef double(*ANY_SCATTER_GATHER_FUNC)(void* pDataIn, int64_t len, stScatterGatherFunc* pstScatterGatherFunc);
 
-//typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, INT64 len);
-typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut);
-typedef void(*UNARY_FUNC_STRIDED)(void* pDataIn, void* pDataOut, INT64 len, INT64 strideIn, INT64 strideOut);
+//typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, int64_t len);
+typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut);
+typedef void(*UNARY_FUNC_STRIDED)(void* pDataIn, void* pDataOut, int64_t len, int64_t strideIn, int64_t strideOut);
 
 // Pass in two vectors and return one vector
 // Used for operations like C = A + B
-typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 len, INT32 scalarMode);
+typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t len, int32_t scalarMode);
 
-//typedef void(*MERGE_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64 valSize, INT64 start, INT64 len, void* pDefault);
+//typedef void(*MERGE_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, int64_t valSize, int64_t start, int64_t len, void* pDefault);
 
 // Fast path sum
 // Arg1 data such as TradeSize
@@ -426,17 +340,17 @@ typedef void(*ANY_TWO_FUNC)(void* pDataIn, void* pDataIn2, void* pDataOut, INT64
 // Arg4 optional - count out
 
 // Used for Groupby Sum/Mean/Min/Max/etc
-typedef void(*GROUPBY_TWO_FUNC)(void* pDataIn, void* pIndex, INT32* pCountOut, void* pDataOut, INT64 len, INT64 binLow, INT64 binHigh, INT64 pass);
+typedef void(*GROUPBY_TWO_FUNC)(void* pDataIn, void* pIndex, int32_t* pCountOut, void* pDataOut, int64_t len, int64_t binLow, int64_t binHigh, int64_t pass);
 
 // Used for Groupby Mode/Median/etc
-typedef void(*GROUPBY_X_FUNC32)(void* pColumn, void* pGroup, INT32* pFirst, INT32* pCount, void* pAccumBin,  INT64 binLow, INT64 binHigh, INT64 totalInputRows, INT64 itemSize, INT64 funcParam);
-typedef void(*GROUPBY_X_FUNC64)(void* pColumn, void* pGroup, INT64* pFirst, INT64* pCount, void* pAccumBin,  INT64 binLow, INT64 binHigh, INT64 totalInputRows, INT64 itemSize, INT64 funcParam);
+typedef void(*GROUPBY_X_FUNC32)(void* pColumn, void* pGroup, int32_t* pFirst, int32_t* pCount, void* pAccumBin,  int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam);
+typedef void(*GROUPBY_X_FUNC64)(void* pColumn, void* pGroup, int64_t* pFirst, int64_t* pCount, void* pAccumBin,  int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam);
 
 // Pass in three vectors and return one vector
 // Used for operations like D = A*B + C
-typedef void(*ANY_THREE_FUNC)(void* pDataIn, void* pDataIn2, void* pDataIn3, void* pDataOut, INT64 len, INT32 scalarMode);
+typedef void(*ANY_THREE_FUNC)(void* pDataIn, void* pDataIn2, void* pDataIn3, void* pDataOut, int64_t len, int32_t scalarMode);
 
-typedef void(*GROUPBY_FUNC)(void* pstGroupBy, INT64 index);
+typedef void(*GROUPBY_FUNC)(void* pstGroupBy, int64_t index);
 
 
 // On TSEBAL650
@@ -445,10 +359,10 @@ typedef void(*GROUPBY_FUNC)(void* pstGroupBy, INT64 index);
 // Adding two numbers and then writing the results is 2xREAD and 1xWRITE ==> 300MB total in 0.05 seconds
 // 300MB * 20 = 6GB/sec bandwidth
 // Bit count stuff
-// Output is INT8
-typedef void(*I16_I8_FUNC)(INT16* pDataIn, INT8* pDataOut, INT64 len);
-typedef void(*I32_I8_FUNC)(INT32* pDataIn, INT8* pDataOut, INT64 len);
-typedef void(*I64_I8_FUNC)(INT64* pDataIn, INT8* pDataOut, INT64 len);
+// Output is int8_t
+typedef void(*I16_I8_FUNC)(int16_t* pDataIn, int8_t* pDataOut, int64_t len);
+typedef void(*I32_I8_FUNC)(int32_t* pDataIn, int8_t* pDataOut, int64_t len);
+typedef void(*I64_I8_FUNC)(int64_t* pDataIn, int8_t* pDataOut, int64_t len);
 
 //----------------------------------------------------
 // returns pointer to a data type (of same size in memory) that holds the invalid value for the type
@@ -458,14 +372,14 @@ void* GetDefaultForType(int numpyInType);
 
 // Overloads to handle invalids
 static inline  bool   GET_INVALID(bool x) { return   false; }
-static inline  INT8   GET_INVALID(INT8 X) { return   -128; }
-static inline  UINT8  GET_INVALID(UINT8 X) { return  0xFF; }
-static inline  INT16  GET_INVALID(INT16 X) { return  -32768; }
-static inline  UINT16 GET_INVALID(UINT16 X) { return 0xFFFF; }
-static inline  INT32  GET_INVALID(INT32 X) { return  0x80000000; }
-static inline  UINT32 GET_INVALID(UINT32 X) { return 0xFFFFFFFF; }
-static inline  INT64  GET_INVALID(INT64 X) { return  0x8000000000000000; }
-static inline  UINT64 GET_INVALID(UINT64 X) { return 0xFFFFFFFFFFFFFFFF; }
+static inline  int8_t   GET_INVALID(int8_t X) { return   -128; }
+static inline  uint8_t  GET_INVALID(uint8_t X) { return  0xFF; }
+static inline  int16_t  GET_INVALID(int16_t X) { return  -32768; }
+static inline  uint16_t GET_INVALID(uint16_t X) { return 0xFFFF; }
+static inline  int32_t  GET_INVALID(int32_t X) { return  0x80000000; }
+static inline  uint32_t GET_INVALID(uint32_t X) { return 0xFFFFFFFF; }
+static inline  int64_t  GET_INVALID(int64_t X) { return  0x8000000000000000; }
+static inline  uint64_t GET_INVALID(uint64_t X) { return 0xFFFFFFFFFFFFFFFF; }
 static inline  float  GET_INVALID(float X) { return  std::numeric_limits<float>::quiet_NaN(); }
 static inline  double GET_INVALID(double X) { return std::numeric_limits<double>::quiet_NaN(); }
 static inline  long double GET_INVALID(long double X) { return std::numeric_limits<long double>::quiet_NaN(); }
@@ -495,17 +409,17 @@ enum SCALAR_MODE {
 //-----------------------------------------------------------
 // List of function calls
 struct FUNCTION_LIST {
-   INT16             TypeOfFunctionCall; // See enum
-   INT16             NumpyType;         // For the array and constants
-   INT16             NumpyOutputType;
+   int16_t             TypeOfFunctionCall; // See enum
+   int16_t             NumpyType;         // For the array and constants
+   int16_t             NumpyOutputType;
 
    // The item size for two input arrays assumed to be the same
-   INT64             InputItemSize;
-   INT64             OutputItemSize;
+   int64_t             InputItemSize;
+   int64_t             OutputItemSize;
 
    // Strides may be 0 if it is a scalar or length 1
-   INT64             Input1Strides;
-   INT64             Input2Strides;
+   int64_t             Input1Strides;
+   int64_t             Input2Strides;
 
    // TODO: Why not make this void and recast?
    // Only one of these can be set
@@ -518,7 +432,7 @@ struct FUNCTION_LIST {
       GROUPBY_FUNC      GroupByCall;
    };
 
-   const CHAR*       FunctionName;
+   const char*       FunctionName;
 };
 
 
