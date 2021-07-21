@@ -1,8 +1,7 @@
+#include "Compress.h"
 #include <stdlib.h>
-#include <Python.h>
 #include "bytesobject.h"
 #include "zstd.h"
-#include "Compress.h"
 #include "SharedMemory.h"
 #include "FileReadWrite.h"
 

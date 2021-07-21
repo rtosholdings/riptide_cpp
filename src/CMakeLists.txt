@@ -2,41 +2,41 @@ set(TARGET_NAME riptide_cpp)
 
 set(HEADERS
     #ArenaMemory.h
-    #Array.h
-    #BasicMath.h
-    #Bins.h
-    #BitCount.h
-    #CommonInc.h
-    #Compare.h
-    #Compress.h
-    #Convert.h
-    #DateTime.h
-    #Ema.h
+    Array.h
+    BasicMath.h
+    Bins.h
+    BitCount.h
+    CommonInc.h
+    Compare.h
+    Compress.h
+    Convert.h
+    DateTime.h
+    Ema.h
     #FileReadWrite.h
-    #GroupBy.h
-    #HashFunctions.h
-    #HashLinear.h
-    #Hook.h
-    #MathThreads.h
-    #MathWorker.h
-    #Merge.h
+    GroupBy.h
+    HashFunctions.h
+    HashLinear.h
+    Hook.h
+    MathThreads.h
+    MathWorker.h
+    Merge.h
     #missing_values.h
-    #MultiKey.h
+    MultiKey.h
     #ndarray.h
     #numpy_traits.h
     #platform_detect.h
-    #Recycler.h
-    #Reduce.h
-    #RipTide.h
-    #SDSFile.h
-    #SDSFilePython.h
-    #SharedMemory.h
-    #Sort.h
+    Recycler.h
+    Reduce.h
+    RipTide.h
+    SDSFile.h
+    SDSFilePython.h
+    SharedMemory.h
+    Sort.h
     #stdafx.h
-    #TileRepeat.h
-    #TimeWindow.h
+    TileRepeat.h
+    TimeWindow.h
     #TypeSystem.h
-    #UnaryOps.h
+    UnaryOps.h
 )
 
 set(SOURCES
