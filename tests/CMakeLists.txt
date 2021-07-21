@@ -15,9 +15,11 @@ target_include_directories(${TARGET_NAME} PRIVATE
 target_link_directories(${TARGET_NAME} PRIVATE
     ${Python3_LIBRARY_DIRS})
 
+target_link_options(${TARGET_NAME} PRIVATE -nodefaultlib:python38_d)
+
 target_link_libraries(${TARGET_NAME}
-    #riptide_cpp
-    #python38 #${Python3_LIBRARIES}
+    riptide_cpp
+    ${Python3_LIBRARIES}
     gtest)
 
 add_test(NAME test_riptide_cpp
