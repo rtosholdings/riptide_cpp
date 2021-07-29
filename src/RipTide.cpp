@@ -772,7 +772,7 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpy
 
 //-----------------------------------------------------------------------------------
 // Check recycle pool
-PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType) {
+PyArrayObject* AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpyType) {
    const int ndim = PyArray_NDIM(inArr);
    npy_intp* const dims = PyArray_DIMS(inArr);
 
@@ -2132,7 +2132,7 @@ bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
 //  return value 0: one loop can process all data, false = multiple loops
 //  NOTE: if return value is 0 and itemsze == stride, then vector math possible
 //
-int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride) {
+int GetStridesAndContig(PyArrayObject const * inArray, int& ndim, int64_t& stride) {
    stride = PyArray_ITEMSIZE(inArray);
    int direction = 0;
    ndim = PyArray_NDIM(inArray);
