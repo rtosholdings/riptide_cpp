@@ -62,7 +62,7 @@ namespace internal
    struct trunc_op {};
    struct ceil_op {};
    struct sqrt_op {};
-   struct long_op {};
+   struct log_op {};
    struct log2_op {};
    struct log10_op {};
    struct exp_op {};
@@ -96,7 +96,7 @@ namespace internal
       ,trunc_op
       ,ceil_op
       ,sqrt_op
-      ,long_op
+      ,log_op
       ,log2_op
       ,log10_op
       ,exp_op

@@ -13,7 +13,7 @@
 namespace internal
 {
     template< typename calculation_t >
-    void calculate( char* out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_t const requested_op, calculation_t const in_type )
+    decltype( auto ) calculate( char* out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_t const requested_op, calculation_t const in_type )
     {
         using T = typename calculation_t::data_type;
         [[maybe_unused]]T const value{ *reinterpret_cast< T const *>( in_ptr )};
@@ -28,30 +28,32 @@ namespace internal
                 [&value](bitwise_not_op arg) -> T { return ~value; },
                 [&value](not_op arg) -> bool { return !!( value == T{} ); },
                 [&value](isnotnan_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isnan( value ); },
-                [](isnan_op arg){},
-                [](isfinite_op arg){},
-                [](isnotfinite_op arg){},
-                [](isinf_op arg){},
-                [](isnotinf_op arg){},
-                [](isnormal_op arg){},
-                [](isnotnormal_op arg){},
-                [](isnanorzero_op arg){},
-                [](round_op arg){},
-                [](floor_op arg){},
-                [](trunc_op arg){},
-                [](ceil_op arg){},
-                [](sqrt_op arg){},
-                [](long_op arg){},
-                [](log2_op arg){},
-                [](log10_op arg){},
-                [](exp_op arg){},
-                [](exp2_op arg){},
-                [](cbrt_op arg){},
-                [](tan_op arg){},
-                [](cos_op arg){},
-                [](sin_op arg){},
-                [](signbit_op arg){}
+                [&value](isnan_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isnan( value ); },
+                [&value](isfinite_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isfinite( value ); },
+                [&value](isnotfinite_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isfinite( value ); },
+                [&value](isinf_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isinf( value ); },
+                [&value](isnotinf_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isinf( value ); },
+                [&value](isnormal_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isnormal( value ); },
+                [&value](isnotnormal_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isnormal( value ); },
+                [&value](isnanorzero_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return value == T{}; return value == T{} || std::isnan; },
+                [&value](round_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( round( value ) ); },
+                [&value](floor_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( floor( value ) ); },
+                [&value](trunc_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( trunc( value ) ); },
+                [&value](ceil_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( ceil( value ) ); },
+                [&value](sqrt_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( sqrt( value ) ); },
+                [&value](log_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log( value ) ); },
+                [&value](log2_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log2( value ) ); },
+                [&value](log10_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log10( value ) ); },
+                [&value](exp_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( exp( value ) ); },
+                [&value](exp2_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( exp2( value ) ); },
+                [&value](cbrt_op arg)-> decltype( value ) { return static_cast< decltype( value ) >( cbrt( value ) ); },
+                [&value](tan_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( tan( value ) ); },
+                [&value](cos_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( cos( value ) ); },
+                [&value](sin_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( sin( value ) ); },
+                [&value](signbit_op arg) -> bool { return static_cast< decltype( value ) >( std::signbit( value ) ); }
             }, requested_op );
+
+        return res;
     }
 }
 
