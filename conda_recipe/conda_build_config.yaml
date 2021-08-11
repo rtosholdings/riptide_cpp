@@ -1,11 +1,9 @@
 python:
   - 3.7
   - 3.8
-  # TODO: Enable py39 builds once we have a way to exclude the
-  # (py39, numpy 1.18) combination, since numpy 1.18 never supported py39.
-  # - 3.9
+  - 3.9
 
 numpy:
-  - 1.18
   - 1.19
   - 1.20
+  - 1.21
