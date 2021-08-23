@@ -111,6 +111,7 @@
     <ClCompile Include="MathWorker.cpp" />
     <ClCompile Include="Merge.cpp" />
     <ClCompile Include="MultiKey.cpp" />
+	 <ClCompile Include="one_input.cpp" />
     <ClCompile Include="Recycler.cpp" />
     <ClCompile Include="Reduce.cpp" />
     <ClCompile Include="SDSFile.cpp" />

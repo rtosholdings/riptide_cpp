@@ -12,51 +12,543 @@
 
 namespace internal
 {
-    template< typename calculation_t >
-    decltype( auto ) calculate( char* out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_t const requested_op, calculation_t const in_type )
-    {
-        using T = typename calculation_t::data_type;
-        [[maybe_unused]]T const value{ *reinterpret_cast< T const *>( in_ptr )};
-        [[maybe_unused]]typename calculation_t::calculation_type temp;
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, abs_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
 
-        decltype( auto ) res = std::visit( overloaded {
-                [&value]( abs_op ) -> T { if constexpr( std::is_unsigned_v< T > ) { return value ; } return ( value < T{} ? -value : value ); },
-                [&value]( fabs_op arg ) -> double { return value < T{} ? -value : value ; },
-                [&value]( sign_op arg ) -> T { if constexpr( std::is_unsigned_v< T > ) { return value > T{}; } return value > T{} ? 1 : value < T{} ? -1 : T{}; },
-                [&value]( floatsign_op arg ) -> T { return value > T{} ? 1.0 : ( value < T{} ? -1.0 : ( value == value ? T{} : value ) ); },
-                [&value](neg_op arg) -> T { if constexpr( std::is_unsigned_v< T > ) { return value; } return -value; },
-                [&value](bitwise_not_op arg) -> T { return ~value; },
-                [&value](not_op arg) -> bool { return !!( value == T{} ); },
-                [&value](isnotnan_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isnan( value ); },
-                [&value](isnan_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isnan( value ); },
-                [&value](isfinite_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isfinite( value ); },
-                [&value](isnotfinite_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isfinite( value ); },
-                [&value](isinf_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isinf( value ); },
-                [&value](isnotinf_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isinf( value ); },
-                [&value](isnormal_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return std::isnormal( value ); },
-                [&value](isnotnormal_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return false; return not std::isnormal( value ); },
-                [&value](isnanorzero_op arg) -> bool { if constexpr( not std::is_floating_point_v< T > ) return value == T{}; return value == T{} || std::isnan; },
-                [&value](round_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( round( value ) ); },
-                [&value](floor_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( floor( value ) ); },
-                [&value](trunc_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( trunc( value ) ); },
-                [&value](ceil_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( ceil( value ) ); },
-                [&value](sqrt_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( sqrt( value ) ); },
-                [&value](log_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log( value ) ); },
-                [&value](log2_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log2( value ) ); },
-                [&value](log10_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( log10( value ) ); },
-                [&value](exp_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( exp( value ) ); },
-                [&value](exp2_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( exp2( value ) ); },
-                [&value](cbrt_op arg)-> decltype( value ) { return static_cast< decltype( value ) >( cbrt( value ) ); },
-                [&value](tan_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( tan( value ) ); },
-                [&value](cos_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( cos( value ) ); },
-                [&value](sin_op arg) -> decltype( value ) { return static_cast< decltype( value ) >( sin( value ) ); },
-                [&value](signbit_op arg) -> bool { return static_cast< decltype( value ) >( std::signbit( value ) ); }
-            }, requested_op );
+         if constexpr( std::is_unsigned_v< T > == true )
+                     {
+                        return T{value};
+                     }
+         else
+         {
+            return value < T{} ? T(-value) : T(value);
+         }
+      }
+   }
 
-        return res;
-    }
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, fabs_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return T{value};
+                     }
+         else
+         {
+            return value < T{} ? T(-value) : T(value);
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, sign_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( std::is_unsigned_v< T > == true )
+                     {
+                        return T(value) > T{} ? T(1) : T{};
+                     }
+         else
+         {
+            return value > T{} ? T(1) : T(value) < T{} ? T(-1) : T{};
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, floatsign_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return T{};
+                     }
+         else
+         {
+            return value > T{} ? T(1.0) : ( value < T{} ? T(-1.0) : ( value == value ? T{} : T(value) ) );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, neg_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( std::is_unsigned_v< T > == true )
+                     {
+                        return T(value);
+                     }
+         else
+         {
+            return T(-value);
+         }
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, bitwise_not_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( std::is_floating_point_v< T > == true )
+                     {
+                        return T(NAN);
+                     }
+         else
+         {
+            return T(~value);
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, round_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T(round( value ) );
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, floor_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( floor( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, trunc_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( trunc( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, ceil_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( ceil( value ) );
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, sqrt_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( sqrt( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, log_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( log( value ) );
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, log2_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( log2( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, log10_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( log10( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, exp_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( exp( value ) );
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, exp2_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( exp2( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, cbrt_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( cbrt( value ) );
+      }
+      return T{};
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, tan_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( tan( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, cos_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( cos( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   decltype( auto ) calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, sin_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return T( sin( value ) );
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, signbit_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr ( not std::is_floating_point_v< T > == true )
+                      {
+                         return std::is_signed_v< T > && T( value ) < T{};
+                      }
+         else
+         {
+            return std::signbit( T(value) );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, not_op const * requested_op, calculation_t const * in_type )
+   {
+      if ( in_type )
+      {
+         using T = typename calculation_t::data_type const;
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         return !!( T(value) == T{} );
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnotnan_op const * requested_op, calculation_t const * in_type )
+   {
+      if ( in_type )
+      {
+         using T = typename calculation_t::data_type const;
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return not std::isnan( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnan_op const * requested_op, calculation_t const * in_type )
+   {
+      if ( in_type )
+      {
+         using T = typename calculation_t::data_type const;
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return std::isnan( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isfinite_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return std::isfinite( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnotfinite_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return not std::isfinite( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isinf_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return std::isinf( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnotinf_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return not std::isinf( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnormal_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return false;
+                     }
+         else
+         {
+            return std::isnormal( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnotnormal_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return value;
+                     }
+         else
+         {
+            return not std::isnormal( value );
+         }
+      }
+   }
+
+   template< typename calculation_t >
+   bool calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, isnanorzero_op const * requested_op, calculation_t const * in_type )
+   {
+      using T = typename calculation_t::data_type const;
+      if ( in_type )
+      {
+         [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_ptr ) };
+         [[maybe_unused]] typename calculation_t::calculation_type temp;
+
+         if constexpr( not std::is_floating_point_v< T > == true )
+                     {
+                        return T(value) == T{};
+                     }
+         else
+         {
+            return T(value) == T{} || std::isnan( value );
+         }
+      }
+   }
+
+   template< typename operation_variant, typename data_type, size_t... Is >
+   void calculate_for_active_operation( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_variant const & requested_op, data_type const * type_p, std::index_sequence< Is... > )
+   {
+      if ( type_p )
+      {
+         ( calculate( out_ptr, in_ptr, len, stride, std::get_if< Is >( &requested_op ), type_p ), ... );
+      }
+   }
+   
+   template< typename type_variant, size_t... Is >
+   void calculate_for_active_data_type( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_t const & requested_op, type_variant const & in_type, std::index_sequence< Is... > )
+   {
+      ( calculate_for_active_operation( out_ptr, in_ptr, len, stride, requested_op, std::get_if< Is >( &in_type ), std::make_index_sequence< std::variant_size_v< operation_t > >{} ), ... );
+   }
+
 }
-
 
 PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out_object_1, int32_t function_num, int32_t numpy_intype, int32_t numpy_outtype )
 {
@@ -78,7 +570,7 @@ PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out
             char * out_ptr{ PyArray_BYTES( const_cast< PyArrayObject * >( result_array ) ) };
             
             // Loop around the array here? Or a level deeper?
-            calculate( out_ptr, in_ptr, len, stride, *ops.first, *ops.second );
+            internal::calculate_for_active_data_type( out_ptr, in_ptr, len, stride, *ops.first, *ops.second, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
         }
         
         return reinterpret_cast< PyObject* >( result_array );

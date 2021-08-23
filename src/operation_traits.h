@@ -41,37 +41,40 @@ namespace internal
       , data_type_traits< double >
       >;
 
-   struct abs_op {};
-   struct fabs_op {};
-   struct sign_op {};
-   struct floatsign_op {};
-   struct neg_op {};
-   struct bitwise_not_op {};
-   struct not_op {};
-   struct isnotnan_op {};
-   struct isnan_op {};
-   struct isfinite_op {};
-   struct isnotfinite_op {};
-   struct isinf_op {};
-   struct isnotinf_op {};
-   struct isnormal_op {};
-   struct isnotnormal_op {};
-   struct isnanorzero_op {};
-   struct round_op {};
-   struct floor_op {};
-   struct trunc_op {};
-   struct ceil_op {};
-   struct sqrt_op {};
-   struct log_op {};
-   struct log2_op {};
-   struct log10_op {};
-   struct exp_op {};
-   struct exp2_op {};
-   struct cbrt_op {};
-   struct tan_op {};
-   struct cos_op {};
-   struct sin_op {};
-   struct signbit_op {};
+   struct value_return {};
+   struct bool_return {};
+   
+   struct abs_op { using return_type = value_return; };
+   struct fabs_op { using return_type = value_return; };
+   struct sign_op { using return_type = value_return; };
+   struct floatsign_op { using return_type = value_return; };
+   struct neg_op { using return_type = value_return; };
+   struct bitwise_not_op { using return_type = value_return; };
+   struct not_op { using return_type = bool_return; };
+   struct isnotnan_op { using return_type = bool_return; };
+   struct isnan_op { using return_type = bool_return; };
+   struct isfinite_op { using return_type = bool_return; };
+   struct isnotfinite_op { using return_type = bool_return; };
+   struct isinf_op { using return_type = bool_return; };
+   struct isnotinf_op { using return_type = bool_return; };
+   struct isnormal_op { using return_type = bool_return; };
+   struct isnotnormal_op { using return_type = bool_return; };
+   struct isnanorzero_op { using return_type = bool_return; };
+   struct round_op { using return_type = value_return; };
+   struct floor_op { using return_type = value_return; };
+   struct trunc_op { using return_type = value_return; };
+   struct ceil_op { using return_type = value_return; };
+   struct sqrt_op { using return_type = value_return; };
+   struct log_op { using return_type = value_return; };
+   struct log2_op { using return_type = value_return; };
+   struct log10_op { using return_type = value_return; };
+   struct exp_op { using return_type = value_return; };
+   struct exp2_op { using return_type = value_return; };
+   struct cbrt_op { using return_type = value_return; };
+   struct tan_op { using return_type = value_return; };
+   struct cos_op { using return_type = value_return; };
+   struct sin_op { using return_type = value_return; };
+   struct signbit_op { using return_type = value_return; };
 
    using operation_t = std::variant
    <

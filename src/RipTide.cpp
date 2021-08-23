@@ -774,12 +774,12 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpy
 // Check recycle pool
 PyArrayObject* AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpyType) {
    const int ndim = PyArray_NDIM(inArr);
-   npy_intp* const dims = PyArray_DIMS(inArr);
+   npy_intp* const dims = PyArray_DIMS(const_cast< PyArrayObject * >( inArr ));
 
    // If the strides are all "normal", the array is C_CONTIGUOUS,
    // and this is _not_ a string / flexible array, try to re-use an array
    // from the recycler (array pool).
-   if ((PyArray_ISNUMBER(inArr) || PyArray_ISBOOL(inArr)) && PyArray_ISCARRAY(inArr))
+   if ((PyArray_ISNUMBER(const_cast< PyArrayObject * >(inArr)) || PyArray_ISBOOL(const_cast< PyArrayObject * >(inArr))) && PyArray_ISCARRAY(const_cast< PyArrayObject *>(inArr)))
    {
       return AllocateNumpyArray(ndim, dims, numpyType, 0, false, nullptr);
    }
@@ -792,7 +792,7 @@ PyArrayObject* AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpy
    if (!descr) {
       return nullptr;
    }
-   PyArrayObject* returnObject = (PyArrayObject*)PyArray_NewLikeArray(inArr, NPY_KEEPORDER, descr, 1);
+   PyArrayObject* returnObject = (PyArrayObject*)PyArray_NewLikeArray(const_cast< PyArrayObject * >(inArr), NPY_KEEPORDER, descr, 1);
    CHECK_MEMORY_ERROR(returnObject);
 
    if (!returnObject) {

@@ -21,7 +21,6 @@ namespace internal
 {
    using chosen_traits_t = std::pair< std::optional< operation_t >, std::optional< data_type_t > >;
 
-   void calculate( char * out_ptr, char const * in_ptr, npy_intp const len, int64_t const stride, operation_t const requested_op, data_type_t const in_type );
    chosen_traits_t set_traits( int32_t const function_num, int32_t const numpy_intype );
 }
 #endif
