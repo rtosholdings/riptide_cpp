@@ -5,6 +5,8 @@
 #include "ndarray.h"
 #include "MathWorker.h"
 
+#include "simd/avx2.h"
+
 #include <variant>
 #include <utility>
 #include <cstddef>
@@ -12,8 +14,8 @@
 
 namespace internal
 {
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, abs_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, abs_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -29,8 +31,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, fabs_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, fabs_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -46,8 +48,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, sign_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, sign_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -63,8 +65,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, floatsign_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, floatsign_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -80,8 +82,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, neg_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, neg_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -97,8 +99,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, bitwise_not_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, bitwise_not_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -114,8 +116,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, round_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, round_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -124,8 +126,8 @@ namespace internal
          return T(round( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, floor_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, floor_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -134,8 +136,8 @@ namespace internal
          return T( floor( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, trunc_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, trunc_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -144,8 +146,8 @@ namespace internal
          return T( trunc( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, ceil_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, ceil_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -154,8 +156,8 @@ namespace internal
          return T( ceil( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, sqrt_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, sqrt_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -164,8 +166,8 @@ namespace internal
          return T( sqrt( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, log_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, log_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -174,8 +176,8 @@ namespace internal
          return T( log( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, log2_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, log2_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -184,8 +186,8 @@ namespace internal
          return T( log2( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, log10_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, log10_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -194,8 +196,8 @@ namespace internal
          return T( log10( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, exp_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, exp_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -204,8 +206,8 @@ namespace internal
          return T( exp( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, exp2_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, exp2_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -214,8 +216,8 @@ namespace internal
          return T( exp2( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, cbrt_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, cbrt_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -224,8 +226,8 @@ namespace internal
          return T( cbrt( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, tan_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, tan_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -234,8 +236,8 @@ namespace internal
          return T( tan( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, cos_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, cos_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -244,8 +246,8 @@ namespace internal
          return T( cos( value ) );
    }
 
-   template< typename calculation_t >
-   decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, sin_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   decltype( auto ) calculate( char const * in_p, sin_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -254,8 +256,8 @@ namespace internal
          return T( sin( value ) );
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, signbit_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, signbit_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -271,8 +273,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, not_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, not_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
          using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -281,8 +283,8 @@ namespace internal
          return !!( T(value) == T{} );
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnotnan_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnotnan_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
          using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -298,8 +300,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnan_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnan_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
          using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -315,8 +317,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isfinite_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -332,8 +334,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnotfinite_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnotfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -349,8 +351,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isinf_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -366,8 +368,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnotinf_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnotinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -383,8 +385,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnormal_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -400,8 +402,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnotnormal_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnotnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -417,8 +419,8 @@ namespace internal
          }
    }
 
-   template< typename calculation_t >
-   bool calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, isnanorzero_op const * requested_op, calculation_t const * in_type )
+   template< typename calculation_t, typename wide_ops_t >
+   bool calculate( char const * in_p, isnanorzero_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops )
    {
       using T = typename calculation_t::data_type const;
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
@@ -434,22 +436,51 @@ namespace internal
          }
    }
 
+   
    // numpy standard is to treat stride as bytes, but I'm keeping the math simple for now more for exposition than anything else.
    template< typename operation_t, typename data_t >
    void perform_operation( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, operation_t * op_p, data_t * data_type_p, int64_t const out_stride_as_items = 1 )
    {
+      // Output cannot be longer than the input
+      char const * last_out_p{ out_p + sizeof( data_t ) * len };
+      
+      auto slow_calc = [&]()
+                       {
+                          while( out_p < last_out_p )
+                          {
+                             auto x = calculate( in_p, op_p, data_type_p, typename riptide::simd::avx2::template vec256< nullptr_t >{} );
+                             *reinterpret_cast< decltype( x ) * >( out_p ) = x;
+                             
+                             in_p += stride;
+                             out_p += sizeof( decltype( x ) ) * out_stride_as_items; 
+                          }
+                       };
+      
       if ( op_p )
       {
-         // Output cannot be longer than the input
-         char const * last_out_p{ out_p + sizeof( data_t ) * len };
-
-         while( out_p < last_out_p )
+         if constexpr( operation_t::simd_implementation::value )
+                     {
+                        using wide_type = typename data_t::calculation_type;
+                        using wide_sct = typename riptide::simd::avx2::template vec256< typename data_t::data_type >;
+                        
+                        if ( stride == sizeof( typename data_t::data_type ) && out_stride_as_items == 1 )
+                        {
+                           while( out_p < last_out_p )
+                           {
+                              auto x = calculate( in_p, op_p, data_type_p, wide_sct{} );
+                              
+                              in_p += sizeof( wide_type );
+                              out_p += sizeof( decltype ( x ) ) * out_stride_as_items; // Obviously wrong, need to think through the simd stride / calc logic.
+                           }
+                        }
+                        else
+                        {
+                           slow_calc();
+                        }
+                     }
+         else
          {
-            auto x = calculate( out_p, in_p, len, stride, op_p, data_type_p );
-            *reinterpret_cast< decltype( x ) * >( out_p ) = x;
-
-            in_p += stride;
-            out_p += sizeof( decltype( x ) ) * out_stride_as_items; 
+            slow_calc();
          }
       }
    }
