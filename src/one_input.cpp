@@ -128,13 +128,10 @@ namespace internal
    decltype( auto ) calculate( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, floor_op const * requested_op, calculation_t const * in_type )
    {
       using T = typename calculation_t::data_type const;
-      if ( in_type )
-      {
          [[maybe_unused]] T const value{ *reinterpret_cast< T const * >( in_p ) };
          [[maybe_unused]] typename calculation_t::calculation_type temp;
 
          return T( floor( value ) );
-      }
    }
 
    template< typename calculation_t >
@@ -452,7 +449,7 @@ namespace internal
             *reinterpret_cast< decltype( x ) * >( out_p ) = x;
 
             in_p += stride;
-            out_p += sizeof( data_t ) * out_stride_as_items; 
+            out_p += sizeof( decltype( x ) ) * out_stride_as_items; 
          }
       }
    }
