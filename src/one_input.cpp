@@ -448,7 +448,8 @@ namespace internal
 
          while( out_p < last_out_p )
          {
-            calculate( out_p, in_p, len, stride, op_p, data_type_p );
+            auto x = calculate( out_p, in_p, len, stride, op_p, data_type_p );
+            *reinterpret_cast< decltype( x ) * >( out_p ) = x;
 
             in_p += stride;
             out_p += sizeof( data_t ) * out_stride_as_items; 
