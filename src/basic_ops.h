@@ -13,8 +13,6 @@
 
 namespace internal
 {
-   constexpr std::array< operations_t, 20 > data_traits;
-   
    // Rewrite this if pattern matching ever becomes a thing.
    auto LOADU=[](auto const * x) -> std::remove_pointer_t< decltype( x ) >
    {

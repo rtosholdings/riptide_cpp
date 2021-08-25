@@ -8,37 +8,40 @@
 
 namespace internal
 {
-   // implementaion idea:
-   // Have a two variant values that are parsed / set from a top-level switch.
-   // One provides an instance the trait class for the inbound data type (which includes the AVX256 version of that type)
-   // The other provides the trait class for the requested operation (probably just an empty struct, classic trait class)
-   // Then, rather than having XXX_OP functions, have "perform_operation" that specializes on those two.
-   // That way, the entire flow is compile time without any pointer-to-function stuff getting in the way
-   // of letting the compiler see through the control flow to optimize deeper.
-
-   template< typename arithmetic_concept, typename Enable = void >
+   template< typename arithmetic_concept, typename simd_concept, typename Enable = void >
    struct data_type_traits
    {
    };
 
-   template< typename  arithmetic_concept > 
-   struct data_type_traits< arithmetic_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept > > >
+   template< typename  arithmetic_concept, typename simd_concept > 
+   struct data_type_traits< arithmetic_concept, typename simd_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept >, void > >
    {
       using data_type = arithmetic_concept;
-      using calculation_type = __m256i;      
+      using calculation_type = simd_concept;
    };
 
+   using int8_traits = data_type_traits< int8_t, __m256i >;
+   using int16_traits = data_type_traits< int16_t, __m256i >;
+   using int32_traits = data_type_traits< int32_t, __m256i >;
+   using int64_traits = data_type_traits< int64_t, __m256i >;
+   using uint8_traits = data_type_traits< uint8_t, __m256i >;
+   using uint16_traits = data_type_traits< uint16_t, __m256i >;
+   using uint32_traits = data_type_traits< uint32_t, __m256i >;
+   using uint64_traits = data_type_traits< uint64_t, __m256i >;
+   using float_traits = data_type_traits< float, __m256 >;
+   using double_traits = data_type_traits< double, __m256d >;
+   
    using data_type_t = std::variant<
-       data_type_traits< int8_t >
-      , data_type_traits< int16_t >
-      , data_type_traits< int32_t >
-      , data_type_traits< int64_t >
-      , data_type_traits< uint8_t >
-      , data_type_traits< uint16_t >
-      , data_type_traits< uint32_t >
-      , data_type_traits< uint64_t >
-      , data_type_traits< float >
-      , data_type_traits< double >
+      int8_traits
+      ,int16_traits
+      ,int32_traits
+      ,int64_traits
+      ,uint8_traits
+      ,uint16_traits
+      ,uint32_traits
+      ,uint64_traits
+      ,float_traits
+      ,double_traits
       >;
 
    struct value_return {};

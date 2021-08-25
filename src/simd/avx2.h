@@ -119,7 +119,7 @@ namespace riptide
           */
          template <typename T>
          struct vec256
-         { };
+         { static constexpr bool simd_implemented_v = false; };
 
          template <>
          struct vec256<bool>
@@ -127,6 +127,8 @@ namespace riptide
             using element_type = bool;
 
             using reg_type = __m256i;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
@@ -252,6 +254,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -358,7 +362,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -370,7 +374,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -755,6 +759,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -843,7 +849,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -855,7 +861,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1051,6 +1057,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1157,7 +1165,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -1169,7 +1177,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1580,6 +1588,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1668,7 +1678,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -1680,7 +1690,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1892,6 +1902,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1998,7 +2010,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -2010,7 +2022,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -2473,6 +2485,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -2561,7 +2575,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -2573,7 +2587,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -2782,6 +2796,8 @@ namespace riptide
             using element_type = int64_t;
 
             using reg_type = __m256i;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
@@ -3169,6 +3185,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -3533,6 +3551,8 @@ namespace riptide
             using element_type = float;
 
             using reg_type = __m256;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
@@ -4303,6 +4323,8 @@ namespace riptide
             using element_type = double;
 
             using reg_type = __m256d;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
