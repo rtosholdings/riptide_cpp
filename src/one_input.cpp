@@ -546,12 +546,12 @@ namespace internal
                         }
                         else
                         {
-                           calc(typename riptide::simd::avx2::template vec256< nullptr_t >{});
+                           calc(typename riptide::simd::avx2::template vec256< void >{});
                         }
                      }
          else
          {
-            calc( typename riptide::simd::avx2::template vec256< nullptr_t >{} );
+            calc( typename riptide::simd::avx2::template vec256< void >{} );
          }
       }
    }
