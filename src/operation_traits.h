@@ -14,7 +14,7 @@ namespace internal
    };
 
    template< typename  arithmetic_concept, typename simd_concept > 
-   struct data_type_traits< arithmetic_concept, typename simd_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept >, void > >
+   struct data_type_traits< arithmetic_concept, typename simd_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept > > >
    {
       using data_type = arithmetic_concept;
       using calculation_type = simd_concept;
