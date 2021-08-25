@@ -60,20 +60,20 @@ namespace riptide
        * @return T const& The result of the operation.
        */
       template<typename T>
-      static T const& min_with_nan_passthru(T const& x, T const& y)
+      T const& min_with_nan_passthru(T const& x, T const& y)
       {
          return (std::min)(x, y);
       }
 
       template<>
-      static float const& min_with_nan_passthru(float const& x, float const& y)
+      float const& min_with_nan_passthru(float const& x, float const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x < blended ? x : blended;
       }
 
       template<>
-      static double const& min_with_nan_passthru(double const& x, double const& y)
+      double const& min_with_nan_passthru(double const& x, double const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x < blended ? x : blended;
@@ -88,20 +88,20 @@ namespace riptide
        * @return T const& The result of the operation.
        */
       template<typename T>
-      static T const& max_with_nan_passthru(T const& x, T const& y)
+      T const& max_with_nan_passthru(T const& x, T const& y)
       {
          return (std::max)(x, y);
       }
 
       template<>
-      static float const& max_with_nan_passthru(float const& x, float const& y)
+      float const& max_with_nan_passthru(float const& x, float const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x > blended ? x : blended;
       }
 
       template<>
-      static double const& max_with_nan_passthru(double const& x, double const& y)
+      double const& max_with_nan_passthru(double const& x, double const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x > blended ? x : blended;
