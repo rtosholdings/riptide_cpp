@@ -571,6 +571,11 @@ namespace internal
       ( calculate_for_active_operation( out_p, in_p, len, stride, requested_op, std::get_if< Is >( &in_type ), std::make_index_sequence< std::variant_size_v< operation_t > >{} ), ... );
    }
 
+   template< typename operation_variant, size_t... Is >
+   bool get_active_value_return( operation_variant v, std::index_sequence< Is... > )
+   {
+      return ( ( std::get_if< Is >( &v ) ? std::get_if< Is >( &v )->value_return : false ) || ... );
+   }
 }
 
 PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out_object_1, int32_t function_num, int32_t numpy_intype, int32_t numpy_outtype )
@@ -581,24 +586,29 @@ PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out
    int32_t direction{ GetStridesAndContig( in_array, ndim, stride ) };
    npy_intp len{ CALC_ARRAY_LENGTH( ndim, PyArray_DIMS( const_cast< PyArrayObject * >( in_array ) ) ) };
     
-   internal::chosen_traits_t ops = internal::set_traits( function_num, numpy_intype );
+   auto [ opt_op_trait, opt_type_trait ] = internal::set_traits( function_num, numpy_intype );
     
-   if ( ops.first && ops.second )
+   if ( opt_op_trait && opt_type_trait )
    {
-      PyArrayObject * result_array{ ( ndim <= 1 ) ? AllocateNumpyArray( 1, &len, numpy_outtype ) : AllocateLikeNumpyArray( in_array, numpy_outtype ) };
-        
-      if ( result_array )
+      if ( direction == 0 && numpy_outtype == -1 )
       {
-         char const * in_p = PyArray_BYTES( const_cast< PyArrayObject * >( in_array ) );
-         char * out_p{ PyArray_BYTES( const_cast< PyArrayObject * >( result_array ) ) };
+         numpy_outtype = get_active_value_return( *opt_op_trait, std::make_index_sequence< std::variant_size_v< internal::operation_t > >{} ) ? numpy_intype : NPY_BOOL;
+         PyArrayObject * result_array{ ( ndim <= 1 ) ? AllocateNumpyArray( 1, &len, numpy_intype ) : AllocateLikeNumpyArray( in_array, numpy_intype ) };
+         
+         if ( result_array )
+         {
+            char const * in_p = PyArray_BYTES( const_cast< PyArrayObject * >( in_array ) );
+            char * out_p{ PyArray_BYTES( const_cast< PyArrayObject * >( result_array ) ) };
             
-         internal::calculate_for_active_data_type( out_p, in_p, len, stride, *ops.first, *ops.second, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+            internal::calculate_for_active_data_type( out_p, in_p, len, stride, *opt_op_trait, *opt_type_trait, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+         }
+         
+         return reinterpret_cast< PyObject* >( result_array );
       }
-        
-      return reinterpret_cast< PyObject* >( result_array );
    }
-    
-   return nullptr;
+
+   Py_INCREF( Py_None );
+   return Py_None;
 }
 
 namespace internal

@@ -44,40 +44,37 @@ namespace internal
       ,double_traits
       >;
 
-   struct value_return {};
-   struct bool_return {};
-   
-   struct abs_op { using simd_implementation = std::true_type; };
-   struct fabs_op { using simd_implementation = std::false_type; };
-   struct sign_op { using simd_implementation = std::false_type; };
-   struct floatsign_op { using simd_implementation = std::false_type; };
-   struct neg_op { using simd_implementation = std::false_type; };
-   struct bitwise_not_op { using simd_implementation = std::false_type; };
-   struct not_op { using simd_implementation = std::false_type; };
-   struct isnotnan_op { using simd_implementation = std::true_type; };
-   struct isnan_op { using simd_implementation = std::true_type; };
-   struct isfinite_op { using simd_implementation = std::false_type; };
-   struct isnotfinite_op { using simd_implementation = std::false_type; };
-   struct isinf_op { using simd_implementation = std::false_type; };
-   struct isnotinf_op { using simd_implementation = std::false_type; };
-   struct isnormal_op { using simd_implementation = std::false_type; };
-   struct isnotnormal_op { using simd_implementation = std::false_type; };
-   struct isnanorzero_op { using simd_implementation = std::false_type; };
-   struct round_op { using simd_implementation = std::true_type; };
-   struct floor_op { using simd_implementation = std::true_type; };
-   struct trunc_op { using simd_implementation = std::true_type; };
-   struct ceil_op { using simd_implementation = std::true_type; };
-   struct sqrt_op { using simd_implementation = std::true_type; };
-   struct log_op { using simd_implementation = std::true_type; };
-   struct log2_op { using simd_implementation = std::true_type; };
-   struct log10_op { using simd_implementation = std::true_type; };
-   struct exp_op { using simd_implementation = std::true_type; };
-   struct exp2_op { using simd_implementation = std::true_type; };
-   struct cbrt_op { using simd_implementation = std::true_type; };
-   struct tan_op { using simd_implementation = std::true_type; };
-   struct cos_op { using simd_implementation = std::true_type; };
-   struct sin_op { using simd_implementation = std::true_type; };
-   struct signbit_op { using simd_implementation = std::false_type; };
+   struct abs_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct fabs_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
+   struct sign_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
+   struct floatsign_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
+   struct neg_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
+   struct bitwise_not_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
+   struct not_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnotnan_op { static constexpr bool value_return = false; using simd_implementation = std::true_type; };
+   struct isnan_op { static constexpr bool value_return = false; using simd_implementation = std::true_type; };
+   struct isfinite_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnotfinite_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isinf_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnotinf_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnormal_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnotnormal_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct isnanorzero_op { static constexpr bool value_return = false; using simd_implementation = std::false_type; };
+   struct round_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct floor_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct trunc_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct ceil_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct sqrt_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct log_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct log2_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct log10_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct exp_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct exp2_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct cbrt_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct tan_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct cos_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct sin_op { static constexpr bool value_return = true; using simd_implementation = std::true_type; };
+   struct signbit_op { static constexpr bool value_return = true; using simd_implementation = std::false_type; };
 
    using operation_t = std::variant
    <
