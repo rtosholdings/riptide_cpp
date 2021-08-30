@@ -450,3 +450,5 @@ struct FUNCTION_LIST {
 #define RETURN_NONE Py_INCREF(Py_None); return Py_None;
 #define STRIDE_NEXT(_TYPE_, _MEM_, _STRIDE_) (_TYPE_*)((char*)_MEM_ + _STRIDE_)
 
+#define LOGGING(...)
+

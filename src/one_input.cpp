@@ -516,7 +516,7 @@ namespace internal
    
    // numpy standard is to treat stride as bytes, but I'm keeping the math simple for now more for exposition than anything else.
    template< typename operation_t, typename data_t >
-   void perform_operation( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, operation_t * op_p, data_t * data_type_p, int64_t const out_stride_as_items = 1 )
+   void perform_operation( char const * in_p, char * out_p, npy_intp const len, int64_t const stride, operation_t * op_p, data_t * data_type_p, int64_t const out_stride_as_items = 1 )
    {
       // Output cannot be longer than the input
       char const * last_out_p{ out_p + sizeof( data_t ) * len };
@@ -557,24 +557,65 @@ namespace internal
    }
 
    template< typename operation_variant, typename data_type, size_t... Is >
-   void calculate_for_active_operation( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, operation_variant const & requested_op, data_type const * type_p, std::index_sequence< Is... > )
+   void calculate_for_active_operation( char const * in_p, char * out_p, npy_intp const len, int64_t const stride, operation_variant const & requested_op, data_type const * type_p, std::index_sequence< Is... > )
    {
       if ( type_p )
       {
-         ( perform_operation( out_p, in_p, len, stride, std::get_if< Is >( &requested_op ), type_p ), ... );
+         ( perform_operation( in_p, out_p, len, stride, std::get_if< Is >( &requested_op ), type_p ), ... );
       }
    }
    
    template< typename type_variant, size_t... Is >
-   void calculate_for_active_data_type( char * out_p, char const * in_p, npy_intp const len, int64_t const stride, operation_t const & requested_op, type_variant const & in_type, std::index_sequence< Is... > )
+   void calculate_for_active_data_type( char const * in_p, char * out_p, npy_intp const len, int64_t const stride, operation_t const & requested_op, type_variant const & in_type, std::index_sequence< Is... > )
    {
-      ( calculate_for_active_operation( out_p, in_p, len, stride, requested_op, std::get_if< Is >( &in_type ), std::make_index_sequence< std::variant_size_v< operation_t > >{} ), ... );
+      ( calculate_for_active_operation( in_p, out_p, len, stride, requested_op, std::get_if< Is >( &in_type ), std::make_index_sequence< std::variant_size_v< operation_t > >{} ), ... );
    }
 
    template< typename operation_variant, size_t... Is >
    bool get_active_value_return( operation_variant v, std::index_sequence< Is... > )
    {
       return ( ( std::get_if< Is >( &v ) ? std::get_if< Is >( &v )->value_return : false ) || ... );
+   }
+
+   template< typename operation_trait, typename type_trait >
+   void walk_row_major( char const * in_p, char * out_p, int32_t ndim, PyArrayObject const * in_array, int64_t const stride_out, operation_trait const & requested_op, type_trait const & in_type )
+   {
+      ptrdiff_t inner_len{1};
+      for( int32_t i{1}; i < ndim; ++i ) // Is this loop really right? One-based but bounded by < ndim???
+      {
+         inner_len *= PyArray_DIM( in_array, i );
+      }
+      
+      ptrdiff_t const outer_len = PyArray_DIM( in_array, 0 );
+      ptrdiff_t const outer_stride = PyArray_STRIDE( in_array, 0 );
+      
+      for ( ptrdiff_t offset{};  offset < outer_len; ++offset )
+      {
+         calculate_for_active_data_type( in_p + ( offset * outer_stride ), out_p + ( offset * inner_len * stride_out ), outer_len, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+      }
+   }
+   
+   template< typename operation_trait, typename type_trait >
+   void walk_column_major( char const * in_p, char * out_p, int32_t ndim, PyArrayObject const * in_array, int64_t const stride_out, operation_trait const & requested_op, type_trait const & in_type )
+   {
+      ptrdiff_t inner_len{ PyArray_DIM( in_array, 0 ) * PyArray_DIM( in_array, 1 ) };
+      
+/*   This loop from UnaryOps.cpp is optimized to the above,
+     I'm unsure about it since it only looks at 2 dimensions, 
+     and then we utilize at ndim below instead.
+     for( int32_t i{0}; i < 1; ++i )
+     {
+     inner_len *= PyArray_DIM( in_array, i );
+     } 
+*/
+      
+      ptrdiff_t const outer_len{ PyArray_DIM( in_array, ( ndim - 1 ) ) };
+      ptrdiff_t const outer_stride{ PyArray_DIM( in_array, ( ndim - 1 ) ) };
+      
+      for( ptrdiff_t offset{}; offset < outer_len; ++offset )
+      {
+         calculate_for_active_data_type( in_p + ( offset * outer_stride ), out_p + ( offset * inner_len * stride_out ), outer_len, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+      }
    }
 }
 
@@ -593,22 +634,75 @@ PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out
       if ( direction == 0 && numpy_outtype == -1 )
       {
          numpy_outtype = get_active_value_return( *opt_op_trait, std::make_index_sequence< std::variant_size_v< internal::operation_t > >{} ) ? numpy_intype : NPY_BOOL;
-         PyArrayObject * result_array{ ( ndim <= 1 ) ? AllocateNumpyArray( 1, &len, numpy_intype ) : AllocateLikeNumpyArray( in_array, numpy_intype ) };
+         PyArrayObject * result_array{ ( ndim <= 1 ) ? AllocateNumpyArray( 1, &len, numpy_outtype ) : AllocateLikeNumpyArray( in_array, numpy_outtype ) };
          
          if ( result_array )
          {
             char const * in_p = PyArray_BYTES( const_cast< PyArrayObject * >( in_array ) );
             char * out_p{ PyArray_BYTES( const_cast< PyArrayObject * >( result_array ) ) };
             
-            internal::calculate_for_active_data_type( out_p, in_p, len, stride, *opt_op_trait, *opt_type_trait, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+            internal::calculate_for_active_data_type( in_p, out_p, len, stride, *opt_op_trait, *opt_type_trait, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+         }
+         else
+         {
+            Py_INCREF( Py_None );
+            return Py_None;
          }
          
          return reinterpret_cast< PyObject* >( result_array );
       }
-   }
+      else
+      {
+         int wanted_outtype = get_active_value_return( *opt_op_trait, std::make_index_sequence< std::variant_size_v< internal::operation_t > >{} ) ? numpy_intype : NPY_BOOL;
 
-   Py_INCREF( Py_None );
-   return Py_None;
+         if ( numpy_outtype != -1 && numpy_outtype != wanted_outtype )
+         {
+            LOGGING( "Wanted output type %d does not match output type %d\n", wanted_outtype, numpy_outtype );
+            Py_INCREF( Py_None );
+            return Py_None;
+         }
+
+         PyArrayObject * result_array { numpy_outtype == -1 ? AllocateLikeNumpyArray( in_array, wanted_outtype ) : out_object_1 };
+
+         if ( ( result_array == nullptr ) ||
+              ( result_array == out_object_1 ) && ( len != ArrayLength( result_array ) )
+            )
+         {
+            Py_INCREF( Py_None );
+            return Py_None;
+         }
+
+         if ( result_array == out_object_1 )
+         {
+            Py_INCREF( result_array );
+         }
+
+         char const *in_p{ PyArray_BYTES( const_cast< PyArrayObject * >( in_array ) ) };
+         char * out_p{ PyArray_BYTES( const_cast< PyArrayObject * >( result_array ) ) };
+            
+         int num_dims_out{};
+         int64_t stride_out{};
+         int direction_out = GetStridesAndContig( result_array, num_dims_out, stride_out );
+
+         if ( direction_out == 0 )
+         {
+            switch( direction )
+            {
+            case 0:
+               internal::calculate_for_active_data_type( in_p, out_p, len, stride, *opt_op_trait, *opt_type_trait, std::make_index_sequence< std::variant_size_v< internal::data_type_t > >{} );
+               break;
+            case 1:
+               internal::walk_row_major( in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait );
+               break;
+            case -1:
+               internal::walk_column_major( in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait );
+               break;
+            }
+         }
+      }
+      Py_INCREF( Py_None );
+      return Py_None;
+   }
 }
 
 namespace internal
