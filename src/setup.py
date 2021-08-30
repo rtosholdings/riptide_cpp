@@ -50,7 +50,7 @@ if sys.platform == 'linux':
         sources = sources_cpp + sources_zstd,
 
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++20','-pthread','-falign-functions=32','-falign-loops=32'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++2a','-pthread','-falign-functions=32','-falign-loops=32'],
         extra_link_args = ['-lrt'],
         #libraries = [''],
         )
