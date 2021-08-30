@@ -63,7 +63,7 @@ if sys.platform == 'darwin':
         extra_link_args = ['lib/libzstd.a'],
         #libraries = ['libzstd.a'],
         #library_dirs = ['lib'],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++20','-pthread','-falign-functions=32'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++2a','-pthread','-falign-functions=32'],
         )
 
 
