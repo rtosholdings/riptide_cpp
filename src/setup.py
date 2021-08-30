@@ -50,7 +50,7 @@ if sys.platform == 'linux':
         sources = sources_cpp + sources_zstd,
 
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++17','-pthread','-falign-functions=32','-falign-loops=32'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++20','-pthread','-falign-functions=32','-falign-loops=32'],
         extra_link_args = ['-lrt'],
         #libraries = [''],
         )
@@ -63,7 +63,7 @@ if sys.platform == 'darwin':
         extra_link_args = ['lib/libzstd.a'],
         #libraries = ['libzstd.a'],
         #library_dirs = ['lib'],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++17','-pthread','-falign-functions=32'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++20','-pthread','-falign-functions=32'],
         )
 
 
@@ -75,7 +75,7 @@ if sys.platform == 'win32':
         #extra_compile_args = ['/MT /Ox /Ob2 /Oi /Ot'],
         # For MSVC windows compiler 2019 it has the new __CxxFrameHandler4 which is found in vcrntime140_1.dll which is not on all systems
         # We use /dsFH4- to disable this frame handler
-        extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
+        extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/Zc:__cplusplus','/std:c++latest','/permissive-','/Zc:strictStrings-'],
         )
 
 setuptools.setup(
