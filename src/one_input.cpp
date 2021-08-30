@@ -84,7 +84,7 @@ namespace internal
                   }
       else
       {
-         return value > T{} ? T(1.0) : ( value < T{} ? T(-1.0) : ( value == value ? T{} : T(value) ) );
+         return value > T{} ? T(1.0) : ( value < T{} ? T(-1.0) : value == value ? T{} : T(value) );
       }
    }
 
