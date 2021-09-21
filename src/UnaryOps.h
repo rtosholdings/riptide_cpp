@@ -1,6 +1,8 @@
 #ifndef RIPTIDECPP_UNARYOPS_H
 #define RIPTIDECPP_UNARYOPS_H
 
+#include "RipTide.h"
+
 PyObject *
 BasicMathOneInput(PyObject *self, PyObject *args);
 
