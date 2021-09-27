@@ -89,13 +89,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include</AdditionalIncludeDirectories>
+      <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
+      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\libs;C:\ProgramData\Anaconda3\envs\riptide-dev38\PCbuild\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -107,8 +108,8 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include</AdditionalIncludeDirectories>
+      <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
+      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,6 +117,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\libs;C:\ProgramData\Anaconda3\envs\riptide-dev38\PCbuild\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -125,13 +127,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include</AdditionalIncludeDirectories>
+      <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
+      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\libs;C:\ProgramData\Anaconda3\envs\riptide-dev38\PCbuild\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -143,8 +146,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include</AdditionalIncludeDirectories>
+      <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
+      <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,9 +155,43 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\libs;C:\ProgramData\Anaconda3\envs\riptide-dev38\PCbuild\amd64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\ArenaMemory.cpp" />
+    <ClCompile Include="..\..\src\Array.cpp" />
+    <ClCompile Include="..\..\src\BasicMath.cpp" />
+    <ClCompile Include="..\..\src\Bins.cpp" />
+    <ClCompile Include="..\..\src\BitCount.cpp" />
+    <ClCompile Include="..\..\src\Compare.cpp" />
+    <ClCompile Include="..\..\src\Compress.cpp" />
+    <ClCompile Include="..\..\src\Convert.cpp" />
+    <ClCompile Include="..\..\src\CRC32.cpp" />
+    <ClCompile Include="..\..\src\DateTime.cpp" />
+    <ClCompile Include="..\..\src\Ema.cpp" />
+    <ClCompile Include="..\..\src\FileReadWrite.cpp" />
+    <ClCompile Include="..\..\src\GroupBy.cpp" />
+    <ClCompile Include="..\..\src\HashFunctions.cpp" />
+    <ClCompile Include="..\..\src\HashLinear.cpp" />
+    <ClCompile Include="..\..\src\Hook.cpp" />
+    <ClCompile Include="..\..\src\MathThreads.cpp" />
+    <ClCompile Include="..\..\src\MathWorker.cpp" />
+    <ClCompile Include="..\..\src\mat_interp.cpp" />
+    <ClCompile Include="..\..\src\Merge.cpp" />
+    <ClCompile Include="..\..\src\MultiKey.cpp" />
+    <ClCompile Include="..\..\src\Recycler.cpp" />
+    <ClCompile Include="..\..\src\Reduce.cpp" />
+    <ClCompile Include="..\..\src\RipTide.cpp" />
+    <ClCompile Include="..\..\src\SDSFile.cpp" />
+    <ClCompile Include="..\..\src\SDSFilePython.cpp" />
+    <ClCompile Include="..\..\src\SharedMemory.cpp" />
+    <ClCompile Include="..\..\src\Sort.cpp" />
+    <ClCompile Include="..\..\src\strptime5.cpp" />
+    <ClCompile Include="..\..\src\TileRepeat.cpp" />
+    <ClCompile Include="..\..\src\TimeWindow.cpp" />
+    <ClCompile Include="..\..\src\TypeSystem.cpp" />
+    <ClCompile Include="..\..\src\UnaryOps.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_unary.cpp" />
   </ItemGroup>
