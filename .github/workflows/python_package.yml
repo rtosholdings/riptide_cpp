@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -126,7 +126,7 @@ jobs:
       - name: Setup Miniconda
         env:
          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        uses: conda-incubator/setup-miniconda@v2.0.1
+        uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: ""
           auto-update-conda: true
@@ -137,7 +137,7 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          conda create -n conda_build python=3.8 conda-build anaconda-client setuptools_scm -y
+          conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm -y
           conda activate conda_build
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
           mkdir conda_pkgs_output
