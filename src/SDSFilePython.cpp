@@ -1880,7 +1880,7 @@ PyObject *SetLustreGateway(PyObject* self, PyObject *args) {
 
    //printf("hint: %s\n", fileName);
 
-   g_gatewaylist.empty();
+   g_gatewaylist.clear();
    int64_t tupleLength = PyTuple_GET_SIZE(tuple);
    g_gatewaylist.reserve(tupleLength);
 
