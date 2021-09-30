@@ -488,7 +488,7 @@ UtilMappedViewReadBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   const char*              pMappingName;
+   const char* pMappingName{};
 
    //
    // NULL indicates failure - default to that.
@@ -674,7 +674,7 @@ UtilMappedViewWriteBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   const char*              pMappingName;
+   const char* pMappingName{};
 
    //
    // NULL indicates failure - default to that.

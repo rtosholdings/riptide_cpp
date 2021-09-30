@@ -5,12 +5,12 @@
 
 #define LogVerbose(...)
 
-int64_t LogLevel(
+void LogLevel(
    int64_t level,
    LPCTSTR        szString,
    ...) {
 
-   printf("%s\n", szString);
+   printf("%lld %s\n", level, szString);
 }
 
 // defined in SDSFile
