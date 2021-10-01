@@ -30,27 +30,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -159,41 +159,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\ArenaMemory.cpp" />
-    <ClCompile Include="..\..\src\Array.cpp" />
-    <ClCompile Include="..\..\src\BasicMath.cpp" />
-    <ClCompile Include="..\..\src\Bins.cpp" />
-    <ClCompile Include="..\..\src\BitCount.cpp" />
-    <ClCompile Include="..\..\src\Compare.cpp" />
-    <ClCompile Include="..\..\src\Compress.cpp" />
-    <ClCompile Include="..\..\src\Convert.cpp" />
-    <ClCompile Include="..\..\src\CRC32.cpp" />
-    <ClCompile Include="..\..\src\DateTime.cpp" />
-    <ClCompile Include="..\..\src\Ema.cpp" />
-    <ClCompile Include="..\..\src\FileReadWrite.cpp" />
-    <ClCompile Include="..\..\src\GroupBy.cpp" />
-    <ClCompile Include="..\..\src\HashFunctions.cpp" />
-    <ClCompile Include="..\..\src\HashLinear.cpp" />
-    <ClCompile Include="..\..\src\Hook.cpp" />
-    <ClCompile Include="..\..\src\MathThreads.cpp" />
-    <ClCompile Include="..\..\src\MathWorker.cpp" />
-    <ClCompile Include="..\..\src\mat_interp.cpp" />
-    <ClCompile Include="..\..\src\Merge.cpp" />
-    <ClCompile Include="..\..\src\MultiKey.cpp" />
-    <ClCompile Include="..\..\src\Recycler.cpp" />
-    <ClCompile Include="..\..\src\Reduce.cpp" />
-    <ClCompile Include="..\..\src\RipTide.cpp" />
-    <ClCompile Include="..\..\src\SDSFile.cpp" />
-    <ClCompile Include="..\..\src\SDSFilePython.cpp" />
-    <ClCompile Include="..\..\src\SharedMemory.cpp" />
-    <ClCompile Include="..\..\src\Sort.cpp" />
-    <ClCompile Include="..\..\src\strptime5.cpp" />
-    <ClCompile Include="..\..\src\TileRepeat.cpp" />
-    <ClCompile Include="..\..\src\TimeWindow.cpp" />
-    <ClCompile Include="..\..\src\TypeSystem.cpp" />
-    <ClCompile Include="..\..\src\UnaryOps.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="test_unary.cpp" />
+    <ClCompile Include="..\..\src\one_input.cpp" />
+    <ClCompile Include="one_input_impl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\one_input.h" />
+    <ClInclude Include="one_input_impl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
