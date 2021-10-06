@@ -38,5 +38,8 @@
     <ClInclude Include="..\..\src\simd\avx2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\ut\include\boost\ut.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

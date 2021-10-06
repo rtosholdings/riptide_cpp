@@ -168,6 +168,7 @@
     <ClInclude Include="..\..\src\operation_traits.h" />
     <ClInclude Include="..\..\src\overloaded.h" />
     <ClInclude Include="..\..\src\simd\avx2.h" />
+    <ClInclude Include="..\ut\include\boost\ut.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
