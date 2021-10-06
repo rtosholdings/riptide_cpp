@@ -9,3 +9,5 @@
 
 *.sln text eol=crlf
 *.py text
+
+.gitmodules text
