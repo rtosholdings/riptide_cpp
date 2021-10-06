@@ -159,12 +159,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\one_input.cpp" />
-    <ClCompile Include="one_input_impl.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="test_one_input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\one_input.h" />
-    <ClInclude Include="one_input_impl.h" />
+    <ClInclude Include="..\..\src\one_input_impl.h" />
+    <ClInclude Include="..\..\src\operation_traits.h" />
+    <ClInclude Include="..\..\src\overloaded.h" />
+    <ClInclude Include="..\..\src\simd\avx2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

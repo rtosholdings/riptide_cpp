@@ -17,7 +17,7 @@ extern "C"
 }
 
 
-namespace internal
+namespace riptable_cpp
 {
    using chosen_traits_t = std::pair< std::optional< operation_t >, std::optional< data_type_t > >;
 

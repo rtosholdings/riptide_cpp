@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace internal
+namespace riptable_cpp
 {
    template< typename arithmetic_concept, typename simd_concept, typename Enable = void >
    struct data_type_traits

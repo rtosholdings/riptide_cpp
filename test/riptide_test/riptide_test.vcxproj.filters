@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\one_input.cpp">
+    <ClCompile Include="test_one_input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="one_input_impl.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -26,7 +26,16 @@
     <ClInclude Include="..\..\src\one_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="one_input_impl.h">
+    <ClInclude Include="..\..\src\one_input_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\overloaded.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\operation_traits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\simd\avx2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
