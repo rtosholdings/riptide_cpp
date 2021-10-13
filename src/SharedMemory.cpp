@@ -488,17 +488,17 @@ UtilMappedViewReadBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   //UNUSED? const char*              pMappingName;
+   //TODO: const char*              pMappingName;
 
    //
    // NULL indicates failure - default to that.
    //
    *pReturnStruct = NULL;
 
-   //UNUSED? if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
-   //UNUSED? {
-   //UNUSED?    return -(S_FALSE);
-   //UNUSED? }
+   //TODO: if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
+   //TODO: {
+   //TODO:    return -(S_FALSE);
+   //TODO: }
 
    //
    // Allocate fixed, zero inited memory
@@ -543,27 +543,27 @@ UtilMappedViewReadBegin(
       return(HRESULT_FROM_WIN32(GetLastError()));
    }
 
-   //UNUSED?   //
-   //UNUSED?   // Break off any \ or : or / in the file
-   //UNUSED?   //
-   //UNUSED?   // Search for the last one
-   //UNUSED?   //
-   //UNUSED?   {
-   //UNUSED?      const char* pTemp = pszFilename;
-   //UNUSED?      pMappingName = pTemp;
-   //UNUSED?
-   //UNUSED?      while (*pTemp != 0) {
-   //UNUSED?
-   //UNUSED?         if (*pTemp == '\\' ||
-   //UNUSED?            *pTemp == ':' ||
-   //UNUSED?            *pTemp == '/') {
-   //UNUSED?
-   //UNUSED?            pMappingName = pTemp + 1;
-   //UNUSED?         }
-   //UNUSED?
-   //UNUSED?         pTemp++;
-   //UNUSED?      }
-   //UNUSED?   }
+   //TODO:   //
+   //TODO:   // Break off any \ or : or / in the file
+   //TODO:   //
+   //TODO:   // Search for the last one
+   //TODO:   //
+   //TODO:   {
+   //TODO:      const char* pTemp = pszFilename;
+   //TODO:      pMappingName = pTemp;
+   //TODO:
+   //TODO:      while (*pTemp != 0) {
+   //TODO:
+   //TODO:         if (*pTemp == '\\' ||
+   //TODO:            *pTemp == ':' ||
+   //TODO:            *pTemp == '/') {
+   //TODO:
+   //TODO:            pMappingName = pTemp + 1;
+   //TODO:         }
+   //TODO:
+   //TODO:         pTemp++;
+   //TODO:      }
+   //TODO:   }
 
    //
    // We create a file mapping in order to map the file
@@ -674,17 +674,17 @@ UtilMappedViewWriteBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   //UNUSED? const char*              pMappingName;
+   //TODO: const char*              pMappingName;
 
    //
    // NULL indicates failure - default to that.
    //
    *pReturnStruct = NULL;
 
-   //UNUSED? if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
-   //UNUSED? {
-   //UNUSED?    return -(S_FALSE);
-   //UNUSED? }
+   //TODO: if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
+   //TODO: {
+   //TODO:    return -(S_FALSE);
+   //TODO: }
 
    //
    // Allocate fixed, zero inited memory
@@ -729,27 +729,27 @@ UtilMappedViewWriteBegin(
       return (HRESULT_FROM_WIN32(GetLastError()));
    }
 
-   //UNUSED?   //
-   //UNUSED?   // Break off any \ or : or / in the file
-   //UNUSED?   //
-   //UNUSED?   // Search for the last one
-   //UNUSED?   //
-   //UNUSED?   {
-   //UNUSED?      const char* pTemp = pszFilename;
-   //UNUSED?      pMappingName = pTemp;
-   //UNUSED?
-   //UNUSED?      while (*pTemp != 0) {
-   //UNUSED?
-   //UNUSED?         if (*pTemp == '\\' ||
-   //UNUSED?            *pTemp == ':' ||
-   //UNUSED?            *pTemp == '/') {
-   //UNUSED?
-   //UNUSED?            pMappingName = pTemp + 1;
-   //UNUSED?         }
-   //UNUSED?
-   //UNUSED?         pTemp++;
-   //UNUSED?      }
-   //UNUSED?   }
+   //TODO:   //
+   //TODO:   // Break off any \ or : or / in the file
+   //TODO:   //
+   //TODO:   // Search for the last one
+   //TODO:   //
+   //TODO:   {
+   //TODO:      const char* pTemp = pszFilename;
+   //TODO:      pMappingName = pTemp;
+   //TODO:
+   //TODO:      while (*pTemp != 0) {
+   //TODO:
+   //TODO:         if (*pTemp == '\\' ||
+   //TODO:            *pTemp == ':' ||
+   //TODO:            *pTemp == '/') {
+   //TODO:
+   //TODO:            pMappingName = pTemp + 1;
+   //TODO:         }
+   //TODO:
+   //TODO:         pTemp++;
+   //TODO:      }
+   //TODO:   }
 
    //
    // We create a file mapping inorder to map the file

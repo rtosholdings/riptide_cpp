@@ -101,7 +101,7 @@ typedef struct {
 } PyBoolScalarObject;
 
 extern bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& convertType2, int64_t funcNumber);
-extern int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride);
+extern int GetStridesAndContig(PyArrayObject const * inArray, int& ndim, int64_t& stride);
 
 /**
  * @brief Calculate the number of elements in an array with the given dimensions.
@@ -160,7 +160,7 @@ extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpy
  */
 extern PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpyType, int64_t itemsize, char* data, int array_flags, npy_intp* strides = nullptr);
 
-extern PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType);
+extern PyArrayObject* AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpyType);
 extern PyArrayObject* AllocateLikeResize(PyArrayObject* inArr, npy_intp rowSize);
 
 extern int32_t GetArrDType(PyArrayObject* inArr);

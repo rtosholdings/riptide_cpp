@@ -8,3 +8,4 @@
 *.hpp text
 
 *.sln text eol=crlf
+*.py text
