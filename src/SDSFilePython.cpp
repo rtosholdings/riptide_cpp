@@ -425,7 +425,7 @@ StringListToVector(PyObject* listFilenames) {
 
 //----------------------------------------------------
 // Input: Python List of Tuples(asciiz string,int)
-// Output: Write to pListNames.  
+// Output: Write to pListNames.
 //         ASCIIZ strings follow by UINT8 enum (string1, 0, enum1, string2, 0, enum2, etc.)
 // Returns: Length of data in pListNames
 //
@@ -724,7 +724,7 @@ const char* FindBang(const char *pString) {
 //----------------------------------------------------
 // Returns true if included
 bool IsIncluded(PyObject* pInclusionList, const char* pArrayName) {
-  
+
    // If there is no inclusion list, assume all are included
     if (pInclusionList) {
 
@@ -794,7 +794,7 @@ void* ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK* pSMCB) {
 
    PyObject* pystring = NULL;
    PyObject* pListName = NULL;
-   LOGGING("Reading from shared memory\n");    
+   LOGGING("Reading from shared memory\n");
 
    //----------- LOAD ARRAY NAMES -------------------------
    int64_t nameSize = pFileHeader->NameBlockSize;
@@ -1033,7 +1033,7 @@ PyObject* ReadFinalWrap(SDS_FINAL_CALLBACK* pSDSFinalCallback) {
 // CALLBACK2 - can wrap more than one file
 // finalCount is how many info sections to return
 // if there are sections inside a single file, the finalCount > 1
-void* ReadFinal(SDS_FINAL_CALLBACK* pSDSFinalCallback, int64_t finalCount) {     
+void* ReadFinal(SDS_FINAL_CALLBACK* pSDSFinalCallback, int64_t finalCount) {
 
    PyObject* returnItem = NULL;
 
@@ -1065,9 +1065,9 @@ void* ReadFinal(SDS_FINAL_CALLBACK* pSDSFinalCallback, int64_t finalCount) {
 //----------------------------------------
 // CALLBACK2 - all files were stacked into one column
 void* ReadFinalStack(
-   SDS_STACK_CALLBACK* pSDSFinalCallback, 
-   int64_t finalCount, 
-   SDS_STACK_CALLBACK_FILES *pSDSFileInfo, 
+   SDS_STACK_CALLBACK* pSDSFinalCallback,
+   int64_t finalCount,
+   SDS_STACK_CALLBACK_FILES *pSDSFileInfo,
    SDS_FILTER*    pSDSFilter,
    int64_t fileCount) {
 
@@ -1396,7 +1396,7 @@ PyObject *CompressFile(PyObject* self, PyObject *args, PyObject *kwargs)
          SDSWriteFile(
             fileName,
             shareName,  // can be NULL
-            folderName, 
+            folderName,
             &SDSWriteInfo,
             &SDSWriteCallbacks );
 
@@ -1526,7 +1526,7 @@ GetFilters(PyObject* kwargs, SDS_READ_CALLBACKS* pRCB) {
       PyObject* maskItem = PyDict_GetItemString(kwargs, "mask");
 
       if (maskItem && PyArray_Check(maskItem)) {
-         if (PyArray_TYPE((PyArrayObject*)maskItem) == NPY_BOOL) {         
+         if (PyArray_TYPE((PyArrayObject*)maskItem) == NPY_BOOL) {
             pRCB->Filter.BoolMaskLength = ArrayLength((PyArrayObject*)maskItem);
             pRCB->Filter.pBoolMask = (bool*)PyArray_GETPTR1((PyArrayObject*)maskItem, 0);
             // Needed
@@ -1662,7 +1662,7 @@ PyObject *DecompressFile(PyObject* self, PyObject *args, PyObject *kwargs) {
 //
 PyObject*
 InternalDecompressFiles(
-   PyObject*   self, 
+   PyObject*   self,
    PyObject*   args,
    PyObject*   kwargs,
    int         multiMode) {

@@ -30,7 +30,7 @@ void LogWarningLE(HRESULT error) {
 //------------------------------------------------------------------------------------------
 // Checks Windows policy settings if the current process has
 // the privilege enabled.
-// 
+//
 bool
 CheckWindowsPrivilege(const char* pPrivilegeName)
 {
@@ -92,7 +92,7 @@ bool SetPrivilege(
 
    if (!LookupPrivilegeValue(
       NULL,            // lookup privilege on local system
-      lpszPrivilege,   // privilege to lookup 
+      lpszPrivilege,   // privilege to lookup
       &luid))        // receives LUID of privilege
    {
       printf("LookupPrivilegeValue error: %u\n", GetLastError());
@@ -369,7 +369,7 @@ UtilSharedNumaMemoryBegin(
 // The pReturnStruct will be valid if the call succeeded
 // if bTest = true, it will not complain if it cannot find shared memory
 // if returns S_OK you are mapped
-// returns S_FALSE if it does not exist yet 
+// returns S_FALSE if it does not exist yet
 HRESULT
 UtilSharedMemoryCopy(
    const char*              pMappingName,
@@ -488,17 +488,17 @@ UtilMappedViewReadBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   const char*              pMappingName;
+   //TODO: const char*              pMappingName;
 
    //
    // NULL indicates failure - default to that.
    //
    *pReturnStruct = NULL;
 
-   if (!CheckWindowsSharedMemoryPrerequisites(pMappingName)) 
-   {
-      return -(S_FALSE);
-   }
+   //TODO: if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
+   //TODO: {
+   //TODO:    return -(S_FALSE);
+   //TODO: }
 
    //
    // Allocate fixed, zero inited memory
@@ -543,27 +543,27 @@ UtilMappedViewReadBegin(
       return(HRESULT_FROM_WIN32(GetLastError()));
    }
 
-   //
-   // Break off any \ or : or / in the file
-   //
-   // Search for the last one
-   //
-   {
-      const char* pTemp = pszFilename;
-      pMappingName = pTemp;
-
-      while (*pTemp != 0) {
-
-         if (*pTemp == '\\' ||
-            *pTemp == ':' ||
-            *pTemp == '/') {
-
-            pMappingName = pTemp + 1;
-         }
-
-         pTemp++;
-      }
-   }
+   //TODO:   //
+   //TODO:   // Break off any \ or : or / in the file
+   //TODO:   //
+   //TODO:   // Search for the last one
+   //TODO:   //
+   //TODO:   {
+   //TODO:      const char* pTemp = pszFilename;
+   //TODO:      pMappingName = pTemp;
+   //TODO:
+   //TODO:      while (*pTemp != 0) {
+   //TODO:
+   //TODO:         if (*pTemp == '\\' ||
+   //TODO:            *pTemp == ':' ||
+   //TODO:            *pTemp == '/') {
+   //TODO:
+   //TODO:            pMappingName = pTemp + 1;
+   //TODO:         }
+   //TODO:
+   //TODO:         pTemp++;
+   //TODO:      }
+   //TODO:   }
 
    //
    // We create a file mapping in order to map the file
@@ -674,17 +674,17 @@ UtilMappedViewWriteBegin(
 
    PULONG               pulFile;
    PMAPPED_VIEW_STRUCT  pMappedViewStruct;
-   const char*              pMappingName;
+   //TODO: const char*              pMappingName;
 
    //
    // NULL indicates failure - default to that.
    //
    *pReturnStruct = NULL;
 
-   if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
-   {
-      return -(S_FALSE);
-   }
+   //TODO: if (!CheckWindowsSharedMemoryPrerequisites(pMappingName))
+   //TODO: {
+   //TODO:    return -(S_FALSE);
+   //TODO: }
 
    //
    // Allocate fixed, zero inited memory
@@ -729,27 +729,27 @@ UtilMappedViewWriteBegin(
       return (HRESULT_FROM_WIN32(GetLastError()));
    }
 
-   //
-   // Break off any \ or : or / in the file
-   //
-   // Search for the last one
-   //
-   {
-      const char* pTemp = pszFilename;
-      pMappingName = pTemp;
-
-      while (*pTemp != 0) {
-
-         if (*pTemp == '\\' ||
-            *pTemp == ':' ||
-            *pTemp == '/') {
-
-            pMappingName = pTemp + 1;
-         }
-
-         pTemp++;
-      }
-   }
+   //TODO:   //
+   //TODO:   // Break off any \ or : or / in the file
+   //TODO:   //
+   //TODO:   // Search for the last one
+   //TODO:   //
+   //TODO:   {
+   //TODO:      const char* pTemp = pszFilename;
+   //TODO:      pMappingName = pTemp;
+   //TODO:
+   //TODO:      while (*pTemp != 0) {
+   //TODO:
+   //TODO:         if (*pTemp == '\\' ||
+   //TODO:            *pTemp == ':' ||
+   //TODO:            *pTemp == '/') {
+   //TODO:
+   //TODO:            pMappingName = pTemp + 1;
+   //TODO:         }
+   //TODO:
+   //TODO:         pTemp++;
+   //TODO:      }
+   //TODO:   }
 
    //
    // We create a file mapping inorder to map the file
@@ -853,7 +853,7 @@ UtilSharedMemoryBegin(
 
    // Our memory buffer will be readable and writable:
    int protection = PROT_READ | PROT_WRITE;
-   
+
    //MAP_HUGETLB(since Linux 2.6.32)
    //   Allocate the mapping using "huge pages."  See the Linux kernel
    //   source file Documentation / vm / hugetlbpage.txt for further
@@ -941,7 +941,7 @@ UtilSharedMemoryCopy(
 
    // Our memory buffer will be readable and writable:
    int protection = PROT_READ;
-   
+
    if (!bCanOnlyRead) {
       protection |= PROT_WRITE;
    }
@@ -969,7 +969,7 @@ UtilSharedMemoryCopy(
    // Allocate memory
    //
    PMAPPED_VIEW_STRUCT pMappedViewStruct;
-   
+
    pMappedViewStruct=
       static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
