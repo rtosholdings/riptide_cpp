@@ -81,6 +81,18 @@ namespace
 
         "walk_abs_float"_test = [&]
         {
+            operation_t op{abs_op{}};
+            data_type_t data_type{ float_traits{} };
+            std::array< float, 28 > x{};
+            walk_data_array(1, 28, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == 1.5_f);
+            expect(x[1] == 1.0_f);
+            expect(x[2] == 0.5_f);
+            expect(x[3] == 0.0_f);
+            expect(x[4] == 0.5_f);
+            expect(x[5] == 1.0_f);
+            expect(x[6] == 1.5_f);
+            expect(x[7] == 2.0_f);
         };
 
         "calculate_abs_void"_test = []

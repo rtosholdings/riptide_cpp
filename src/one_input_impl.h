@@ -522,11 +522,12 @@ namespace riptable_cpp
 
         // numpy standard is to treat stride as bytes
         template< typename operation_t, typename data_t >
-        void perform_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_t* op_p, data_t* data_type_p, int64_t out_stride_as_items = 1)
+        void perform_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, size_t contig_elems, operation_t* op_p, data_t* data_type_p, int64_t out_stride_as_items = 1)
         {
             auto calc = [&](auto vectorization_object)
             {
                 auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
+
                 *reinterpret_cast<decltype(x)*>(out_p) = x;
 
                 starting_element += sizeof(decltype(x)) / sizeof(typename data_t::data_type);
@@ -537,8 +538,9 @@ namespace riptable_cpp
                 if constexpr (operation_t::simd_implementation::value)
                 {
                     using wide_sct = typename riptide::simd::avx2::template vec256< typename data_t::data_type >;
-
-                    if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1)
+                    constexpr size_t wide_size{ sizeof(wide_sct::reg_type) };
+                    constexpr size_t input_size{ sizeof(data_t::data_type) };
+                    if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1 && ( wide_size/input_size)+starting_element < contig_elems)
                     {
                         calc(wide_sct{});
                     }
@@ -555,18 +557,18 @@ namespace riptable_cpp
         }
 
         template< typename operation_variant, typename data_type, size_t... Is >
-        void calculate_for_active_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_variant const& requested_op, data_type const* type_p, std::index_sequence< Is... >)
+        void calculate_for_active_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, size_t contig_elems, operation_variant const& requested_op, data_type const* type_p, std::index_sequence< Is... >)
         {
             if (type_p)
             {
-                (perform_operation(in_p, out_p, starting_element, in_array_stride, std::get_if< Is >(&requested_op), type_p), ...);
+                (perform_operation(in_p, out_p, starting_element, in_array_stride, contig_elems, std::get_if< Is >(&requested_op), type_p), ...);
             }
         }
 
         template< typename type_variant, size_t... Is >
-        void calculate_for_active_data_type(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_t const& requested_op, type_variant const& in_type, std::index_sequence< Is... >)
+        void calculate_for_active_data_type(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, size_t contig_elems, operation_t const& requested_op, type_variant const& in_type, std::index_sequence< Is... >)
         {
-            (calculate_for_active_operation(in_p, out_p, starting_element, in_array_stride, requested_op, std::get_if< Is >(&in_type), std::make_index_sequence< std::variant_size_v< operation_t > >{}), ...);
+            (calculate_for_active_operation(in_p, out_p, starting_element, in_array_stride, contig_elems, requested_op, std::get_if< Is >(&in_type), std::make_index_sequence< std::variant_size_v< operation_t > >{}), ...);
         }
 
         template< typename operation_variant, size_t... Is >
@@ -576,12 +578,12 @@ namespace riptable_cpp
         }
 
         template< typename operation_trait, typename type_trait >
-        void walk_data_array(ptrdiff_t inner_len, ptrdiff_t outer_len, ptrdiff_t outer_stride, ptrdiff_t stride_out, char const* in_p, char* out_p, operation_trait const& requested_op, type_trait const& in_type)
+        void walk_data_array(ptrdiff_t inner_len, size_t outer_len, ptrdiff_t outer_stride, ptrdiff_t stride_out, char const* in_p, char* out_p, operation_trait const& requested_op, type_trait const& in_type)
         {
             ptrdiff_t offset{};
-            while( offset < outer_len )
+            while( std::make_unsigned_t<ptrdiff_t>(offset) < outer_len )
             {
-                calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), offset, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< data_type_t > >{});
+                calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), offset, outer_stride, outer_len, requested_op, in_type, std::make_index_sequence< std::variant_size_v< data_type_t > >{});
             }
         }
 
