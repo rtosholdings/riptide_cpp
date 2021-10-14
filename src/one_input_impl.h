@@ -19,6 +19,8 @@ namespace riptable_cpp
 {
     inline namespace implementation
     {
+        using no_simd_type = typename ::riptide::simd::avx2::template vec256< void >;
+
         template< typename calculation_t, typename wide_ops_t >
         decltype(auto) calculate(char const* in_p, abs_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
@@ -518,67 +520,69 @@ namespace riptable_cpp
         }
 
 
-        // numpy standard is to treat stride as bytes, but I'm keeping the math simple for now more for exposition than anything else.
+        // numpy standard is to treat stride as bytes
         template< typename operation_t, typename data_t >
-        void perform_operation(char const* in_p, char* out_p, npy_intp const len, int64_t const stride, operation_t* op_p, data_t* data_type_p, int64_t const out_stride_as_items = 1)
+        void perform_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_t* op_p, data_t* data_type_p, int64_t out_stride_as_items = 1)
         {
-            // Output cannot be longer than the input
-            char const* last_out_p{ out_p + sizeof(data_t) * len };
-
             auto calc = [&](auto vectorization_object)
             {
-                while (out_p < last_out_p)
-                {
-                    auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
-                    *reinterpret_cast<decltype(x)*>(out_p) = x;
+                auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
+                *reinterpret_cast<decltype(x)*>(out_p) = x;
 
-                    in_p += stride;
-                    out_p += sizeof(decltype(x)) * out_stride_as_items;
-                }
+                starting_element += sizeof(decltype(x)) / sizeof(typename data_t::data_type);
             };
 
             if (op_p)
             {
                 if constexpr (operation_t::simd_implementation::value)
                 {
-                    using wide_type = typename data_t::calculation_type;
                     using wide_sct = typename riptide::simd::avx2::template vec256< typename data_t::data_type >;
 
-                    if (stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1)
+                    if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1)
                     {
                         calc(wide_sct{});
                     }
                     else
                     {
-                        calc(typename riptide::simd::avx2::template vec256< void >{});
+                        calc(no_simd_type{});
                     }
                 }
                 else
                 {
-                    calc(typename riptide::simd::avx2::template vec256< void >{});
+                    calc(no_simd_type{});
                 }
             }
         }
 
         template< typename operation_variant, typename data_type, size_t... Is >
-        void calculate_for_active_operation(char const* in_p, char* out_p, npy_intp const len, int64_t const stride, operation_variant const& requested_op, data_type const* type_p, std::index_sequence< Is... >)
+        void calculate_for_active_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_variant const& requested_op, data_type const* type_p, std::index_sequence< Is... >)
         {
             if (type_p)
             {
-                (perform_operation(in_p, out_p, len, stride, std::get_if< Is >(&requested_op), type_p), ...);
+                (perform_operation(in_p, out_p, starting_element, in_array_stride, std::get_if< Is >(&requested_op), type_p), ...);
             }
         }
 
         template< typename type_variant, size_t... Is >
-        void calculate_for_active_data_type(char const* in_p, char* out_p, npy_intp const len, int64_t const stride, operation_t const& requested_op, type_variant const& in_type, std::index_sequence< Is... >)
+        void calculate_for_active_data_type(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, operation_t const& requested_op, type_variant const& in_type, std::index_sequence< Is... >)
         {
-            (calculate_for_active_operation(in_p, out_p, len, stride, requested_op, std::get_if< Is >(&in_type), std::make_index_sequence< std::variant_size_v< operation_t > >{}), ...);
+            (calculate_for_active_operation(in_p, out_p, starting_element, in_array_stride, requested_op, std::get_if< Is >(&in_type), std::make_index_sequence< std::variant_size_v< operation_t > >{}), ...);
         }
 
         template< typename operation_variant, size_t... Is >
         bool get_active_value_return(operation_variant v, std::index_sequence< Is... >)
         {
             return ((std::get_if< Is >(&v) ? std::get_if< Is >(&v)->value_return : false) || ...);
+        }
+
+        template< typename operation_trait, typename type_trait >
+        void walk_data_array(ptrdiff_t inner_len, ptrdiff_t outer_len, ptrdiff_t outer_stride, ptrdiff_t stride_out, char const* in_p, char* out_p, operation_trait const& requested_op, type_trait const& in_type)
+        {
+            ptrdiff_t offset{};
+            while( offset < outer_len )
+            {
+                calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), offset, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< data_type_t > >{});
+            }
         }
 
         template< typename operation_trait, typename type_trait >
@@ -593,10 +597,7 @@ namespace riptable_cpp
             ptrdiff_t const outer_len = PyArray_DIM(in_array, 0);
             ptrdiff_t const outer_stride = PyArray_STRIDE(in_array, 0);
 
-            for (ptrdiff_t offset{}; offset < outer_len; ++offset)
-            {
-                calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), outer_len, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< data_type_t > >{});
-            }
+            walk_data_array(inner_len, outer_len, outer_stride, stride_out, in_p, out_p, requested_op, in_type);
         }
 
         template< typename operation_trait, typename type_trait >
@@ -616,10 +617,7 @@ namespace riptable_cpp
             ptrdiff_t const outer_len{ PyArray_DIM(in_array, (ndim - 1)) };
             ptrdiff_t const outer_stride{ PyArray_DIM(in_array, (ndim - 1)) };
 
-            for (ptrdiff_t offset{}; offset < outer_len; ++offset)
-            {
-                calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), outer_len, outer_stride, requested_op, in_type, std::make_index_sequence< std::variant_size_v< data_type_t > >{});
-            }
+            walk_data_array(inner_len, outer_len, outer_stride, stride_out, in_p, out_p, requested_op, in_type);
         }
     }
 }

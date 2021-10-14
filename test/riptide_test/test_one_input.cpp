@@ -3,6 +3,8 @@
 #define BOOST_UT_DISABLE_MODULE
 #include "../ut/include/boost/ut.hpp"
 
+#include <type_traits>
+
 using namespace boost::ut;
 using boost::ut::suite;
 
@@ -42,6 +44,7 @@ namespace
             expect(x.m256i_i32[5] == 2_i);
             expect(x.m256i_i32[6] == 3_i);
             expect(x.m256i_i32[7] == 4_i);
+            expect(sizeof(decltype(x)) == 8 * sizeof(int32_t));
         };
 
         "calculate_abs_float"_test = [&]
@@ -57,6 +60,27 @@ namespace
             expect(x.m256_f32[5] == 1.0_f);
             expect(x.m256_f32[6] == 1.5_f);
             expect(x.m256_f32[7] == 2.0_f);
+            expect(sizeof(decltype(x)) == 8 * sizeof(float));
+        };
+
+        "walk_fabs_float"_test = [&]
+        {
+            operation_t op{ fabs_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< float, 28 > x{};
+            walk_data_array(1, 28, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast< char *>(x.data()), op, data_type);
+            expect(x[0] == 1.5_f);
+            expect(x[1] == 1.0_f);
+            expect(x[2] == 0.5_f);
+            expect(x[3] == 0.0_f);
+            expect(x[4] == 0.5_f);
+            expect(x[5] == 1.0_f);
+            expect(x[6] == 1.5_f);
+            expect(x[7] == 2.0_f);
+        };
+
+        "walk_abs_float"_test = [&]
+        {
         };
 
         "calculate_abs_void"_test = []
@@ -66,6 +90,7 @@ namespace
             double in_data{ -3.141592 };
             auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
             expect(x == 3.141592);
+            expect(std::is_same_v<decltype(x),double>);
         };
 
         "calculate_fabs_not_fp"_test = [&]
@@ -74,6 +99,7 @@ namespace
             int32_traits data_type{};
             auto x = calculate(reinterpret_cast<char const*>(p_int32 + 5), &op, &data_type, vec256<int32_t>{});
             expect(x == -3_i);
+            expect(std::is_same_v<decltype(x), int32_t>);
         };
 
         "calculate_fabs_fp"_test = [&]
@@ -82,6 +108,15 @@ namespace
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const*>(p_float + 5), &op, &data_type, vec256<float>{});
             expect(x == 1.5_f);
+            expect(std::is_same_v<decltype(x), float>);
+        };
+
+        "calculate_fabs_fp_positive"_test = [&]
+        {
+            fabs_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_float + 9), &op, &data_type, vec256<float>{});
+            expect(x == 0.5_f);
         };
 
         "calculate_sign_unsigned"_test = []
@@ -116,7 +151,7 @@ namespace
             floatsign_op op{};
             int32_traits data_type{};
             int32_t data{ 1 };
-            auto x = calculate(nullptr, &op, &data_type, vec256<void>{});
+            auto x = calculate(reinterpret_cast<char const *>(&data), &op, &data_type, vec256<void>{});
             expect(x == 0_i);
         };
 
