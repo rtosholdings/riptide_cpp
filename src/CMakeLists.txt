@@ -24,6 +24,7 @@ set(HEADERS
     MultiKey.h
     #ndarray.h
     #numpy_traits.h
+    one_input.h
     #platform_detect.h
     Recycler.h
     Reduce.h
@@ -61,6 +62,7 @@ set(SOURCES
     #mat_interp.cpp
     Merge.cpp
     MultiKey.cpp
+    one_input.cpp
     Recycler.cpp
     Reduce.cpp
     RipTide.cpp
@@ -101,19 +103,20 @@ set(ZSTD_SOURCES
     zstd/common/pool.c
 )
 
-add_library(${TARGET_NAME}
+add_library(${TARGET_NAME} SHARED
     ${HEADERS}
     ${SOURCES}
     ${ZSTD_SOURCES})
 
 target_include_directories(${TARGET_NAME} PRIVATE
     ${Python3_INCLUDE_DIRS}
+    ${Python3_NumPy_INCLUDE_DIRS}
     zstd)
 
-if(CMAKE_HOST_WIN32)
-    add_compile_options(/Ox /Ob2 /Oi /Ot /d2FH4-)
-elseif(CMAKE_HOST_APPLE)
-    add_compile_options(-mavx2 -mbmi2 -fpermissive -Wno-unused-variable -std=c++11 -pthread -falign-functions=32)
-elseif(CMAKE_HOST_UNIX)
-    add_compile_options(-mavx2 -mbmi2 -fpermissive -Wno-unused-variable -std=c++11 -pthread -falign-functions=32 -falign-loops=32)
-endif()
+target_link_libraries(${TARGET_NAME}
+    Python3::Python)
+
+# Configure the library name to identify it as a Python extension module.
+set_target_properties(${TARGET_NAME} PROPERTIES
+    PREFIX ""
+    SUFFIX ${PYTHON_EXT_LIB_SUFFIX})

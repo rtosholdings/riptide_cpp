@@ -3,7 +3,8 @@
 #include "src/SDSFile.h"
 #include <gtest/gtest.h>
 
-TEST(sample, test_something) {
+TEST(sds_tests, test_SDSGetLastError)
+{
     char const * actual{SDSGetLastError()};
     EXPECT_NE(nullptr, actual);
     EXPECT_EQ(0, actual[0]);

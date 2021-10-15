@@ -35,11 +35,7 @@
 #define NO_IMPORT_ARRAY
 #endif
 
-#if defined(_WIN32) && !defined(__GNUC__)
-#include <../Lib/site-packages/numpy/core/include/numpy/arrayobject.h>
-#else
 #include <numpy/arrayobject.h>
-#endif
 
 #include "numpy_traits.h"
 
@@ -153,7 +149,7 @@ extern PyArrayObject* AllocateNumpyArray(int ndim, npy_intp* dims, int32_t numpy
  * @param numpyType
  * @param itemsize
  * @param data
- * @param array_flags NPY_ARRAY_* flags 
+ * @param array_flags NPY_ARRAY_* flags
  * @param strides
  * @return PyObject* The allocated PyArrayObject object; or nullptr if @p data is nullptr or an error occurred.
  * @note if the @p dtype is NPY_STRING or NPY_UNICODE -- then @p itemsize is valid.
