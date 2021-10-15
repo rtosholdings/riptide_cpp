@@ -60,20 +60,20 @@ namespace riptide
        * @return T const& The result of the operation.
        */
       template<typename T>
-      static T const& min_with_nan_passthru(T const& x, T const& y)
+      T const& min_with_nan_passthru(T const& x, T const& y)
       {
          return (std::min)(x, y);
       }
 
       template<>
-      static float const& min_with_nan_passthru(float const& x, float const& y)
+      float const& min_with_nan_passthru(float const& x, float const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x < blended ? x : blended;
       }
 
       template<>
-      static double const& min_with_nan_passthru(double const& x, double const& y)
+      double const& min_with_nan_passthru(double const& x, double const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x < blended ? x : blended;
@@ -88,20 +88,20 @@ namespace riptide
        * @return T const& The result of the operation.
        */
       template<typename T>
-      static T const& max_with_nan_passthru(T const& x, T const& y)
+      T const& max_with_nan_passthru(T const& x, T const& y)
       {
          return (std::max)(x, y);
       }
 
       template<>
-      static float const& max_with_nan_passthru(float const& x, float const& y)
+      float const& max_with_nan_passthru(float const& x, float const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x > blended ? x : blended;
       }
 
       template<>
-      static double const& max_with_nan_passthru(double const& x, double const& y)
+      double const& max_with_nan_passthru(double const& x, double const& y)
       {
          const auto blended = (x != x) ? x : y;
          return x > blended ? x : blended;
@@ -119,7 +119,7 @@ namespace riptide
           */
          template <typename T>
          struct vec256
-         { };
+         { static constexpr bool simd_implemented_v = false; };
 
          template <>
          struct vec256<bool>
@@ -127,6 +127,8 @@ namespace riptide
             using element_type = bool;
 
             using reg_type = __m256i;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
@@ -252,6 +254,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -310,7 +314,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -322,7 +326,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -334,7 +338,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -346,7 +350,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -358,7 +362,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -370,7 +374,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -755,6 +759,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -795,7 +801,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -807,7 +813,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -819,7 +825,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -831,7 +837,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -843,7 +849,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -855,7 +861,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1051,6 +1057,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1109,7 +1117,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -1121,7 +1129,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -1133,7 +1141,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -1145,7 +1153,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -1157,7 +1165,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -1169,7 +1177,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1580,6 +1588,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1620,7 +1630,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -1632,7 +1642,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -1644,7 +1654,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -1656,7 +1666,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -1668,7 +1678,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -1680,7 +1690,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -1892,6 +1902,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -1950,7 +1962,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -1962,7 +1974,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -1974,7 +1986,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -1986,7 +1998,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -1998,7 +2010,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -2010,7 +2022,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -2473,6 +2485,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -2513,7 +2527,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -2525,7 +2539,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -2537,7 +2551,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -2549,7 +2563,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -2561,7 +2575,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -2573,7 +2587,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -2783,6 +2797,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -2802,7 +2818,7 @@ namespace riptide
 #if defined(__AVX512VL__) && defined(__AVX512F__)
                return _mm256_abs_epi64(x);
 #else
-               return bitand(bitmask::abs(), x);
+               return bitwise_and(bitmask::abs(), x);
 #endif
             }
 
@@ -2820,7 +2836,7 @@ namespace riptide
 #if defined(__AVX512VL__) && defined(__AVX512F__)
                return _mm256_abs_epi64(*src);
 #else
-               return bitand(bitmask::abs(), *src);
+               return bitwise_and(bitmask::abs(), *src);
 #endif
             }
 
@@ -2855,7 +2871,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -2867,7 +2883,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -2879,7 +2895,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -2891,7 +2907,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -2903,7 +2919,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -2915,7 +2931,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -2939,7 +2955,7 @@ namespace riptide
              */
             static RT_FORCEINLINE reg_type iota()
             {
-               return _mm256_set_epi64(
+               return _mm256_set_epi64x(
                   3, 2, 1, 0);
             }
 
@@ -3169,6 +3185,8 @@ namespace riptide
 
             using reg_type = __m256i;
 
+            static constexpr bool simd_implemented_v = true;
+
             /**
              * @brief The number of elements in each vector.
              */
@@ -3209,7 +3227,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type y)
             {
                return _mm256_and_si256(x, y);
             }
@@ -3221,7 +3239,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-AND values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitand(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_and(const reg_type x, const reg_type* const y)
             {
                return _mm256_and_si256(x, *y);
             }
@@ -3233,7 +3251,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type y)
             {
                return _mm256_or_si256(x, y);
             }
@@ -3245,7 +3263,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-OR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_or(const reg_type x, const reg_type* const y)
             {
                return _mm256_or_si256(x, *y);
             }
@@ -3257,7 +3275,7 @@ namespace riptide
              * @param y The second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type y)
             {
                return _mm256_xor_si256(x, y);
             }
@@ -3269,7 +3287,7 @@ namespace riptide
              * @param y A pointer to the second vector.
              * @return reg_type A vector containing the pairwise bitwise-XOR values from the two input vectors.
              */
-            static RT_FORCEINLINE reg_type bitxor(const reg_type x, const reg_type* const y)
+            static RT_FORCEINLINE reg_type bitwise_xor(const reg_type x, const reg_type* const y)
             {
                return _mm256_xor_si256(x, *y);
             }
@@ -3349,7 +3367,7 @@ namespace riptide
              */
             static RT_FORCEINLINE reg_type iota()
             {
-               return _mm256_set_epi64(
+               return _mm256_set_epi64x(
                   3, 2, 1, 0);
             }
 
@@ -3533,6 +3551,8 @@ namespace riptide
             using element_type = float;
 
             using reg_type = __m256;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.
@@ -4303,6 +4323,8 @@ namespace riptide
             using element_type = double;
 
             using reg_type = __m256d;
+
+            static constexpr bool simd_implemented_v = true;
 
             /**
              * @brief The number of elements in each vector.

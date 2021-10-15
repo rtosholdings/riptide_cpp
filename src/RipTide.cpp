@@ -756,7 +756,7 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpy
       // nullify string for special matlab runt case
       *pData = 0;
    }
-   
+
 
    if (!returnObject) {
       printf("!!!out of memory allocating numpy array size:%llu  dims:%d  dtype:%d  itemsize:%lld  flags:%d  dim0:%lld\n", len, ndim, numpyType, itemsize, array_flags, (int64_t)dims[0]);
@@ -772,14 +772,14 @@ PyArrayObject* AllocateNumpyArrayForData(int ndim, npy_intp* dims, int32_t numpy
 
 //-----------------------------------------------------------------------------------
 // Check recycle pool
-PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType) {
+PyArrayObject* AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpyType) {
    const int ndim = PyArray_NDIM(inArr);
-   npy_intp* const dims = PyArray_DIMS(inArr);
+   npy_intp* const dims = PyArray_DIMS(const_cast< PyArrayObject * >( inArr ));
 
    // If the strides are all "normal", the array is C_CONTIGUOUS,
    // and this is _not_ a string / flexible array, try to re-use an array
    // from the recycler (array pool).
-   if ((PyArray_ISNUMBER(inArr) || PyArray_ISBOOL(inArr)) && PyArray_ISCARRAY(inArr))
+   if ((PyArray_ISNUMBER(const_cast< PyArrayObject * >(inArr)) || PyArray_ISBOOL(const_cast< PyArrayObject * >(inArr))) && PyArray_ISCARRAY(const_cast< PyArrayObject *>(inArr)))
    {
       return AllocateNumpyArray(ndim, dims, numpyType, 0, false, nullptr);
    }
@@ -792,7 +792,7 @@ PyArrayObject* AllocateLikeNumpyArray(PyArrayObject* inArr, int32_t numpyType) {
    if (!descr) {
       return nullptr;
    }
-   PyArrayObject* returnObject = (PyArrayObject*)PyArray_NewLikeArray(inArr, NPY_KEEPORDER, descr, 1);
+   PyArrayObject* returnObject = (PyArrayObject*)PyArray_NewLikeArray(const_cast< PyArrayObject * >(inArr), NPY_KEEPORDER, descr, 1);
    CHECK_MEMORY_ERROR(returnObject);
 
    if (!returnObject) {
@@ -961,12 +961,12 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       fvalue = (double)value;
       break;
    CASE_NPY_UINT64:
-   
+
       value = (int64_t)*(uint64_t*)pInput;
       fvalue = (double)value;
       break;
    CASE_NPY_INT64:
-   
+
       value = (int64_t)*(int64_t*)pInput;
       fvalue = (double)value;
       break;
@@ -998,9 +998,9 @@ bool ConvertSingleItemArray(void* pInput, int16_t numpyInType, _m256all* pDest, 
       pDest->i = _mm256_set1_epi32((int32_t)value);
       break;
    CASE_NPY_UINT64:
-   
+
    CASE_NPY_INT64:
-   
+
       pDest->ci.i1 = _mm_set1_epi64x(value);
       pDest->ci.i2 = _mm_set1_epi64x(value);
       break;
@@ -1071,7 +1071,7 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
          pDest->i = _mm256_set1_epi32((int32_t)value);
          break;
       CASE_NPY_UINT64:
-      
+
       CASE_NPY_INT64:
 
          pDest->ci.i1 = _mm_set1_epi64x(value);
@@ -1151,12 +1151,12 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             pDest->i = _mm256_set1_epi32((uint32_t)value2);
             break;
          CASE_NPY_INT64:
-         
+
             pDest->ci.i1 = _mm_set1_epi64x(value);
             pDest->ci.i2 = _mm_set1_epi64x(value);
             break;
          CASE_NPY_UINT64:
-         
+
             pDest->ci.i1 = _mm_set1_epi64x(value2);
             pDest->ci.i2 = _mm_set1_epi64x(value2);
             break;
@@ -1196,12 +1196,12 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
             pDest->i = _mm256_set1_epi32((int32_t)value);
             break;
          CASE_NPY_UINT64:
-         
+
             pDest->ci.i1 = _mm_set1_epi64x((uint64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((uint64_t)value);
             break;
          CASE_NPY_INT64:
-         
+
             pDest->ci.i1 = _mm_set1_epi64x((int64_t)value);
             pDest->ci.i2 = _mm_set1_epi64x((int64_t)value);
             break;
@@ -1228,7 +1228,11 @@ bool ConvertScalarObject(PyObject* inObject1, _m256all* pDest, int16_t numpyOutT
       }
       else if (PyUnicode_Check(inObject1)) {
          // happens when pass in 'test'
-         *pItemSize = PyUnicode_GET_SIZE(inObject1) * 4;
+         if (PyUnicode_READY(inObject1) < 0) {
+            printf("!!unable to make UNICODE object ready");
+            return false;
+         }
+         *pItemSize = PyUnicode_GET_LENGTH(inObject1) * 4;
          // memory leak needs to be deleted
          *ppDataIn = PyUnicode_AsUCS4Copy(inObject1);
          return true;
@@ -1944,7 +1948,7 @@ PyMODINIT_FUNC PyInit_riptide_cpp() {
       LOGGING("An error occurred when creating/registering SDS Python types.");
       return NULL;
    }
-   
+
    // start up the worker threads now in case we use them
    g_cMathWorker->StartWorkerThreads(0);
 
@@ -1991,12 +1995,12 @@ void* GetDefaultForType(int numpyInType) {
    case NPY_INT16:
       pgDefault = &gDefaultInt16;
       break;
-   CASE_NPY_INT32: 
+   CASE_NPY_INT32:
 //   case NPY_INT: This is the same numeric value as NPY_INT32 above
       pgDefault = &gDefaultInt32;
       break;
    CASE_NPY_INT64:
-   
+
       pgDefault = &gDefaultInt64;
       break;
    case NPY_UINT8:
@@ -2010,7 +2014,7 @@ void* GetDefaultForType(int numpyInType) {
       pgDefault = &gDefaultUInt32;
       break;
    CASE_NPY_UINT64:
-   
+
       pgDefault = &gDefaultUInt64;
       break;
    case NPY_STRING:
@@ -2132,7 +2136,7 @@ bool GetUpcastType(int numpyInType1, int numpyInType2, int& convertType1, int& c
 //  return value 0: one loop can process all data, false = multiple loops
 //  NOTE: if return value is 0 and itemsze == stride, then vector math possible
 //
-int GetStridesAndContig(PyArrayObject* inArray, int& ndim, int64_t& stride) {
+int GetStridesAndContig(PyArrayObject const * inArray, int& ndim, int64_t& stride) {
    stride = PyArray_ITEMSIZE(inArray);
    int direction = 0;
    ndim = PyArray_NDIM(inArray);
