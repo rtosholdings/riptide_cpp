@@ -26,16 +26,16 @@ add_test(NAME test_riptide_cpp
     COMMAND ${TARGET_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
+set_tests_properties(test_riptide_cpp PROPERTIES
+    ENVIRONMENT "PYTHONHOME=${Python3_RUNTIME_LIBRARY_DIRS};PYTHONPATH=${Python3_STDLIB}")
+
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
 
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMENT "Copying runtime dependencies from riptide_cpp to ${_TARGET_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR})
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR}
 
-    # Copy the whole Python env to bin dir.
-    # TODO: This is silly and should just copy the embedded component.
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMENT "Copying runtime dependencies from ${PYTHON_EXE_DIR} to ${_TARGET_DIR}"
-        COMMAND if not exist ${_TARGET_DIR}/python.exe ${CMAKE_COMMAND} -E copy_directory ${PYTHON_EXE_DIR} ${_TARGET_DIR})
+        COMMENT "Copying Python dependencies to ${_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR})
 endif()
