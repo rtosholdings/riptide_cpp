@@ -14,21 +14,21 @@
 namespace internal
 {
    // Rewrite this if pattern matching ever becomes a thing.
-   auto LOADU=[](auto const * x) -> std::remove_pointer_t< decltype( x ) >
+   auto LOADU=[](auto const * x) -> std::remove_cvref_t< std::remove_pointer< decltype( x ) > >
    {
-      using underlying_t = std::remove_pointer< decltype( x ) >;
-      
-      if constexpr( std::is_same_v< __m256d const, underlying_t > )
+      using underlying_t = std::remove_cvref_t<std::remove_pointer< decltype( x ) >>;
+
+      if constexpr( std::is_same_v< __m256d, underlying_t > )
       {
          return _mm256_loadu_pd(reinterpret_cast<double const *>(x));
       }
 
-      if constexpr( std::is_same_v< __m256 const, underlying_t > )
+      if constexpr( std::is_same_v< __m256, underlying_t > )
       {
          return _mm256_loadu_ps(reinterpret_cast<float const *>(x));
       }
 
-      if constexpr( std::is_same_v< __m256i const, underlying_t > )
+      if constexpr( std::is_same_v< __m256i, underlying_t > )
       {
          return _mm256_loadu_si256(x);
       }

@@ -131,8 +131,6 @@ namespace riptable_cpp
         {
             using T = typename calculation_t::data_type const;
             [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
-            using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -142,6 +140,8 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    using simd_t = typename calculation_t::calculation_type;
+                    simd_t const wide_value(*reinterpret_cast<simd_t const*>(in_p));
                     return wide_ops.round(wide_value);
                 }
                 else
@@ -157,7 +157,7 @@ namespace riptable_cpp
             using T = typename calculation_t::data_type const;
             [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
+            
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -167,6 +167,7 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.floor(wide_value);
                 }
                 else
@@ -182,7 +183,6 @@ namespace riptable_cpp
             using T = typename calculation_t::data_type const;
             [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -192,6 +192,7 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.trunc(wide_value);
                 }
                 else
@@ -207,7 +208,6 @@ namespace riptable_cpp
             using T = typename calculation_t::data_type const;
             [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -217,6 +217,7 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.ceil(wide_value);
                 }
                 else
@@ -232,7 +233,6 @@ namespace riptable_cpp
             using T = typename calculation_t::data_type const;
             [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -242,6 +242,7 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.sqrt(wide_value);
                 }
                 else
@@ -255,7 +256,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, log_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(log(value));
         }
@@ -264,7 +265,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, log2_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(log2(value));
         }
@@ -273,7 +274,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, log10_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(log10(value));
         }
@@ -282,7 +283,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, exp_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(exp(value));
         }
@@ -291,7 +292,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, exp2_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(exp2(value));
         }
@@ -300,7 +301,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, cbrt_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(cbrt(value));
         }
@@ -309,7 +310,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, tan_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(tan(value));
         }
@@ -318,7 +319,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, cos_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(cos(value));
         }
@@ -327,7 +328,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, sin_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return T(sin(value));
         }
@@ -336,7 +337,7 @@ namespace riptable_cpp
         bool calculate(char const* in_p, signbit_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -352,7 +353,7 @@ namespace riptable_cpp
         bool calculate(char const* in_p, not_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             return !!(T(value) == T{});
         }
@@ -361,9 +362,7 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, isnotnan_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -373,10 +372,12 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.isnotnan(wide_value);
                 }
                 else
                 {
+                    T const value{ *reinterpret_cast<T const*>(in_p) };
                     return not std::isnan(value);
                 }
             }
@@ -386,9 +387,8 @@ namespace riptable_cpp
         decltype(auto) calculate(char const* in_p, isnan_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
             using wide_t = typename calculation_t::calculation_type;
-            [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const*>(in_p)));
+            
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -398,10 +398,12 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
+                    wide_t const wide_value(*reinterpret_cast<wide_t const*>(in_p));
                     return wide_ops.isnan(wide_value);
                 }
                 else
                 {
+                    T const value{ *reinterpret_cast<T const*>(in_p) };
                     return std::isnan(value);
                 }
             }
@@ -411,7 +413,6 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isfinite_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -419,6 +420,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const*>(in_p) };
                 return std::isfinite(value);
             }
         }
@@ -427,7 +429,6 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isnotfinite_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -435,6 +436,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const*>(in_p) };
                 return not std::isfinite(value);
             }
         }
@@ -443,7 +445,6 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isinf_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -451,6 +452,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const*>(in_p) };
                 return std::isinf(value);
             }
         }
@@ -459,7 +461,6 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isnotinf_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -467,6 +468,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const*>(in_p) };
                 return not std::isinf(value);
             }
         }
@@ -475,7 +477,6 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isnormal_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -483,6 +484,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const*>(in_p) };
                 return std::isnormal(value);
             }
         }
@@ -491,7 +493,7 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isnotnormal_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -507,7 +509,7 @@ namespace riptable_cpp
         bool calculate(char const* in_p, isnanorzero_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
-            [[maybe_unused]] T const value{ *reinterpret_cast<T const*>(in_p) };
+            T const value{ *reinterpret_cast<T const*>(in_p) };
 
             if constexpr (not std::is_floating_point_v< T > == true)
             {
@@ -540,7 +542,7 @@ namespace riptable_cpp
                     using wide_sct = typename riptide::simd::avx2::template vec256< typename data_t::data_type >;
                     constexpr size_t wide_size{ sizeof(wide_sct::reg_type) };
                     constexpr size_t input_size{ sizeof(data_t::data_type) };
-                    if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1 && ( wide_size/input_size)+starting_element < contig_elems)
+                    if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1 && (wide_size/input_size)+starting_element < contig_elems)
                     {
                         calc(wide_sct{});
                     }

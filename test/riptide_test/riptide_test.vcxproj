@@ -91,6 +91,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
       <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +111,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
       <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,6 +131,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
       <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +151,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <EnforceTypeConversionRules>false</EnforceTypeConversionRules>
       <AdditionalIncludeDirectories>C:\ProgramData\Anaconda3\envs\riptide-dev38\lib\site-packages\numpy\core\include;C:\ProgramData\Anaconda3\envs\riptide-dev38\include;..\src\zstd</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
