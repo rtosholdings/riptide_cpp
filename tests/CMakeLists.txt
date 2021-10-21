@@ -20,7 +20,9 @@ target_link_directories(${TARGET_NAME} PRIVATE
 target_link_libraries(${TARGET_NAME}
     riptide_cpp
     ${Python3_LIBRARIES}
-    gtest)
+    gtest
+    $<$<PLATFORM_ID:Linux>:pthread>
+    $<$<PLATFORM_ID:Linux>:rt>)
 
 add_test(NAME test_riptide_cpp
     COMMAND ${TARGET_NAME}

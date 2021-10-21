@@ -19,10 +19,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT 
    add_compile_options("$<$<CONFIG:Release>:-Ox;-Ob2;-Oi;-Ot>")
    add_compile_options(/W3 /WX)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
-   add_compile_options(-mavx2 -mbmi2 -fpermissive -pthread)
+   add_compile_options(-x c++ -mavx2 -mbmi2 -fpermissive -pthread)
    add_compile_options(-falign-functions=32 -fno-strict-aliasing)
    #add_compile_options(-falign-loops=32)
-   add_compile_options(-Wall -Wextra -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter)
+   add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes)
+   add_compile_options(-Wno-format) # TODO: Remove this and fix all the printf format mismatches
 else()
    message(FATAL_ERROR "Unknown compiler")
 endif()
