@@ -537,7 +537,7 @@ namespace internal
       {
          if constexpr( operation_t::simd_implementation::value )
                      {
-                        using wide_type = typename data_t::calculation_type;
+                        //using wide_type = typename data_t::calculation_type;
                         using wide_sct = typename riptide::simd::avx2::template vec256< typename data_t::data_type >;
 
                         if ( stride == sizeof( typename data_t::data_type ) && out_stride_as_items == 1 )
@@ -665,7 +665,7 @@ PyObject * process_one_input( PyArrayObject const* in_array, PyArrayObject * out
          PyArrayObject * result_array { numpy_outtype == -1 ? AllocateLikeNumpyArray( in_array, wanted_outtype ) : out_object_1 };
 
          if ( ( result_array == nullptr ) ||
-              ( result_array == out_object_1 ) && ( len != ArrayLength( result_array ) )
+              ( result_array == out_object_1 && len != ArrayLength( result_array ) )
             )
          {
             Py_INCREF( Py_None );

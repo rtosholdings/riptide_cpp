@@ -1570,7 +1570,7 @@ PyObject *DecompressFile(PyObject* self, PyObject *args, PyObject *kwargs) {
 
    int32_t mode = COMPRESSION_MODE_DECOMPRESS_FILE;
 
-   PyObject* includeDict = NULL;
+   //UNSUPPORTED: PyObject* includeDict = NULL;
 
    if (!PyArg_ParseTuple(
       args, "y#i|y#",
@@ -1588,7 +1588,7 @@ PyObject *DecompressFile(PyObject* self, PyObject *args, PyObject *kwargs) {
 
       if (includedItem && PyDict_Check(includedItem)) {
          LOGGING("Found valid inclusion dict\n");
-         includeDict = includedItem;
+         //UNSUPPORTED: includeDict = includedItem;
       }
       else {
          //LOGGING("did not like dict!  %p\n", includedItem);
