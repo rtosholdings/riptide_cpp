@@ -45,12 +45,14 @@ sources_zstd=['zstd/compress/fse_compress.c',
             'zstd/common/pool.c']
 
 if sys.platform == 'linux':
+    import os
+    os.environ["CC"] = "g++"
     rc_module = setuptools.Extension(
         package_name,
         sources = sources_cpp + sources_zstd,
 
         include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
-        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-std=c++17','-pthread','-falign-functions=32','-falign-loops=32','-fno-strict-aliasing'],
+        extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Werror','-Wno-unused-variable','-Wno-ignored-attributes','-Wno-format','-std=c++17','-pthread','-falign-functions=32','-falign-loops=32','-fno-strict-aliasing'],
         extra_link_args = ['-lrt'],
         #libraries = [''],
         )
