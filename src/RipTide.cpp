@@ -308,7 +308,7 @@ void CopyPythonString(PyObject* objColName, char* destBuffer, size_t maxLen) {
          size_t len = strlen(str);
 
          // clamp length
-         if (len > maxLen) len = maxLen;
+         if (len >= maxLen) len = maxLen - 1;
 
          strncpy(destBuffer, str, len);
          destBuffer[len] = 0;
@@ -329,7 +329,7 @@ void CopyPythonString(PyObject* objColName, char* destBuffer, size_t maxLen) {
          size_t len = strlen(str);
 
          // clamp length
-         if (len > maxLen) len = maxLen;
+         if (len >= maxLen) len = maxLen - 1;
 
          strncpy(destBuffer, str, len);
          destBuffer[len] = 0;

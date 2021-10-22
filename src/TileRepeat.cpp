@@ -100,7 +100,7 @@ void ConvertRecArray(char* pStartOffset, int64_t startRow, int64_t totalRows, st
             {
                int64_t endSubRow = endRow - 4;
                while (startRow < endSubRow) {
-                  __m256i m0 = _mm256_i32gather_epi64(reinterpret_cast<int64_t const *>(pRead + (startRow * itemSize)), vindex128, 1);
+                  __m256i m0 = _mm256_i32gather_epi64(reinterpret_cast<long long const *>(pRead + (startRow * itemSize)), vindex128, 1);
                   _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
                   startRow += 4;
                }
