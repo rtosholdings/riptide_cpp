@@ -100,7 +100,13 @@ void ConvertRecArray(char* pStartOffset, int64_t startRow, int64_t totalRows, st
             {
                int64_t endSubRow = endRow - 4;
                while (startRow < endSubRow) {
+#if defined(__linux__) && defined(__GNUC__)
+                  // on Linux _mm256_i32gather_epi64() accepts a long long *, which is the same size but not identical to long * (a.k.a int64_t *) so GCC complains.
+                  static_assert(sizeof(long long) == sizeof(int64_t));
                   __m256i m0 = _mm256_i32gather_epi64(reinterpret_cast<long long const *>(pRead + (startRow * itemSize)), vindex128, 1);
+#else
+                  __m256i m0 = _mm256_i32gather_epi64(reinterpret_cast<int64_t const *>(pRead + (startRow * itemSize)), vindex128, 1);
+#endif
                   _mm256_storeu_si256((__m256i*)(pWrite + (startRow * arrItemSize)), m0);
                   startRow += 4;
                }
