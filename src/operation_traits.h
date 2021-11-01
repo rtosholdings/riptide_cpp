@@ -8,28 +8,29 @@
 
 namespace riptable_cpp
 {
-   template< typename arithmetic_concept, typename simd_concept, typename Enable = void >
-   struct data_type_traits
-   {
-   };
-
-   template< typename  arithmetic_concept, typename simd_concept > 
-   struct data_type_traits< arithmetic_concept, simd_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept > > >
-   {
-      using data_type = arithmetic_concept;
-      using calculation_type = simd_concept;
-   };
-
-   using int8_traits = data_type_traits< int8_t, __m256i >;
-   using int16_traits = data_type_traits< int16_t, __m256i >;
-   using int32_traits = data_type_traits< int32_t, __m256i >;
-   using int64_traits = data_type_traits< int64_t, __m256i >;
-   using uint8_traits = data_type_traits< uint8_t, __m256i >;
-   using uint16_traits = data_type_traits< uint16_t, __m256i >;
-   using uint32_traits = data_type_traits< uint32_t, __m256i >;
-   using uint64_traits = data_type_traits< uint64_t, __m256i >;
-   using float_traits = data_type_traits< float, __m256 >;
-   using double_traits = data_type_traits< double, __m256d >;
+    template< typename arithmetic_concept, typename simd_concept, typename bitmask_concept, typename Enable = void >
+    struct data_type_traits
+    {
+    };
+    
+    template< typename  arithmetic_concept, typename simd_concept, typename bitmask_concept > 
+    struct data_type_traits< arithmetic_concept, simd_concept, bitmask_concept, std::enable_if_t< std::is_arithmetic_v< arithmetic_concept > > >
+    {
+        using data_type = arithmetic_concept;
+        using calculation_type = simd_concept;
+        using bitmask_type = bitmask_concept;
+    };
+    
+    using int8_traits = data_type_traits< int8_t, __m256i, uint8_t >;
+    using int16_traits = data_type_traits< int16_t, __m256i, uint16_t >;
+    using int32_traits = data_type_traits< int32_t, __m256i, uint32_t >;
+    using int64_traits = data_type_traits< int64_t, __m256i, uint64_t >;
+    using uint8_traits = data_type_traits< uint8_t, __m256i, uint8_t >;
+    using uint16_traits = data_type_traits< uint16_t, __m256i, uint16_t >;
+    using uint32_traits = data_type_traits< uint32_t, __m256i, uint32_t >;
+    using uint64_traits = data_type_traits< uint64_t, __m256i, uint64_t >;
+    using float_traits = data_type_traits< float, __m256, uint32_t >;
+    using double_traits = data_type_traits< double, __m256d, uint64_t >;
    
    using data_type_t = std::variant<
       int8_traits

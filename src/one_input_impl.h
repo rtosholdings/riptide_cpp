@@ -14,6 +14,7 @@
 #include <utility>
 #include <cstddef>
 #include <type_traits>
+#include <limits>
 
 namespace riptable_cpp
 {
@@ -361,7 +362,7 @@ namespace riptable_cpp
         template< typename calculation_t, typename wide_ops_t >
         decltype(auto) calculate(char const* in_p, isnotnan_op const* requested_op, calculation_t const* in_type, wide_ops_t wide_ops)
         {
-            using T = typename calculation_t::data_type const;
+            using T = typename calculation_t::data_type;
             using wide_t = typename calculation_t::calculation_type;
 
             if constexpr (not std::is_floating_point_v< T > == true)
@@ -378,7 +379,8 @@ namespace riptable_cpp
                 else
                 {
                     T const value{ *reinterpret_cast<T const*>(in_p) };
-                    return not std::isnan(value);
+                    using bitmask_t = typename calculation_t::bitmask_type;
+                    return (not std::isnan(value)) ? std::numeric_limits< bitmask_t >::max() : bitmask_t{};
                 }
             }
         }
@@ -404,7 +406,8 @@ namespace riptable_cpp
                 else
                 {
                     T const value{ *reinterpret_cast<T const*>(in_p) };
-                    return std::isnan(value);
+                    using bitmask_t = typename calculation_t::bitmask_type;
+                    return std::isnan( value ) ? std::numeric_limits< bitmask_t >::max() : bitmask_t{};
                 }
             }
         }
@@ -421,7 +424,8 @@ namespace riptable_cpp
             else
             {
                 T const value{ *reinterpret_cast<T const*>(in_p) };
-                return std::isfinite(value);
+                using bitmask_t = typename calculation_t::bitmask_type;
+                return std::isfinite(value) ? std::numeric_limits< bitmask_t >::max() : bitmask_t{};
             }
         }
 
@@ -437,7 +441,8 @@ namespace riptable_cpp
             else
             {
                 T const value{ *reinterpret_cast<T const*>(in_p) };
-                return not std::isfinite(value);
+                using bitmask_t = typename calculation_t::bitmask_type;
+                return (not std::isfinite(value)) ? std::numeric_limits< bitmask_t >::max() : bitmask_t{};
             }
         }
 

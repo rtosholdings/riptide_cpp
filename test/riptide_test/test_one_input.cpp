@@ -15,12 +15,16 @@ namespace
     using namespace riptide::simd::avx2;
 
     std::array< float const, 31 > const input_data_simple_f = {-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2, 2.5, 3,
-        3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11};
+        3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10.5, 10.5, 11 };
 
+    std::array< float const, 31 > const input_data_nan_f = { -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, NAN, 1.0, 1.5, 2, 2.5, 3,
+        3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10.5, 10.5, 11 };
+   
     std::array< int32_t const, 31 > const input_data_simple_i = { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6,
         7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
     float const * p_float = input_data_simple_f.data();
+    float const * p_nans = input_data_nan_f.data();
     int32_t const* p_int32 = input_data_simple_i.data();
 
     suite one_input = []
@@ -101,7 +105,7 @@ namespace
             double_traits data_type{};
             double in_data{ -3.141592 };
             auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
-            expect(x == 3.141592);
+            expect(x == 3.141592_d);
             expect(std::is_same_v<decltype(x), double>) << "Should return a double";
         };
 
@@ -138,11 +142,11 @@ namespace
             uint32_traits data_type{};
             uint32_t data{};
             auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
-            expect(x == 0);
+            expect(x == 0_u);
             expect(std::is_same_v<decltype(x), uint32_t>) << "Should return uint32_t";
             data = 1;
             x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
-            expect(x == 1);
+            expect(x == 1_u);
         };
 
         "calculate_sign_signed_float"_test = []
@@ -520,6 +524,252 @@ namespace
             expect(x[8] == 1.58114_f);
             expect(x[24] == 3.24037_f);
             expect(x[25] == 3.31662_f);
+        };
+
+        "calculate_log_void"_test = []
+        {
+            log_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect(std::isnan(x)) << "Log of a negative number returns a NaN";
+            expect(errno == EDOM) << "Log of a negative number sets errno to Domain Error";
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 1.14473_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_log2_void"_test = []
+        {
+            log2_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect(std::isnan(x)) << "Log2 of a negative number returns a NaN";
+            expect(errno == EDOM) << "Log2 of a negative number sets errno to Domain Error";
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 1.6515_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_log10_void"_test = []
+        {
+            log10_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect(std::isnan(x)) << "Log2 of a negative number returns a NaN";
+            expect(errno == EDOM) << "Log2 of a negative number sets errno to Domain Error";
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 0.49715_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_exp_void"_test = []
+        {
+            exp_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 0.04321395_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 23.1407_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_exp2_void"_test = []
+        {
+            exp2_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 0.1133148_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 8.82497_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_cbrt_void"_test = []
+        {
+            cbrt_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == -1.4646_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 1.4646_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_tan_void"_test = []
+        {
+            tan_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 0.00000065_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == -0.00000065_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_cos_void"_test = []
+        {
+            cos_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == -1.0_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == -1.0_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_sin_void"_test = []
+        {
+            sin_op op{};
+            double_traits data_type{};
+            double in_data{ -3.141592 };
+            auto x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == -0.00000065359_d );
+            in_data = 3.141592;
+            x = calculate(reinterpret_cast<char const*>(&in_data), &op, &data_type, vec256<void>{});
+            expect( x == 0.00000065359_d );
+            expect(std::is_same_v<decltype(x), double>) << "Should return a double";
+        };
+
+        "calculate_signbit_unsigned"_test = []
+        {
+            signbit_op op{};
+            uint32_traits data_type{};
+            uint32_t data{};
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return bool";
+            data = 1;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+        };
+
+        "calculate_signbit_signed"_test = []
+        {
+            signbit_op op{};
+            int32_traits data_type{};
+            int32_t data{};
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return bool";
+            data = 1;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            data = -1;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == true);
+        };
+
+        "calculate_sign_signed_float"_test = []
+        {
+            signbit_op op{};
+            float_traits data_type{};
+            float data{};
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<float>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+            data = 1.3f;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<float>{});
+            expect(x == false);
+            data = -4.25f;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<float>{});
+            expect(x == true);
+        };
+
+        "calculate_not_integral"_test = []
+        {
+            not_op op{};
+            int32_traits data_type{};
+            int32_t data{};
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == true);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return bool";
+            data = 1;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+        };
+
+        "calculate_not_float"_test = []
+        {
+            not_op op{};
+            float_traits data_type{};
+            float data{};
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<float>{});
+            expect(x == true);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+            data = 0.0000001f;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<float>{});
+            expect(x == false);
+        };
+
+        "calculate_isnotnan_signed"_test = []
+        {
+            isnotnan_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+        };
+
+        "calculate_isnotnan_unsigned"_test = []
+        {
+            isnotnan_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+        };
+
+        "calculate_isnotnan_float_simd"_test = []
+        {
+            isnotnan_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_nans + 5), &op, &data_type, vec256<float>{});
+            expect(static_cast< int32_t >(x.m256_f32[0]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[0] );
+            expect(static_cast< int32_t >(x.m256_f32[1]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[1] );
+            expect(static_cast< int32_t >(x.m256_f32[2]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[2] );
+            expect(static_cast< int32_t >(x.m256_f32[3]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[3] );
+            expect(static_cast< uint32_t>(x.m256_f32[4]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[5]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[5] );
+            expect(static_cast< int32_t >(x.m256_f32[6]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[6] );
+            expect(static_cast< int32_t >(x.m256_f32[7]) == 0x80000000) << "Should be 0x80000000 but was " << std::hex << static_cast< int32_t >( x.m256_f32[7] );
+            expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
+        };
+
+        "walk_isnotnan_float"_test = [&]
+        {
+            operation_t op{ isnotnan_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< int, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_nans + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == -1_i);
+            expect(x[1] == -1_i);
+            expect(x[2] == -1_i);
+            expect(x[3] == -1_i);
+            expect(x[4] == 0_i);
+            expect(x[5] == -1_i);
+            expect(x[6] == -1_i);
+            expect(x[7] == -1_i);
+            expect(x[8] == -1_i);
+            expect(x[24] == -1_i);
+            expect(x[25] == -1_i);
         };
 };
 }
