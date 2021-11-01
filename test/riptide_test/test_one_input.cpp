@@ -14,10 +14,10 @@ namespace
     using namespace riptable_cpp::implementation;
     using namespace riptide::simd::avx2;
 
-    std::array< float const, 33 > const input_data_simple_f = {-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2, 2.5, 3,
+    std::array< float const, 31 > const input_data_simple_f = {-4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1.0, 1.5, 2, 2.5, 3,
         3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11};
 
-    std::array< int32_t const, 33 > const input_data_simple_i = { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6,
+    std::array< int32_t const, 31 > const input_data_simple_i = { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6,
         7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
     float const * p_float = input_data_simple_f.data();
@@ -28,7 +28,7 @@ namespace
         size_t len{ sizeof(input_data_simple_f) };
         "expected_array_len_f"_test = [len]
         {
-            expect(33_i == len / sizeof(float));
+            expect(31_i == len / sizeof(float));
         };
 
         "calculate_abs_int"_test = [&]
@@ -292,8 +292,8 @@ namespace
         {
             operation_t op{ round_op{} };
             data_type_t data_type{ float_traits{} };
-            std::array< float, 28 > x{};
-            walk_data_array(1, 28, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            std::array< float, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
             expect(x[0] == -2.0_f);
             expect(x[1] == -1.0_f);
             expect(x[2] == 0.0_f);
@@ -303,7 +303,8 @@ namespace
             expect(x[6] == 2.0_f);
             expect(x[7] == 2.0_f);
             expect(x[8] == 2.0_f);
-            expect(x[27] == 11.0_f); // Need to look into why we're not walking to the end
+            expect(x[24] == 11.0_f);
+            expect(x[25] == 11.0_f);
         };
 
         "calculate_floor_signed"_test = []
@@ -346,8 +347,8 @@ namespace
         {
             operation_t op{ floor_op{} };
             data_type_t data_type{ float_traits{} };
-            std::array< float, 28 > x{};
-            walk_data_array(1, 28, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            std::array< float, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
             expect(x[0] == -2.0_f);
             expect(x[1] == -1.0_f);
             expect(x[2] == -1.0_f);
@@ -357,7 +358,168 @@ namespace
             expect(x[6] == 1.0_f);
             expect(x[7] == 2.0_f);
             expect(x[8] == 2.0_f);
-            expect(x[27] == 11.0_f); // Need to look into why we're not walking to the end
+            expect(x[24] == 10.0_f);
+            expect(x[25] == 11.0_f);
         };
-    };
+
+        "calculate_trunc_signed"_test = [&]
+        {
+            trunc_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(x == -13_i);
+            expect(std::is_same_v<decltype(x), int32_t>) << "Should return an int32_t";
+        };
+
+        "calculate_trunc_unsigned"_test = [&]
+        {
+            trunc_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42u };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == 42_u);
+            expect(std::is_same_v<decltype(x), uint32_t>) << "Should return an uint32_t";
+        };
+
+        "calculate_trunc_float_simd"_test = [&]
+        {
+            trunc_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_float + 5), &op, &data_type, vec256<float>{});
+            expect(x.m256_f32[0] == -1.0_f);
+            expect(x.m256_f32[1] == -1.0_f);
+            expect(x.m256_f32[2] == 0.0_f);
+            expect(x.m256_f32[3] == 0.0_f);
+            expect(x.m256_f32[4] == 0.0_f);
+            expect(x.m256_f32[5] == 1.0_f);
+            expect(x.m256_f32[6] == 1.0_f);
+            expect(x.m256_f32[7] == 2.0_f);
+            expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";           
+        };
+
+        "walk_trunc_float"_test = [&]
+        {
+            operation_t op{ trunc_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< float, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == -1.0_f);
+            expect(x[1] == -1.0_f);
+            expect(x[2] == 0.0_f);
+            expect(x[3] == 0.0_f);
+            expect(x[4] == 0.0_f);
+            expect(x[5] == 1.0_f);
+            expect(x[6] == 1.0_f);
+            expect(x[7] == 2.0_f);
+            expect(x[8] == 2.0_f);
+            expect(x[24] == 10.0_f);
+            expect(x[25] == 11.0_f);
+        };
+
+        "calculate_ceil_signed"_test = [&]
+        {
+            ceil_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(x == -13_i);
+            expect(std::is_same_v<decltype(x), int32_t>) << "Should return an int32_t";
+        };
+
+        "calculate_ceil_unsigned"_test = [&]
+        {
+            ceil_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42u };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == 42_u);
+            expect(std::is_same_v<decltype(x), uint32_t>) << "Should return an uint32_t";
+        };
+
+        "calculate_ceil_float_simd"_test = [&]
+        {
+            ceil_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_float + 5), &op, &data_type, vec256<float>{});
+            expect(x.m256_f32[0] == -1.0_f);
+            expect(x.m256_f32[1] == -1.0_f);
+            expect(x.m256_f32[2] == 0.0_f);
+            expect(x.m256_f32[3] == 0.0_f);
+            expect(x.m256_f32[4] == 1.0_f);
+            expect(x.m256_f32[5] == 1.0_f);
+            expect(x.m256_f32[6] == 2.0_f);
+            expect(x.m256_f32[7] == 2.0_f);
+            expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";           
+        };
+
+        "walk_ceil_float"_test = [&]
+        {
+            operation_t op{ ceil_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< float, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == -1.0_f);
+            expect(x[1] == -1.0_f);
+            expect(x[2] == 0.0_f);
+            expect(x[3] == 0.0_f);
+            expect(x[4] == 1.0_f);
+            expect(x[5] == 1.0_f);
+            expect(x[6] == 2.0_f);
+            expect(x[7] == 2.0_f);
+            expect(x[8] == 3.0_f);
+            expect(x[24] == 11.0_f);
+            expect(x[25] == 11.0_f);
+        };
+
+        "calculate_sqrt_signed"_test = [&]
+        {
+            sqrt_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(errno == EDOM) << "Expect Domain Error for sqrt (negative)";
+            data = 48;
+            x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect( x == 6_i );
+            expect(std::is_same_v<decltype(x), int32_t>) << "Should return an int32_t";
+        };
+
+        "calculate_sqrt_unsigned"_test = [&]
+        {
+            sqrt_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42u };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == 6_u);
+            expect(std::is_same_v<decltype(x), uint32_t>) << "Should return an uint32_t";
+        };
+
+        "calculate_sqrt_float_simd"_test = [&]
+        {
+            sqrt_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_float + 5), &op, &data_type, vec256<float>{});
+            expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";           
+        };
+
+        "walk_sqrt_float"_test = [&]
+        {
+            operation_t op{ sqrt_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< float, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_float + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(std::isnan(x[0]));
+            expect(std::isnan(x[1]));
+            expect(std::isnan(x[2]));
+            expect(x[3] == 0.0_f);
+            expect(x[4] == 0.707107_f);
+            expect(x[5] == 1.0_f);
+            expect(x[6] == 1.224745_f);
+            expect(x[7] == 1.41421_f);
+            expect(x[8] == 1.58114_f);
+            expect(x[24] == 3.24037_f);
+            expect(x[25] == 3.31662_f);
+        };
+};
 }
