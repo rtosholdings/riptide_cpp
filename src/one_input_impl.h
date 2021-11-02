@@ -531,7 +531,6 @@ namespace riptable_cpp
             }
         }
 
-
         // numpy standard is to treat stride as bytes
         template< typename operation_t, typename data_t >
         void perform_operation(char const* in_p, char* out_p, ptrdiff_t & starting_element, int64_t const in_array_stride, size_t contig_elems, operation_t* op_p, data_t* data_type_p, int64_t out_stride_as_items = 1)

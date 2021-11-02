@@ -771,5 +771,60 @@ namespace
             expect(x[24] == -1_i);
             expect(x[25] == -1_i);
         };
+
+        "calculate_isnan_signed"_test = []
+        {
+            isnan_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+        };
+
+        "calculate_isnan_unsigned"_test = []
+        {
+            isnan_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), bool>) << "Should return a bool";
+        };
+
+        "calculate_isnan_float_simd"_test = []
+        {
+            isnan_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_nans + 5), &op, &data_type, vec256<float>{});
+            expect(static_cast< int32_t >(x.m256_f32[0]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[1]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[2]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[3]) == 0_u);
+            expect(static_cast< uint32_t>(x.m256_f32[4]) == 0x80000000) << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast< int32_t >( x.m256_f32[4] );
+            expect(static_cast< int32_t >(x.m256_f32[5]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[6]) == 0_u);
+            expect(static_cast< int32_t >(x.m256_f32[7]) == 0_u);
+            expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
+        };
+
+        "walk_isnan_float"_test = [&]
+        {
+            operation_t op{ isnan_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< int, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_nans + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == 0_i);
+            expect(x[1] == 0_i);
+            expect(x[2] == 0_i);
+            expect(x[3] == 0_i);
+            expect(x[4] == -1_i);
+            expect(x[5] == 0_i);
+            expect(x[6] == 0_i);
+            expect(x[7] == 0_i);
+            expect(x[8] == 0_i);
+            expect(x[24] == 0_i);
+            expect(x[25] == 0_i);
+        };
 };
 }
