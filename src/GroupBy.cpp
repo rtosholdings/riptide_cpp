@@ -158,7 +158,7 @@ static size_t strip_nans(T *x, size_t n) {
 //-------------------------------------------------------------------
 // Defined as a macro so we can change this in one place
 // The algos look for a range to operate on.  This range can be used when multi-threading.
-#define ACCUM_INNER_LOOP(_index,_binLow,_binHigh) if (_index >= _binLow && index < _binHigh)
+#define ACCUM_INNER_LOOP(_index,_binLow,_binHigh) if (_index >= _binLow && _index < _binHigh)
 
 
 //-------------------------------------------------------------------
@@ -289,6 +289,59 @@ public:
                }
             }
          }
+      }
+   }
+
+   // This is for float only
+   // $TODO: Adapted from AccumSumFloat: should refactor this common behavior and
+   // potentially cache the working buffer in between invocations.
+   static void AccumNanSumFloat(void* pDataIn, void* pIndexT, int32_t* pCountOut, void* pDataOut, int64_t len, int64_t binLow, int64_t binHigh, int64_t pass) {
+      float* pIn = (float*)pDataIn;
+      float* pOut = (float*)pDataOut;
+      V* pIndex = (V*)pIndexT;
+      double* pOutAccum = NULL;
+
+      const int64_t maxStackAlloc = (1024 * 1024);  // 1 MB
+
+      int64_t allocSize = (binHigh - binLow)*sizeof(double);
+
+      if (allocSize > maxStackAlloc) {
+         pOutAccum = (double*)WORKSPACE_ALLOC(allocSize);
+      }
+      else {
+         pOutAccum = (double*)alloca(allocSize);
+      }
+
+      if (pass <= 0) {
+         // Clear out memory for our range
+         memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
+         memset(pOutAccum, 0, allocSize);
+      }
+      else {
+         // Upcast from single to double
+         for (int64_t i = binLow; i < binHigh; i++) {
+            pOutAccum[i - binLow] = pOut[i];
+         }
+      }
+
+      for (int64_t i = 0; i < len; i++) {
+         V index = pIndex[i];
+
+         //--------------------------------------
+         ACCUM_INNER_LOOP(index, binLow, binHigh) {
+            float temp = pIn[i];
+            if (temp == temp) {
+               pOutAccum[index-binLow] += (double)temp;
+            }
+         }
+      }
+
+      // Downcast from double to single
+      for (int64_t i = binLow; i < binHigh; i++) {
+         pOut[i] = (float)pOutAccum[i - binLow];
+      }
+      if (allocSize > maxStackAlloc) {
+         WORKSPACE_FREE(pOutAccum);
       }
    }
 
@@ -2158,7 +2211,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool *hasCounts, int32_t *wantedOutpu
 
    case GB_NANSUM:
       switch (inputType) {
-      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanSum;
+      case NPY_FLOAT:  *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanSumFloat;
       case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumNanSum;
       case NPY_LONGDOUBLE: *wantedOutputType = NPY_LONGDOUBLE; return GroupByBase<long double, long double, V>::AccumNanSum;
       // bool has no invalid
