@@ -329,7 +329,7 @@ public:
 
          //--------------------------------------
          ACCUM_INNER_LOOP(index, binLow, binHigh) {
-            T temp = pIn[i];
+            float temp = pIn[i];
             if (temp == temp) {
                pOutAccum[index-binLow] += (double)temp;
             }
