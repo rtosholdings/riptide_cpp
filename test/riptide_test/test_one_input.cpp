@@ -801,7 +801,7 @@ namespace
             expect(static_cast< int32_t >(x.m256_f32[1]) == 0_u);
             expect(static_cast< int32_t >(x.m256_f32[2]) == 0_u);
             expect(static_cast< int32_t >(x.m256_f32[3]) == 0_u);
-            expect(static_cast< uint32_t>(x.m256_f32[4]) == 0x80000000) << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast< int32_t >( x.m256_f32[4] );
+            expect(static_cast< int32_t >(x.m256_f32[4]) == 0x80000000) << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast< int32_t >( x.m256_f32[4] );
             expect(static_cast< int32_t >(x.m256_f32[5]) == 0_u);
             expect(static_cast< int32_t >(x.m256_f32[6]) == 0_u);
             expect(static_cast< int32_t >(x.m256_f32[7]) == 0_u);
