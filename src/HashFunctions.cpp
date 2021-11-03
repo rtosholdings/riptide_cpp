@@ -38,7 +38,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     int hashMode;
     int64_t hintSize = 0;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode) )
+    if (! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode))
         return NULL;
 
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -49,7 +49,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
 
     LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
-    if ( arrayType1 != arrayType2 )
+    if (arrayType1 != arrayType2)
     {
         // Arguments do not match
         PyErr_Format(PyExc_ValueError, "IsMember32 needs first arg to match %s vs %s", NpyToString(arrayType1),
@@ -57,7 +57,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    if ( sizeType1 == 0 )
+    if (sizeType1 == 0)
     {
         // Weird type
         PyErr_Format(PyExc_ValueError, "IsMember32 needs a type it understands %s vs %s", NpyToString(arrayType1),
@@ -65,7 +65,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    if ( arrayType1 == NPY_OBJECT )
+    if (arrayType1 == NPY_OBJECT)
     {
         PyErr_Format(PyExc_ValueError, "IsMember32 cannot handle unicode strings, please convert to np.chararray");
         return NULL;
@@ -86,7 +86,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     PyArrayObject * indexArray = AllocateNumpyArray(ndim, dims, NPY_INT64);
     CHECK_MEMORY_ERROR(indexArray);
 
-    if ( boolArray && indexArray )
+    if (boolArray && indexArray)
     {
         void * pDataIn1 = PyArray_BYTES(inArr1);
         void * pDataIn2 = PyArray_BYTES(inArr2);
@@ -95,7 +95,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
 
         // printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
 
-        if ( arrayType1 >= NPY_STRING )
+        if (arrayType1 >= NPY_STRING)
         {
             LOGGING("Calling string!\n");
             IsMemberHashString64(arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2, (const char *)pDataIn2,
@@ -103,7 +103,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
         }
         else
         {
-            if ( arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64 )
+            if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
             {
                 IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
                                HASH_MODE(hashMode), hintSize);
@@ -142,14 +142,14 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
     int hashMode = HASH_MODE_MASK;
     int64_t hintSize = 0;
 
-    if ( PyTuple_GET_SIZE(args) == 3 )
+    if (PyTuple_GET_SIZE(args) == 3)
     {
-        if ( ! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode) )
+        if (! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode))
             return NULL;
     }
     else
     {
-        if ( ! PyArg_ParseTuple(args, "O!O!iL", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode, &hintSize) )
+        if (! PyArg_ParseTuple(args, "O!O!iL", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode, &hintSize))
             return NULL;
     }
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -160,7 +160,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
 
     LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
-    switch ( arrayType1 )
+    switch (arrayType1)
     {
     CASE_NPY_INT32:
         arrayType1 = NPY_INT32;
@@ -178,7 +178,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
         break;
     }
 
-    switch ( arrayType2 )
+    switch (arrayType2)
     {
     CASE_NPY_INT32:
         arrayType2 = NPY_INT32;
@@ -196,7 +196,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
         break;
     }
 
-    if ( arrayType1 != arrayType2 )
+    if (arrayType1 != arrayType2)
     {
         // Arguments do not match
         PyErr_Format(PyExc_ValueError, "IsMemberCategorical needs first arg to match %s vs %s", NpyToString(arrayType1),
@@ -204,7 +204,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    if ( sizeType1 == 0 )
+    if (sizeType1 == 0)
     {
         // Weird type
         PyErr_Format(PyExc_ValueError, "IsMemberCategorical needs a type it understands %s vs %s", NpyToString(arrayType1),
@@ -212,7 +212,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    if ( arrayType1 == NPY_OBJECT )
+    if (arrayType1 == NPY_OBJECT)
     {
         PyErr_Format(PyExc_ValueError,
                      "IsMemberCategorical cannot handle unicode, object, void strings, please convert to np.chararray");
@@ -231,17 +231,17 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
 
     int64_t missed = 0;
 
-    if ( arrayType1 >= NPY_STRING )
+    if (arrayType1 >= NPY_STRING)
     {
         LOGGING("Calling string/uni/void!\n");
         missed = IsMemberCategoricalHashStringPre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2,
                                                   sizeType2, (const char *)pDataIn2, HASH_MODE(hashMode), hintSize,
                                                   arrayType1 == NPY_UNICODE);
     }
-    else if ( arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64 || arrayType1 == NPY_LONGDOUBLE )
+    else if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64 || arrayType1 == NPY_LONGDOUBLE)
     {
         LOGGING("Calling float!\n");
-        if ( arraySize1 < 2100000000 )
+        if (arraySize1 < 2100000000)
         {
             indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
             int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
@@ -259,7 +259,7 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
     else
     {
         LOGGING("Calling hash!\n");
-        if ( arraySize1 < 2100000000 )
+        if (arraySize1 < 2100000000)
         {
             indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
             int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
@@ -303,22 +303,22 @@ void FindFirstOccurence(T * pArray2, int32_t * pUnique1, int32_t * pReIndex, int
 
     // Put invalid as default
     const int32_t invalid = *(int32_t *)GetDefaultForType(NPY_INT32);
-    for ( int32_t i = 0; i < unique1Length; i++ )
+    for (int32_t i = 0; i < unique1Length; i++)
     {
         pReIndex[i] = invalid;
     }
 
-    for ( int32_t i = 0; i < unique2Length; i++ )
+    for (int32_t i = 0; i < unique2Length; i++)
     {
         pReverseMap[i] = -1;
     }
 
     // Make reverse map
     int32_t matchedUniqueLength(0);
-    for ( int32_t i = 0; i < unique1Length; i++ )
+    for (int32_t i = 0; i < unique1Length; i++)
     {
         int32_t val = pUnique1[i];
-        if ( val >= 0 && val < unique2Length )
+        if (val >= 0 && val < unique2Length)
         {
             pReverseMap[val] = i;
             ++matchedUniqueLength;
@@ -332,32 +332,32 @@ void FindFirstOccurence(T * pArray2, int32_t * pUnique1, int32_t * pReIndex, int
 
     // Find first occurence of values in pUnique
     // TODO: early stopping possible
-    if ( matchedUniqueLength > 0 )
+    if (matchedUniqueLength > 0)
     {
-        for ( int32_t i = 0; i < array2Length; i++ )
+        for (int32_t i = 0; i < array2Length; i++)
         {
             // N.B. The value can be the minimum integer, need to be checked first before offsetting by baseOffset2.
             T val = pArray2[i];
 
             // Find first occurence
-            if ( val >= baseOffset2 )
+            if (val >= baseOffset2)
             {
                 val -= baseOffset2;
 
                 // Check if the value in the second array is found in the first array
                 int32_t lookup = pReverseMap[val];
 
-                if ( lookup >= 0 )
+                if (lookup >= 0)
                 {
                     // Is this the first occurence?
-                    if ( pReIndex[lookup] == invalid )
+                    if (pReIndex[lookup] == invalid)
                     {
                         // printf("first occurence of val:%d  at lookup:%d  pos:%d\n", (int)val, lookup, i);
                         pReIndex[lookup] = i;
 
                         // check if we found everything possible for early exit
                         --matchedUniqueLength;
-                        if ( matchedUniqueLength <= 0 )
+                        if (matchedUniqueLength <= 0)
                             break;
                     }
                 }
@@ -386,13 +386,13 @@ void FinalMatch(T * pArray1, int32_t * pOutput, int8_t * pBoolOutput, int32_t * 
 
     // TODO: Multithreadable
     // Find first occurence of values in pUnique
-    for ( int64_t i = 0; i < array1Length; i++ )
+    for (int64_t i = 0; i < array1Length; i++)
     {
         // N.B. The value can be the minimum integer, need to be checked first before offsetting by baseoffset.
         T val = pArray1[i];
 
         // Find first occurence
-        if ( val >= baseoffset )
+        if (val >= baseoffset)
         {
             val -= baseoffset;
             const int32_t firstoccurence = pReIndex[val];
@@ -429,8 +429,8 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
     int32_t baseoffset1;
     int32_t baseoffset2;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!O!iii", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &PyArray_Type, &isMemberUnique,
-                            &unique2Length, &baseoffset1, &baseoffset2) )
+    if (! PyArg_ParseTuple(args, "O!O!O!iii", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &PyArray_Type, &isMemberUnique,
+                           &unique2Length, &baseoffset1, &baseoffset2))
         return NULL;
 
     int32_t arraySize1 = (int32_t)ArrayLength(inArr1);
@@ -441,7 +441,7 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
     int32_t array2Type = PyArray_TYPE(inArr2);
     int32_t array1Type = PyArray_TYPE(inArr1);
 
-    switch ( uniqueType )
+    switch (uniqueType)
     {
     CASE_NPY_INT32:
         break;
@@ -460,12 +460,12 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
     PyArrayObject * indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
     PyArrayObject * boolArray = AllocateLikeNumpyArray(inArr1, NPY_BOOL);
 
-    if ( reIndexArray && indexArray && boolArray )
+    if (reIndexArray && indexArray && boolArray)
     {
         int32_t * pUnique = (int32_t *)PyArray_BYTES(isMemberUnique);
         void * pArray2 = PyArray_BYTES(inArr2);
 
-        switch ( array2Type )
+        switch (array2Type)
         {
         case NPY_INT8:
             FindFirstOccurence<int8_t>((int8_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
@@ -491,7 +491,7 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
         int32_t * pIndexOut = (int32_t *)PyArray_BYTES(indexArray);
         int8_t * pBoolOut = (int8_t *)PyArray_BYTES(boolArray);
 
-        switch ( array1Type )
+        switch (array1Type)
         {
         case NPY_INT8: FinalMatch<int8_t>((int8_t *)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1); break;
         case NPY_INT16:

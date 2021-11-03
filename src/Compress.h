@@ -54,7 +54,7 @@ struct NUMPY_HEADERSIZE
     {
         int64_t arraylength = dimensions[0];
 
-        for ( int i = 1; i < ndim; i++ )
+        for (int i = 1; i < ndim; i++)
         {
             arraylength *= dimensions[0];
         }

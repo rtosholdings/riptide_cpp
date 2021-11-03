@@ -65,13 +65,13 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void)
     __cpuid((int *)reg, 0);
     {
         int const n = reg[0];
-        if ( n >= 1 )
+        if (n >= 1)
         {
             __cpuid((int *)reg, 1);
             f1c = (uint32_t)reg[2];
             f1d = (uint32_t)reg[3];
         }
-        if ( n >= 7 )
+        if (n >= 7)
         {
             __cpuidex((int *)reg, 7, 0);
             f7b = (uint32_t)reg[1];
@@ -84,40 +84,43 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void)
      * handle the save and restore to avoid clobbering the register
      */
     uint32_t n;
-    __asm__("pushl %%ebx\n\t"
-            "cpuid\n\t"
-            "popl %%ebx\n\t"
-            : "=a"(n)
-            : "a"(0)
-            : "ecx", "edx");
-    if ( n >= 1 )
+    __asm__(
+        "pushl %%ebx\n\t"
+        "cpuid\n\t"
+        "popl %%ebx\n\t"
+        : "=a"(n)
+        : "a"(0)
+        : "ecx", "edx");
+    if (n >= 1)
     {
         uint32_t f1a;
-        __asm__("pushl %%ebx\n\t"
-                "cpuid\n\t"
-                "popl %%ebx\n\t"
-                : "=a"(f1a), "=c"(f1c), "=d"(f1d)
-                : "a"(1));
+        __asm__(
+            "pushl %%ebx\n\t"
+            "cpuid\n\t"
+            "popl %%ebx\n\t"
+            : "=a"(f1a), "=c"(f1c), "=d"(f1d)
+            : "a"(1));
     }
-    if ( n >= 7 )
+    if (n >= 7)
     {
-        __asm__("pushl %%ebx\n\t"
-                "cpuid\n\t"
-                "movl %%ebx, %%eax\n\r"
-                "popl %%ebx"
-                : "=a"(f7b), "=c"(f7c)
-                : "a"(7), "c"(0)
-                : "edx");
+        __asm__(
+            "pushl %%ebx\n\t"
+            "cpuid\n\t"
+            "movl %%ebx, %%eax\n\r"
+            "popl %%ebx"
+            : "=a"(f7b), "=c"(f7c)
+            : "a"(7), "c"(0)
+            : "edx");
     }
 #elif defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
     uint32_t n;
     __asm__("cpuid" : "=a"(n) : "a"(0) : "ebx", "ecx", "edx");
-    if ( n >= 1 )
+    if (n >= 1)
     {
         uint32_t f1a;
         __asm__("cpuid" : "=a"(f1a), "=c"(f1c), "=d"(f1d) : "a"(1) : "ebx");
     }
-    if ( n >= 7 )
+    if (n >= 7)
     {
         uint32_t f7a;
         __asm__("cpuid" : "=a"(f7a), "=b"(f7b), "=c"(f7c) : "a"(7), "c"(0) : "edx");
@@ -250,15 +253,15 @@ void PrintCPUInfo()
     // Get the information associated with each extended ID.
     __cpuid(CPUInfo, 0x80000000);
     nExIds = CPUInfo[0];
-    for ( i = 0x80000000; i <= nExIds; ++i )
+    for (i = 0x80000000; i <= nExIds; ++i)
     {
         __cpuid(CPUInfo, i);
         // Interpret CPU brand string
-        if ( i == 0x80000002 )
+        if (i == 0x80000002)
             memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if ( i == 0x80000003 )
+        else if (i == 0x80000003)
             memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if ( i == 0x80000004 )
+        else if (i == 0x80000004)
             memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
     }
     // NEW CODE
@@ -266,7 +269,7 @@ void PrintCPUInfo()
     g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
 
     // printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
-    if ( g_bmi2 == 0 || g_avx2 == 0 )
+    if (g_bmi2 == 0 || g_avx2 == 0)
     {
         printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
     }
@@ -328,11 +331,11 @@ extern "C"
         uint64_t bitpos = 1;
         int count = 0;
 
-        while ( ! (bitpos & dwThreadAffinityMask) )
+        while (! (bitpos & dwThreadAffinityMask))
         {
             bitpos <<= 1;
             count++;
-            if ( count > 63 )
+            if (count > 63)
             {
                 break;
             }
@@ -340,7 +343,7 @@ extern "C"
 
         // printf("**linux setting affinity %d\n", count);
 
-        if ( count <= 63 )
+        if (count <= 63)
         {
             CPU_ZERO(&cpuset);
             CPU_SET(count, &cpuset);
@@ -365,9 +368,9 @@ extern "C"
         *lpSystemAffinityMask = 0;
 
         uint64_t bitpos = 1;
-        for ( int i = 0; i < 63; i++ )
+        for (int i = 0; i < 63; i++)
         {
-            if ( CPU_ISSET(i, &cpuset) )
+            if (CPU_ISSET(i, &cpuset))
             {
                 *lpProcessAffinityMask |= bitpos;
                 *lpSystemAffinityMask |= bitpos;
@@ -375,7 +378,7 @@ extern "C"
             bitpos <<= 1;
         }
 
-        if ( *lpProcessAffinityMask == 0 )
+        if (*lpProcessAffinityMask == 0)
         {
             *lpSystemAffinityMask = 0xFF;
             *lpSystemAffinityMask = 0xFF;
@@ -430,15 +433,15 @@ void PrintCPUInfo()
 
     memset(CPUBrandString, 0, sizeof(CPUBrandString));
 
-    for ( unsigned int i = 0x80000000; i <= nExIds; ++i )
+    for (unsigned int i = 0x80000000; i <= nExIds; ++i)
     {
         __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 
-        if ( i == 0x80000002 )
+        if (i == 0x80000002)
             memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if ( i == 0x80000003 )
+        else if (i == 0x80000003)
             memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if ( i == 0x80000004 )
+        else if (i == 0x80000004)
             memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
     }
     // printf("**CPU: %s\n", CPUBrandString);
@@ -448,7 +451,7 @@ void PrintCPUInfo()
     g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
 
     // printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
-    if ( g_bmi2 == 0 || g_avx2 == 0 )
+    if (g_bmi2 == 0 || g_avx2 == 0)
     {
         printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
     }
@@ -467,19 +470,19 @@ int GetProcCount()
     count = 0;
     GetProcessAffinityMask(proc, &mask1, &mask2);
 
-    while ( mask1 != 0 )
+    while (mask1 != 0)
     {
-        if ( mask1 & 1 )
+        if (mask1 & 1)
             count++;
         mask1 = mask1 >> 1;
     }
 
     // printf("**Process count: %d   riptide_cpp build date and time: %s %s\n", count, __DATE__, __TIME__);
 
-    if ( count == 0 )
+    if (count == 0)
         count = MAX_THREADS_WHEN_CANNOT_DETECT;
 
-    if ( count > MAX_THREADS_ALLOWED )
+    if (count > MAX_THREADS_ALLOWED)
         count = MAX_THREADS_ALLOWED;
 
     return count;

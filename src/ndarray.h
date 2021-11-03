@@ -13,7 +13,7 @@ static PyTypeObject NDArray_Type;
 #define NDArray_Check(v) (Py_TYPE(v) == &NDArray_Type)
 
 #define CHECK_LIST_OR_TUPLE(v) \
-    if ( ! PyList_Check(v) && ! PyTuple_Check(v) ) \
+    if (! PyList_Check(v) && ! PyTuple_Check(v)) \
     { \
         PyErr_SetString(PyExc_TypeError, #v " must be a list or a tuple"); \
         return NULL; \
@@ -22,10 +22,10 @@ static PyTypeObject NDArray_Type;
 #define PyMem_XFree(v) \
     do \
     { \
-        if ( v ) \
+        if (v) \
             PyMem_Free(v); \
     } \
-    while ( 0 )
+    while (0)
 
 /* Maximum number of dimensions. */
 #define ND_MAX_NDIM (2 * PyBUF_MAX_NDIM)

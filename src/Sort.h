@@ -56,11 +56,11 @@ public:
 
         // MLPLOGGING("Tuple size %llu\n", tupleSize);
 
-        if ( tupleSize >= 1 )
+        if (tupleSize >= 1)
         {
             // Check if they passed in a list
             PyObject * listObject = PyTuple_GetItem(args, 0);
-            if ( PyList_Check(listObject) )
+            if (PyList_Check(listObject))
             {
                 args = listObject;
                 tupleSize = PyList_GET_SIZE(args);
@@ -71,19 +71,19 @@ public:
         int64_t listSize = 0;
         aInfo = BuildArrayInfo(args, &listSize, &totalItemSize);
 
-        if ( aInfo )
+        if (aInfo)
         {
             totalRows = aInfo[0].ArrayLength;
 
-            for ( int64_t i = 0; i < listSize; i++ )
+            for (int64_t i = 0; i < listSize; i++)
             {
-                if ( aInfo[i].ArrayLength != totalRows )
+                if (aInfo[i].ArrayLength != totalRows)
                 {
                     PyErr_Format(PyExc_ValueError, "MultiListPrepare all arrays must be same number of rows %llu", totalRows);
                     totalRows = 0;
                 }
             }
-            if ( totalRows != 0 )
+            if (totalRows != 0)
             {
                 // printf("row width %llu   rows %llu\n", totalItemSize, totalRows);
             }
@@ -92,7 +92,7 @@ public:
 
     ~CMultiListPrepare()
     {
-        if ( aInfo != NULL )
+        if (aInfo != NULL)
         {
             FreeArrayInfo(aInfo);
             aInfo = NULL;

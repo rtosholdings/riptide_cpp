@@ -36,7 +36,7 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
     // Try to keep everything in L1Cache
     const int64_t L1CACHE = 32768;
     int64_t CHUNKROWS = L1CACHE / (itemSize * 2);
-    if ( CHUNKROWS < 1 )
+    if (CHUNKROWS < 1)
     {
         CHUNKROWS = 1;
     }
@@ -44,11 +44,11 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
     __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32((int32_t)itemSize), _mm256_loadu_si256(&__vindex8_strides.m));
     __m128i vindex128 = _mm256_extracti128_si256(vindex, 0);
 
-    while ( startRow < totalRows )
+    while (startRow < totalRows)
     {
         // Calc how many rows to process in this pass
         int64_t endRow = startRow + CHUNKROWS;
-        if ( endRow > totalRows )
+        if (endRow > totalRows)
         {
             endRow = totalRows;
         }
@@ -56,7 +56,7 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
         int64_t origRow = startRow;
 
         // printf("processing %lld\n", startRow);
-        for ( int64_t i = 0; i < numArrays; i++ )
+        for (int64_t i = 0; i < numArrays; i++)
         {
             startRow = origRow;
 
@@ -69,10 +69,10 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
             // printf("processing  start:%lld  end:%lld   pRead:%p  %p  itemsize: %lld\n", startRow, endRow, pRead, pWrite,
             // arrItemSize);
 
-            switch ( pstOffset[i].itemsize )
+            switch (pstOffset[i].itemsize)
             {
             case 1:
-                while ( startRow < endRow )
+                while (startRow < endRow)
                 {
                     int8_t data = *(int8_t *)(pRead + (startRow * itemSize));
                     *(int8_t *)(pWrite + startRow) = data;
@@ -80,7 +80,7 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
                 }
                 break;
             case 2:
-                while ( startRow < endRow )
+                while (startRow < endRow)
                 {
                     int16_t data = *(int16_t *)(pRead + (startRow * itemSize));
                     *(int16_t *)(pWrite + startRow * arrItemSize) = data;
@@ -91,13 +91,13 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
                 // ??? use _mm256_i32gather_epi32 to speed up
                 {
                     int64_t endSubRow = endRow - 8;
-                    while ( startRow < endSubRow )
+                    while (startRow < endSubRow)
                     {
                         __m256i m0 = _mm256_i32gather_epi32(reinterpret_cast<int32_t *>(pRead + (startRow * itemSize)), vindex, 1);
                         _mm256_storeu_si256((__m256i *)(pWrite + (startRow * arrItemSize)), m0);
                         startRow += 8;
                     }
-                    while ( startRow < endRow )
+                    while (startRow < endRow)
                     {
                         int32_t data = *(int32_t *)(pRead + (startRow * itemSize));
                         *(int32_t *)(pWrite + startRow * arrItemSize) = data;
@@ -108,14 +108,14 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
             case 8:
                 {
                     int64_t endSubRow = endRow - 4;
-                    while ( startRow < endSubRow )
+                    while (startRow < endSubRow)
                     {
                         __m256i m0 =
                             _mm256_i32gather_epi64(reinterpret_cast<int64_t const *>(pRead + (startRow * itemSize)), vindex128, 1);
                         _mm256_storeu_si256((__m256i *)(pWrite + (startRow * arrItemSize)), m0);
                         startRow += 4;
                     }
-                    while ( startRow < endRow )
+                    while (startRow < endRow)
                     {
                         int64_t data = *(int64_t *)(pRead + (startRow * itemSize));
                         *(int64_t *)(pWrite + startRow * arrItemSize) = data;
@@ -124,18 +124,18 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
                 }
                 break;
             default:
-                while ( startRow < endRow )
+                while (startRow < endRow)
                 {
                     char * pSrc = pRead + (startRow * itemSize);
                     char * pDest = pWrite + (startRow * arrItemSize);
                     char * pEnd = pSrc + arrItemSize;
-                    while ( (pSrc + 8) < pEnd )
+                    while ((pSrc + 8) < pEnd)
                     {
                         *(int64_t *)pDest = *(int64_t *)pSrc;
                         pDest += 8;
                         pSrc += 8;
                     }
-                    while ( pSrc < pEnd )
+                    while (pSrc < pEnd)
                     {
                         *pDest++ = *pSrc++;
                     }
@@ -157,15 +157,15 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
     PyArrayObject * offsetArr = NULL;
     PyArrayObject * arrArr = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!O!:RecordArrayToColMajor", &PyArray_Type, &inArr, &PyArray_Type, &offsetArr, &PyArray_Type,
-                            &arrArr) )
+    if (! PyArg_ParseTuple(args, "O!O!O!:RecordArrayToColMajor", &PyArray_Type, &inArr, &PyArray_Type, &offsetArr, &PyArray_Type,
+                           &arrArr))
     {
         return NULL;
     }
 
     int64_t itemSize = PyArray_ITEMSIZE(inArr);
 
-    if ( itemSize != PyArray_STRIDE(inArr, 0) )
+    if (itemSize != PyArray_STRIDE(inArr, 0))
     {
         PyErr_Format(PyExc_ValueError, "RecordArrayToColMajor cannot handle strides");
         return NULL;
@@ -174,7 +174,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
     int64_t length = ArrayLength(inArr);
     int64_t numArrays = ArrayLength(arrArr);
 
-    if ( numArrays != ArrayLength(offsetArr) )
+    if (numArrays != ArrayLength(offsetArr))
     {
         PyErr_Format(PyExc_ValueError, "RecordArrayToColMajor inputs do not match");
         return NULL;
@@ -188,7 +188,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
 
     pstOffset = (stOffsets *)WORKSPACE_ALLOC(sizeof(stOffsets) * numArrays);
 
-    for ( int64_t i = 0; i < numArrays; i++ )
+    for (int64_t i = 0; i < numArrays; i++)
     {
         pstOffset[i].pData = PyArray_BYTES(ppArrays[i]);
         pstOffset[i].itemsize = PyArray_ITEMSIZE(ppArrays[i]);
@@ -199,7 +199,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
     char * pStartOffset = PyArray_BYTES(inArr);
     int64_t startRow = 0;
 
-    if ( totalRows > 16384 )
+    if (totalRows > 16384)
     {
         // Prepare for multithreading
         struct stConvertRec
@@ -230,7 +230,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
             int64_t startRow = callbackArg->startRow + (workIndex * CHUNKSIZE);
             int64_t totalRows = startRow + CHUNKSIZE;
 
-            if ( totalRows > callbackArg->totalRows )
+            if (totalRows > callbackArg->totalRows)
             {
                 totalRows = callbackArg->totalRows;
             }

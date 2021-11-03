@@ -110,7 +110,7 @@ public:
         memset(pWorkerRing, 0, sizeof(stWorkerRing));
         pWorkerRing->Init();
 
-        for ( int i = 0; i < WorkerThreadCount; i++ )
+        for (int i = 0; i < WorkerThreadCount; i++)
         {
             WorkerThreadHandles[i] = 0;
         }
@@ -137,13 +137,13 @@ public:
     // Changes how many threads wake up in Linux
     int32_t SetFutexWakeup(int howManyToWake)
     {
-        if ( howManyToWake < 1 )
+        if (howManyToWake < 1)
         {
             // On Windows seem to need at least 1
             howManyToWake = 1;
         }
 
-        if ( howManyToWake > FUTEX_WAKE_MAX )
+        if (howManyToWake > FUTEX_WAKE_MAX)
         {
             // see linux man page on futex
             howManyToWake = FUTEX_WAKE_MAX;
@@ -165,7 +165,7 @@ public:
     void StartWorkerThreads(int numaNode)
     {
         MATHLOGGING("Start worker threads\n");
-        for ( int i = 0; i < WorkerThreadCount; i++ )
+        for (int i = 0; i < WorkerThreadCount; i++)
         {
             WorkerThreadHandles[i] = StartThread(pWorkerRing);
         }
@@ -181,7 +181,7 @@ public:
     //
     void KillWorkerThreads()
     {
-        for ( int i = 0; i < WorkerThreadCount; i++ )
+        for (int i = 0; i < WorkerThreadCount; i++)
         {
             CloseHandle(WorkerThreadHandles[i]);
         }
@@ -199,7 +199,7 @@ public:
         int64_t workBlock;
 
         // As long as there is work to do
-        while ( (index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0 )
+        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
         {
             // First index is 1 so we subtract
             index--;
@@ -221,7 +221,7 @@ public:
         // See if we get a work item (threading might be off)
         stMATH_WORKER_ITEM * pWorkItem = GetWorkItemCount(numItems);
 
-        if ( pWorkItem )
+        if (pWorkItem)
         {
             //
             // Each thread will call this routine with the callbackArg
@@ -239,7 +239,7 @@ public:
         else
         {
             // Just assume core 0 does all the work
-            for ( int t = 0; t < numItems; t++ )
+            for (int t = 0; t < numItems; t++)
             {
                 doMTWorkCallback(workCallbackArg, 0, t);
             }
@@ -261,7 +261,7 @@ public:
         int64_t workBlock;
 
         // As long as there is work to do
-        while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+        while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
         {
             int64_t start = pstWorkerItem->BlockSize * workBlock;
 
@@ -285,7 +285,7 @@ public:
         // See if we get a work item (threading might be off)
         stMATH_WORKER_ITEM * pWorkItem = GetWorkItem(lengthData);
 
-        if ( pWorkItem )
+        if (pWorkItem)
         {
             //
             //
@@ -329,19 +329,19 @@ public:
         int64_t cores = numCores;
 
         // Check if we are clamping the core count
-        if ( maxCores > 0 && cores > maxCores )
+        if (maxCores > 0 && cores > maxCores)
         {
             cores = maxCores;
         }
 
         // shrink cores if we have too many
-        if ( bins < cores )
+        if (bins < cores)
             cores = bins;
 
         // Allocate the struct to be freed later
         stBinCount * pstBinCount = (stBinCount *)WORKSPACE_ALLOC(cores * sizeof(stBinCount));
 
-        if ( cores > 0 )
+        if (cores > 0)
         {
             int64_t dividend = bins / cores;
             int64_t remainder = bins % cores;
@@ -349,13 +349,13 @@ public:
             int64_t low = 0;
             int64_t high = 0;
 
-            for ( int64_t i = 0; i < cores; i++ )
+            for (int64_t i = 0; i < cores; i++)
             {
                 // Calculate band range
                 high = low + dividend;
 
                 // add in any remainder until nothing left
-                if ( remainder > 0 )
+                if (remainder > 0)
                 {
                     high++;
                     remainder--;
@@ -380,7 +380,7 @@ public:
     stMATH_WORKER_ITEM * GetWorkItemCount(int64_t len)
     {
         // If it is a small work item, process it immediately
-        if ( NoThreading )
+        if (NoThreading)
         {
             return NULL;
         }
@@ -396,7 +396,7 @@ public:
     stMATH_WORKER_ITEM * GetWorkItem(int64_t len)
     {
         // If it is a small work item, process it immediately
-        if ( len < WORK_ITEM_BIG || NoThreading )
+        if (len < WORK_ITEM_BIG || NoThreading)
         {
             return NULL;
         }
@@ -419,7 +419,7 @@ public:
         // Only windows uses ThreadWakup
         // Linux uses the futex to wakup more threads
         // If the number of threads to wakeup is not specified, we use the default
-        if ( threadWakeup <= 0 )
+        if (threadWakeup <= 0)
         {
             // use default number of threads
             threadWakeup = maxWakeup;
@@ -433,7 +433,7 @@ public:
         // only windows uses this for now
         pWorkItem->ThreadWakeup = threadWakeup;
 
-        if ( bGenericMode )
+        if (bGenericMode)
         {
             // WORK_ITEM_CHUNK at a time
             pWorkItem->BlockLast = (len + (BlockSize - 1)) / BlockSize;
@@ -459,10 +459,10 @@ public:
         // Also do work
         pWorkItem->DoWork(-1, 0);
 
-        if ( bGenericMode )
+        if (bGenericMode)
         {
             // Check if all workers have completed
-            while ( pWorkItem->BlocksCompleted < pWorkItem->BlockLast )
+            while (pWorkItem->BlocksCompleted < pWorkItem->BlockLast)
             {
                 MATHLOGGING("Waiting %llu  %llu \n", pWorkItem->BlocksCompleted, pWorkItem->BlockLast);
                 YieldProcessor();
@@ -472,7 +472,7 @@ public:
         else
         {
             // Check if all workers have completed
-            while ( pWorkItem->BlocksCompleted < len )
+            while (pWorkItem->BlocksCompleted < len)
             {
                 MATHLOGGING("Waiting %llu  %llu \n", pWorkItem->BlocksCompleted, pWorkItem->BlockLast);
                 YieldProcessor();
@@ -502,7 +502,7 @@ public:
         THREADLOGGING("[%d] DoWork start loop\n", core);
 
         // As long as there is work to do
-        while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+        while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
         {
             // workBlock is length of work
             THREADLOGGING("[%d][%llu] Zero started working on %lld\n", core, workIndex, workBlock);
@@ -533,7 +533,7 @@ public:
         THREADLOGGING("[%d] DoWork start loop\n", core);
 
         // As long as there is work to do
-        while ( (index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0 )
+        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
         {
             THREADLOGGING("[%d][%llu] Groupby started working on %lld\n", core, workIndex, workBlock - 1);
 
@@ -568,7 +568,7 @@ public:
         int64_t workBlock;
 
         // As long as there is work to do
-        while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+        while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
         {
             // Calculate how much to adjust the pointers to get to the data for this work block
             int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * strideSizeIn;
@@ -583,11 +583,11 @@ public:
 
             // printf("workblock %llu   len=%llu  offset=%llu  strideSize %d\n", workBlock, lenX, offsetAdj, strideSize);
 
-            switch ( OldCallback->FunctionList->TypeOfFunctionCall )
+            switch (OldCallback->FunctionList->TypeOfFunctionCall)
             {
             case ANY_TWO:
                 {
-                    switch ( OldCallback->ScalarMode )
+                    switch (OldCallback->ScalarMode)
                     {
                     case NO_SCALARS:
                         // Process this block of work
@@ -641,9 +641,9 @@ public:
     void WorkGroupByCall(GROUPBY_FUNC groupByCall, void * pstData, int64_t tupleSize)
     {
         // If it is a small work item, process it immediately
-        if ( tupleSize < 2 || NoThreading )
+        if (tupleSize < 2 || NoThreading)
         {
-            for ( int i = 0; i < tupleSize; i++ )
+            for (int i = 0; i < tupleSize; i++)
             {
                 groupByCall(pstData, i);
             }
@@ -666,7 +666,7 @@ public:
                                stScatterGatherFunc * pstScatterGatherFunc)
     {
         // If it is a small work item, process it immediately
-        if ( len < WORK_ITEM_BIG || NoThreading )
+        if (len < WORK_ITEM_BIG || NoThreading)
         {
             anyScatterGatherCall->AnyScatterGatherCall(pDataIn, len, pstScatterGatherFunc);
             return;
@@ -680,7 +680,7 @@ public:
         int64_t sizeToAlloc = numCores * sizeof(stScatterGatherFunc);
         void * pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
 
-        if ( pWorkSpace )
+        if (pWorkSpace)
         {
             // Insert a work item
             pWorkItem->OldCallback.FunctionList = anyScatterGatherCall;
@@ -695,7 +695,7 @@ public:
             stScatterGatherFunc * pZeroArray = (stScatterGatherFunc *)pWorkSpace;
 
             // Scatter the work amongst threads
-            for ( int i = 0; i < numCores; i++ )
+            for (int i = 0; i < numCores; i++)
             {
                 pZeroArray[i].inputType = pstScatterGatherFunc->inputType;
                 pZeroArray[i].meanCalculation = pstScatterGatherFunc->meanCalculation;
@@ -709,18 +709,18 @@ public:
             WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK, true);
 
             // Gather the results from all cores
-            if ( func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX )
+            if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX)
             {
                 int32_t calcs = 0;
                 // Collect all the results...
-                for ( int i = 0; i < numCores; i++ )
+                for (int i = 0; i < numCores; i++)
                 {
                     pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
 
                     // did we calc something?
-                    if ( pZeroArray[i].lenOut )
+                    if (pZeroArray[i].lenOut)
                     {
-                        if ( calcs == 0 )
+                        if (calcs == 0)
                         {
                             // We must accept the very first calculation
                             calcs++;
@@ -729,7 +729,7 @@ public:
                         }
                         else
                         {
-                            if ( func == REDUCE_MIN || func == REDUCE_NANMIN )
+                            if (func == REDUCE_MIN || func == REDUCE_NANMIN)
                             {
                                 pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
                                 pstScatterGatherFunc->resultOutInt64 =
@@ -751,7 +751,7 @@ public:
                 MATHLOGGING("Gathering from %d cores\n", numCores);
 
                 // Collect all the results...
-                for ( int i = 0; i < numCores; i++ )
+                for (int i = 0; i < numCores; i++)
                 {
                     pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
                     pstScatterGatherFunc->resultOut += pZeroArray[i].resultOut;

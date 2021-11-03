@@ -28,7 +28,7 @@ public:
     // File existence check
     static bool FileExists(const char * filename)
     {
-        if ( INVALID_FILE_ATTRIBUTES == GetFileAttributes(filename) && GetLastError() == ERROR_FILE_NOT_FOUND )
+        if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(filename) && GetLastError() == ERROR_FILE_NOT_FOUND)
         {
             // File not found
             return false;

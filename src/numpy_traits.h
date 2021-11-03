@@ -315,19 +315,19 @@ namespace riptide
         // VS2015 says it supports C++14, but doesn't fully -- so it's explicitly excluded here even when the language version
         // checks pass.
 #if __cplusplus >= 201402L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L && _MSC_VER > 1900)
-        if ( array_length < 0 )
+        if (array_length < 0)
         {
             return NPY_TYPES::NPY_NOTYPE;
         }
-        else if ( array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT8>::value )
+        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT8>::value)
         {
             return NPY_TYPES::NPY_INT8;
         }
-        else if ( array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT16>::value )
+        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT16>::value)
         {
             return NPY_TYPES::NPY_INT16;
         }
-        else if ( array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT32>::value )
+        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT32>::value)
         {
             return NPY_TYPES::NPY_INT32;
         }

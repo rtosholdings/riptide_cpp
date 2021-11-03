@@ -86,7 +86,7 @@ static inline LF_SLIST * LockFreePopSList(LF_SLIST * pHead)
         compare = *pHead;
 
         // we do not want pop the list if there are no entries (the list is circular)
-        if ( compare.Next == NULL )
+        if (compare.Next == NULL)
         {
             return NULL;
         }
@@ -99,7 +99,7 @@ static inline LF_SLIST * LockFreePopSList(LF_SLIST * pHead)
         // Keep track of deletions
         exchange.Counter.Deletions = compare.Counter.Deletions + 1;
     }
-    while ( ! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare) );
+    while (! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare));
 
     // Assertion assumes less than 4 billion insertions total lifetime
     _ASSERT(exchange.Counter.Insertions >= exchange.Counter.Deletions);
@@ -119,7 +119,7 @@ static inline LF_SLIST * LockFreeFlushSList(LF_SLIST * pHead)
         compare = *pHead;
 
         // we do not want pop the list if there are no entries (the list is circular)
-        if ( compare.Next == NULL )
+        if (compare.Next == NULL)
         {
             return NULL;
         }
@@ -133,7 +133,7 @@ static inline LF_SLIST * LockFreeFlushSList(LF_SLIST * pHead)
         // Keep track of deletions -- make same as insertions to indicate ZERO items
         exchange.Counter.Deletions = compare.Counter.Insertions;
     }
-    while ( ! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare) );
+    while (! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare));
 
     // Assertion assumes less than 4 billion insertions total lifetime
     _ASSERT(exchange.Counter.Insertions >= exchange.Counter.Deletions);
@@ -168,7 +168,7 @@ static inline void LockFreePushSList(LF_SLIST * pHead, LF_SLIST * pEntry)
         // Keep track of insertions
         exchange.Counter.Insertions = compare.Counter.Insertions + 1;
     }
-    while ( ! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare) );
+    while (! InterlockedCompareExchange128((LONGLONG *)pHead, exchange.HighPart, exchange.LowPart, (LONGLONG *)&compare));
 
     // Assertion assumes less than 4 billion insertions total lifetime
     _ASSERT(exchange.Counter.Insertions > exchange.Counter.Deletions);
@@ -246,7 +246,7 @@ public:
 
         InitializeSListHead(&SlicesListHead);
 
-        for ( int i = 0; i < arenaHighIndex; i++ )
+        for (int i = 0; i < arenaHighIndex; i++)
         {
             InitializeSListHead(&pArenaTable[i].SListHead);
         }

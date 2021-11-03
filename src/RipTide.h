@@ -117,9 +117,9 @@ inline static int64_t CALC_ARRAY_LENGTH(int ndim, npy_intp * dims)
     int64_t length = 1;
 
     // handle case of zero length array
-    if ( dims && ndim > 0 )
+    if (dims && ndim > 0)
     {
-        for ( int i = 0; i < ndim; i++ )
+        for (int i = 0; i < ndim; i++)
         {
             length *= dims[i];
         }
@@ -207,7 +207,7 @@ static inline bool IsFastArrayOrNumpy(PyArrayObject * pArray)
 // This comes from looking at numpy/core/src/multiarray/ctors.c
 static inline PyArray_Descr * DTypeToDescr(PyObject * inobject)
 {
-    if ( inobject->ob_type == &PyArrayDescr_Type )
+    if (inobject->ob_type == &PyArrayDescr_Type)
     {
         Py_INCREF(inobject);
         return (PyArray_Descr *)inobject;

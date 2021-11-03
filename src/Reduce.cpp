@@ -373,11 +373,11 @@ class ReduceArgMax final
         T result = *pIn++;
         int64_t resultOutArgInt64 = 0;
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             T temp = *pIn;
-            if ( temp > result )
+            if (temp > result)
             {
                 result = temp;
                 resultOutArgInt64 = pIn - pStart;
@@ -386,7 +386,7 @@ class ReduceArgMax final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->resultOutArgInt64 == -1 )
+        if (pstScatterGatherFunc->resultOutArgInt64 == -1)
         {
             *(T *)&pstScatterGatherFunc->resultOut = result;
             pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -394,7 +394,7 @@ class ReduceArgMax final
         else
         {
             // A previous run used this entry
-            if ( result > *(T *)&pstScatterGatherFunc->resultOut )
+            if (result > *(T *)&pstScatterGatherFunc->resultOut)
             {
                 *(T *)&pstScatterGatherFunc->resultOut = result;
                 pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -409,7 +409,7 @@ public:
     // specialized for that array type.
     static ARG_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -457,11 +457,11 @@ class ReduceArgMin final
         T result = *pIn++;
         int64_t resultOutArgInt64 = 0;
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             T temp = *pIn;
-            if ( temp < result )
+            if (temp < result)
             {
                 result = temp;
                 resultOutArgInt64 = pIn - pStart;
@@ -470,7 +470,7 @@ class ReduceArgMin final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->resultOutArgInt64 == -1 )
+        if (pstScatterGatherFunc->resultOutArgInt64 == -1)
         {
             *(T *)&pstScatterGatherFunc->resultOut = result;
             pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -478,7 +478,7 @@ class ReduceArgMin final
         else
         {
             // A previous run used this entry
-            if ( result < *(T *)&pstScatterGatherFunc->resultOut )
+            if (result < *(T *)&pstScatterGatherFunc->resultOut)
             {
                 *(T *)&pstScatterGatherFunc->resultOut = result;
                 pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -493,7 +493,7 @@ public:
     // specialized for that array type.
     static ARG_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -546,11 +546,11 @@ class ReduceNanargmax final
         //       in case we get a bool array that's a view of an int8/uint8 array). Or will the compiler implement that
         //       automatically for us (by treating bool as having two physical values -- zero and non-zero)?
         // Search for first non Nan
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             const T temp = *pIn;
             // break on first non nan
-            if ( invalid_for_type<T>::is_valid(temp) )
+            if (invalid_for_type<T>::is_valid(temp))
             {
                 result = temp;
                 resultOutArgInt64 = pIn - pStart;
@@ -560,13 +560,13 @@ class ReduceNanargmax final
             ++pIn;
         }
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             const T temp = *pIn;
             // get the maximum
-            if ( invalid_for_type<T>::is_valid(temp) )
+            if (invalid_for_type<T>::is_valid(temp))
             {
-                if ( temp > result )
+                if (temp > result)
                 {
                     result = temp;
                     resultOutArgInt64 = pIn - pStart;
@@ -576,10 +576,10 @@ class ReduceNanargmax final
         }
 
         // A previous run used this entry
-        if ( resultOutArgInt64 != -1 )
+        if (resultOutArgInt64 != -1)
         {
             // Check for previous scattering.  If we are the first one
-            if ( pstScatterGatherFunc->resultOutArgInt64 == -1 )
+            if (pstScatterGatherFunc->resultOutArgInt64 == -1)
             {
                 // update with our max location
                 *(T *)&pstScatterGatherFunc->resultOut = result;
@@ -588,7 +588,7 @@ class ReduceNanargmax final
             else
             {
                 // Compare against previous location
-                if ( result > *(T *)&pstScatterGatherFunc->resultOut )
+                if (result > *(T *)&pstScatterGatherFunc->resultOut)
                 {
                     *(T *)&pstScatterGatherFunc->resultOut = result;
                     pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -605,7 +605,7 @@ public:
     // specialized for that array type.
     static ARG_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -657,11 +657,11 @@ class ReduceNanargmin final
         // TODO: Seems like we should have special support for T=bool below (so that values are clamped to 0/1,
         //       in case we get a bool array that's a view of an int8/uint8 array).
         // Search for first non Nan
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             const T temp = *pIn;
             // break on first non nan
-            if ( invalid_for_type<T>::is_valid(temp) )
+            if (invalid_for_type<T>::is_valid(temp))
             {
                 result = temp;
                 resultOutArgInt64 = pIn - pStart;
@@ -671,13 +671,13 @@ class ReduceNanargmin final
             ++pIn;
         }
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             const T temp = *pIn;
             // get the minimum
-            if ( invalid_for_type<T>::is_valid(temp) )
+            if (invalid_for_type<T>::is_valid(temp))
             {
-                if ( temp < result )
+                if (temp < result)
                 {
                     result = temp;
                     resultOutArgInt64 = pIn - pStart;
@@ -687,10 +687,10 @@ class ReduceNanargmin final
         }
 
         // A previous run used this entry
-        if ( resultOutArgInt64 != -1 )
+        if (resultOutArgInt64 != -1)
         {
             // Check for previous scattering.  If we are the first one
-            if ( pstScatterGatherFunc->resultOutArgInt64 == -1 )
+            if (pstScatterGatherFunc->resultOutArgInt64 == -1)
             {
                 // update with our min location
                 *(T *)&pstScatterGatherFunc->resultOut = result;
@@ -699,7 +699,7 @@ class ReduceNanargmin final
             else
             {
                 // Compare against previous location
-                if ( result < *(T *)&pstScatterGatherFunc->resultOut )
+                if (result < *(T *)&pstScatterGatherFunc->resultOut)
                 {
                     *(T *)&pstScatterGatherFunc->resultOut = result;
                     pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
@@ -716,7 +716,7 @@ public:
     // specialized for that array type.
     static ARG_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -759,11 +759,11 @@ class ReduceMax final
         // Always set first item
         T result = *pIn++;
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the maximum
             T temp = *pIn;
-            if ( temp > result )
+            if (temp > result)
             {
                 result = temp;
             }
@@ -771,7 +771,7 @@ class ReduceMax final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->lenOut == 0 )
+        if (pstScatterGatherFunc->lenOut == 0)
         {
             pstScatterGatherFunc->resultOut = (double)result;
             pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -779,7 +779,7 @@ class ReduceMax final
         else
         {
             // in case of nan when calling max (instead of nanmax), preserve nans
-            if ( pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut )
+            if (pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut)
             {
                 pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, (double)result);
             }
@@ -808,7 +808,7 @@ class ReduceMax final
         static constexpr int64_t chunkSize = (sizeof(U256) * 8) / sizeof(T);
         static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
-        if ( len >= chunkSize )
+        if (len >= chunkSize)
         {
             pEnd = &pIn[chunkSize * (len / chunkSize)];
 
@@ -825,7 +825,7 @@ class ReduceMax final
             U256 m6 = LOADU(pIn256++);
             U256 m7 = LOADU(pIn256++);
 
-            while ( pIn256 < pEnd256 )
+            while (pIn256 < pEnd256)
             {
                 m0 = MAX_OP(result, m0, LOADU(pIn256));
                 m1 = MAX_OP(result, m1, LOADU(pIn256 + 1));
@@ -854,7 +854,7 @@ class ReduceMax final
             T * tempT = (T *)&temp;
             result = tempT[0];
 
-            for ( int i = 1; i < perReg; i++ )
+            for (int i = 1; i < perReg; i++)
             {
                 result = MAXF(result, tempT[i]);
             }
@@ -863,7 +863,7 @@ class ReduceMax final
         }
 
         pEnd = &pIn[len & (chunkSize - 1)];
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             result = MAXF(result, *pIn);
@@ -871,7 +871,7 @@ class ReduceMax final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->lenOut == 0 )
+        if (pstScatterGatherFunc->lenOut == 0)
         {
             pstScatterGatherFunc->resultOut = (double)result;
             pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -891,7 +891,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return avx2<float, __m256, __m128>;
         case NPY_DOUBLE: return avx2<double, __m256d, __m128d>;
@@ -934,11 +934,11 @@ class ReduceMin final
         // Always set first item
         T result = *pIn++;
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             T temp = *pIn;
-            if ( temp < result )
+            if (temp < result)
             {
                 result = temp;
             }
@@ -946,7 +946,7 @@ class ReduceMin final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->lenOut == 0 )
+        if (pstScatterGatherFunc->lenOut == 0)
         {
             pstScatterGatherFunc->resultOut = (double)result;
             pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -954,7 +954,7 @@ class ReduceMin final
         else
         {
             // in case of nan when calling min (instead of nanmin), preserve nans
-            if ( pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut )
+            if (pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut)
             {
                 pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
             }
@@ -983,7 +983,7 @@ class ReduceMin final
         const int64_t perReg = sizeof(U256) / sizeof(T);
 
         // printf("hit this %lld %lld\n", len, chunkSize);
-        if ( len >= chunkSize )
+        if (len >= chunkSize)
         {
             pEnd = &pIn[chunkSize * (len / chunkSize)];
 
@@ -1000,7 +1000,7 @@ class ReduceMin final
             U256 m6 = LOADU(pIn256++);
             U256 m7 = LOADU(pIn256++);
 
-            while ( pIn256 < pEnd256 )
+            while (pIn256 < pEnd256)
             {
                 m0 = MIN_OP(result, m0, LOADU(pIn256));
                 m1 = MIN_OP(result, m1, LOADU(pIn256 + 1));
@@ -1022,7 +1022,7 @@ class ReduceMin final
             m4 = MIN_OP(result, m4, m6);
             m0 = MIN_OP(result, m0, m4);
 
-            if ( false )
+            if (false)
             {
                 // Older path
                 // Write 256 bits into memory
@@ -1033,7 +1033,7 @@ class ReduceMin final
 
                 // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut,
                 // (double)result, pstScatterGatherFunc->resultOutInt64);
-                for ( int i = 1; i < perReg; i++ )
+                for (int i = 1; i < perReg; i++)
                 {
                     result = MINF(result, tempT[i]);
                 }
@@ -1060,7 +1060,7 @@ class ReduceMin final
 
                 // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut,
                 // (double)result, pstScatterGatherFunc->resultOutInt64);
-                for ( int i = 1; i < (perReg / 4); i++ )
+                for (int i = 1; i < (perReg / 4); i++)
                 {
                     result = MINF(result, tempT[i]);
                 }
@@ -1071,7 +1071,7 @@ class ReduceMin final
         }
 
         pEnd = &pIn[len & (chunkSize - 1)];
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             result = MINF(result, *pIn);
@@ -1079,7 +1079,7 @@ class ReduceMin final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->lenOut == 0 )
+        if (pstScatterGatherFunc->lenOut == 0)
         {
             pstScatterGatherFunc->resultOut = (double)result;
             pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1114,7 +1114,7 @@ class ReduceMin final
         const int64_t perReg = sizeof(U256) / sizeof(T);
 
         // printf("hit this %lld %lld\n", len, chunkSize);
-        if ( len >= chunkSize )
+        if (len >= chunkSize)
         {
             pEnd = &pIn[chunkSize * (len / chunkSize)];
 
@@ -1141,7 +1141,7 @@ class ReduceMin final
             mnan = _mm256_and_ps(mnan, _mm256_cmp_ps(m6, m6, _CMP_EQ_OQ));
             mnan = _mm256_and_ps(mnan, _mm256_cmp_ps(m7, m7, _CMP_EQ_OQ));
 
-            while ( pIn256 < pEnd256 )
+            while (pIn256 < pEnd256)
             {
                 U256 m10 = LOADU(pIn256++);
                 m0 = MIN_OP(result, m0, m10);
@@ -1174,7 +1174,7 @@ class ReduceMin final
 
             // TODO: Check mnan for nans
             // NOTE: a nan check can go here for floating point and short circuit
-            if ( _mm256_movemask_ps(mnan) == 255 )
+            if (_mm256_movemask_ps(mnan) == 255)
             {
                 // Wind this calculation down from 8 256 bit registers to the data T MIN_OP
                 m0 = MIN_OP(result, m0, m1);
@@ -1185,7 +1185,7 @@ class ReduceMin final
                 m4 = MIN_OP(result, m4, m6);
                 m0 = MIN_OP(result, m0, m4);
 
-                if ( false )
+                if (false)
                 {
                     // Older path
                     // Write 256 bits into memory
@@ -1198,7 +1198,7 @@ class ReduceMin final
 
                     // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut,
                     // (double)result, pstScatterGatherFunc->resultOutInt64);
-                    for ( int i = 1; i < perReg; i++ )
+                    for (int i = 1; i < perReg; i++)
                     {
                         result = MINF(result, tempT[i]);
                     }
@@ -1225,7 +1225,7 @@ class ReduceMin final
 
                     // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut,
                     // (double)result, pstScatterGatherFunc->resultOutInt64);
-                    for ( int i = 1; i < (perReg / 4); i++ )
+                    for (int i = 1; i < (perReg / 4); i++)
                     {
                         result = MINF(result, tempT[i]);
                     }
@@ -1242,12 +1242,12 @@ class ReduceMin final
         }
 
         pEnd = &pIn[len & (chunkSize - 1)];
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
             // TODO: Check for nans also
             T value = *pIn++;
-            if ( value == value )
+            if (value == value)
             {
                 result = MINF(result, value);
             }
@@ -1260,7 +1260,7 @@ class ReduceMin final
         }
 
         // Check for previous scattering.  If we are the first one
-        if ( pstScatterGatherFunc->lenOut == 0 )
+        if (pstScatterGatherFunc->lenOut == 0)
         {
             pstScatterGatherFunc->resultOut = (double)result;
             pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1270,7 +1270,7 @@ class ReduceMin final
         else
         {
             // printf("minop !0 %lf %lf\n", pstScatterGatherFunc->resultOut, (double)result);
-            if ( result == result )
+            if (result == result)
             {
                 pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
                 T previous = (T)(pstScatterGatherFunc->resultOutInt64);
@@ -1292,7 +1292,7 @@ public:
     template <bool is_nan_aware = false>
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT:
             // For testing/development purposes, we have a "nan-aware" (i.e. nan-propagating) vectorized implementation for floats.
@@ -1348,25 +1348,25 @@ class ReduceNanMin final
         T result = invalid_for_type<T>::value;
 
         // Search for first non Nan
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // break on first non nan
-            if ( invalid_for_type<T>::is_valid(*pIn) )
+            if (invalid_for_type<T>::is_valid(*pIn))
             {
                 break;
             }
             pIn++;
         }
 
-        if ( pIn < pEnd )
+        if (pIn < pEnd)
         {
             result = *pIn++;
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 // get the minimum
                 // include inf because of range function in cut/qcut
-                if ( invalid_for_type<T>::is_valid(*pIn) )
+                if (invalid_for_type<T>::is_valid(*pIn))
                 {
                     result = (std::min)(result, *pIn);
                 }
@@ -1379,11 +1379,11 @@ class ReduceNanMin final
         // This is so that if the array consists of only NaNs, the stScatterGatherFunc value
         // used to accumulate any intermediate results will retain whatever values it was
         // initialized with, which makes it easier to detect and handle the case of an all-NaN array.
-        if ( invalid_for_type<T>::is_valid(result) )
+        if (invalid_for_type<T>::is_valid(result))
         {
             // Is there a previous intermediate result we need to combine with?
             // If not, this chunk of the array was the first result so we can just store the results.
-            if ( pstScatterGatherFunc->lenOut == 0 )
+            if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
                 pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1438,7 +1438,7 @@ class ReduceNanMin final
         static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
         // printf("hit this %lld %lld\n", len, chunkSize);
-        if ( len >= chunkSize )
+        if (len >= chunkSize)
         {
             pEnd = &pIn[chunkSize * (len / chunkSize)];
 
@@ -1455,7 +1455,7 @@ class ReduceNanMin final
             U256 m6 = LOADU(pIn256++);
             U256 m7 = LOADU(pIn256++);
 
-            while ( pIn256 < pEnd256 )
+            while (pIn256 < pEnd256)
             {
                 m0 = FMIN_OP(result, m0, LOADU(pIn256));
                 m1 = FMIN_OP(result, m1, LOADU(pIn256 + 1));
@@ -1488,10 +1488,10 @@ class ReduceNanMin final
             // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut, (double)result,
             // pstScatterGatherFunc->resultOutInt64);
 
-            for ( int i = 1; i < perReg; i++ )
+            for (int i = 1; i < perReg; i++)
             {
                 const T current = tempT[i];
-                if ( invalid_for_type<T>::is_valid(current) )
+                if (invalid_for_type<T>::is_valid(current))
                 {
                     result = (std::min)(result, current);
                 }
@@ -1502,10 +1502,10 @@ class ReduceNanMin final
         }
 
         pEnd = &pIn[len & (chunkSize - 1)];
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the minimum
-            if ( invalid_for_type<T>::is_valid(*pIn) )
+            if (invalid_for_type<T>::is_valid(*pIn))
             {
                 result = (std::min)(result, *pIn);
             }
@@ -1517,11 +1517,11 @@ class ReduceNanMin final
         // This is so that if the array consists of only NaNs, the stScatterGatherFunc value
         // used to accumulate any intermediate results will retain whatever values it was
         // initialized with, which makes it easier to detect and handle the case of an all-NaN array.
-        if ( invalid_for_type<T>::is_valid(result) )
+        if (invalid_for_type<T>::is_valid(result))
         {
             // Is there a previous intermediate result we need to combine with?
             // If not, this chunk of the array was the first result so we can just store the results.
-            if ( pstScatterGatherFunc->lenOut == 0 )
+            if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
                 pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1554,7 +1554,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         // TODO: Enable avx2 implementation once it's been tested.
         case NPY_FLOAT: return non_vector<float>;
@@ -1604,25 +1604,25 @@ class ReduceNanMax final
         T result = invalid_for_type<T>::value;
 
         // Search for first non Nan
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // break on first non nan
-            if ( invalid_for_type<T>::is_valid(*pIn) )
+            if (invalid_for_type<T>::is_valid(*pIn))
             {
                 break;
             }
             pIn++;
         }
 
-        if ( pIn < pEnd )
+        if (pIn < pEnd)
         {
             result = *pIn++;
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 // get the maximum
                 // include inf because of range function in cut/qcut
-                if ( invalid_for_type<T>::is_valid(*pIn) )
+                if (invalid_for_type<T>::is_valid(*pIn))
                 {
                     result = (std::max)(result, *pIn);
                 }
@@ -1635,11 +1635,11 @@ class ReduceNanMax final
         // This is so that if the array consists of only NaNs, the stScatterGatherFunc value
         // used to accumulate any intermediate results will retain whatever values it was
         // initialized with, which makes it easier to detect and handle the case of an all-NaN array.
-        if ( invalid_for_type<T>::is_valid(result) )
+        if (invalid_for_type<T>::is_valid(result))
         {
             // Is there a previous intermediate result we need to combine with?
             // If not, this chunk of the array was the first result so we can just store the results.
-            if ( pstScatterGatherFunc->lenOut == 0 )
+            if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
                 pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1694,7 +1694,7 @@ class ReduceNanMax final
         static constexpr int64_t perReg = sizeof(U256) / sizeof(T);
 
         // printf("hit this %lld %lld\n", len, chunkSize);
-        if ( len >= chunkSize )
+        if (len >= chunkSize)
         {
             pEnd = &pIn[chunkSize * (len / chunkSize)];
 
@@ -1711,7 +1711,7 @@ class ReduceNanMax final
             U256 m6 = LOADU(pIn256++);
             U256 m7 = LOADU(pIn256++);
 
-            while ( pIn256 < pEnd256 )
+            while (pIn256 < pEnd256)
             {
                 m0 = FMAX_OP(result, m0, LOADU(pIn256));
                 m1 = FMAX_OP(result, m1, LOADU(pIn256 + 1));
@@ -1744,10 +1744,10 @@ class ReduceNanMax final
             // printf("sofar maxop 0  chunk: %lld    %lf %lf %lld\n", chunkSize, pstScatterGatherFunc->resultOut, (double)result,
             // pstScatterGatherFunc->resultOutInt64);
 
-            for ( int i = 1; i < perReg; i++ )
+            for (int i = 1; i < perReg; i++)
             {
                 const T current = tempT[i];
-                if ( invalid_for_type<T>::is_valid(current) )
+                if (invalid_for_type<T>::is_valid(current))
                 {
                     result = (std::max)(result, current);
                 }
@@ -1758,10 +1758,10 @@ class ReduceNanMax final
         }
 
         pEnd = &pIn[len & (chunkSize - 1)];
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // get the maximum
-            if ( invalid_for_type<T>::is_valid(*pIn) )
+            if (invalid_for_type<T>::is_valid(*pIn))
             {
                 result = (std::max)(result, *pIn);
             }
@@ -1773,11 +1773,11 @@ class ReduceNanMax final
         // This is so that if the array consists of only NaNs, the stScatterGatherFunc value
         // used to accumulate any intermediate results will retain whatever values it was
         // initialized with, which makes it easier to detect and handle the case of an all-NaN array.
-        if ( invalid_for_type<T>::is_valid(result) )
+        if (invalid_for_type<T>::is_valid(result))
         {
             // Is there a previous intermediate result we need to combine with?
             // If not, this chunk of the array was the first result so we can just store the results.
-            if ( pstScatterGatherFunc->lenOut == 0 )
+            if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
                 pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
@@ -1810,7 +1810,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         // TODO: Enable avx2 implementation once it's been tested.
         case NPY_FLOAT: return non_vector<float>;
@@ -1856,7 +1856,7 @@ class ReduceSum final
         T * pEnd;
         double result = 0;
 
-        if ( pstScatterGatherFunc->inputType == NPY_BOOL )
+        if (pstScatterGatherFunc->inputType == NPY_BOOL)
         {
             result = (double)SumBooleanMask((int8_t *)pDataIn, length);
         }
@@ -1867,7 +1867,7 @@ class ReduceSum final
             // Always set first item
             result = (double)(*pIn++);
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 // get the minimum
                 result += (double)(*pIn++);
@@ -1887,7 +1887,7 @@ class ReduceSum final
         double result = 0;
         float * pIn = (float *)pDataIn;
         float * pEnd;
-        if ( len >= 32 )
+        if (len >= 32)
         {
             pEnd = &pIn[32 * (len / 32)];
 
@@ -1901,7 +1901,7 @@ class ReduceSum final
             __m256d m6 = _mm256_setzero_pd();
             __m256d m7 = _mm256_setzero_pd();
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 m0 = _mm256_add_pd(m0, _mm256_cvtps_pd(_mm_loadu_ps(pIn)));
                 m1 = _mm256_add_pd(m1, _mm256_cvtps_pd(_mm_loadu_ps(pIn + 4)));
@@ -1932,7 +1932,7 @@ class ReduceSum final
 
         pEnd = &pIn[len & 31];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             result += (double)(*pIn++);
         }
@@ -1949,7 +1949,7 @@ class ReduceSum final
         double result = 0;
         int32_t * pIn = (int32_t *)pDataIn;
         int32_t * pEnd;
-        if ( len >= 32 )
+        if (len >= 32)
         {
             pEnd = &pIn[32 * (len / 32)];
 
@@ -1963,7 +1963,7 @@ class ReduceSum final
             __m256d m6 = _mm256_setzero_pd();
             __m256d m7 = _mm256_setzero_pd();
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 m0 = _mm256_add_pd(m0, _mm256_cvtepi32_pd(_mm_loadu_si128((__m128i *)(pIn))));
                 m1 = _mm256_add_pd(m1, _mm256_cvtepi32_pd(_mm_loadu_si128((__m128i *)(pIn + 4))));
@@ -1994,7 +1994,7 @@ class ReduceSum final
 
         pEnd = &pIn[len & 31];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             result += (double)(*pIn++);
         }
@@ -2011,7 +2011,7 @@ class ReduceSum final
         double result = 0;
         double * pIn = (double *)pDataIn;
         double * pEnd;
-        if ( len >= 32 )
+        if (len >= 32)
         {
             pEnd = &pIn[32 * (len / 32)];
 
@@ -2025,7 +2025,7 @@ class ReduceSum final
             __m256d m6 = _mm256_setzero_pd();
             __m256d m7 = _mm256_setzero_pd();
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 m0 = _mm256_add_pd(m0, _mm256_loadu_pd(pIn));
                 m1 = _mm256_add_pd(m1, _mm256_loadu_pd(pIn + 4));
@@ -2056,7 +2056,7 @@ class ReduceSum final
 
         pEnd = &pIn[len & 31];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             result += *pIn++;
         }
@@ -2141,7 +2141,7 @@ class ReduceSum final
         Input * pIn = (Input *)pDataIn;
         Input * pEnd = &pIn[length];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             result += *pIn++;
         }
@@ -2162,7 +2162,7 @@ class ReduceSum final
         int64_t * pIn = (int64_t *)pDataIn;
         int64_t * pEnd = &pIn[len];
 
-        if ( len >= 4 )
+        if (len >= 4)
         {
             __m128i m0 = _mm_loadu_si128((__m128i *)pIn);
             __m128d f0 = _mm_cvtsi64_sd(_mm_set1_pd(0.0), pIn[0]);
@@ -2179,7 +2179,7 @@ class ReduceSum final
 
                 pIn += 2;
             }
-            while ( pIn < (pEnd - 1) );
+            while (pIn < (pEnd - 1));
 
             // Add horizontally
             __m128i result128;
@@ -2195,7 +2195,7 @@ class ReduceSum final
             resultd = pResultsd[0] + pResultsd[1];
         }
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // Calculate sum for integer and float
             const auto temp = *pIn;
@@ -2219,7 +2219,7 @@ class ReduceSum final
         uint64_t * pIn = (uint64_t *)pDataIn;
         uint64_t * pEnd = &pIn[len];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             // Calculate sum for integer and float
             result += (uint64_t)*pIn;
@@ -2238,7 +2238,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return ReduceAddF32;
         case NPY_DOUBLE: return ReduceAddD64;
@@ -2282,9 +2282,9 @@ class ReduceNanSum final
         int64_t count = 0;
         T * pIn = (T *)pDataIn;
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
-            if ( invalid_for_type<T>::is_valid(pIn[i]) )
+            if (invalid_for_type<T>::is_valid(pIn[i]))
             {
                 result += pIn[i];
                 count += 1;
@@ -2301,7 +2301,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -2350,7 +2350,7 @@ class ReduceVariance final
 
         // Check if we can crunch 8 doubles at a time
         // THE CODE below appears to be buggy
-        if ( len >= 4 )
+        if (len >= 4)
         {
             __m256d m0;
             __m256d m1;
@@ -2359,7 +2359,7 @@ class ReduceVariance final
 
             int64_t len2 = len & ~3;
 
-            for ( int64_t i = 0; i < len2; i += 4 )
+            for (int64_t i = 0; i < len2; i += 4)
             {
                 // Load 8 floats or 4 doubles
                 // TODO: Use C++ 'if constexpr' here; if T = typeof(double), we can load the first vector with _mm256_loadu_pd();
@@ -2386,7 +2386,7 @@ class ReduceVariance final
             result += tempDouble[3];
         }
 
-        for ( int64_t i = 0; i < (len & 3); i++ )
+        for (int64_t i = 0; i < (len & 3); i++)
         {
             double temp = (double)pIn[i] - mean;
             result += (temp * temp);
@@ -2408,7 +2408,7 @@ class ReduceVariance final
 
         T * pIn = (T *)pDataIn;
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             double temp = (double)pIn[i] - mean;
             result += (temp * temp);
@@ -2429,7 +2429,7 @@ class ReduceVariance final
         float * pEnd;
 
         // Check if we can crunch 8 doubles at a time
-        if ( len >= 4 )
+        if (len >= 4)
         {
             pEnd = &pIn[4 * (len / 4)];
 
@@ -2438,7 +2438,7 @@ class ReduceVariance final
             __m256d m2 = _mm256_setzero_pd();
             __m256d m3 = _mm256_set1_pd(mean);
 
-            while ( pIn < pEnd )
+            while (pIn < pEnd)
             {
                 // Load 8 floats or 4 doubles
                 m0 = _mm256_sub_pd(_mm256_cvtps_pd(*(__m128 *)pIn), m3);
@@ -2464,7 +2464,7 @@ class ReduceVariance final
 
         pEnd = &pIn[len & 3];
 
-        while ( pIn < pEnd )
+        while (pIn < pEnd)
         {
             double temp = (double)(*pIn++) - mean;
             result += (temp * temp);
@@ -2480,7 +2480,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return ReduceVarF32;
         case NPY_DOUBLE: return ReduceVar<double>;
@@ -2526,9 +2526,9 @@ class ReduceNanVariance final
 
         const T * const pIn = (T *)pDataIn;
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
-            if ( invalid_for_type<T>::is_valid(pIn[i]) )
+            if (invalid_for_type<T>::is_valid(pIn[i]))
             {
                 double temp = (double)pIn[i] - mean;
                 result += (temp * temp);
@@ -2547,7 +2547,7 @@ public:
     // specialized for that array type.
     static ANY_SCATTER_GATHER_FUNC GetScatterGatherFuncPtr(const NPY_TYPES inputType)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return non_vector<float>;
         case NPY_DOUBLE: return non_vector<double>;
@@ -2589,7 +2589,7 @@ class ReduceMean final
         ReduceSum::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
         // printf("reduce mean dividing %lf by %lf\n", pstScatterGatherFunc->resultOut, (double)pstScatterGatherFunc->lenOut);
 
-        if ( pstScatterGatherFunc->lenOut > 1 )
+        if (pstScatterGatherFunc->lenOut > 1)
         {
             pstScatterGatherFunc->resultOut = pstScatterGatherFunc->resultOut / (double)pstScatterGatherFunc->lenOut;
         }
@@ -2619,7 +2619,7 @@ class ReduceNanMean final
     {
         ReduceNanSum::GetScatterGatherFuncPtr((NPY_TYPES)pstScatterGatherFunc->inputType)(pDataIn, len, pstScatterGatherFunc);
         // printf("Dviding %lf by %lf\n", pstScatterGatherFunc->resultOut, (double)pstScatterGatherFunc->lenOut);
-        if ( pstScatterGatherFunc->lenOut > 1 )
+        if (pstScatterGatherFunc->lenOut > 1)
         {
             pstScatterGatherFunc->resultOut = pstScatterGatherFunc->resultOut / (double)pstScatterGatherFunc->lenOut;
         }
@@ -2689,7 +2689,7 @@ public:
 //
 static ARG_SCATTER_GATHER_FUNC GetArgReduceFuncPtr(const NPY_TYPES inputType, const REDUCE_FUNCTIONS func)
 {
-    switch ( func )
+    switch (func)
     {
     case REDUCE_FUNCTIONS::REDUCE_ARGMIN: return ReduceArgMin::GetScatterGatherFuncPtr(inputType);
 
@@ -2710,7 +2710,7 @@ static ARG_SCATTER_GATHER_FUNC GetArgReduceFuncPtr(const NPY_TYPES inputType, co
 //
 static ANY_SCATTER_GATHER_FUNC GetReduceFuncPtr(const NPY_TYPES inputType, const REDUCE_FUNCTIONS func)
 {
-    switch ( func )
+    switch (func)
     {
     case REDUCE_FUNCTIONS::REDUCE_SUM: return ReduceSum::GetScatterGatherFuncPtr(inputType);
     case REDUCE_FUNCTIONS::REDUCE_NANSUM: return ReduceNanSum::GetScatterGatherFuncPtr(inputType);
@@ -2748,7 +2748,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
 {
     const NPY_TYPES numpyInType = (NPY_TYPES)ObjectToDtype(inArr1);
 
-    if ( numpyInType < 0 )
+    if (numpyInType < 0)
     {
         LOGGING("Reduce: Dont know how to convert these types %d  for func %llu", numpyInType, func);
         // punt to numpy
@@ -2764,7 +2764,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
     npy_intp * dims = PyArray_DIMS(inArr1);
     int64_t len = CalcArrayLength(ndim, dims);
 
-    if ( len == 0 )
+    if (len == 0)
     {
         // punt to numpy, often raises a ValueError
         Py_INCREF(Py_None);
@@ -2773,17 +2773,17 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
 
     //------------------------------------------------
     // Handle Arg style functions here
-    if ( func >= REDUCE_FUNCTIONS::REDUCE_ARGMIN && func <= REDUCE_FUNCTIONS::REDUCE_NANARGMAX )
+    if (func >= REDUCE_FUNCTIONS::REDUCE_ARGMIN && func <= REDUCE_FUNCTIONS::REDUCE_NANARGMAX)
     {
         stArgScatterGatherFunc sgFunc = { numpyInType, 0, 0, 0, -1 };
         ARG_SCATTER_GATHER_FUNC pFunction = GetArgReduceFuncPtr(numpyInType, func);
 
-        if ( pFunction )
+        if (pFunction)
         {
             // TODO: Make multithreaded
             pFunction(pDataIn, len, 0, &sgFunc);
         }
-        if ( sgFunc.resultOutArgInt64 == -1 )
+        if (sgFunc.resultOutArgInt64 == -1)
         {
             return PyErr_Format(PyExc_ValueError,
                                 "There were no valid values to return the index location of for argmin or argmax.");
@@ -2794,7 +2794,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
     const ANY_SCATTER_GATHER_FUNC pFunction = GetReduceFuncPtr(numpyInType, func);
 
     // If we don't know how to handle this, return None to punt to numpy.
-    if ( ! pFunction )
+    if (! pFunction)
     {
         LOGGING("Reduce: Dont know how to convert these types %d  for func %llu", numpyInType, func);
         // punt to numpy
@@ -2813,7 +2813,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
     fl.OutputItemSize = 0;
     fl.TypeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_SCATTER_GATHER;
 
-    if ( func >= 100 && func < REDUCE_FUNCTIONS::REDUCE_MIN )
+    if (func >= 100 && func < REDUCE_FUNCTIONS::REDUCE_MIN)
     {
         // Get either normal sum or nansum based on last bit being set in funcnumber
         REDUCE_FUNCTIONS newFunc = (REDUCE_FUNCTIONS)(REDUCE_SUM + (func & 1));
@@ -2822,7 +2822,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
         // First call add
         g_cMathWorker->WorkScatterGatherCall(&fl, pDataIn, len, newFunc, &sgFunc);
 
-        if ( sgFunc.lenOut > 0 )
+        if (sgFunc.lenOut > 0)
         {
             sgFunc.resultOut = sgFunc.resultOut / (double)sgFunc.lenOut;
             sgFunc.resultOutInt64 = (int64_t)sgFunc.resultOut;
@@ -2838,7 +2838,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
         LOGGING("Mean calculation %lf  %llu\n", sgFunc.resultOut, sgFunc.lenOut);
 
         // See if more work to do... next step is VAR
-        if ( func > REDUCE_FUNCTIONS::REDUCE_NANMEAN )
+        if (func > REDUCE_FUNCTIONS::REDUCE_NANMEAN)
         {
             sgFunc.resultOut = 0;
             sgFunc.resultOutInt64 = 0;
@@ -2852,13 +2852,13 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
             g_cMathWorker->WorkScatterGatherCall(&fl, pDataIn, len, newFunc, &sgFunc);
 
             // Final steps to calc VAR
-            if ( sgFunc.lenOut > ddof )
+            if (sgFunc.lenOut > ddof)
             {
                 sgFunc.resultOut = sgFunc.resultOut / (double)(sgFunc.lenOut - ddof);
                 LOGGING("Var calculation %lf  %llu\n", sgFunc.resultOut, sgFunc.lenOut);
 
                 // Check if std vs var.  For std take the sqrt.
-                if ( (func & ~1) == REDUCE_FUNCTIONS::REDUCE_STD )
+                if ((func & ~1) == REDUCE_FUNCTIONS::REDUCE_STD)
                 {
                     sgFunc.resultOut = sqrt(sgFunc.resultOut);
                 }
@@ -2879,14 +2879,14 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
 
         g_cMathWorker->WorkScatterGatherCall(&fl, pDataIn, len, func, &sgFunc);
 
-        if ( func == REDUCE_FUNCTIONS::REDUCE_SUM || func == REDUCE_FUNCTIONS::REDUCE_NANSUM )
+        if (func == REDUCE_FUNCTIONS::REDUCE_SUM || func == REDUCE_FUNCTIONS::REDUCE_NANSUM)
         {
             // Check for overflow
-            switch ( numpyInType )
+            switch (numpyInType)
             {
             CASE_NPY_UINT64:
 
-                if ( sgFunc.resultOut > 18446744073709551615.0 )
+                if (sgFunc.resultOut > 18446744073709551615.0)
                 {
                     LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                     return PyFloat_FromDouble(sgFunc.resultOut);
@@ -2894,7 +2894,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
                 break;
             CASE_NPY_INT64:
 
-                if ( sgFunc.resultOut > 9223372036854775807.0 || sgFunc.resultOut < -9223372036854775808.0 )
+                if (sgFunc.resultOut > 9223372036854775807.0 || sgFunc.resultOut < -9223372036854775808.0)
                 {
                     LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                     return PyFloat_FromDouble(sgFunc.resultOut);
@@ -2903,7 +2903,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
             }
         }
 
-        switch ( numpyInType )
+        switch (numpyInType)
         {
         CASE_NPY_UINT64:
 
@@ -2917,7 +2917,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
             // *any* non-NaN values. Otherwise, we'll return the initial value of the reduction result
             // (usually just initialized to zero when the stScatterGatherFunc is created above) which will
             // be wrong.
-            switch ( func )
+            switch (func)
             {
             case REDUCE_FUNCTIONS::REDUCE_NANMIN:
             case REDUCE_FUNCTIONS::REDUCE_NANMAX: return PyFloat_FromDouble(sgFunc.lenOut > 0 ? sgFunc.resultOut : Py_NAN);
@@ -2945,10 +2945,10 @@ PyObject * Reduce(PyObject * self, PyObject * args)
     int64_t tupleSize = Py_SIZE(args);
     int64_t ddof = 1;
 
-    if ( tupleSize == 3 )
+    if (tupleSize == 3)
     {
         PyObject * ddofItem = (PyObject *)PyTuple_GET_ITEM(args, 2);
-        if ( PyLong_Check(ddofItem) )
+        if (PyLong_Check(ddofItem))
         {
             // read ddof passed
             ddof = PyLong_AsLongLong(ddofItem);
@@ -2957,20 +2957,20 @@ PyObject * Reduce(PyObject * self, PyObject * args)
     }
 
     // Check we were called with the right number of arguments.
-    if ( tupleSize != 2 )
+    if (tupleSize != 2)
     {
         return PyErr_Format(PyExc_ValueError, "Reduce only takes two args instead of %lld args", tupleSize);
     }
 
     inArr1 = (PyArrayObject *)PyTuple_GET_ITEM(args, 0);
 
-    if ( IsFastArrayOrNumpy(inArr1) )
+    if (IsFastArrayOrNumpy(inArr1))
     {
         // make sure not strided -- we don't currently handle those
-        if ( PyArray_STRIDE(inArr1, 0) == PyArray_ITEMSIZE(inArr1) )
+        if (PyArray_STRIDE(inArr1, 0) == PyArray_ITEMSIZE(inArr1))
         {
             PyObject * object2 = PyTuple_GET_ITEM(args, 1);
-            if ( PyLong_Check(object2) )
+            if (PyLong_Check(object2))
             {
                 int64_t func = PyLong_AsLongLong(object2);
 

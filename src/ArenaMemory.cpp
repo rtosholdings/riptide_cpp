@@ -83,7 +83,7 @@ static PyObject * test_setallocators(PyMemAllocatorDomain domain)
     /* malloc, realloc, free */
     size = 42;
     hook.ctx = NULL;
-    switch ( domain )
+    switch (domain)
     {
     case PYMEM_DOMAIN_RAW: ptr = PyMem_RawMalloc(size); break;
     case PYMEM_DOMAIN_MEM: ptr = PyMem_Malloc(size); break;
@@ -179,7 +179,7 @@ void * CArenaMemory::AllocateSlice(int arenaIndex)
 
     INT64 nodesAllocated = pEntry->nodesAllocated * 2;
 
-    if ( nodesAllocated == 0 )
+    if (nodesAllocated == 0)
     {
         nodesAllocated = arenaMinNodesToAllocate;
     }
@@ -207,7 +207,7 @@ void * CArenaMemory::AllocateSlice(int arenaIndex)
     pSlice += sizeof(ArenaSlice);
 
     // Queue up all of our slices
-    for ( int i = 0; i < nodesAllocated; i++ )
+    for (int i = 0; i < nodesAllocated; i++)
     {
         ArenaNode * pNode = (ArenaNode *)pSlice;
 
@@ -236,7 +236,7 @@ void * CArenaMemory::Allocate(INT64 length)
 {
     int sizeIndex = arenaLowIndex;
 
-    if ( length > arenaHighMask )
+    if (length > arenaHighMask)
     {
         // Anything above 1 GB is not kept around
         LOGGING("!! error too large an allocation %llu\n", length);
@@ -244,7 +244,7 @@ void * CArenaMemory::Allocate(INT64 length)
 
         ArenaNode * pNode = (ArenaNode *)InternalAlloc(sizetoAlloc);
 
-        if ( pNode == NULL )
+        if (pNode == NULL)
         {
             LOGERROR("Failed to allocate memory %llu\n", sizetoAlloc);
             return NULL;
@@ -269,7 +269,7 @@ void * CArenaMemory::Allocate(INT64 length)
         findMSB >>= arenaBitShift;
 
         // Keep shifting until we find proper spot
-        while ( findMSB > 0 )
+        while (findMSB > 0)
         {
             sizeIndex++;
             findMSB >>= 1;
@@ -284,14 +284,14 @@ void * CArenaMemory::Allocate(INT64 length)
     // Try to atomically pop it off
     ArenaNode * pNode = (ArenaNode *)InterlockedPopEntrySList(&(pEntry->SListHead));
 
-    if ( pNode == NULL )
+    if (pNode == NULL)
     {
         // Allocate?  Slice up
         AllocateSlice(sizeIndex);
         pNode = (ArenaNode *)InterlockedPopEntrySList(&(pEntry->SListHead));
     }
 
-    if ( pNode == NULL )
+    if (pNode == NULL)
     {
         LOGERROR("!!! error out of memory when trying to get memory for index %d\n", sizeIndex);
         return pNode;
@@ -316,7 +316,7 @@ FAST_BUF_SHARED * CArenaMemory::AllocateFastBufferInternal(INT64 bufferSize)
     // Combine both buffers together
     FAST_BUF_SHARED * pFastBuf = (FAST_BUF_SHARED *)Allocate(sizeof(FAST_BUF_SHARED) + bufferSize);
 
-    if ( pFastBuf == NULL )
+    if (pFastBuf == NULL)
     {
         printf("Failed to alloc shared memory");
     }
@@ -337,9 +337,9 @@ void CArenaMemory::FreeFastBufferInternal(FAST_BUF_SHARED * pFastBuf)
 {
     INT64 result = InterlockedDecrement64(&pFastBuf->ReferenceCount);
 
-    if ( result <= 0 )
+    if (result <= 0)
     {
-        if ( result < 0 )
+        if (result < 0)
         {
             LOGERROR("!! reference count below 0.  This might be a shared memory buffer\n");
         }
@@ -359,19 +359,19 @@ bool CArenaMemory::Free(void * pBuffer)
     ArenaNode * pNode = (ArenaNode *)pByteAddress;
 
     // Check for large memory which does not return to list
-    if ( pNode->arenaIndex == -1 )
+    if (pNode->arenaIndex == -1)
     {
         InternalFree(pNode);
         return true;
     }
 
-    if ( pNode->magic1 != arenaMagic )
+    if (pNode->magic1 != arenaMagic)
     {
         LOGERROR("!! error not freeing memory or corrupted\n");
         return false;
     }
 
-    if ( pNode->arenaIndex < 0 || pNode->arenaIndex > arenaHighIndex )
+    if (pNode->arenaIndex < 0 || pNode->arenaIndex > arenaHighIndex)
     {
         LOGERROR("!! error not freeing memory or index corrupted\n");
         return false;
@@ -395,7 +395,7 @@ bool CArenaMemory::FreeAllSlices()
     ArenaSlice * pSlice;
     pSlice = (ArenaSlice *)InterlockedPopEntrySList(&SlicesListHead);
 
-    while ( pSlice != NULL )
+    while (pSlice != NULL)
     {
         InternalFree(pSlice);
         pSlice = (ArenaSlice *)InterlockedPopEntrySList(&SlicesListHead);

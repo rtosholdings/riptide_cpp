@@ -812,15 +812,15 @@ HMODULE g_hModule = NULL;
 void _LazyLoad(const char * dllLoadPath)
 {
     // If they pass in a path, try to load that first
-    if ( g_hModule == NULL && dllLoadPath != NULL )
+    if (g_hModule == NULL && dllLoadPath != NULL)
     {
         g_hModule = LoadLibraryA(dllLoadPath);
     }
-    if ( g_hModule == NULL )
+    if (g_hModule == NULL)
     {
         g_hModule = LoadLibraryW(L"SDSFile.dll");
     }
-    if ( g_hModule == NULL )
+    if (g_hModule == NULL)
     {
         printf("Failed to load DLL file SDSFile.dll\n");
     }
@@ -839,14 +839,14 @@ int32_t _SDSWriteFile(const char * dllLoadPath, const char * fileName,
     // Lazy DLL load
     _LazyLoad(dllLoadPath);
 
-    if ( g_hModule != NULL )
+    if (g_hModule != NULL)
     {
-        if ( g_fpWriteFile == NULL )
+        if (g_fpWriteFile == NULL)
         {
             g_fpWriteFile = (SDS_WRITE_FILE)GetProcAddress(g_hModule, "SDSWriteFile");
         }
 
-        if ( g_fpWriteFile != NULL )
+        if (g_fpWriteFile != NULL)
         {
             return g_fpWriteFile(fileName, shareName, pWriteInfo, pWriteCallbacks);
         }
@@ -862,14 +862,14 @@ void * _SDSReadFile(const char * dllLoadPath, const char * fileName, const char 
     // Lazy DLL load
     _LazyLoad(dllLoadPath);
 
-    if ( g_hModule != NULL )
+    if (g_hModule != NULL)
     {
-        if ( g_fpReadFile == NULL )
+        if (g_fpReadFile == NULL)
         {
             g_fpReadFile = (SDS_READ_FILE)GetProcAddress(g_hModule, "SDSReadFile");
         }
 
-        if ( g_fpReadFile != NULL )
+        if (g_fpReadFile != NULL)
         {
             return g_fpReadFile(fileName, shareName, pReadInfo, pReadCallbacks);
         }
@@ -887,14 +887,14 @@ void * _SDSReadManyFiles(const char * dllLoadPath, SDS_MULTI_READ * pMultiRead,
     // Lazy DLL load
     _LazyLoad(dllLoadPath);
 
-    if ( g_hModule != NULL )
+    if (g_hModule != NULL)
     {
-        if ( g_fpReadManyFiles == NULL )
+        if (g_fpReadManyFiles == NULL)
         {
             g_fpReadManyFiles = (SDS_READ_MANY_FILES)GetProcAddress(g_hModule, "SDSReadManyFiles");
         }
 
-        if ( g_fpReadManyFiles != NULL )
+        if (g_fpReadManyFiles != NULL)
         {
             return g_fpReadManyFiles(pMultiRead, pInclusionList, fileCount, multiMode, pReadCallbacks);
         }
@@ -907,14 +907,14 @@ char * _SDSGetLastError(const char * dllLoadPath)
     // Lazy DLL load
     _LazyLoad(dllLoadPath);
 
-    if ( g_hModule != NULL )
+    if (g_hModule != NULL)
     {
-        if ( g_fpGetLastError == NULL )
+        if (g_fpGetLastError == NULL)
         {
             g_fpGetLastError = (SDS_GET_LAST_ERROR)GetProcAddress(g_hModule, "SDSGetLastError");
         }
 
-        if ( g_fpGetLastError != NULL )
+        if (g_fpGetLastError != NULL)
         {
             return g_fpGetLastError();
         }
@@ -927,14 +927,14 @@ void _SDSClearBuffers(const char * dllLoadPath)
     // Lazy DLL load
     _LazyLoad(dllLoadPath);
 
-    if ( g_hModule != NULL )
+    if (g_hModule != NULL)
     {
-        if ( g_fpClearBuffers == NULL )
+        if (g_fpClearBuffers == NULL)
         {
             g_fpClearBuffers = (SDS_CLEAR_BUFFERS)GetProcAddress(g_hModule, "SDSClearBuffers");
         }
 
-        if ( g_fpClearBuffers != NULL )
+        if (g_fpClearBuffers != NULL)
         {
             return g_fpClearBuffers();
         }

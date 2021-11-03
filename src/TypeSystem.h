@@ -13,7 +13,7 @@ namespace riptide
     // Windows: long = 32 bits
     static /*constexpr*/ NPY_TYPES normalize_dtype(const NPY_TYPES dtype, const int64_t itemsize)
     {
-        switch ( dtype )
+        switch (dtype)
         {
         case NPY_TYPES::NPY_LONG:
             // types 7 and 8 are ambiguous because they map to different concrete types

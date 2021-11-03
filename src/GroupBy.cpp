@@ -140,14 +140,14 @@ static size_t ntrimbad(size_t nsamp)
     double nbase = BADRATE * nsamp;
     size_t nsafe = (size_t)ceil(nbase);
 
-    if ( nbase > 50 )
+    if (nbase > 50)
         nsafe = (size_t)ceil(nbase + NSTDEV * sqrt(nbase));
     else
     {
         double ptot = exp(-nbase);
         double addon = ptot;
         size_t i = 0;
-        while ( ptot < CONFLEVEL && i < 100 )
+        while (ptot < CONFLEVEL && i < 100)
         {
             i = i + 1;
             addon *= nbase / i;
@@ -155,9 +155,9 @@ static size_t ntrimbad(size_t nsamp)
         }
         nsafe = nsafe < i ? i : nsafe;
     }
-    if ( nsafe == 0 )
+    if (nsafe == 0)
         nsafe = 1;
-    if ( nsafe > nsamp )
+    if (nsafe > nsamp)
         nsafe = nsamp;
     return nsafe;
 }
@@ -176,14 +176,14 @@ static size_t strip_nans(T * x, size_t n)
     // move NaNs to end of array; return value is number of non-NaN
     T tmp;
     size_t i = 0, j = n;
-    while ( i < j )
+    while (i < j)
     {
-        if ( x[i] == x[i] )
+        if (x[i] == x[i])
             ++i;
         else
         {
             --j;
-            if ( x[j] == x[j] )
+            if (x[j] == x[j])
             {
                 tmp = x[j];
                 x[j] = x[i];
@@ -197,7 +197,7 @@ static size_t strip_nans(T * x, size_t n)
 //-------------------------------------------------------------------
 // Defined as a macro so we can change this in one place
 // The algos look for a range to operate on.  This range can be used when multi-threading.
-#define ACCUM_INNER_LOOP(_index, _binLow, _binHigh) if ( _index >= _binLow && index < _binHigh )
+#define ACCUM_INNER_LOOP(_index, _binLow, _binHigh) if (_index >= _binLow && index < _binHigh)
 
 //-------------------------------------------------------------------
 // T = data type as input
@@ -223,13 +223,13 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -253,7 +253,7 @@ public:
 
         int64_t allocSize = (binHigh - binLow) * sizeof(double);
 
-        if ( allocSize > maxStackAlloc )
+        if (allocSize > maxStackAlloc)
         {
             pOutAccum = (double *)WORKSPACE_ALLOC(allocSize);
         }
@@ -262,7 +262,7 @@ public:
             pOutAccum = (double *)alloca(allocSize);
         }
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
@@ -271,14 +271,14 @@ public:
         else
         {
             // Upcast from single to double
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOutAccum[i - binLow] = pOut[i];
             }
         }
 
         // Main loop
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -289,11 +289,11 @@ public:
         }
 
         // Downcast from double to single
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = (float)pOutAccum[i - binLow];
         }
-        if ( allocSize > maxStackAlloc )
+        if (allocSize > maxStackAlloc)
         {
             WORKSPACE_FREE(pOutAccum);
         }
@@ -307,7 +307,7 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
@@ -316,10 +316,10 @@ public:
         // get invalid
         T invalid = GET_INVALID(pIn[0]);
 
-        if ( invalid == invalid )
+        if (invalid == invalid)
         {
             // non-float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -327,7 +327,7 @@ public:
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     T temp = pIn[i];
-                    if ( temp != invalid )
+                    if (temp != invalid)
                     {
                         pOut[index] += (U)temp;
                     }
@@ -337,7 +337,7 @@ public:
         else
         {
             // float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -345,7 +345,7 @@ public:
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     T temp = pIn[i];
-                    if ( temp == temp )
+                    if (temp == temp)
                     {
                         pOut[index] += (U)temp;
                     }
@@ -365,15 +365,15 @@ public:
         // Fill with invalid?
         U invalid = GET_INVALID(pOut[0]);
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = invalid;
             }
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -381,13 +381,13 @@ public:
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
                 T temp = pIn[i];
-                if ( pCountOut[index] == 0 )
+                if (pCountOut[index] == 0)
                 {
                     // first time
                     pOut[index] = (U)temp;
                     pCountOut[index] = 1;
                 }
-                else if ( (U)temp < pOut[index] )
+                else if ((U)temp < pOut[index])
                 {
                     pOut[index] = (U)temp;
                 }
@@ -405,19 +405,19 @@ public:
 
         // Fill with NaNs
         U invalid = GET_INVALID(pOut[0]);
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // printf("NanMin clearing at %p  %lld  %lld\n", pOut, binLow, binHigh);
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = invalid;
             }
         }
 
-        if ( invalid == invalid )
+        if (invalid == invalid)
         {
             // non-float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -426,9 +426,9 @@ public:
                 {
                     T temp = pIn[i];
                     // Note filled with nans, so comparing with nans
-                    if ( pOut[index] != invalid )
+                    if (pOut[index] != invalid)
                     {
-                        if ( pOut[index] > temp )
+                        if (pOut[index] > temp)
                         {
                             pOut[index] = temp;
                         }
@@ -443,7 +443,7 @@ public:
         else
         {
             // float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -452,9 +452,9 @@ public:
                 {
                     T temp = pIn[i];
                     // Note filled with nans, so comparing with nans
-                    if ( pOut[index] == pOut[index] )
+                    if (pOut[index] == pOut[index])
                     {
-                        if ( pOut[index] > temp )
+                        if (pOut[index] > temp)
                         {
                             pOut[index] = temp;
                         }
@@ -478,15 +478,15 @@ public:
 
         // Fill with invalid?
         U invalid = GET_INVALID(pOut[0]);
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = invalid;
             }
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -494,13 +494,13 @@ public:
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
                 T temp = pIn[i];
-                if ( pCountOut[index] == 0 )
+                if (pCountOut[index] == 0)
                 {
                     // first time
                     pOut[index] = (U)temp;
                     pCountOut[index] = 1;
                 }
-                else if ( (U)temp > pOut[index] )
+                else if ((U)temp > pOut[index])
                 {
                     pOut[index] = (U)temp;
                 }
@@ -518,18 +518,18 @@ public:
 
         // Fill with invalid?
         U invalid = GET_INVALID(pOut[0]);
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = invalid;
             }
         }
 
-        if ( invalid == invalid )
+        if (invalid == invalid)
         {
             // non-float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -538,9 +538,9 @@ public:
                 {
                     T temp = pIn[i];
                     // Note filled with nans, so comparing with nans
-                    if ( pOut[index] != invalid )
+                    if (pOut[index] != invalid)
                     {
-                        if ( pOut[index] < temp )
+                        if (pOut[index] < temp)
                         {
                             pOut[index] = temp;
                         }
@@ -555,7 +555,7 @@ public:
         else
         {
             // float path
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -564,9 +564,9 @@ public:
                 {
                     T temp = pIn[i];
                     // Note filled with nans, so comparing with nans
-                    if ( pOut[index] == pOut[index] )
+                    if (pOut[index] == pOut[index])
                     {
-                        if ( pOut[index] < temp )
+                        if (pOut[index] < temp)
                         {
                             pOut[index] = temp;
                         }
@@ -588,13 +588,13 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -607,11 +607,11 @@ public:
             }
         }
 
-        if ( pass < 0 )
+        if (pass < 0)
         {
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
-                if ( pCountOut[i] > 0 )
+                if (pCountOut[i] > 0)
                 {
                     pOut[i] /= (U)(pCountOut[i]);
                 }
@@ -634,20 +634,20 @@ public:
 
         // Allocate pOut
         double * pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-        if ( pOut )
+        if (pOut)
         {
-            if ( pass <= 0 )
+            if (pass <= 0)
             {
                 // Clear out memory for our range
                 memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
             }
             // copy over original values
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i - binLow] = (double)pOriginalOut[i];
             }
 
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -660,11 +660,11 @@ public:
                 }
             }
 
-            if ( pass < 0 )
+            if (pass < 0)
             {
-                for ( int64_t i = binLow; i < binHigh; i++ )
+                for (int64_t i = binLow; i < binHigh; i++)
                 {
-                    if ( pCountOut[i] > 0 )
+                    if (pCountOut[i] > 0)
                     {
                         pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
                     }
@@ -677,7 +677,7 @@ public:
             else
             {
                 // copy over original values
-                for ( int64_t i = binLow; i < binHigh; i++ )
+                for (int64_t i = binLow; i < binHigh; i++)
                 {
                     pOriginalOut[i] = (U)pOut[i - binLow];
                 }
@@ -697,20 +697,20 @@ public:
 
         // Allocate pOut
         double * pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-        if ( pOut )
+        if (pOut)
         {
-            if ( pass <= 0 )
+            if (pass <= 0)
             {
                 // Clear out memory for our range
                 memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
             }
             // copy over original values
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i - binLow] = (double)pOriginalOut[i];
             }
 
-            for ( int64_t i = 0; i < len; i++ )
+            for (int64_t i = 0; i < len; i++)
             {
                 V index = pIndex[i];
 
@@ -718,18 +718,18 @@ public:
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     T temp = pIn[i];
-                    if ( temp == temp )
+                    if (temp == temp)
                     {
                         pOut[index - binLow] += (double)temp;
                         pCountOut[index]++;
                     }
                 }
             }
-            if ( pass < 0 )
+            if (pass < 0)
             {
-                for ( int64_t i = binLow; i < binHigh; i++ )
+                for (int64_t i = binLow; i < binHigh; i++)
                 {
-                    if ( pCountOut[i] > 0 )
+                    if (pCountOut[i] > 0)
                     {
                         pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
                     }
@@ -742,7 +742,7 @@ public:
             else
             {
                 // copy over original values
-                for ( int64_t i = binLow; i < binHigh; i++ )
+                for (int64_t i = binLow; i < binHigh; i++)
                 {
                     pOriginalOut[i] = (U)pOut[i - binLow];
                 }
@@ -759,13 +759,13 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -773,7 +773,7 @@ public:
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
                 T temp = pIn[i];
-                if ( temp == temp )
+                if (temp == temp)
                 {
                     pOut[index] += (U)temp;
                     pCountOut[index]++;
@@ -781,11 +781,11 @@ public:
             }
         }
 
-        if ( pass < 0 )
+        if (pass < 0)
         {
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
-                if ( pCountOut[i] > 0 )
+                if (pCountOut[i] > 0)
                 {
                     pOut[i] /= (U)(pCountOut[i]);
                 }
@@ -805,7 +805,7 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
@@ -815,7 +815,7 @@ public:
         U * sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
         memset(sumsquares, 0, sizeof(U) * binHigh);
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -828,12 +828,12 @@ public:
             }
         }
 
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] /= (U)(pCountOut[i]);
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -846,9 +846,9 @@ public:
             }
         }
 
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCountOut[i] > 1 )
+            if (pCountOut[i] > 1)
             {
                 pOut[i] = sumsquares[i] / (U)(pCountOut[i] - 1);
             }
@@ -868,7 +868,7 @@ public:
         U * pOut = (U *)pDataOut;
         V * pIndex = (V *)pIndexT;
 
-        if ( pass <= 0 )
+        if (pass <= 0)
         {
             // Clear out memory for our range
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
@@ -877,7 +877,7 @@ public:
         U * sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
         memset(sumsquares, 0, sizeof(U) * binHigh);
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -885,7 +885,7 @@ public:
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
                 T temp = pIn[i];
-                if ( temp == temp )
+                if (temp == temp)
                 {
                     pOut[index] += (U)temp;
                     pCountOut[index]++;
@@ -893,12 +893,12 @@ public:
             }
         }
 
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] /= (U)(pCountOut[i]);
         }
 
-        for ( int64_t i = 0; i < len; i++ )
+        for (int64_t i = 0; i < len; i++)
         {
             V index = pIndex[i];
 
@@ -906,7 +906,7 @@ public:
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
                 T temp = pIn[i];
-                if ( temp == temp )
+                if (temp == temp)
                 {
                     U diff = (U)temp - pOut[index];
                     sumsquares[index] += (diff * diff);
@@ -914,9 +914,9 @@ public:
             }
         }
 
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCountOut[i] > 1 )
+            if (pCountOut[i] > 1)
             {
                 pOut[i] = sumsquares[i] / (U)(pCountOut[i] - 1);
             }
@@ -934,7 +934,7 @@ public:
     {
         U * pOut = (U *)pDataOut;
         AccumVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass);
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
         }
@@ -947,7 +947,7 @@ public:
         U * pOut = (U *)pDataOut;
 
         AccumNanVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass);
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
         }
@@ -968,9 +968,9 @@ public:
         U invalid = GET_INVALID(pDest[0]);
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCount[i] > 0 && nth < pCount[i] )
+            if (pCount[i] > 0 && nth < pCount[i])
             {
                 int32_t grpIndex = pFirst[i] + nth;
                 int32_t bin = pGroup[grpIndex];
@@ -995,9 +995,9 @@ public:
         int32_t nth = (int32_t)funcParam;
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCount[i] > 0 && nth < pCount[i] )
+            if (pCount[i] > 0 && nth < pCount[i])
             {
                 int32_t grpIndex = pFirst[i] + nth;
                 int32_t bin = pGroup[grpIndex];
@@ -1025,10 +1025,10 @@ public:
         U invalid = GET_INVALID(pDest[0]);
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             // printf("[%lld]", i);
-            if ( pCount[i] > 0 )
+            if (pCount[i] > 0)
             {
                 int32_t grpIndex = pFirst[i];
                 // printf("(%d)", grpIndex);
@@ -1053,9 +1053,9 @@ public:
         int32_t * pGroup = (int32_t *)pGroupT;
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCount[i] > 0 )
+            if (pCount[i] > 0)
             {
                 int32_t grpIndex = pFirst[i];
                 int32_t bin = pGroup[grpIndex];
@@ -1081,11 +1081,11 @@ public:
         // printf("last called %lld -- %llu %llu %llu\n", numUnique, sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             // printf("Last:  %d %d\n", (int)pFirst[i], (int)pCount[i]);
             // printf("Last2:  %d\n", (int)(pGroup[pFirst[i] + pCount[i] - 1]));
-            if ( pCount[i] > 0 )
+            if (pCount[i] > 0)
             {
                 int32_t grpIndex = pFirst[i] + pCount[i] - 1;
                 int32_t bin = pGroup[grpIndex];
@@ -1108,9 +1108,9 @@ public:
         int32_t * pGroup = (int32_t *)pGroupT;
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            if ( pCount[i] > 0 )
+            if (pCount[i] > 0)
             {
                 int32_t grpIndex = pFirst[i] + pCount[i] - 1;
                 int32_t bin = pGroup[grpIndex];
@@ -1137,12 +1137,12 @@ public:
         int32_t windowSize = (int32_t)funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid;
@@ -1151,11 +1151,11 @@ public:
         }
 
         // negative window sizes not accepted yet
-        if ( windowSize < 0 )
+        if (windowSize < 0)
             return;
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
             int32_t last = start + pCount[i];
@@ -1163,7 +1163,7 @@ public:
             U currentSum = 0;
 
             // Priming of the summation
-            for ( int j = start; j < last && j < (start + windowSize); j++ )
+            for (int j = start; j < last && j < (start + windowSize); j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1171,7 +1171,7 @@ public:
                 pDest[index] = currentSum;
             }
 
-            for ( int j = start + windowSize; j < last; j++ )
+            for (int j = start + windowSize; j < last; j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1201,12 +1201,12 @@ public:
         int32_t windowSize = (int32_t)funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid;
@@ -1215,14 +1215,14 @@ public:
         }
 
         // negative window sizes not accepted yet
-        if ( windowSize < 0 )
+        if (windowSize < 0)
             return;
 
-        if ( invalid == invalid )
+        if (invalid == invalid)
         {
             // NOT FLOAT (integer based)
             // For all the bins we have to fill
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
@@ -1230,30 +1230,30 @@ public:
                 U currentSum = 0;
 
                 // Priming of the summation
-                for ( int j = start; j < last && j < (start + windowSize); j++ )
+                for (int j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     U value = (U)pSrc[index];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum += value;
                     }
                     pDest[index] = currentSum;
                 }
 
-                for ( int j = start + windowSize; j < last; j++ )
+                for (int j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum += value;
                     }
 
                     // subtract the item leaving the window
                     value = (U)pSrc[pGroup[j - windowSize]];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum -= value;
                     }
@@ -1265,7 +1265,7 @@ public:
         else
         {
             // FLOAT BASED
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
@@ -1273,30 +1273,30 @@ public:
                 U currentSum = 0;
 
                 // Priming of the summation
-                for ( int j = start; j < last && j < (start + windowSize); j++ )
+                for (int j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     U value = (U)pSrc[index];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum += value;
                     }
                     pDest[index] = currentSum;
                 }
 
-                for ( int j = start + windowSize; j < last; j++ )
+                for (int j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum += value;
                     }
 
                     // subtract the item leaving the window
                     value = (U)pSrc[pGroup[j - windowSize]];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum -= value;
                     }
@@ -1322,12 +1322,12 @@ public:
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid_out;
@@ -1336,11 +1336,11 @@ public:
         }
 
         // negative window sizes not accepted yet
-        if ( windowSize < 0 )
+        if (windowSize < 0)
             return;
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
             int32_t last = start + pCount[i];
@@ -1348,7 +1348,7 @@ public:
             double currentSum = 0;
 
             // Priming of the summation
-            for ( int j = start; j < last && j < (start + windowSize); j++ )
+            for (int j = start; j < last && j < (start + windowSize); j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1356,7 +1356,7 @@ public:
                 pDest[index] = currentSum / (j - start + 1);
             }
 
-            for ( int j = start + windowSize; j < last; j++ )
+            for (int j = start + windowSize; j < last; j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1387,12 +1387,12 @@ public:
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid_out;
@@ -1401,14 +1401,14 @@ public:
         }
 
         // negative window sizes not accepted yet
-        if ( windowSize < 0 )
+        if (windowSize < 0)
             return;
 
-        if ( invalid == invalid )
+        if (invalid == invalid)
         {
             // NOT FLOAT (integer based)
             // For all the bins we have to fill
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
@@ -1417,11 +1417,11 @@ public:
                 double count = 0;
 
                 // Priming of the summation
-                for ( int j = start; j < last && j < (start + windowSize); j++ )
+                for (int j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     U value = (U)pSrc[index];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum += value;
                         count++;
@@ -1429,12 +1429,12 @@ public:
                     pDest[index] = count > 0 ? currentSum / count : invalid_out;
                 }
 
-                for ( int j = start + windowSize; j < last; j++ )
+                for (int j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum += value;
                         count++;
@@ -1442,7 +1442,7 @@ public:
 
                     // subtract the item leaving the window
                     value = (U)pSrc[pGroup[j - windowSize]];
-                    if ( value != invalid )
+                    if (value != invalid)
                     {
                         currentSum -= value;
                         count--;
@@ -1455,7 +1455,7 @@ public:
         else
         {
             // FLOAT BASED
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
@@ -1464,11 +1464,11 @@ public:
                 double count = 0;
 
                 // Priming of the summation
-                for ( int j = start; j < last && j < (start + windowSize); j++ )
+                for (int j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     U value = (U)pSrc[index];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum += value;
                         count++;
@@ -1476,12 +1476,12 @@ public:
                     pDest[index] = count > 0 ? currentSum / count : invalid_out;
                 }
 
-                for ( int j = start + windowSize; j < last; j++ )
+                for (int j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum += value;
                         count++;
@@ -1489,7 +1489,7 @@ public:
 
                     // subtract the item leaving the window
                     value = (U)pSrc[pGroup[j - windowSize]];
-                    if ( value == value )
+                    if (value == value)
                     {
                         currentSum -= value;
                         count--;
@@ -1517,12 +1517,12 @@ public:
 
         LOGGING("in rolling count %lld %lld  sizeofdest %lld\n", binLow, binHigh, sizeof(U));
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid;
@@ -1531,7 +1531,7 @@ public:
         }
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
             int32_t last = start + pCount[i];
@@ -1540,9 +1540,9 @@ public:
 
             // printf("in rolling count [%lld] %d %d\n", i, start, last);
 
-            if ( windowSize < 0 )
+            if (windowSize < 0)
             {
-                for ( int j = last - 1; j >= start; j-- )
+                for (int j = last - 1; j >= start; j--)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = currentSum;
@@ -1551,7 +1551,7 @@ public:
             }
             else
             {
-                for ( int j = start; j < last; j++ )
+                for (int j = start; j < last; j++)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = currentSum;
@@ -1578,12 +1578,12 @@ public:
 
         // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh, windowSize);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid;
@@ -1592,21 +1592,21 @@ public:
         }
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
             int32_t last = start + pCount[i];
 
-            if ( windowSize >= 0 )
+            if (windowSize >= 0)
             {
                 // invalid for window
-                for ( int32_t j = start; j < last && j < (start + windowSize); j++ )
+                for (int32_t j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = invalid;
                 }
 
-                for ( int32_t j = start + windowSize; j < last; j++ )
+                for (int32_t j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = (U)pSrc[pGroup[j - windowSize]];
@@ -1620,13 +1620,13 @@ public:
                 start--;
                 // printf("bin[%lld]  start:%d  last:%d  windowSize:%d\n", i, start, last, windowSize);
 
-                for ( int32_t j = last; j > start && j > (last - windowSize); j-- )
+                for (int32_t j = last; j > start && j > (last - windowSize); j--)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = invalid;
                 }
 
-                for ( int32_t j = last - windowSize; j > start; j-- )
+                for (int32_t j = last - windowSize; j > start; j--)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = (U)pSrc[pGroup[j + windowSize]];
@@ -1651,12 +1651,12 @@ public:
         int32_t windowSize = (int32_t)funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
-        if ( binLow == 0 )
+        if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
             int32_t last = start + pCount[0];
-            for ( int j = start; j < last; j++ )
+            for (int j = start; j < last; j++)
             {
                 int32_t index = pGroup[j];
                 pDest[index] = invalid;
@@ -1664,15 +1664,15 @@ public:
             binLow++;
         }
 
-        if ( windowSize == 1 )
+        if (windowSize == 1)
         {
             // For all the bins we have to fill
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
 
-                if ( last > start )
+                if (last > start)
                 {
                     // Very first is invalid
                     int32_t index = pGroup[start];
@@ -1680,7 +1680,7 @@ public:
                     pDest[index] = invalid;
 
                     // Priming of the summation
-                    for ( int j = start + 1; j < last; j++ )
+                    for (int j = start + 1; j < last; j++)
                     {
                         index = pGroup[j];
                         U temp = (U)pSrc[index];
@@ -1693,22 +1693,22 @@ public:
         else
         {
             // For all the bins we have to fill
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
                 int32_t last = start + pCount[i];
-                if ( windowSize >= 0 )
+                if (windowSize >= 0)
                 {
                     // invalid for window
                     U previous = 0;
 
-                    for ( int j = start; j < last && j < (start + windowSize); j++ )
+                    for (int j = start; j < last && j < (start + windowSize); j++)
                     {
                         int32_t index = pGroup[j];
                         pDest[index] = invalid;
                     }
 
-                    for ( int j = start + windowSize; j < last; j++ )
+                    for (int j = start + windowSize; j < last; j++)
                     {
                         int32_t index = pGroup[j];
                         U temp = (U)pSrc[index];
@@ -1723,13 +1723,13 @@ public:
                     last--;
                     start--;
 
-                    for ( int j = last; j > start && j > (last - windowSize); j-- )
+                    for (int j = last; j > start && j > (last - windowSize); j--)
                     {
                         int32_t index = pGroup[j];
                         pDest[index] = invalid;
                     }
 
-                    for ( int j = last - windowSize; j > start; j-- )
+                    for (int j = last - windowSize; j > start; j--)
                     {
                         int32_t index = pGroup[j];
                         U temp = (U)pSrc[index];
@@ -1763,26 +1763,26 @@ public:
         LOGGING("TrimMean rows: %lld\n", totalInputRows);
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t index = pFirst[i];
             int32_t nCount = pCount[i];
 
-            if ( nCount == 0 )
+            if (nCount == 0)
             {
                 pDest[i] = invalid;
                 continue;
             }
 
             // Copy over the items for this group
-            for ( int j = 0; j < nCount; j++ )
+            for (int j = 0; j < nCount; j++)
             {
                 pSort[j] = pSrc[pGroup[index + j]];
             }
 
             size_t n = strip_nans<T>(pSort, nCount);
 
-            if ( n == 0 )
+            if (n == 0)
             {
                 pDest[i] = invalid;
                 continue;
@@ -1790,7 +1790,7 @@ public:
 
             size_t ntrim = ntrimbad(n);
 
-            if ( n <= 2 * ntrim )
+            if (n <= 2 * ntrim)
             {
                 pDest[i] = invalid;
                 continue;
@@ -1801,11 +1801,11 @@ public:
             T lb = get_nth_element(pSort, pSort + n, ntrim - 1);
             T ub = get_nth_element(pSort, pSort + n, n - ntrim);
 
-            if ( lb <= ub )
+            if (lb <= ub)
             {
-                for ( size_t i = 0; i < n; ++i )
+                for (size_t i = 0; i < n; ++i)
                 {
-                    if ( pSort[i] >= lb && pSort[i] <= ub )
+                    if (pSort[i] >= lb && pSort[i] <= ub)
                     {
                         sum += pSort[i];
                         ++cnt;
@@ -1840,19 +1840,19 @@ public:
         // printf("Mode %llu\n", totalInputRows);
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t index = pFirst[i];
             int32_t nCount = pCount[i];
 
-            if ( nCount == 0 )
+            if (nCount == 0)
             {
                 pDest[i] = GET_INVALID(pDest[i]);
                 continue;
             }
 
             // Copy over the items for this group
-            for ( int j = 0; j < nCount; j++ )
+            for (int j = 0; j < nCount; j++)
             {
                 pSort[j] = pSrc[pGroup[index + j]];
             }
@@ -1863,16 +1863,16 @@ public:
 
             // remove nans
             T * pEnd = pSort + nCount - 1;
-            while ( pEnd >= pSort )
+            while (pEnd >= pSort)
             {
-                if ( *pEnd == *pEnd )
+                if (*pEnd == *pEnd)
                     break;
                 pEnd--;
             }
 
             nCount = (int32_t)((pEnd + 1) - pSort);
 
-            if ( nCount == 0 )
+            if (nCount == 0)
             {
                 // nothing valid
                 pDest[i] = GET_INVALID(pDest[i]);
@@ -1881,16 +1881,16 @@ public:
 
             U currValue = *pSort, bestValue = *pSort;
             int32_t currCount = 1, bestCount = 1;
-            for ( int32_t i = 1; i < nCount; ++i )
+            for (int32_t i = 1; i < nCount; ++i)
             {
-                if ( pSort[i] == currValue )
+                if (pSort[i] == currValue)
                     ++currCount;
                 else
                 {
                     currValue = pSort[i];
                     currCount = 1;
                 }
-                if ( currCount > bestCount )
+                if (currCount > bestCount)
                 {
                     bestValue = currValue;
                     bestCount = currCount;
@@ -1925,19 +1925,19 @@ public:
                 sizeof(V));
 
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t index = pFirst[i];
             int32_t nCount = pCount[i];
 
-            if ( nCount == 0 )
+            if (nCount == 0)
             {
                 pDest[i] = GET_INVALID(pDest[i]);
                 continue;
             }
 
             // Copy over the items for this group
-            for ( int j = 0; j < nCount; j++ )
+            for (int j = 0; j < nCount; j++)
             {
                 // printf("**[%lld][%d]  %d\n", i, index + j, (int32_t)pGroup[index + j]);
                 pSort[j] = pSrc[pGroup[index + j]];
@@ -1949,17 +1949,17 @@ public:
             // remove nans
             // walk backwards until we find a non-nan
             T * pEnd = pSort + nCount - 1;
-            while ( pEnd >= pSort )
+            while (pEnd >= pSort)
             {
                 // printf("checking %lf\n", (double)*pEnd);
-                if ( *pEnd == *pEnd )
+                if (*pEnd == *pEnd)
                     break;
                 pEnd--;
             }
 
             nCount = (int32_t)((pEnd + 1) - pSort);
 
-            if ( nCount == 0 )
+            if (nCount == 0)
             {
                 // nothing valid
                 pDest[i] = GET_INVALID(pDest[i]);
@@ -1970,7 +1970,7 @@ public:
 
             // find the median...
             // what about nans?  nans should sort at the end
-            if ( nCount & 1 )
+            if (nCount & 1)
             {
                 middle = pSort[nCount / 2];
             }
@@ -1998,9 +1998,9 @@ public:
 
         // printf("Median string %llu\n", totalInputRows);
         // For all the bins we have to fill
-        for ( int64_t i = binLow; i < binHigh; i++ )
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            for ( int j = 0; j < itemSize; j++ )
+            for (int j = 0; j < itemSize; j++)
             {
                 pDest[i * itemSize + j] = 0;
             }
@@ -2010,7 +2010,7 @@ public:
     //-------------------------------------------------------------------------------
     static GROUPBY_X_FUNC32 GetXFunc2(GB_FUNCTIONS func)
     {
-        switch ( func )
+        switch (func)
         {
         case GB_ROLLING_SUM: return AccumRollingSum;
         case GB_ROLLING_NANSUM: return AccumRollingNanSum;
@@ -2027,7 +2027,7 @@ public:
     //-------------------------------------------------------------------------------
     static GROUPBY_X_FUNC32 GetXFunc(GB_FUNCTIONS func)
     {
-        switch ( func )
+        switch (func)
         {
         case GB_FIRST: return AccumFirst;
         case GB_NTH: return AccumNth;
@@ -2045,7 +2045,7 @@ public:
         // int64_t itemSize, int64_t funcParam) {
 
         // Disable all of this for now...
-        switch ( func )
+        switch (func)
         {
         // case GB_MIN:
         //   return AccumMinString;
@@ -2075,13 +2075,13 @@ static void GatherSum(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     memset(pDataOut, 0, sizeof(U) * numUnique);
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pDataOut[i] += pDataIn[i];
             }
@@ -2103,14 +2103,14 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
     memset(pDataOut, 0, sizeof(U) * numUnique);
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
             int32_t * pCountOutCore = &pCountOutBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 pDataOut[i] += pDataIn[i];
                 pCountOut[i] += pCountOutCore[i];
@@ -2119,7 +2119,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
     }
 
     // calculate the mean
-    for ( int64_t i = binLow; i < binHigh; i++ )
+    for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = pDataOut[i] / pCountOut[i];
     }
@@ -2136,19 +2136,19 @@ static void GatherMinFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
 
     // Fill with invalid
     U invalid = GET_INVALID(pDataOut[0]);
-    for ( int64_t i = binLow; i < binHigh; i++ )
+    for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
     }
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 U curValue = pDataOut[i];
                 U compareValue = pDataIn[i];
@@ -2156,9 +2156,9 @@ static void GatherMinFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
                 // nan != nan --> true
                 // nan == nan --> false
                 // == invalid
-                if ( compareValue == compareValue )
+                if (compareValue == compareValue)
                 {
-                    if ( ! (curValue <= compareValue) )
+                    if (! (curValue <= compareValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2178,26 +2178,26 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     // Fill with invalid
     U invalid = GET_INVALID(pDataOut[0]);
 
-    for ( int64_t i = binLow; i < binHigh; i++ )
+    for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
     }
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 U curValue = pDataOut[i];
                 U compareValue = pDataIn[i];
 
-                if ( compareValue != invalid )
+                if (compareValue != invalid)
                 {
-                    if ( compareValue < curValue || curValue == invalid )
+                    if (compareValue < curValue || curValue == invalid)
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2217,19 +2217,19 @@ static void GatherMaxFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
     // Fill with invalid
     U invalid = GET_INVALID(pDataOut[0]);
 
-    for ( int64_t i = binLow; i < binHigh; i++ )
+    for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
     }
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 U curValue = pDataOut[i];
                 U compareValue = pDataIn[i];
@@ -2237,9 +2237,9 @@ static void GatherMaxFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
                 // nan != nan --> true
                 // nan == nan --> false
                 // == invalid
-                if ( compareValue == compareValue )
+                if (compareValue == compareValue)
                 {
-                    if ( ! (curValue >= compareValue) )
+                    if (! (curValue >= compareValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2259,26 +2259,26 @@ static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     // Fill with invalid?
     U invalid = GET_INVALID(pDataOut[0]);
 
-    for ( int64_t i = binLow; i < binHigh; i++ )
+    for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
     }
 
     // Collect the results from the core
-    for ( int64_t j = 0; j < numCores; j++ )
+    for (int64_t j = 0; j < numCores; j++)
     {
-        if ( pstGroupBy32->returnObjects[j].didWork )
+        if (pstGroupBy32->returnObjects[j].didWork)
         {
             U * pDataIn = &pDataInBase[j * numUnique];
 
-            for ( int64_t i = binLow; i < binHigh; i++ )
+            for (int64_t i = binLow; i < binHigh; i++)
             {
                 U curValue = pDataOut[i];
                 U compareValue = pDataIn[i];
 
-                if ( compareValue != invalid )
+                if (compareValue != invalid)
                 {
-                    if ( compareValue > curValue || curValue == invalid )
+                    if (compareValue > curValue || curValue == invalid)
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2290,11 +2290,11 @@ static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
 
 static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS func)
 {
-    switch ( func )
+    switch (func)
     {
     case GB_SUM:
     case GB_NANSUM:
-        switch ( outputType )
+        switch (outputType)
         {
         case NPY_BOOL: return GatherSum<int64_t>;
         case NPY_FLOAT: return GatherSum<float>;
@@ -2320,7 +2320,7 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
 
     case GB_MEAN:
     case GB_NANMEAN:
-        switch ( outputType )
+        switch (outputType)
         {
         case NPY_FLOAT: return GatherMean<float>;
         case NPY_BOOL:
@@ -2342,7 +2342,7 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
 
     case GB_MAX:
     case GB_NANMAX:
-        switch ( outputType )
+        switch (outputType)
         {
         case NPY_BOOL: return GatherMax<int8_t>;
         case NPY_FLOAT: return GatherMaxFloat<float>;
@@ -2369,7 +2369,7 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
 
     case GB_MIN:
     case GB_NANMIN:
-        switch ( outputType )
+        switch (outputType)
         {
         case NPY_BOOL: return GatherMin<int8_t>;
         case NPY_FLOAT: return GatherMinFloat<float>;
@@ -2406,10 +2406,10 @@ template <typename V>
 static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOutputType, int inputType, GB_FUNCTIONS func)
 {
     *hasCounts = false;
-    switch ( func )
+    switch (func)
     {
     case GB_SUM:
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_INT64; return GroupByBase<int8_t, int64_t, V>::AccumSum;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumSumFloat;
@@ -2441,7 +2441,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
         }
 
     case GB_NANSUM:
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanSum;
         case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumNanSum;
@@ -2475,7 +2475,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_MIN:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_BOOL; return GroupByBase<int8_t, int8_t, V>::AccumMin;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumMin;
@@ -2508,7 +2508,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_NANMIN:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT:
             *hasCounts = false;
@@ -2550,7 +2550,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_MAX:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_BOOL; return GroupByBase<int8_t, int8_t, V>::AccumMax;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumMax;
@@ -2583,7 +2583,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_NANMAX:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanMax;
         case NPY_DOUBLE: *wantedOutputType = NPY_DOUBLE; return GroupByBase<double, double, V>::AccumNanMax;
@@ -2616,7 +2616,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_MEAN:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumMean;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumMeanFloat;
@@ -2649,7 +2649,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_NANMEAN:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanMean;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanMeanFloat;
@@ -2682,7 +2682,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_VAR:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumVar;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumVar;
@@ -2715,7 +2715,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_NANVAR:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanVar;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanVar;
@@ -2748,7 +2748,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_STD:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumStd;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumStd;
@@ -2781,7 +2781,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 
     case GB_NANSTD:
         *hasCounts = true;
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_BOOL: *wantedOutputType = NPY_DOUBLE; return GroupByBase<int8_t, double, V>::AccumNanStd;
         case NPY_FLOAT: *wantedOutputType = NPY_FLOAT; return GroupByBase<float, float, V>::AccumNanStd;
@@ -2843,9 +2843,9 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
 {
     LOGGING("GBX32 Func is %d  inputtype: %d  outputtype: %d\n", func, inputType, outputType);
 
-    if ( func == GB_TRIMBR )
+    if (func == GB_TRIMBR)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_FLOAT: return GroupByBase<float, float, V>::AccumTrimMeanBR;
         case NPY_DOUBLE: return GroupByBase<double, double, V>::AccumTrimMeanBR;
@@ -2869,9 +2869,9 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         }
         return NULL;
     }
-    else if ( func == GB_ROLLING_COUNT )
+    else if (func == GB_ROLLING_COUNT)
     {
-        switch ( inputType )
+        switch (inputType)
         {
         case NPY_INT8: return GroupByBase<int8_t, int32_t, V>::GetXFunc2(func);
         case NPY_INT16:
@@ -2884,10 +2884,10 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         }
         return NULL;
     }
-    else if ( func >= GB_ROLLING_DIFF && func < GB_ROLLING_MEAN )
+    else if (func >= GB_ROLLING_DIFF && func < GB_ROLLING_MEAN)
     {
         LOGGING("Rolling+diff called with type %d\n", inputType);
-        switch ( inputType )
+        switch (inputType)
         {
             // really need to change output type for accumsum/rolling
             // case NPY_BOOL:   return GroupByBase<bool, int64_t, V>::GetXFunc2(func);
@@ -2913,13 +2913,13 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         }
         return NULL;
     }
-    else if ( func >= GB_ROLLING_SUM )
+    else if (func >= GB_ROLLING_SUM)
     {
-        if ( func == GB_ROLLING_MEAN || func == GB_ROLLING_NANMEAN )
+        if (func == GB_ROLLING_MEAN || func == GB_ROLLING_NANMEAN)
         {
             LOGGING("Rolling+mean called with type %d\n", inputType);
             // default to a double for output
-            switch ( inputType )
+            switch (inputType)
             {
             case NPY_FLOAT: return GroupByBase<float, double, V>::GetXFunc2(func);
             case NPY_DOUBLE: return GroupByBase<double, double, V>::GetXFunc2(func);
@@ -2947,7 +2947,7 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         {
             // due to overflow, all ints become int64_t
             LOGGING("Rolling+sum called with type %d\n", inputType);
-            switch ( inputType )
+            switch (inputType)
             {
                 // really need to change output type for accumsum/rolling
             case NPY_BOOL: return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
@@ -2975,7 +2975,7 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
     }
     else
     {
-        switch ( inputType )
+        switch (inputType)
         {
         // first,last,median,nth
         case NPY_BOOL: return GroupByBase<bool, bool, V>::GetXFunc(func);
@@ -3019,7 +3019,7 @@ static bool BandedGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int cor
     int64_t workBlock;
 
     // As long as there is work to do
-    while ( (index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0 )
+    while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
     {
         // aInfo only valid if we are the worker (otherwise this pointer is invalid)
         ArrayInfo * aInfo = pGroupBy32->aInfo;
@@ -3087,7 +3087,7 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
 
     // printf("Scatter working core %d  %lld\n", core, len);
     // As long as there is work to do
-    while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
         // printf("|%d %d %lld %p %p %p %p", core, (int)workBlock, lenX, pDataIn, pDataIn2, pCountOut, pDataOut);
 
@@ -3135,7 +3135,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
     int32_t numpyOutType = pGroupBy32->returnObjects[i].numpyOutType;
     TYPE_OF_FUNCTION_CALL typeCall = pGroupBy32->typeOfFunctionCall;
 
-    if ( outArray && pFunction )
+    if (outArray && pFunction)
     {
         LOGGING("col %llu  ==> outsize %llu   len: %llu   numpy types %d --> %d   %d %d\n", i, uniqueRows, len,
                 aInfo[i].NumpyDType, numpyOutType, gNumpyTypeToSize[aInfo[i].NumpyDType], gNumpyTypeToSize[numpyOutType]);
@@ -3144,7 +3144,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
 
         LOGGING("%llu  typeCall %d  numpyOutType %d\n", i, (int)typeCall, numpyOutType);
 
-        if ( typeCall == ANY_GROUPBY_FUNC )
+        if (typeCall == ANY_GROUPBY_FUNC)
         {
             // Accum the calculation
             // Sum/NanSum
@@ -3153,7 +3153,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
         }
         else
 
-            if ( typeCall == ANY_GROUPBY_XFUNC32 )
+            if (typeCall == ANY_GROUPBY_XFUNC32)
         {
             // Accum the calculation
             GROUPBY_X_FUNC32 pFunctionX = pGroupBy32->returnObjects[i].pFunctionX32;
@@ -3162,10 +3162,10 @@ void GroupByCall(void * pGroupBy, int64_t i)
 
             // static void AccumLast(void* pColumn, void* pGroupT, int32_t* pFirst, int32_t* pCount, void* pAccumBin, int64_t
             // numUnique, int64_t totalInputRows, int64_t itemSize, int64_t funcParam) {
-            if ( funcNum < GB_FIRST )
+            if (funcNum < GB_FIRST)
                 printf("!!! internal bug in GroupByCall -- %d\n", funcNum);
 
-            if ( pFunctionX )
+            if (pFunctionX)
             {
                 pFunctionX((void *)pDataIn, (int32_t *)pGroupBy32->pGroup /*USE GROUP wihch must be int32*/,
                            (int32_t *)pGroupBy32->pFirst, (int32_t *)pGroupBy32->pCount, (char *)pDataOut, binLow, binHigh,
@@ -3182,7 +3182,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
     else
     {
         // TJD: memory leak?
-        if ( outArray )
+        if (outArray)
         {
             printf("!!! deleting extra object\n");
             Py_DecRef((PyObject *)outArray);
@@ -3209,7 +3209,7 @@ PyObject * GroupByAll64(PyObject * self, PyObject * args)
     int64_t unique_rows = 0;
     int64_t funcNum = 0;
 
-    if ( ! PyArg_ParseTuple(args, "OO!LL", &inList1, &PyArray_Type, &inArr2, &unique_rows, &funcNum) )
+    if (! PyArg_ParseTuple(args, "OO!LL", &inList1, &PyArray_Type, &inArr2, &unique_rows, &funcNum))
     {
         return NULL;
     }
@@ -3224,7 +3224,7 @@ GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int
 {
     GROUPBY_TWO_FUNC pFunction = NULL;
 
-    switch ( iKeyType )
+    switch (iKeyType)
     {
     case NPY_INT8: pFunction = GetGroupByFunction<int8_t>(hasCounts, numpyOutType, numpyInType, funcNum); break;
     case NPY_INT16:
@@ -3260,7 +3260,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
 
     GROUPBY_X_FUNC32 pFunction = NULL;
 
-    switch ( iKeyType )
+    switch (iKeyType)
     {
     case NPY_INT8: pFunction = GetGroupByXFunction32<int8_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum); break;
     case NPY_INT16:
@@ -3275,7 +3275,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         break;
     }
 
-    if ( pFunction )
+    if (pFunction)
     {
         void * pDataIn2 = PyArray_BYTES(iKey);
         int64_t arraySizeKey = ArrayLength(iKey);
@@ -3283,7 +3283,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
         int64_t bins = binHigh - binLow;
         int64_t cores = numCores;
-        if ( bins < cores )
+        if (bins < cores)
             cores = bins;
 
         LOGGING("Banded cores %lld\n", cores);
@@ -3292,13 +3292,13 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItemCount(cores);
 
         // cores will be zero when there are no bins, all filtered out
-        if ( pWorkItem && cores > 0 )
+        if (pWorkItem && cores > 0)
         {
             PyArrayObject * outArray = NULL;
             outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
             CHECK_MEMORY_ERROR(outArray);
 
-            if ( outArray == NULL )
+            if (outArray == NULL)
             {
                 return NULL;
             }
@@ -3308,7 +3308,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             // Allocate the struct + ROOM at the end of struct for all the tuple objects being produced
             stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (cores * sizeof(stGroupByReturn)));
 
-            if ( pstGroupBy32 == NULL )
+            if (pstGroupBy32 == NULL)
             {
                 // out of memory
                 return NULL;
@@ -3325,12 +3325,12 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             //   return NULL;
             //}
 
-            if ( hasCounts )
+            if (hasCounts)
             {
                 // Zero out for them
                 int64_t allocSize = sizeof(int32_t) * unique_rows;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
-                if ( pCountOut == NULL )
+                if (pCountOut == NULL)
                 {
                     return NULL;
                 }
@@ -3361,13 +3361,13 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             int64_t low = 0;
             int64_t high = 0;
 
-            for ( int64_t i = 0; i < cores; i++ )
+            for (int64_t i = 0; i < cores; i++)
             {
                 // Calculate band range
                 high = low + dividend;
 
                 // add in any remainder until nothing left
-                if ( remainder > 0 )
+                if (remainder > 0)
                 {
                     high++;
                     remainder--;
@@ -3402,7 +3402,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
 
             WORKSPACE_FREE(pstGroupBy32);
 
-            if ( hasCounts )
+            if (hasCounts)
             {
                 WORKSPACE_FREE(pCountOut);
             }
@@ -3436,14 +3436,14 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
     // printf("Taking the divide path  %lld \n", unique_rows);
 
-    if ( pFunction && numpyOutType != -1 )
+    if (pFunction && numpyOutType != -1)
     {
         void * pDataIn2 = PyArray_BYTES(iKey);
         int64_t arraySizeKey = ArrayLength(iKey);
 
         stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arraySizeKey);
 
-        if ( pWorkItem != NULL )
+        if (pWorkItem != NULL)
         {
             int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
 
@@ -3453,7 +3453,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
             CHECK_MEMORY_ERROR(outArray);
 
-            if ( outArray == NULL )
+            if (outArray == NULL)
             {
                 return NULL;
             }
@@ -3466,17 +3466,17 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", pWorkspace, unique_rows, itemSize, numCores);
 
-            if ( pWorkspace == NULL )
+            if (pWorkspace == NULL)
             {
                 return NULL;
             }
 
-            if ( hasCounts )
+            if (hasCounts)
             {
                 // Zero out for them
                 int64_t allocSize = sizeof(int32_t) * unique_rows * numCores;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
-                if ( pCountOut == NULL )
+                if (pCountOut == NULL)
                 {
                     return NULL;
                 }
@@ -3488,7 +3488,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             stGroupBy32 * pstGroupBy32 =
                 (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn)));
 
-            if ( pstGroupBy32 == NULL )
+            if (pstGroupBy32 == NULL)
             {
                 // out of memory
                 return NULL;
@@ -3504,7 +3504,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             pstGroupBy32->totalInputRows = arraySizeKey;
             pstGroupBy32->typeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_GROUPBY_FUNC;
 
-            for ( int i = 0; i < numCores; i++ )
+            for (int i = 0; i < numCores; i++)
             {
                 pstGroupBy32->returnObjects[i].funcNum = (int32_t)firstFuncNum;
                 pstGroupBy32->returnObjects[i].binLow = binLow;
@@ -3533,7 +3533,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             // Gather resullts
             GROUPBY_GATHER_FUNC pGather = GetGroupByGatherFunction(numpyOutType, (GB_FUNCTIONS)firstFuncNum);
-            if ( pGather )
+            if (pGather)
             {
                 void * pDataOut = PyArray_BYTES(outArray);
                 pGather(pstGroupBy32, pWorkspace, pDataOut, pCountOut, unique_rows, numCores, binLow, binHigh);
@@ -3545,7 +3545,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             WORKSPACE_FREE(pstGroupBy32);
 
-            if ( hasCounts )
+            if (hasCounts)
             {
                 WORKSPACE_FREE(pCountOut);
             }
@@ -3581,15 +3581,15 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     PyListObject * listBinLow = NULL;
     PyListObject * listBinHigh = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "OO!LO!O!O!O", &inList1, &PyArray_Type, &iKey, &unique_rows, &PyList_Type, &listFuncNum,
-                            &PyList_Type, &listBinLow, &PyList_Type, &listBinHigh, &param) )
+    if (! PyArg_ParseTuple(args, "OO!LO!O!O!O", &inList1, &PyArray_Type, &iKey, &unique_rows, &PyList_Type, &listFuncNum,
+                           &PyList_Type, &listBinLow, &PyList_Type, &listBinHigh, &param))
     {
         return NULL;
     }
 
     int32_t ndim = PyArray_NDIM(iKey);
 
-    if ( ndim != 1 )
+    if (ndim != 1)
     {
         PyErr_Format(PyExc_ValueError, "GroupByAll32 ndim must be 1 not %d", ndim);
         return NULL;
@@ -3598,7 +3598,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     int32_t iKeyType = PyArray_TYPE(iKey);
 
     // Valid types we can index by
-    switch ( iKeyType )
+    switch (iKeyType)
     {
     case NPY_INT8:
     case NPY_INT16:
@@ -3620,14 +3620,14 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     int64_t tupleSize = 0;
     ArrayInfo * aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize);
 
-    if ( ! aInfo )
+    if (! aInfo)
     {
         return NULL;
     }
 
     int64_t funcTupleSize = PyList_GET_SIZE(listFuncNum);
 
-    if ( tupleSize != funcTupleSize )
+    if (tupleSize != funcTupleSize)
     {
         PyErr_Format(PyExc_ValueError, "GroupByAll32 func numbers do not match array columns %lld %lld", tupleSize, funcTupleSize);
         return NULL;
@@ -3635,7 +3635,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
     int64_t binTupleSize = PyList_GET_SIZE(listBinLow);
 
-    if ( tupleSize != binTupleSize )
+    if (tupleSize != binTupleSize)
     {
         PyErr_Format(PyExc_ValueError, "GroupByAll32 bin numbers do not match array columns %lld %lld", tupleSize, binTupleSize);
         return NULL;
@@ -3645,7 +3645,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     void * pDataIn2 = PyArray_BYTES(iKey);
     int64_t arraySizeKey = ArrayLength(iKey);
 
-    if ( aInfo->ArrayLength != arraySizeKey )
+    if (aInfo->ArrayLength != arraySizeKey)
     {
         PyErr_Format(PyExc_ValueError, "GroupByAll32 iKey length does not match value length %lld %lld", aInfo->ArrayLength,
                      arraySizeKey);
@@ -3657,12 +3657,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     PyObject * returnTuple = NULL;
 
     // NOTE: what if bin size 10x larger?
-    if ( true && ((unique_rows * 10) < arraySizeKey) && tupleSize == 1 )
+    if (true && ((unique_rows * 10) < arraySizeKey) && tupleSize == 1)
     {
         int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, 0), &overflow);
         int64_t binHigh = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinHigh, 0), &overflow);
 
-        if ( (firstFuncNum >= GB_SUM && firstFuncNum <= GB_MAX) || (firstFuncNum >= GB_NANSUM && firstFuncNum <= GB_NANMAX) )
+        if ((firstFuncNum >= GB_SUM && firstFuncNum <= GB_MAX) || (firstFuncNum >= GB_NANSUM && firstFuncNum <= GB_NANMAX))
 
         {
             // multithread by data segments (NOT bin ranges)
@@ -3674,12 +3674,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
     //-----------------------------------------------------------
     //
-    if ( returnTuple == NULL )
+    if (returnTuple == NULL)
     {
         // Allocate the struct + ROOM at the end of struct for all the tuple objects being produced
         stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (tupleSize * sizeof(stGroupByReturn)));
 
-        if ( pstGroupBy32 == NULL )
+        if (pstGroupBy32 == NULL)
         {
             // out of memory
             return NULL;
@@ -3695,7 +3695,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         pstGroupBy32->typeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_GROUPBY_FUNC;
 
         // Allocate all the memory and output arrays up front since Python is single threaded
-        for ( int i = 0; i < tupleSize; i++ )
+        for (int i = 0; i < tupleSize; i++)
         {
             // TODO: determine based on function
             int32_t numpyOutType = -1;
@@ -3718,13 +3718,13 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             int32_t * pCountOut = NULL;
             void * pOutArray = NULL;
 
-            if ( pFunction && numpyOutType != -1 )
+            if (pFunction && numpyOutType != -1)
             {
                 // Dont bother allocating if we cannot call the function
                 outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                 CHECK_MEMORY_ERROR(outArray);
 
-                if ( outArray == NULL )
+                if (outArray == NULL)
                 {
                     return NULL;
                 }
@@ -3732,11 +3732,11 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 pOutArray = PyArray_BYTES(outArray);
                 int64_t itemSize = PyArray_ITEMSIZE(outArray);
 
-                if ( hasCounts )
+                if (hasCounts)
                 {
                     // Zero out for them
                     pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows);
-                    if ( pCountOut == NULL )
+                    if (pCountOut == NULL)
                     {
                         return NULL;
                     }
@@ -3765,11 +3765,11 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         PyObject * returnCount = NULL;
 
         // Fill in results
-        for ( int i = 0; i < tupleSize; i++ )
+        for (int i = 0; i < tupleSize; i++)
         {
             PyObject * item = pstGroupBy32->returnObjects[i].returnObject;
 
-            if ( item == Py_None )
+            if (item == Py_None)
                 Py_INCREF(Py_None);
 
             // printf("ref %d  %llu\n", i, item->ob_refcnt);
@@ -3777,7 +3777,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
             int32_t * pCountOut = pstGroupBy32->returnObjects[i].pCountOut;
 
-            if ( pCountOut )
+            if (pCountOut)
             {
                 WORKSPACE_FREE(pCountOut);
             }
@@ -3824,11 +3824,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     PyListObject * listBinHigh = 0;
     int64_t funcParam = 0;
 
-    if ( ! PyArg_ParseTuple(args, "OO!O!O!O!LO!O!O!L", &inList1, &PyArray_Type, &iKey, &PyArray_Type, &iGroup, &PyArray_Type,
-                            &iFirst, &PyArray_Type, &nCount,
+    if (! PyArg_ParseTuple(args, "OO!O!O!O!LO!O!O!L", &inList1, &PyArray_Type, &iKey, &PyArray_Type, &iGroup, &PyArray_Type,
+                           &iFirst, &PyArray_Type, &nCount,
 
-                            &unique_rows, &PyList_Type, &listFuncNum, &PyList_Type, &listBinLow, &PyList_Type, &listBinHigh,
-                            &funcParam) )
+                           &unique_rows, &PyList_Type, &listFuncNum, &PyList_Type, &listBinLow, &PyList_Type, &listBinHigh,
+                           &funcParam))
     {
         return NULL;
     }
@@ -3839,7 +3839,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     int32_t iKeyType = PyArray_TYPE(iKey);
 
     // Valid types we can index by
-    switch ( iKeyType )
+    switch (iKeyType)
     {
     case NPY_INT8:
     case NPY_INT16:
@@ -3857,7 +3857,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     int64_t tupleSize = 0;
     ArrayInfo * aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize);
 
-    if ( ! aInfo )
+    if (! aInfo)
     {
         return NULL;
     }
@@ -3866,7 +3866,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     PyObject * returnTuple = NULL;
     int64_t arraySizeKey = ArrayLength(iKey);
 
-    if ( tupleSize == 1 && arraySizeKey > 65536 )
+    if (tupleSize == 1 && arraySizeKey > 65536)
     {
         int overflow = 0;
         int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, 0), &overflow);
@@ -3876,7 +3876,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         LOGGING("Checking banded %lld\n", firstFuncNum);
 
-        if ( (firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR) )
+        if ((firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR))
 
         {
             returnTuple = GroupBySingleOpMultiBands(aInfo, iKey, iFirst, iGroup, nCount, (GB_FUNCTIONS)firstFuncNum, unique_rows,
@@ -3884,11 +3884,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         }
     }
 
-    if ( returnTuple == NULL )
+    if (returnTuple == NULL)
     {
         int64_t funcTupleSize = PyList_GET_SIZE(listFuncNum);
 
-        if ( tupleSize != funcTupleSize )
+        if (tupleSize != funcTupleSize)
         {
             PyErr_Format(PyExc_ValueError, "GroupByAll32 func numbers do not match array columns %lld %lld", tupleSize,
                          funcTupleSize);
@@ -3896,7 +3896,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         int64_t binTupleSize = PyList_GET_SIZE(listBinLow);
 
-        if ( tupleSize != binTupleSize )
+        if (tupleSize != binTupleSize)
         {
             PyErr_Format(PyExc_ValueError, "GroupByAll32 bin numbers do not match array columns %lld %lld", tupleSize,
                          binTupleSize);
@@ -3934,7 +3934,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         pstGroupBy32->typeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_GROUPBY_XFUNC32;
 
         // Allocate all the memory and output arrays up front since Python is single threaded
-        for ( int i = 0; i < tupleSize; i++ )
+        for (int i = 0; i < tupleSize; i++)
         {
             int overflow = 0;
             int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
@@ -3950,7 +3950,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
             GROUPBY_X_FUNC32 pFunction = NULL;
 
-            switch ( iKeyType )
+            switch (iKeyType)
             {
             case NPY_INT8: pFunction = GetGroupByXFunction32<int8_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)funcNum); break;
             case NPY_INT16:
@@ -3967,17 +3967,17 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
             PyArrayObject * outArray = NULL;
 
-            if ( pFunction )
+            if (pFunction)
             {
                 // dont allocate if no function to call
                 // pull in strings also
-                if ( funcNum == GB_TRIMBR )
+                if (funcNum == GB_TRIMBR)
                 {
                     // Variance must be in float form
                     numpyOutType = NPY_FLOAT64;
 
                     // Everything is a float64 unless it is already a float32, then we keep it as float32
-                    if ( aInfo[i].NumpyDType == NPY_FLOAT32 )
+                    if (aInfo[i].NumpyDType == NPY_FLOAT32)
                     {
                         numpyOutType = NPY_FLOAT32;
                     }
@@ -3987,20 +3987,20 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 else
                 {
                     // For functions in the 200+ range like rolling we use all the items
-                    if ( funcNum >= GB_ROLLING_SUM )
+                    if (funcNum >= GB_ROLLING_SUM)
                     {
                         // shift and diff keep the same dtype
-                        if ( funcNum == GB_ROLLING_SUM || funcNum == GB_ROLLING_NANSUM || funcNum == GB_ROLLING_COUNT )
+                        if (funcNum == GB_ROLLING_SUM || funcNum == GB_ROLLING_NANSUM || funcNum == GB_ROLLING_COUNT)
                         {
                             numpyOutType = NPY_INT64;
 
-                            if ( funcNum == GB_ROLLING_COUNT )
+                            if (funcNum == GB_ROLLING_COUNT)
                             {
                                 numpyOutType = NPY_INT32;
                             }
                             else
                             {
-                                switch ( aInfo[i].NumpyDType )
+                                switch (aInfo[i].NumpyDType)
                                 {
                                 case NPY_FLOAT32: numpyOutType = NPY_FLOAT32; break;
                                 case NPY_DOUBLE:
@@ -4014,12 +4014,12 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                                 }
                             }
                         }
-                        else if ( funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN )
+                        else if (funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN)
                         {
                             numpyOutType = NPY_FLOAT64;
                         }
 
-                        if ( aInfo[i].ArrayLength != pstGroupBy32->totalInputRows )
+                        if (aInfo[i].ArrayLength != pstGroupBy32->totalInputRows)
                         {
                             PyErr_Format(
                                 PyExc_ValueError,
@@ -4038,7 +4038,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 }
 
                 // Bail if out of memory (possible memory leak)
-                if ( outArray == NULL )
+                if (outArray == NULL)
                 {
                     goto ERROR_EXIT;
                 }
@@ -4062,11 +4062,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         returnTuple = PyTuple_New(tupleSize);
 
         // Fill in results
-        for ( int i = 0; i < tupleSize; i++ )
+        for (int i = 0; i < tupleSize; i++)
         {
             PyObject * item = pstGroupBy32->returnObjects[i].returnObject;
 
-            if ( item == Py_None )
+            if (item == Py_None)
                 Py_INCREF(Py_None);
 
             // printf("ref %d  %llu\n", i, item->ob_refcnt);

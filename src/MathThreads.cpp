@@ -25,10 +25,10 @@ WakeSingleAddress InitWakeCalls()
 
     HMODULE hModule = LoadLibraryW(L"kernelbase.dll");
 
-    if ( hModule != NULL )
+    if (hModule != NULL)
     {
         fp = GetProcAddress(hModule, "WakeByAddressSingle");
-        if ( fp != NULL )
+        if (fp != NULL)
         {
             // LogInform("**System supports WakeByAddressSingle ...\n");
             g_WakeSingleAddress = (VOID(WINAPI *)(PVOID))fp;
@@ -87,7 +87,7 @@ void * WorkerThreadFunction(void * lpParam)
     LOGGING("Thread created with parameter: %d   %p\n", core, g_WaitAddress);
 
     // On windows we set the thread affinity mask
-    if ( g_WaitAddress != NULL )
+    if (g_WaitAddress != NULL)
     {
         uint64_t mask = (uint64_t)(1) << core; // core number starts from 0
         uint64_t ret = SetThreadAffinityMask(GetCurrentThread(), mask);
@@ -99,7 +99,7 @@ void * WorkerThreadFunction(void * lpParam)
     //
     // Setting Cancelled will stop all worker threads
     //
-    while ( pWorkerRing->Cancelled == 0 )
+    while (pWorkerRing->Cancelled == 0)
     {
         int64_t workIndexCompleted;
         int64_t workIndex;
@@ -110,14 +110,14 @@ void * WorkerThreadFunction(void * lpParam)
         bool didSomeWork = false;
 
         // See if work to do
-        if ( workIndex > workIndexCompleted )
+        if (workIndex > workIndexCompleted)
         {
             stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetExistingWorkItem();
 
 #if defined(RT_OS_WINDOWS)
             // Windows we check if the work was for our thread
             int64_t wakeup = InterlockedDecrement64(&pWorkItem->ThreadWakeup);
-            if ( wakeup >= 0 )
+            if (wakeup >= 0)
             {
                 didSomeWork = pWorkItem->DoWork(core, workIndex);
             }
@@ -132,20 +132,20 @@ void * WorkerThreadFunction(void * lpParam)
 #endif
         }
 
-        if ( ! didSomeWork )
+        if (! didSomeWork)
         {
             workIndexCompleted = workIndex;
 
 #if defined(RT_OS_WINDOWS)
             // printf("Sleeping %d", core);
-            if ( g_WaitAddress == NULL )
+            if (g_WaitAddress == NULL)
             {
                 // For Windows 7 we just sleep
                 Sleep(pWorkerRing->SleepTime);
             }
             else
             {
-                if ( ! didSomeWork )
+                if (! didSomeWork)
                 {
                     // workIndexCompleted++;
                 }
@@ -213,7 +213,7 @@ THANDLE StartThread(stWorkerRing * pWorkerRing)
     // printf("The thread ID: %d.\n", dwThreadId);
 
     // Check the return value for success. If something wrong...
-    if ( hThread == NULL )
+    if (hThread == NULL)
     {
         printf("CreateThread() failed, error: %d.\n", GetLastError());
         return NULL;
@@ -233,7 +233,7 @@ THANDLE StartThread(stWorkerRing * pWorkerRing)
 
     err = pthread_create(&hThread, NULL, &WorkerThreadFunction, pWorkerRing);
 
-    if ( err != 0 )
+    if (err != 0)
     {
         printf("*** Cannot create thread :[%s]\n", strerror(err));
     }

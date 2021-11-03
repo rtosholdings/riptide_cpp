@@ -53,7 +53,7 @@ typedef unsigned char u_char;
 #define ALT_O 0x02
 #define LEGAL_ALT(x) \
     { \
-        if ( alt_format & ~(x) ) \
+        if (alt_format & ~(x)) \
             return NULL; \
     }
 
@@ -90,29 +90,29 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
 
     bp = (const u_char *)buf;
 
-    while ( bp != NULL && (c = *fmt++) != '\0' )
+    while (bp != NULL && (c = *fmt++) != '\0')
     {
         /* Clear 'alternate' modifier prior to new conversion. */
         alt_format = 0;
         i = 0;
 
         /* Eat up white-space. */
-        if ( isspace(c) )
+        if (isspace(c))
         {
-            while ( isspace(*bp) )
+            while (isspace(*bp))
                 bp++;
             continue;
         }
 
-        if ( c != '%' )
+        if (c != '%')
             goto literal;
 
     again:
-        switch ( c = *fmt++ )
+        switch (c = *fmt++)
         {
         case '%': /* "%%" is converted to "%". */
         literal:
-            if ( c != *bp++ )
+            if (c != *bp++)
                 return NULL;
             LEGAL_ALT(0);
             continue;
@@ -191,7 +191,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             bp = conv_num(bp, &i, 0, 99);
 
             i = i * 100 - TM_YEAR_BASE;
-            if ( split_year )
+            if (split_year)
                 i += tm->tm_year % 100;
             split_year = 1;
             tm->tm_year = i;
@@ -218,7 +218,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             /* FALLTHROUGH */
         case 'I':
             bp = conv_num(bp, &tm->tm_hour, 1, 12);
-            if ( tm->tm_hour == 12 )
+            if (tm->tm_hour == 12)
                 tm->tm_hour = 0;
             LEGAL_ALT(ALT_O);
             continue;
@@ -246,7 +246,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
 
         case 'p': /* The locale's equivalent of AM/PM. */
             bp = find_string(bp, &i, am_pm, NULL, 2);
-            if ( tm->tm_hour > 11 )
+            if (tm->tm_hour > 11)
                 return NULL;
             tm->tm_hour += i * 12;
             LEGAL_ALT(0);
@@ -294,7 +294,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
              */
             do
                 bp++;
-            while ( isdigit(*bp) );
+            while (isdigit(*bp));
             continue;
 
         case 'V': /* The ISO 8601:1988 week number as decimal */ bp = conv_num(bp, &i, 0, 53); continue;
@@ -310,13 +310,13 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             /* LEGAL_ALT(ALT_E | ALT_O); */
             bp = conv_num(bp, &i, 0, 99);
 
-            if ( split_year )
+            if (split_year)
                 /* preserve century */
                 i += (tm->tm_year / 100) * 100;
             else
             {
                 split_year = 1;
-                if ( i <= 68 )
+                if (i <= 68)
                     i = i + 2000 - TM_YEAR_BASE;
                 else
                     i = i + 1900 - TM_YEAR_BASE;
@@ -325,7 +325,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             continue;
 
         case 'Z':
-            if ( strncmp((const char *)bp, gmt, 3) == 0 )
+            if (strncmp((const char *)bp, gmt, 3) == 0)
             {
                 tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
@@ -341,7 +341,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
 #if defined(_TM_DEFINED) && ! defined(_WIN32_WCE)
                 _tzset();
                 ep = find_string(bp, &i, (const char * const *)tzname, NULL, 2);
-                if ( ep != NULL )
+                if (ep != NULL)
                 {
                     tm->tm_isdst = i;
     #ifdef TM_GMTOFF
@@ -374,17 +374,17 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
              * [A-IL-M] = -1 ... -9 (J not used)
              * [N-Y]  = +1 ... +12
              */
-            while ( isspace(*bp) )
+            while (isspace(*bp))
                 bp++;
 
-            switch ( *bp++ )
+            switch (*bp++)
             {
             case 'G':
-                if ( *bp++ != 'M' )
+                if (*bp++ != 'M')
                     return NULL;
                 /*FALLTHROUGH*/
             case 'U':
-                if ( *bp++ != 'T' )
+                if (*bp++ != 'T')
                     return NULL;
                 /*FALLTHROUGH*/
             case 'Z': tm->tm_isdst = 0;
@@ -400,7 +400,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             default:
                 --bp;
                 ep = find_string(bp, &i, nast, NULL, 4);
-                if ( ep != NULL )
+                if (ep != NULL)
                 {
 #ifdef TM_GMTOFF
                     tm->TM_GMTOFF = -5 - i;
@@ -412,7 +412,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                     continue;
                 }
                 ep = find_string(bp, &i, nadt, NULL, 4);
-                if ( ep != NULL )
+                if (ep != NULL)
                 {
                     tm->tm_isdst = 1;
 #ifdef TM_GMTOFF
@@ -425,15 +425,15 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                     continue;
                 }
 
-                if ( (*bp >= 'A' && *bp <= 'I') || (*bp >= 'L' && *bp <= 'Y') )
+                if ((*bp >= 'A' && *bp <= 'I') || (*bp >= 'L' && *bp <= 'Y'))
                 {
 #ifdef TM_GMTOFF
                     /* Argh! No 'J'! */
-                    if ( *bp >= 'A' && *bp <= 'I' )
+                    if (*bp >= 'A' && *bp <= 'I')
                         tm->TM_GMTOFF = ('A' - 1) - (int)*bp;
-                    else if ( *bp >= 'L' && *bp <= 'M' )
+                    else if (*bp >= 'L' && *bp <= 'M')
                         tm->TM_GMTOFF = 'A' - (int)*bp;
-                    else if ( *bp >= 'N' && *bp <= 'Y' )
+                    else if (*bp >= 'N' && *bp <= 'Y')
                         tm->TM_GMTOFF = (int)*bp - 'M';
 #endif
 #ifdef TM_ZONE
@@ -445,34 +445,34 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                 return NULL;
             }
             offs = 0;
-            for ( i = 0; i < 4; )
+            for (i = 0; i < 4;)
             {
-                if ( isdigit(*bp) )
+                if (isdigit(*bp))
                 {
                     offs = offs * 10 + (*bp++ - '0');
                     i++;
                     continue;
                 }
-                if ( i == 2 && *bp == ':' )
+                if (i == 2 && *bp == ':')
                 {
                     bp++;
                     continue;
                 }
                 break;
             }
-            switch ( i )
+            switch (i)
             {
             case 2: offs *= 100; break;
             case 4:
                 i = offs % 100;
-                if ( i >= 60 )
+                if (i >= 60)
                     return NULL;
                 /* Convert minutes into decimal */
                 offs = (offs / 100) * 100 + (i * 50) / 30;
                 break;
             default: return NULL;
             }
-            if ( neg )
+            if (neg)
                 offs = -offs;
             tm->tm_isdst = 0; /* XXX */
 #ifdef TM_GMTOFF
@@ -488,7 +488,7 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
          */
         case 'n': /* Any kind of white-space. */
         case 't':
-            while ( isspace(*bp) )
+            while (isspace(*bp))
                 bp++;
             LEGAL_ALT(0);
             continue;
@@ -509,7 +509,7 @@ static const u_char * conv_num(const unsigned char * buf, int * dest, unsigned i
     unsigned int rulim = ulim;
 
     ch = *buf;
-    if ( ch < '0' || ch > '9' )
+    if (ch < '0' || ch > '9')
         return NULL;
 
     do
@@ -519,9 +519,9 @@ static const u_char * conv_num(const unsigned char * buf, int * dest, unsigned i
         rulim /= 10;
         ch = *++buf;
     }
-    while ( (result * 10 <= ulim) && rulim && ch >= '0' && ch <= '9' );
+    while ((result * 10 <= ulim) && rulim && ch >= '0' && ch <= '9');
 
-    if ( result < llim || result > ulim )
+    if (result < llim || result > ulim)
         return NULL;
 
     *dest = result;
@@ -534,12 +534,12 @@ static const u_char * find_string(const u_char * bp, int * tgt, const char * con
     unsigned int len;
 
     /* check full name - then abbreviated ones */
-    for ( ; n1 != NULL; n1 = n2, n2 = NULL )
+    for (; n1 != NULL; n1 = n2, n2 = NULL)
     {
-        for ( i = 0; i < c; i++, n1++ )
+        for (i = 0; i < c; i++, n1++)
         {
             len = (unsigned int)strlen(*n1);
-            if ( strncasecmp(*n1, (const char *)bp, len) == 0 )
+            if (strncasecmp(*n1, (const char *)bp, len) == 0)
             {
                 *tgt = i;
                 return bp + len;

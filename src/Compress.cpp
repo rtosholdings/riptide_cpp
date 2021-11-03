@@ -18,7 +18,7 @@
 void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t ndim, int64_t * dims, int32_t flags,
                        int64_t itemsize)
 {
-    if ( pstNumpyHeader )
+    if (pstNumpyHeader)
     {
         pstNumpyHeader->magic = COMPRESSION_MAGIC;
         pstNumpyHeader->compressiontype = COMPRESSION_TYPE_ZSTD;
@@ -29,13 +29,13 @@ void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t
         pstNumpyHeader->flags = flags;
         pstNumpyHeader->itemsize = (int32_t)itemsize;
 
-        if ( pstNumpyHeader->ndim > 3 )
+        if (pstNumpyHeader->ndim > 3)
         {
             printf("!!! too many dimensions\n");
             pstNumpyHeader->ndim = 3;
         }
 
-        for ( int i = 0; i < pstNumpyHeader->ndim; i++ )
+        for (int i = 0; i < pstNumpyHeader->ndim; i++)
         {
             pstNumpyHeader->dimensions[i] = dims[i];
         }
@@ -66,14 +66,14 @@ bool DecompressOneArray(void * pstCompressArraysV, int core, int64_t t)
     COMPRESS_NUMPY_TO_NUMPY * pstCompressArrays = (COMPRESS_NUMPY_TO_NUMPY *)pstCompressArraysV;
     ArrayInfo * aInfo = pstCompressArrays->aInfo;
 
-    if ( pstCompressArrays->pNumpyHeaders[t] )
+    if (pstCompressArrays->pNumpyHeaders[t])
     {
         NUMPY_HEADERSIZE * pNumpyHeader = (NUMPY_HEADERSIZE *)pstCompressArrays->aInfo[t].pData;
 
         void * source = &pNumpyHeader[1];
         uint64_t dest_size = (uint64_t)ZSTD_getDecompressedSize(source, pNumpyHeader->compressedSize);
 
-        if ( dest_size == 0 )
+        if (dest_size == 0)
         {
             PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
             return false;
@@ -84,12 +84,12 @@ bool DecompressOneArray(void * pstCompressArraysV, int core, int64_t t)
 
         size_t cSize = ZSTD_decompress(dest, dest_size, source, pNumpyHeader->compressedSize);
 
-        if ( ZSTD_isError(cSize) )
+        if (ZSTD_isError(cSize))
         {
             PyErr_Format(PyExc_ValueError, "Decompression error: %s", ZSTD_getErrorName(cSize));
             return false;
         }
-        else if ( cSize != dest_size )
+        else if (cSize != dest_size)
         {
             PyErr_Format(PyExc_ValueError, "Decompression error: length mismatch -> decomp %llu != %llu [header]", (uint64_t)cSize,
                          dest_size);
@@ -107,7 +107,7 @@ bool CompressMemoryArray(void * pstCompressArraysV, int core, int64_t t)
     COMPRESS_NUMPY_TO_NUMPY * pstCompressArrays = (COMPRESS_NUMPY_TO_NUMPY *)pstCompressArraysV;
     ArrayInfo * aInfo = pstCompressArrays->aInfo;
 
-    if ( pstCompressArrays->compMode == COMPRESSION_MODE_COMPRESS && pstCompressArrays->pNumpyHeaders[t] )
+    if (pstCompressArrays->compMode == COMPRESSION_MODE_COMPRESS && pstCompressArrays->pNumpyHeaders[t])
     {
         NUMPY_HEADERSIZE * pstNumpyHeader = pstCompressArrays->pNumpyHeaders[t];
 
@@ -123,7 +123,7 @@ bool CompressMemoryArray(void * pstCompressArraysV, int core, int64_t t)
 
         LOGGING("[%d] compressed %d%% %llu from %lld\n", (int)t, (int)((cSize * 100) / source_size), cSize, source_size);
 
-        if ( ZSTD_isError(cSize) )
+        if (ZSTD_isError(cSize))
         {
             printf("ZSTD_isError\n");
             WORKSPACE_FREE(pstCompressArrays->pNumpyHeaders[t]);
@@ -146,7 +146,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
     int32_t level = ZSTD_CLEVEL_DEFAULT;
     int32_t mode = COMPRESSION_MODE_COMPRESS;
 
-    if ( ! PyArg_ParseTuple(args, "Oi|i", &inList1, &mode, &level) )
+    if (! PyArg_ParseTuple(args, "Oi|i", &inList1, &mode, &level))
     {
         return NULL;
     }
@@ -155,16 +155,16 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
     int64_t tupleSize = 0;
     ArrayInfo * aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize, mode == COMPRESSION_MODE_COMPRESS);
 
-    if ( aInfo )
+    if (aInfo)
     {
         COMPRESS_NUMPY_TO_NUMPY * pstCompressArrays =
             (COMPRESS_NUMPY_TO_NUMPY *)WORKSPACE_ALLOC(sizeof(COMPRESS_NUMPY_TO_NUMPY) + (tupleSize * sizeof(NUMPY_HEADERSIZE *)));
         pstCompressArrays->totalHeaders = tupleSize;
 
         //---------------------
-        if ( level <= 0 )
+        if (level <= 0)
             level = ZSTD_CLEVEL_DEFAULT;
-        if ( level > ZSTD_MAX_CLEVEL )
+        if (level > ZSTD_MAX_CLEVEL)
             level = ZSTD_MAX_CLEVEL;
 
         pstCompressArrays->compLevel = level;
@@ -175,13 +175,13 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
 
         int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
 
-        switch ( mode )
+        switch (mode)
         {
         case COMPRESSION_MODE_COMPRESS:
             {
                 // Change this per CORE
                 // Allocate worst care
-                for ( int t = 0; t < tupleSize; t++ )
+                for (int t = 0; t < tupleSize; t++)
                 {
                     pstCompressArrays->pNumpyHeaders[t] =
                         AllocCompressedMemory(aInfo[t].ArrayLength, aInfo[t].NumpyDType, aInfo[t].NDim,
@@ -197,7 +197,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
 
         case COMPRESSION_MODE_DECOMPRESS:
             {
-                for ( int t = 0; t < tupleSize; t++ )
+                for (int t = 0; t < tupleSize; t++)
                 {
                     NUMPY_HEADERSIZE * pNumpyHeader = (NUMPY_HEADERSIZE *)aInfo[t].pData;
                     uint64_t dest_size = (uint64_t)ZSTD_getDecompressedSize(&pNumpyHeader[1], pNumpyHeader->compressedSize);
@@ -220,18 +220,18 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
         // New reference
         PyObject * returnTuple = Py_None;
 
-        if ( mode == COMPRESSION_MODE_COMPRESS_FILE )
+        if (mode == COMPRESSION_MODE_COMPRESS_FILE)
         {
-            for ( int j = 0; j < numCores; j++ )
+            for (int j = 0; j < numCores; j++)
             {
-                if ( pstCompressArrays->pCoreMemory[j] )
+                if (pstCompressArrays->pCoreMemory[j])
                 {
                     WORKSPACE_FREE(pstCompressArrays->pCoreMemory[j]);
                 }
             }
         }
 
-        if ( mode == COMPRESSION_MODE_COMPRESS )
+        if (mode == COMPRESSION_MODE_COMPRESS)
         {
             returnTuple = PyTuple_New(tupleSize);
             int64_t uncompressedSize = 0;
@@ -241,11 +241,11 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
             // Fill in results
             // Now we know actual length since compression is completed
             // Copy into a real array
-            for ( int t = 0; t < tupleSize; t++ )
+            for (int t = 0; t < tupleSize; t++)
             {
                 PyObject * item = NULL;
 
-                if ( pstCompressArrays->pNumpyHeaders[t] )
+                if (pstCompressArrays->pNumpyHeaders[t])
                 {
                     // make numpy arrays
                     NUMPY_HEADERSIZE * pstNumpyHeader = pstCompressArrays->pNumpyHeaders[t];
@@ -262,7 +262,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                     CHECK_MEMORY_ERROR(item);
 
                     // make sure we got memory
-                    if ( item )
+                    if (item)
                     {
                         // tag as not writeable
                         ((PyArrayObject_fields *)item)->flags &= ~NPY_ARRAY_WRITEABLE;
@@ -276,7 +276,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                 }
 
                 // Return NONE for any arrays with memory issues
-                if ( item == NULL )
+                if (item == NULL)
                 {
                     item = Py_None;
                     Py_INCREF(Py_None);
@@ -288,22 +288,22 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
             LOGGING("%d%% comp ratio    compressed size: %lld    uncompressed size: %lld\n",
                     (int)((compressedSize * 100) / uncompressedSize), compressedSize, uncompressedSize);
         }
-        if ( mode == COMPRESSION_MODE_DECOMPRESS )
+        if (mode == COMPRESSION_MODE_DECOMPRESS)
         {
             returnTuple = PyTuple_New(tupleSize);
 
             // Decompression
-            for ( int t = 0; t < tupleSize; t++ )
+            for (int t = 0; t < tupleSize; t++)
             {
                 PyObject * item = NULL;
 
-                if ( pstCompressArrays->pNumpyHeaders[t] )
+                if (pstCompressArrays->pNumpyHeaders[t])
                 {
                     item = (PyObject *)pstCompressArrays->pNumpyArray[t];
                 }
 
                 // Return NONE for any arrays with memory issues
-                if ( item == NULL )
+                if (item == NULL)
                 {
                     item = Py_None;
                     Py_INCREF(Py_None);
@@ -336,25 +336,25 @@ PyObject * CompressString(PyObject * self, PyObject * args)
     size_t cSize;
     int32_t level = ZSTD_CLEVEL_DEFAULT;
 
-    if ( ! PyArg_ParseTuple(args, "y#|i", &source, &source_size32, &level) )
+    if (! PyArg_ParseTuple(args, "y#|i", &source, &source_size32, &level))
         return NULL;
 
-    if ( level <= 0 )
+    if (level <= 0)
         level = ZSTD_CLEVEL_DEFAULT;
 
-    if ( level > ZSTD_MAX_CLEVEL )
+    if (level > ZSTD_MAX_CLEVEL)
         level = ZSTD_MAX_CLEVEL;
 
     source_size = source_size32;
 
     dest_size = ZSTD_compressBound(source_size);
     result = PyBytes_FromStringAndSize(NULL, dest_size);
-    if ( result == NULL )
+    if (result == NULL)
     {
         return NULL;
     }
 
-    if ( source_size > 0 )
+    if (source_size > 0)
     {
         dest = PyBytes_AS_STRING(result);
 
@@ -364,7 +364,7 @@ PyObject * CompressString(PyObject * self, PyObject * args)
 
         printf("compressed to %zu\n", cSize);
 
-        if ( ZSTD_isError(cSize) )
+        if (ZSTD_isError(cSize))
         {
             PyErr_Format(PyExc_ValueError, "Compression error: %s", ZSTD_getErrorName(cSize));
             Py_CLEAR(result);
@@ -391,31 +391,31 @@ PyObject * DecompressString(PyObject * self, PyObject * args)
     char error = 0;
     size_t cSize;
 
-    if ( ! PyArg_ParseTuple(args, "y#", &source, &source_size32) )
+    if (! PyArg_ParseTuple(args, "y#", &source, &source_size32))
         return NULL;
 
     source_size = source_size32;
 
     dest_size = (uint64_t)ZSTD_getDecompressedSize(source, source_size);
-    if ( dest_size == 0 )
+    if (dest_size == 0)
     {
         PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
         return NULL;
     }
     result = PyBytes_FromStringAndSize(NULL, dest_size);
 
-    if ( result != NULL )
+    if (result != NULL)
     {
         char * dest = PyBytes_AS_STRING(result);
 
         cSize = ZSTD_decompress(dest, dest_size, source, source_size);
 
-        if ( ZSTD_isError(cSize) )
+        if (ZSTD_isError(cSize))
         {
             PyErr_Format(PyExc_ValueError, "Decompression error: %s", ZSTD_getErrorName(cSize));
             error = 1;
         }
-        else if ( cSize != dest_size )
+        else if (cSize != dest_size)
         {
             PyErr_Format(PyExc_ValueError, "Decompression error: length mismatch -> decomp %llu != %llu [header]", (uint64_t)cSize,
                          dest_size);
@@ -423,7 +423,7 @@ PyObject * DecompressString(PyObject * self, PyObject * args)
         }
     }
 
-    if ( error )
+    if (error)
     {
         Py_CLEAR(result);
         result = NULL;

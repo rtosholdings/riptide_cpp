@@ -48,7 +48,7 @@ void * FmAlloc(size_t _Size)
 {
     // make thread safe
     uint64_t * pageGuard = (uint64_t *)malloc(_Size + 16);
-    if ( pageGuard )
+    if (pageGuard)
     {
         InterlockedIncrement64(&g_TotalAllocs);
         InterlockedAdd64(&g_TotalMemoryAllocated, _Size);
@@ -66,7 +66,7 @@ void FmFree(void * _Block)
     // The C standard requires that free() be a no-op when called with nullptr.
     // FmAlloc can return a nullptr, and since we want this function to behave
     // like free() we also need to handle the nullptr case here.
-    if ( ! _Block )
+    if (! _Block)
     {
         return;
     }
@@ -76,7 +76,7 @@ void FmFree(void * _Block)
     uint64_t * pageGuard = (uint64_t *)_Block;
     pageGuard--;
     pageGuard--;
-    if ( pageGuard[1] != MAGIC_PAGE_GUARD )
+    if (pageGuard[1] != MAGIC_PAGE_GUARD)
     {
         printf("!! User freed bad memory, no page guard %p\n", pageGuard);
     }
@@ -95,14 +95,14 @@ void FreeWorkSpaceAllocLarge(void * gpHashTable)
 {
     LOGRECYCLE("FreeWorkSpaceAllocLarge %p %lld\n", gpHashTable, g_CurrentAllocHashTable);
     // Free global
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
-        if ( gpHashTable )
+        if (gpHashTable)
             WORKSPACE_FREE(gpHashTable);
     }
     else
     {
-        if ( g_pHashTableAny && g_pHashTableAny == gpHashTable )
+        if (g_pHashTableAny && g_pHashTableAny == gpHashTable)
         {
             WORKSPACE_FREE(g_pHashTableAny);
             g_pHashTableAny = NULL;
@@ -114,14 +114,14 @@ void FreeWorkSpaceAllocLarge(void * gpHashTable)
 void FreeWorkSpaceAllocSmall(void * gpBits)
 {
     LOGRECYCLE("FreeWorkSpaceAllocSmall %p %lld\n", gpBits, g_CurrentAllocBitSize);
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
-        if ( gpBits )
+        if (gpBits)
             WORKSPACE_FREE(gpBits);
     }
     else
     {
-        if ( g_pBitFields && g_pBitFields == gpBits )
+        if (g_pBitFields && g_pBitFields == gpBits)
         {
             WORKSPACE_FREE(g_pBitFields);
             g_pBitFields = NULL;
@@ -137,14 +137,14 @@ void FreeWorkSpaceAllocSmall(void * gpBits)
 void * WorkSpaceAllocLarge(size_t HashTableAllocSize)
 {
     void * pHashTableAny = NULL;
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
         LOGRECYCLE("hashtable threadsafe NOT using recycled %llu\n", HashTableAllocSize);
         pHashTableAny = WORKSPACE_ALLOC(HashTableAllocSize);
     }
     else
     {
-        if ( g_pHashTableAny != NULL && HashTableAllocSize <= g_CurrentAllocHashTable )
+        if (g_pHashTableAny != NULL && HashTableAllocSize <= g_CurrentAllocHashTable)
         {
             LOGRECYCLE("hashtable using recycled %llu\n", HashTableAllocSize);
             pHashTableAny = g_pHashTableAny;
@@ -154,7 +154,7 @@ void * WorkSpaceAllocLarge(size_t HashTableAllocSize)
             LOGRECYCLE("hashtable NOT using recycled %llu\n", HashTableAllocSize);
             pHashTableAny = WORKSPACE_ALLOC(HashTableAllocSize);
 
-            if ( pHashTableAny == NULL )
+            if (pHashTableAny == NULL)
             {
                 LogError("Out of memory with hash\n");
                 return NULL;
@@ -175,14 +175,14 @@ void * WorkSpaceAllocSmall(size_t BitAllocSize)
 {
     void * pBitFields = NULL;
 
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
         LOGRECYCLE("hashtable threadsafe NOT using recycled %llu\n", BitAllocSize);
         pBitFields = WORKSPACE_ALLOC(BitAllocSize);
     }
     else
     {
-        if ( g_pBitFields != NULL && BitAllocSize <= g_CurrentAllocBitSize )
+        if (g_pBitFields != NULL && BitAllocSize <= g_CurrentAllocBitSize)
         {
             LOGRECYCLE("bitfields using recycled %llu\n", BitAllocSize);
             pBitFields = g_pBitFields;
@@ -192,7 +192,7 @@ void * WorkSpaceAllocSmall(size_t BitAllocSize)
             LOGRECYCLE("bitfields NOT using recycled %llu\n", BitAllocSize);
             pBitFields = WORKSPACE_ALLOC(BitAllocSize);
 
-            if ( pBitFields == 0 )
+            if (pBitFields == 0)
             {
                 LogError("Out of memory with bitfields\n");
                 return NULL;
@@ -211,10 +211,10 @@ void WorkSpaceFreeAllocLarge(void *& pHashTableAny, size_t HashTableAllocSize)
     LOGRECYCLE("WorkSpaceFreeAllocLarge %p %p %lld %lld\n", pHashTableAny, g_pHashTableAny, g_CurrentAllocHashTable,
                HashTableAllocSize);
 
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
         // not using the global memory
-        if ( pHashTableAny != NULL )
+        if (pHashTableAny != NULL)
         {
             WORKSPACE_FREE(pHashTableAny);
             pHashTableAny = NULL;
@@ -222,9 +222,9 @@ void WorkSpaceFreeAllocLarge(void *& pHashTableAny, size_t HashTableAllocSize)
     }
     else
     {
-        if ( pHashTableAny != NULL )
+        if (pHashTableAny != NULL)
         {
-            if ( g_pHashTableAny == NULL )
+            if (g_pHashTableAny == NULL)
             {
                 // recycle this memory
                 LOGRECYCLE("WorkSpaceFreeAllocLarge is recycling\n");
@@ -235,9 +235,9 @@ void WorkSpaceFreeAllocLarge(void *& pHashTableAny, size_t HashTableAllocSize)
             else
             {
                 // Check to see if already using this
-                if ( g_pHashTableAny != pHashTableAny )
+                if (g_pHashTableAny != pHashTableAny)
                 {
-                    if ( HashTableAllocSize > g_CurrentAllocHashTable )
+                    if (HashTableAllocSize > g_CurrentAllocHashTable)
                     {
                         LOGRECYCLE("WorkSpaceFreeAllocLarge is replacing\n");
                         WORKSPACE_FREE(g_pHashTableAny);
@@ -269,10 +269,10 @@ void WorkSpaceFreeAllocSmall(void *& pBitFields, size_t BitAllocSize)
 {
     LOGRECYCLE("WorkSpaceFreeAllocSmall %p %p\n", pBitFields, g_pBitFields);
 
-    if ( g_cMathWorker->NoThreading || g_cMathWorker->NoCaching )
+    if (g_cMathWorker->NoThreading || g_cMathWorker->NoCaching)
     {
         // not using the global memory
-        if ( pBitFields != NULL )
+        if (pBitFields != NULL)
         {
             WORKSPACE_FREE(pBitFields);
             pBitFields = NULL;
@@ -280,9 +280,9 @@ void WorkSpaceFreeAllocSmall(void *& pBitFields, size_t BitAllocSize)
     }
     else
     {
-        if ( pBitFields != NULL )
+        if (pBitFields != NULL)
         {
-            if ( g_pBitFields == NULL )
+            if (g_pBitFields == NULL)
             {
                 // recycle this memory
                 g_CurrentAllocBitSize = BitAllocSize;
@@ -292,9 +292,9 @@ void WorkSpaceFreeAllocSmall(void *& pBitFields, size_t BitAllocSize)
             else
             {
                 // Check to see if already using this
-                if ( g_pBitFields != pBitFields )
+                if (g_pBitFields != pBitFields)
                 {
-                    if ( BitAllocSize > g_CurrentAllocBitSize )
+                    if (BitAllocSize > g_CurrentAllocBitSize)
                     {
                         WORKSPACE_FREE(g_pBitFields);
                         // replace recycler this memory
@@ -345,12 +345,12 @@ static inline void RemoveFromList(stRecycleList * pItems, int32_t slot)
 // On Entry: the recycledArray must be valid
 static void RefCountNumpyArray(stRecycleList * pItems, int32_t lzcount, int32_t type, int32_t slot, bool bIncrement)
 {
-    if ( pItems->Item[slot].recycledArray == NULL )
+    if (pItems->Item[slot].recycledArray == NULL)
     {
         LOGRECYCLE("!!! Critical error -- recycled array is NULL");
     }
 
-    if ( bIncrement )
+    if (bIncrement)
     {
         // inc ref count to indicate we want ownership of base array
         // Py_IncRef((PyObject*)(pItems->Item[slot].recycledArray));
@@ -407,7 +407,7 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
     uint64_t currentTSC = __rdtsc();
     int64_t totalDeleted = 0;
 
-    if ( verbose )
+    if (verbose)
     {
         // verbose mode will always run GC because assumed user initiated
         printf("--- Garbage Collector start --- timespan: %lld\n", timespan);
@@ -415,7 +415,7 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
     else
     {
         // non verbose mode will only run GC if enough cycles have expired
-        if ( (currentTSC - gLastGarbageCollectTSC) < 60 * NANO_BILLION )
+        if ((currentTSC - gLastGarbageCollectTSC) < 60 * NANO_BILLION)
         {
             // printf("GC did not happen\n");
             return 0;
@@ -434,38 +434,38 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
     gRecursion++;
 
     // TODO: loop is larger than needed
-    for ( int i = 0; i < RECYCLE_ENTRIES; i++ )
+    for (int i = 0; i < RECYCLE_ENTRIES; i++)
     {
-        for ( int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++ )
+        for (int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++)
         {
             stRecycleList * pItems = &g_stRecycleList[i][j];
             int32_t deltaHead = pItems->Head - pItems->Tail;
 
             // sanity check head tail
-            if ( deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH )
+            if (deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH)
             {
                 LogError("!!! critical error with recycler items %d,%d with deltahead %d\n", i, j, deltaHead);
             }
-            if ( pItems->Head != pItems->Tail )
+            if (pItems->Head != pItems->Tail)
             {
-                if ( verbose )
+                if (verbose)
                     printf("%d:%d  head: %d  tail: %d\n", i, j, pItems->Head, pItems->Tail);
-                for ( int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++ )
+                for (int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++)
                 {
                     int64_t totalSize = pItems->Item[k].totalSize;
 
                     // size must be > 0 for the entry to be valid
-                    if ( totalSize > 0 )
+                    if (totalSize > 0)
                     {
                         int64_t delta = (int64_t)(currentTSC - pItems->Item[k].tsc);
-                        if ( verbose )
+                        if (verbose)
                             DumpItemStats(pItems, k);
 
                         // printf("Comparing %lld to %lld\n", delta, timespan);
 
-                        if ( delta > timespan )
+                        if (delta > timespan)
                         {
-                            if ( verbose )
+                            if (verbose)
                                 printf("    ***GC deleting with size %lld\n", totalSize);
 
                             // Release ref count and remove entry
@@ -481,7 +481,7 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
     gRecursion--;
     gGarbageCollecting--;
 
-    if ( verbose )
+    if (verbose)
         printf("--- Garbage Collector end   --- deleted: %lld\n", totalDeleted);
 
     return totalDeleted;
@@ -498,15 +498,15 @@ PyObject * RecycleDump(PyObject * self, PyObject * args)
     uint64_t currentTSC = __rdtsc();
 
     int64_t totalSize = 0;
-    for ( int i = 0; i < RECYCLE_ENTRIES; i++ )
+    for (int i = 0; i < RECYCLE_ENTRIES; i++)
     {
-        for ( int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++ )
+        for (int j = 0; j < RECYCLE_MAXIMUM_TYPE; j++)
         {
             stRecycleList * pItems = &g_stRecycleList[i][j];
-            if ( pItems->Head != pItems->Tail )
+            if (pItems->Head != pItems->Tail)
             {
                 printf("%d:%d  head: %d  tail: %d\n", i, j, pItems->Head, pItems->Tail);
-                for ( int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++ )
+                for (int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++)
                 {
                     totalSize += pItems->Item[k].totalSize;
                     DumpItemStats(pItems, k);
@@ -527,7 +527,7 @@ static PyObject * g_namestring = PyUnicode_FromString("_name");
 // Scans the tables to see if a recycled array is available
 PyArrayObject * RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize)
 {
-    if ( totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE && ndim == 1 )
+    if (totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE && ndim == 1)
     {
         // Based on size and type, lookup
         int64_t log2 = lzcnt_64(totalSize);
@@ -535,16 +535,16 @@ PyArrayObject * RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize)
         LOGRECYCLE("totalSize %llu  log2 %llu\n", totalSize, log2);
 
         stRecycleList * pItems = &g_stRecycleList[log2][type];
-        for ( int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++ )
+        for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++)
         {
             // Search for empty slot
-            if ( pItems->Item[i].totalSize == totalSize )
+            if (pItems->Item[i].totalSize == totalSize)
             {
                 PyArrayObject * inArr = pItems->Item[i].recycledArray;
                 int64_t refCount = inArr->ob_base.ob_refcnt;
 
                 // If the refcnt is one, it must be just us holding on to it
-                if ( refCount == 1 )
+                if (refCount == 1)
                 {
                     // We will reuse this item so we do not decrement it here
                     RemoveFromList(pItems, i);
@@ -576,7 +576,7 @@ PyObject * SetRecycleMode(PyObject * self, PyObject * args)
 {
     int64_t mode = 0;
 
-    if ( ! PyArg_ParseTuple(args, "L", &mode) )
+    if (! PyArg_ParseTuple(args, "L", &mode))
         return NULL;
 
     gRecyleMode = mode;
@@ -598,13 +598,13 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
     // For very small sizes, we do not bother to cache
     // For odd types, we also do not bother to cache
     // 1024 = 2^10
-    if ( gRecyleMode )
+    if (gRecyleMode)
     {
         return false;
     }
 
     int64_t refCount = inArr->ob_base.ob_refcnt;
-    if ( refCount != 0 )
+    if (refCount != 0)
     {
         LOGRECYCLE("Rejected recycling because base refCount is %lld\n", refCount);
         return false;
@@ -615,14 +615,14 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
 
     // Check writeable flag on BASE array
     // Cannot recycle readonly (not writeable) or (not owned)
-    if ( (flags & (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS)) !=
-         (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS) )
+    if ((flags & (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS)) !=
+        (NPY_ARRAY_WRITEABLE | NPY_ARRAY_OWNDATA | NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS))
     {
         LOGRECYCLE("Rejected recycling because object is not writeable or owned or contiguous.\n");
         return false;
     }
 
-    if ( gRecursion )
+    if (gRecursion)
     {
         // printf("recursion on %lld  %lld\n", refCount, totalSize);
         return false;
@@ -646,12 +646,12 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
 
     // TJD: New code only recycle FastArrays
     // if (g_FastArrayType != NULL && inArr->ob_base.ob_type == g_FastArrayType && g_GarbageCollectTimeSpan > 0) {
-    if ( g_GarbageCollectTimeSpan > 0 )
+    if (g_GarbageCollectTimeSpan > 0)
     {
         // Multiple checks have to clear before we consider recycling this array
-        if ( totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE &&
-             // refCount < 3 &&
-             ndim == 1 && strides != NULL && itemSize == strides[0] )
+        if (totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE &&
+            // refCount < 3 &&
+            ndim == 1 && strides != NULL && itemSize == strides[0])
         {
             // Based on size and type, lookup
             int32_t log2 = (int32_t)lzcnt_64(totalSize);
@@ -663,10 +663,10 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
 
             bool abort = false;
 
-            for ( int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++ )
+            for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++)
             {
                 // Search for same memory address
-                if ( pItems->Item[i].totalSize != 0 && pItems->Item[i].memoryAddress == memAddress )
+                if (pItems->Item[i].totalSize != 0 && pItems->Item[i].memoryAddress == memAddress)
                 {
                     // Does this happen when wrapped in a FA? does double delete
                     // LOGRECYCLE("Rejected recycling due to mem address clash slot:%d  refcnt: %llu   size: %llu   type: %d %p\n",
@@ -676,15 +676,15 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
                 }
             }
 
-            if ( ! abort )
+            if (! abort)
             {
                 bool bFoundEmpty = false;
                 int32_t slot = -1;
 
-                for ( int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++ )
+                for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++)
                 {
                     // Search for empty slot
-                    if ( pItems->Item[i].totalSize == 0 )
+                    if (pItems->Item[i].totalSize == 0)
                     {
                         // Found empty slot
                         slot = i;
@@ -701,14 +701,14 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
                     //}
                 }
 
-                if ( slot == -1 )
+                if (slot == -1)
                 {
                     slot = pItems->Head & RECYCLE_MASK;
-                    for ( int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++ )
+                    for (int i = 0; i < RECYCLE_MAXIMUM_SEARCH; i++)
                     {
                         // TODO: Check current ref count--- if not 1, remove?
                         int64_t curRefCount = pItems->Item[i].recycledArray->ob_base.ob_refcnt;
-                        if ( curRefCount != 1 )
+                        if (curRefCount != 1)
                         {
                             LOGRECYCLE("Weird ref count %llu\n", curRefCount);
                             slot = i;
@@ -716,7 +716,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
                         }
                     }
 
-                    if ( pItems->Item[slot].totalSize != 0 )
+                    if (pItems->Item[slot].totalSize != 0)
                     {
                         LOGRECYCLE("!! removing existing entry -- slot %d  size: %lld\n", slot, pItems->Item[slot].totalSize);
                         // Let go of old item to make room for new item
@@ -728,7 +728,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
                 int32_t deltaHead = pItems->Head - pItems->Tail;
 
                 // sanity check head tail
-                if ( deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH )
+                if (deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH)
                 {
                     LogError("!!! inner critical error with recycler items %d,%d,%d with deltahead %d  totalsize%lld\n", log2,
                              type, slot, deltaHead, pItems->Item[slot].totalSize);
@@ -792,7 +792,7 @@ PyObject * AllocateNumpy(PyObject * self, PyObject * args)
     PyArrayObject * inArr = NULL;
     int dtype;
 
-    if ( ! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr, &dtype) )
+    if (! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr, &dtype))
         return NULL;
 
     int ndim = PyArray_NDIM(inArr);
@@ -811,10 +811,10 @@ bool RecycleNumpyInternal(PyArrayObject * inArr)
     // Get to the base object
     PyArrayObject * pFirst = inArr;
 
-    if ( PyArray_BASE(inArr) == NULL )
+    if (PyArray_BASE(inArr) == NULL)
     {
         // make sure we are base object and is a FastArray type (not Categorical or numpy array)
-        if ( inArr->ob_base.ob_type == g_FastArrayType )
+        if (inArr->ob_base.ob_type == g_FastArrayType)
         {
             return DeleteNumpyArray(inArr);
         }
@@ -830,12 +830,12 @@ PyObject * RecycleNumpy(PyObject * self, PyObject * args)
 {
     PyArrayObject * inArr = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr))
         return NULL;
 
     bool retVal = RecycleNumpyInternal(inArr);
 
-    if ( retVal )
+    if (retVal)
     {
         Py_INCREF(Py_True);
         return Py_True;
@@ -857,18 +857,18 @@ PyObject * TryRecycleNumpy(PyObject * self, PyObject * args)
     PyObject * tuple = NULL;
     int final_dtype;
 
-    if ( ! PyArg_ParseTuple(args, "iO", &final_dtype, &tuple) )
+    if (! PyArg_ParseTuple(args, "iO", &final_dtype, &tuple))
         return NULL;
 
     LOGRECYCLE("TryRecycleNumpy dtype is %d \n", final_dtype);
 
-    if ( PyList_Check(tuple) )
+    if (PyList_Check(tuple))
     {
         Py_ssize_t size = PyList_Size(tuple);
 
         LOGRECYCLE("tuple has size of %llu\n", size);
 
-        for ( int64_t i = 0; i < size; i++ )
+        for (int64_t i = 0; i < size; i++)
         {
             PyObject * item = PyList_GetItem(tuple, i);
             // Py_DecRef(item);
@@ -884,7 +884,7 @@ PyObject * TryRecycleNumpy(PyObject * self, PyObject * args)
 
             PyArrayObject * returnObject = RecycleFindArray(ndim, final_dtype, len);
 
-            if ( returnObject != NULL )
+            if (returnObject != NULL)
             {
                 LOGRECYCLE("Found array to return with size %llu\n", len);
 
@@ -906,7 +906,7 @@ PyObject * RecycleSetGarbageCollectTimeout(PyObject * self, PyObject * args)
 {
     int64_t timespan;
 
-    if ( ! PyArg_ParseTuple(args, "L", &timespan) )
+    if (! PyArg_ParseTuple(args, "L", &timespan))
         return NULL;
 
     int64_t previousTimespan = g_GarbageCollectTimeSpan;
@@ -924,7 +924,7 @@ PyObject * RecycleGarbageCollectNow(PyObject * self, PyObject * args)
 {
     int64_t timespan;
 
-    if ( ! PyArg_ParseTuple(args, "L", &timespan) )
+    if (! PyArg_ParseTuple(args, "L", &timespan))
         return NULL;
 
     PyObject * pDict = PyDict_New();

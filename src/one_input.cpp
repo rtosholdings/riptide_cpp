@@ -23,13 +23,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const * wide_value_p(reinterpret_cast<wide_t const *>(in_p));
 
-        if constexpr ( std::is_unsigned_v<T> == true )
+        if constexpr (std::is_unsigned_v<T> == true)
         {
             return T{ value };
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.abs(wide_value_p);
             }
@@ -46,7 +46,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T{ value };
         }
@@ -62,7 +62,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( std::is_unsigned_v<T> == true )
+        if constexpr (std::is_unsigned_v<T> == true)
         {
             return T(value) > T{} ? T(1) : T{};
         }
@@ -79,7 +79,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T{};
         }
@@ -95,7 +95,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( std::is_unsigned_v<T> == true )
+        if constexpr (std::is_unsigned_v<T> == true)
         {
             return T(value);
         }
@@ -112,7 +112,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( std::is_floating_point_v<T> == true )
+        if constexpr (std::is_floating_point_v<T> == true)
         {
             return T(NAN);
         }
@@ -130,13 +130,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(std::round(value));
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.round(wide_value);
             }
@@ -155,13 +155,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(std::floor(value));
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.floor(wide_value);
             }
@@ -180,13 +180,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(std::trunc(value));
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.trunc(wide_value);
             }
@@ -205,13 +205,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(std::ceil(value));
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.ceil(wide_value);
             }
@@ -230,13 +230,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(std::sqrt(value));
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.sqrt(wide_value);
             }
@@ -334,7 +334,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return std::is_signed_v<T> && T(value) < T{};
         }
@@ -362,13 +362,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.isnotnan(wide_value);
             }
@@ -387,13 +387,13 @@ namespace internal
         using wide_t = typename calculation_t::calculation_type;
         [[maybe_unused]] wide_t const wide_value(internal::LOADU(reinterpret_cast<wide_t const *>(in_p)));
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
         else
         {
-            if constexpr ( wide_ops.simd_implemented_v )
+            if constexpr (wide_ops.simd_implemented_v)
             {
                 return wide_ops.isnan(wide_value);
             }
@@ -410,7 +410,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
@@ -426,7 +426,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
@@ -442,7 +442,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
@@ -458,7 +458,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
@@ -474,7 +474,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return false;
         }
@@ -490,7 +490,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return value;
         }
@@ -506,7 +506,7 @@ namespace internal
         using T = typename calculation_t::data_type const;
         [[maybe_unused]] T const value{ *reinterpret_cast<T const *>(in_p) };
 
-        if constexpr ( not std::is_floating_point_v<T> == true )
+        if constexpr (not std::is_floating_point_v<T> == true)
         {
             return T(value) == T{};
         }
@@ -525,7 +525,7 @@ namespace internal
         char const * last_out_p{ out_p + sizeof(data_t) * len };
 
         auto calc = [&](auto vectorization_object) {
-            while ( out_p < last_out_p )
+            while (out_p < last_out_p)
             {
                 auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
                 *reinterpret_cast<decltype(x) *>(out_p) = x;
@@ -535,14 +535,14 @@ namespace internal
             }
         };
 
-        if ( op_p )
+        if (op_p)
         {
-            if constexpr ( operation_t::simd_implementation::value )
+            if constexpr (operation_t::simd_implementation::value)
             {
                 using wide_type = typename data_t::calculation_type;
                 using wide_sct = typename riptide::simd::avx2::template vec256<typename data_t::data_type>;
 
-                if ( stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1 )
+                if (stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1)
                 {
                     calc(wide_sct{});
                 }
@@ -563,7 +563,7 @@ namespace internal
                                         operation_variant const & requested_op, data_type const * type_p,
                                         std::index_sequence<Is...>)
     {
-        if ( type_p )
+        if (type_p)
         {
             (perform_operation(in_p, out_p, len, stride, std::get_if<Is>(&requested_op), type_p), ...);
         }
@@ -589,7 +589,7 @@ namespace internal
                         operation_trait const & requested_op, type_trait const & in_type)
     {
         ptrdiff_t inner_len{ 1 };
-        for ( int32_t i{ 1 }; i < ndim; ++i ) // Is this loop really right? One-based but bounded by < ndim???
+        for (int32_t i{ 1 }; i < ndim; ++i) // Is this loop really right? One-based but bounded by < ndim???
         {
             inner_len *= PyArray_DIM(in_array, i);
         }
@@ -597,7 +597,7 @@ namespace internal
         ptrdiff_t const outer_len = PyArray_DIM(in_array, 0);
         ptrdiff_t const outer_stride = PyArray_STRIDE(in_array, 0);
 
-        for ( ptrdiff_t offset{}; offset < outer_len; ++offset )
+        for (ptrdiff_t offset{}; offset < outer_len; ++offset)
         {
             calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), outer_len,
                                            outer_stride, requested_op, in_type,
@@ -623,7 +623,7 @@ namespace internal
         ptrdiff_t const outer_len{ PyArray_DIM(in_array, (ndim - 1)) };
         ptrdiff_t const outer_stride{ PyArray_DIM(in_array, (ndim - 1)) };
 
-        for ( ptrdiff_t offset{}; offset < outer_len; ++offset )
+        for (ptrdiff_t offset{}; offset < outer_len; ++offset)
         {
             calculate_for_active_data_type(in_p + (offset * outer_stride), out_p + (offset * inner_len * stride_out), outer_len,
                                            outer_stride, requested_op, in_type,
@@ -643,9 +643,9 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
 
     auto [opt_op_trait, opt_type_trait] = internal::set_traits(function_num, numpy_intype);
 
-    if ( opt_op_trait && opt_type_trait )
+    if (opt_op_trait && opt_type_trait)
     {
-        if ( direction == 0 && numpy_outtype == -1 )
+        if (direction == 0 && numpy_outtype == -1)
         {
             numpy_outtype =
                 get_active_value_return(*opt_op_trait, std::make_index_sequence<std::variant_size_v<internal::operation_t>>{}) ?
@@ -654,7 +654,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
             PyArrayObject * result_array{ (ndim <= 1) ? AllocateNumpyArray(1, &len, numpy_outtype) :
                                                         AllocateLikeNumpyArray(in_array, numpy_outtype) };
 
-            if ( result_array )
+            if (result_array)
             {
                 char const * in_p = PyArray_BYTES(const_cast<PyArrayObject *>(in_array));
                 char * out_p{ PyArray_BYTES(const_cast<PyArrayObject *>(result_array)) };
@@ -677,7 +677,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                     numpy_intype :
                     NPY_BOOL;
 
-            if ( numpy_outtype != -1 && numpy_outtype != wanted_outtype )
+            if (numpy_outtype != -1 && numpy_outtype != wanted_outtype)
             {
                 LOGGING("Wanted output type %d does not match output type %d\n", wanted_outtype, numpy_outtype);
                 Py_INCREF(Py_None);
@@ -686,13 +686,13 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
 
             PyArrayObject * result_array{ numpy_outtype == -1 ? AllocateLikeNumpyArray(in_array, wanted_outtype) : out_object_1 };
 
-            if ( (result_array == nullptr) || (result_array == out_object_1) && (len != ArrayLength(result_array)) )
+            if ((result_array == nullptr) || (result_array == out_object_1) && (len != ArrayLength(result_array)))
             {
                 Py_INCREF(Py_None);
                 return Py_None;
             }
 
-            if ( result_array == out_object_1 )
+            if (result_array == out_object_1)
             {
                 Py_INCREF(result_array);
             }
@@ -704,9 +704,9 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
             int64_t stride_out{};
             int direction_out = GetStridesAndContig(result_array, num_dims_out, stride_out);
 
-            if ( direction_out == 0 )
+            if (direction_out == 0)
             {
-                switch ( direction )
+                switch (direction)
                 {
                 case 0:
                     internal::calculate_for_active_data_type(
@@ -731,7 +731,7 @@ namespace internal
     {
         chosen_traits_t retval{};
 
-        switch ( numpy_intype )
+        switch (numpy_intype)
         {
         case NPY_INT8: retval.second = int8_traits{}; break;
         case NPY_INT16: retval.second = int16_traits{}; break;
@@ -739,7 +739,7 @@ namespace internal
         case NPY_INT:
 #endif
         case NPY_INT32: retval.second = int32_traits{}; break;
-#if ( RT_COMPILER_CLANG || RT_COMPILER_GCC )
+#if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_LONGLONG:
 #endif
         case NPY_INT64: retval.second = int64_traits{}; break;
@@ -749,7 +749,7 @@ namespace internal
         case NPY_UINT:
 #endif
         case NPY_UINT32: retval.second = uint32_traits{}; break;
-#if ( RT_COMPILER_CLANG || RT_COMPILER_GCC )
+#if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_ULONGLONG:
 #endif
         case NPY_UINT64: retval.second = uint64_traits{}; break;
@@ -757,7 +757,7 @@ namespace internal
         case NPY_DOUBLE: retval.second = double_traits{}; break;
         }
 
-        switch ( function_num )
+        switch (function_num)
         {
         case MATH_OPERATION::ABS: retval.first = abs_op{}; break;
         case MATH_OPERATION::ISNAN: retval.first = isnan_op{}; break;

@@ -19,12 +19,12 @@ const uint64_t ECMA = 0xC96C5795D7870F42;
 static uint64_t * makeTable(uint64_t poly)
 {
     uint64_t * t = new uint64_t[256];
-    for ( int i = 0; i < 256; i++ )
+    for (int i = 0; i < 256; i++)
     {
         uint64_t crc = (uint64_t)i;
-        for ( int j = 0; j < 8; j++ )
+        for (int j = 0; j < 8; j++)
         {
-            if ( (crc & 1) == 1 )
+            if ((crc & 1) == 1)
                 crc = (crc >> 1) ^ poly;
             else
                 crc >>= 1;
@@ -40,7 +40,7 @@ static uint64_t * makeTable(uint64_t poly)
 static uint64_t ** createTables(int sizeInner, int sizeOuter)
 {
     uint64_t ** l = new uint64_t *[sizeOuter];
-    for ( int i = 0; i < sizeOuter; i++ )
+    for (int i = 0; i < sizeOuter; i++)
     {
         l[i] = new uint64_t[sizeInner];
     }
@@ -53,10 +53,10 @@ static const uint64_t ** makeSlicingBy8Table(uint64_t * t)
 {
     uint64_t ** helperTable = createTables(256, 8);
     helperTable[0] = t;
-    for ( int i = 0; i < 256; i++ )
+    for (int i = 0; i < 256; i++)
     {
         uint64_t crc = t[i];
-        for ( int j = 1; j < 8; j++ )
+        for (int j = 1; j < 8; j++)
         {
             crc = t[crc & 0xff] ^ (crc >> 8);
             helperTable[j][i] = crc;
@@ -75,18 +75,18 @@ static uint64_t CalculateCRC64(uint64_t crc, const uint64_t * tab, uint8_t * p, 
 {
     crc = ~crc;
     uint8_t * pEnd = p + Length;
-    while ( Length >= 64 )
+    while (Length >= 64)
     {
         const uint64_t ** helperTable;
-        if ( tab == slicing8TableECMA[0] )
+        if (tab == slicing8TableECMA[0])
             helperTable = slicing8TableECMA;
-        else if ( tab == slicing8TableISO[0] )
+        else if (tab == slicing8TableISO[0])
             helperTable = slicing8TableISO;
         else
             return 0; // error
 
         // Update using slicing by 8
-        while ( Length >= 8 )
+        while (Length >= 8)
         {
             // TODO: this can be vectorized
             crc ^= ((uint64_t)p[0]) | ((uint64_t)p[1]) << 8 | ((uint64_t)p[2]) << 16 | ((uint64_t)p[3]) << 24 |
@@ -101,7 +101,7 @@ static uint64_t CalculateCRC64(uint64_t crc, const uint64_t * tab, uint8_t * p, 
     }
 
     // For smaller sizes
-    while ( p < pEnd )
+    while (p < pEnd)
     {
         crc = tab[((uint8_t)crc) ^ *p] ^ (crc >> 8);
         p++;
@@ -116,12 +116,12 @@ PyObject * CalculateCRC(PyObject * self, PyObject * args)
 {
     PyArrayObject * inArr1 = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr1) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr1))
     {
         return NULL;
     }
 
-    if ( ! PyArray_ISCONTIGUOUS(inArr1) )
+    if (! PyArray_ISCONTIGUOUS(inArr1))
     {
         PyErr_Format(PyExc_ValueError, "CalculateCRC array is not contiguous");
         return NULL;

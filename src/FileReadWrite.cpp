@@ -73,11 +73,11 @@ bool CFileReadWrite::FlushCache(CHAR driveLetter)
     HANDLE tempHandle = CreateFile(szVolumeName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0,
                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING, 0);
 
-    if ( tempHandle != INVALID_HANDLE_VALUE )
+    if (tempHandle != INVALID_HANDLE_VALUE)
     {
         result = FlushFileBuffers(tempHandle);
 
-        if ( ! result )
+        if (! result)
         {
             LogErrorLE(GetLastError());
         }
@@ -98,7 +98,7 @@ bool CFileReadWrite::Open(const char * fileName, bool writeOption, bool overlapp
     //
     // if they try to open without closing
     //
-    if ( Handle != (void *)0 )
+    if (Handle != (void *)0)
     {
         CloseHandle(Handle);
         Handle = (void *)0;
@@ -113,9 +113,9 @@ bool CFileReadWrite::Open(const char * fileName, bool writeOption, bool overlapp
 
                         0);
 
-    if ( Handle != INVALID_HANDLE_VALUE )
+    if (Handle != INVALID_HANDLE_VALUE)
     {
-        if ( Handle != NULL )
+        if (Handle != NULL)
         {
             return true;
         }
@@ -140,9 +140,9 @@ bool CFileReadWrite::CancelIO()
 DWORD CFileReadWrite::ReadChunk(void * buffer, uint32_t count)
 {
     DWORD n = 0;
-    if ( ! Overlapped )
+    if (! Overlapped)
     {
-        if ( ! ReadFile(Handle, buffer, count, &n, NULL) )
+        if (! ReadFile(Handle, buffer, count, &n, NULL))
         {
             LogErrorX("!!Read failed %s", FileName);
             return 0;
@@ -167,12 +167,12 @@ DWORD CFileReadWrite::ReadChunk(void * buffer, uint32_t count)
             bReadDone = ReadFile(Handle, buffer, count, &n, pos);
 
             LastError = GetLastError();
-            if ( ! bReadDone && LastError == ERROR_IO_PENDING )
+            if (! bReadDone && LastError == ERROR_IO_PENDING)
             {
                 // Wait for IO to complete
                 bReadDone = GetOverlappedResult(Handle, pos, &n, true);
 
-                if ( ! bReadDone )
+                if (! bReadDone)
                 {
                     LastError = GetLastError();
                     LogErrorX("!!Read failed %s %d", FileName, LastError);
@@ -180,7 +180,7 @@ DWORD CFileReadWrite::ReadChunk(void * buffer, uint32_t count)
                 }
             }
 
-            if ( ! bReadDone )
+            if (! bReadDone)
             {
                 LastError = GetLastError();
                 LogErrorX("!!Read failed %s %d", FileName, LastError);
@@ -199,9 +199,9 @@ DWORD CFileReadWrite::ReadChunk(void * buffer, uint32_t count)
 DWORD CFileReadWrite::ReadChunkAsync(void * buffer, uint32_t count, DWORD * lastError, OVERLAPPED * pOverlapped)
 {
     DWORD n = 0;
-    if ( ! Overlapped )
+    if (! Overlapped)
     {
-        if ( ! ReadFile(Handle, buffer, count, &n, NULL) )
+        if (! ReadFile(Handle, buffer, count, &n, NULL))
         {
             LogErrorX("!!Read failed %s", FileName);
             return 0;
@@ -222,10 +222,10 @@ DWORD CFileReadWrite::ReadChunkAsync(void * buffer, uint32_t count, DWORD * last
         // Async version of READ
         bReadDone = ReadFile(Handle, buffer, count, &n, pOverlapped);
 
-        if ( ! bReadDone )
+        if (! bReadDone)
         {
             *lastError = GetLastError();
-            if ( *lastError == ERROR_IO_PENDING )
+            if (*lastError == ERROR_IO_PENDING)
             {
                 // OPERATION IS PENDING (this is expected)
                 // Go ahead and pretend we read all of it so that
@@ -252,24 +252,24 @@ DWORD CFileReadWrite::ReadChunkAsync(void * buffer, uint32_t count, DWORD * last
 bool CFileReadWrite::WaitForLastRead(DWORD * lastError, OVERLAPPED * pos)
 {
     // Check if last time operation was pending
-    if ( *lastError == ERROR_IO_PENDING )
+    if (*lastError == ERROR_IO_PENDING)
     {
         DWORD n = 0;
         // Wait for this to complete
         bool bReadDone = GetOverlappedResult(Handle, pos, &n, true);
 
-        if ( ! bReadDone )
+        if (! bReadDone)
         {
             *lastError = GetLastError();
-            if ( *lastError == ERROR_INVALID_PARAMETER )
+            if (*lastError == ERROR_INVALID_PARAMETER)
             {
                 LogError("!! Read Invalid Param %s %d", FileName, *lastError);
             }
-            else if ( *lastError == ERROR_HANDLE_EOF )
+            else if (*lastError == ERROR_HANDLE_EOF)
             {
                 LogError("!! Read EOF %s %d", FileName, *lastError);
             }
-            else if ( *lastError == 998 )
+            else if (*lastError == 998)
             {
                 LogError("!! Error 998, invalid access to memory location %s %d", FileName, *lastError);
             }
@@ -294,7 +294,7 @@ bool CFileReadWrite::WaitIoComplete(OVERLAPPED * pos)
     // Wait for IO to complete
     bWriteDone = GetOverlappedResult(Handle, pos, &n, true);
 
-    if ( ! bWriteDone )
+    if (! bWriteDone)
     {
         LastError = GetLastError();
         LogError("!!Write failed %s %d", FileName, LastError);
@@ -310,9 +310,9 @@ bool CFileReadWrite::WaitIoComplete(OVERLAPPED * pos)
 DWORD CFileReadWrite::WriteChunk(void * buffer, uint32_t count)
 {
     DWORD n = 0;
-    if ( ! Overlapped )
+    if (! Overlapped)
     {
-        if ( ! WriteFile(Handle, buffer, count, &n, 0) )
+        if (! WriteFile(Handle, buffer, count, &n, 0))
         {
             LogError("!!Write failed %s", FileName);
             return 0;
@@ -338,12 +338,12 @@ DWORD CFileReadWrite::WriteChunk(void * buffer, uint32_t count)
             bWriteDone = WriteFile(Handle, buffer, count, &n, pos);
 
             LastError = GetLastError();
-            if ( ! bWriteDone && LastError == ERROR_IO_PENDING )
+            if (! bWriteDone && LastError == ERROR_IO_PENDING)
             {
                 // Wait for IO to complete
                 bWriteDone = GetOverlappedResult(Handle, pos, &n, true);
 
-                if ( ! bWriteDone )
+                if (! bWriteDone)
                 {
                     LastError = GetLastError();
                     LogError("!!Write failed %s %d", FileName, LastError);
@@ -351,7 +351,7 @@ DWORD CFileReadWrite::WriteChunk(void * buffer, uint32_t count)
                 }
             }
 
-            if ( ! bWriteDone )
+            if (! bWriteDone)
             {
                 LastError = GetLastError();
                 LogError("!!Write failed %s %d", FileName, LastError);
@@ -373,9 +373,9 @@ DWORD CFileReadWrite::WriteChunk(void * buffer, uint32_t count)
 DWORD CFileReadWrite::WriteChunkAsync(void * buffer, uint32_t count, DWORD * lastError, OVERLAPPED * pOverlapped, bool bWaitOnIO)
 {
     DWORD n = 0;
-    if ( ! Overlapped )
+    if (! Overlapped)
     {
-        if ( ! WriteFile(Handle, buffer, count, &n, NULL) )
+        if (! WriteFile(Handle, buffer, count, &n, NULL))
         {
             LogError("!!Write failed %s", FileName);
             return 0;
@@ -397,13 +397,13 @@ DWORD CFileReadWrite::WriteChunkAsync(void * buffer, uint32_t count, DWORD * las
         // Async version of WRITE
         bWriteDone = WriteFile(Handle, buffer, count, &n, pOverlapped);
 
-        if ( ! bWriteDone )
+        if (! bWriteDone)
         {
             *lastError = GetLastError();
-            if ( *lastError == ERROR_IO_PENDING )
+            if (*lastError == ERROR_IO_PENDING)
             {
                 // Wait for IO to complete
-                if ( bWaitOnIO )
+                if (bWaitOnIO)
                 {
                     GetOverlappedResult(Handle, pOverlapped, &n, true);
                 }
@@ -443,13 +443,13 @@ int64_t CFileReadWrite::SeekCurrentEx(int64_t pos)
 
     bool bResult = SetFilePointerEx(Handle, temp, (PLARGE_INTEGER)&result, SEEK_CUR);
 
-    if ( ! bResult )
+    if (! bResult)
     {
         LogError("!!! Seek current to %llu failed!", pos);
     }
 
     // Have to keep track of position for overlapped IO
-    if ( Overlapped )
+    if (Overlapped)
     {
         BufferPos += pos;
 
@@ -473,13 +473,13 @@ int64_t CFileReadWrite::SeekBeginEx(int64_t pos)
 
     bool bResult = SetFilePointerEx(Handle, temp, (PLARGE_INTEGER)&result, SEEK_SET);
 
-    if ( ! bResult )
+    if (! bResult)
     {
         LogError("!!! Seek begin to %llu failed!", pos);
     }
 
     // Have to keep track of position for overlapped IO
-    if ( Overlapped )
+    if (Overlapped)
     {
         BufferPos = pos;
         return BufferPos;
@@ -492,7 +492,7 @@ int64_t CFileReadWrite::SeekBeginEx(int64_t pos)
 //--------------------------------------------------------------------
 bool CFileReadWrite::Close()
 {
-    if ( Handle != NULL )
+    if (Handle != NULL)
     {
         bool Result = CloseHandle(Handle);
         Handle = NULL;
@@ -508,7 +508,7 @@ extern "C"
     {
         CFileReadWrite * pReadWrite = new CFileReadWrite();
 
-        if ( pReadWrite )
+        if (pReadWrite)
         {
             pReadWrite->Open(fullFileName, writeOption, overlapped, directIO);
         }

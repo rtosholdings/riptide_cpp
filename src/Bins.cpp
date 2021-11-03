@@ -27,7 +27,7 @@ void ReIndexData(void * pDataOut, void * pDataIn, void * pIndex1, int64_t size, 
     U * pIn = (U *)pDataIn;
     T * pIndex = (T *)pIndex1;
 
-    for ( int64_t i = 0; i < size; i++ )
+    for (int64_t i = 0; i < size; i++)
     {
         T index = pIndex[i];
         pOut[i] = pIn[index];
@@ -44,11 +44,11 @@ void ReIndexData(void * pDataOut, void * pDataIn, void * pIndex1, int64_t size, 
     char * pIn = (char *)pDataIn;
     T * pIndex = (T *)pIndex1;
 
-    for ( int64_t i = 0; i < size; i++ )
+    for (int64_t i = 0; i < size; i++)
     {
         T index = pIndex[i];
 
-        for ( int64_t j = 0; j < itemSize; j++ )
+        for (int64_t j = 0; j < itemSize; j++)
         {
             pOut[i * itemSize + j] = pIn[index * itemSize + j];
         }
@@ -60,7 +60,7 @@ void ReIndexData(void * pDataOut, void * pDataIn, void * pIndex1, int64_t size, 
 template <typename T>
 REINDEXCALLBACK ReIndexDataStep1(int64_t itemSize)
 {
-    switch ( itemSize )
+    switch (itemSize)
     {
     case 1: return ReIndexData<T, int8_t>;
     case 2: return ReIndexData<T, int16_t>;
@@ -77,7 +77,7 @@ REINDEXCALLBACK ReIndexDataStep1(int64_t itemSize)
 REINDEXCALLBACK ReIndexer(int64_t itemSize, int dtypeIndex)
 {
     // Get the dtype for the INDEXER (should be int32_t or INT64)
-    switch ( dtypeIndex )
+    switch (dtypeIndex)
     {
     CASE_NPY_INT32:
     CASE_NPY_UINT32:
@@ -126,7 +126,7 @@ static bool ReIndexThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, int
     int64_t workBlock;
 
     // As long as there is work to do
-    while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
         int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->itemSize;
         int64_t indexAdj = pstWorkerItem->BlockSize * workBlock * OldCallback->indexTypeSize;
@@ -154,14 +154,14 @@ PyObject * ReIndex(PyObject * self, PyObject * args)
 {
     CMultiListPrepare mlp(args);
 
-    if ( mlp.aInfo && mlp.tupleSize > 1 )
+    if (mlp.aInfo && mlp.tupleSize > 1)
     {
         // Bug bug -- arraysize should come from first arg and must <= second arg
         int64_t arraySize1 = mlp.totalRows;
 
         PyArrayObject * result = AllocateLikeResize(mlp.aInfo[1].pObject, arraySize1);
 
-        if ( result )
+        if (result)
         {
             void * pDataOut = PyArray_BYTES(result);
             void * pDataIn = PyArray_BYTES(mlp.aInfo[1].pObject);
@@ -170,12 +170,12 @@ PyObject * ReIndex(PyObject * self, PyObject * args)
             // Get the util function to reindex the data
             REINDEXCALLBACK reIndexCallback = ReIndexer(mlp.aInfo[1].ItemSize, mlp.aInfo[0].NumpyDType);
 
-            if ( reIndexCallback != NULL )
+            if (reIndexCallback != NULL)
             {
                 // Check if we can use worker threads
                 stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arraySize1);
 
-                if ( pWorkItem == NULL )
+                if (pWorkItem == NULL)
                 {
                     // Threading not allowed for this work item, call it directly from main thread
                     reIndexCallback(pDataOut, pDataIn, pIndex, arraySize1, mlp.aInfo[1].ItemSize);
@@ -220,7 +220,7 @@ void ReMapIndex(void * pInput1, void * pOutput1, int64_t length, int32_t * pMapp
     T * pInput = (T *)pInput1;
     U * pOutput = (U *)pOutput1;
 
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         pOutput[i] = (U)(pMapper[pInput[i]]);
     }
@@ -231,7 +231,7 @@ void ReMapIndex(void * pInput1, void * pOutput1, int64_t length, int32_t * pMapp
 template <typename T>
 REMAP_INDEX ReMapIndexStep1(int numpyOutputType)
 {
-    switch ( numpyOutputType )
+    switch (numpyOutputType)
     {
     case NPY_INT8: return ReMapIndex<T, int8_t>; break;
     case NPY_INT16:
@@ -267,10 +267,10 @@ PyObject * ReMapIndex(PyObject * self, PyObject * args)
     PyArrayObject * outArr1 = NULL;
     PyArrayObject * remapArr1 = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!O", &PyArray_Type, &inArr1, &PyArray_Type, &outArr1, &PyArray_Type, &remapArr1) )
+    if (! PyArg_ParseTuple(args, "O!O!O", &PyArray_Type, &inArr1, &PyArray_Type, &outArr1, &PyArray_Type, &remapArr1))
         return NULL;
 
-    if ( PyArray_TYPE(remapArr1) != NPY_INT32 )
+    if (PyArray_TYPE(remapArr1) != NPY_INT32)
     {
         PyErr_Format(PyExc_ValueError, "third arg array must be NPY_int32_t -- not %d", PyArray_TYPE(remapArr1));
     }
@@ -281,7 +281,7 @@ PyObject * ReMapIndex(PyObject * self, PyObject * args)
 
         REMAP_INDEX func = NULL;
 
-        switch ( numpyInType )
+        switch (numpyInType)
         {
         case NPY_INT8: func = ReMapIndexStep1<int8_t>(numpyOutType); break;
         case NPY_INT16:
@@ -297,7 +297,7 @@ PyObject * ReMapIndex(PyObject * self, PyObject * args)
         default: printf("ReMapIndexStep1 does not understand type %d\n", numpyOutType); break;
         }
 
-        if ( func )
+        if (func)
         {
             void * pInput = PyArray_BYTES(inArr1);
             void * pOutput = PyArray_BYTES(outArr1);
@@ -333,18 +333,18 @@ PyObject * NanInfCount(void * pDataIn1, void * pIndex1, int64_t arraySize1, int 
     int64_t posInfCount = 0;
     int64_t negInfCount = 0;
 
-    if ( numpyInType == NPY_FLOAT || numpyInType == NPY_DOUBLE || numpyInType == NPY_LONGDOUBLE )
+    if (numpyInType == NPY_FLOAT || numpyInType == NPY_DOUBLE || numpyInType == NPY_LONGDOUBLE)
     {
         int64_t i = arraySize1 - 1;
 
         // Scan from back
-        while ( (i >= 0) && pData[pIndex[i]] != pData[pIndex[i]] )
+        while ((i >= 0) && pData[pIndex[i]] != pData[pIndex[i]])
         {
             i--;
             nancount++;
         }
 
-        while ( (i >= 0) && pData[pIndex[i]] == INFINITY )
+        while ((i >= 0) && pData[pIndex[i]] == INFINITY)
         {
             i--;
             posInfCount++;
@@ -352,7 +352,7 @@ PyObject * NanInfCount(void * pDataIn1, void * pIndex1, int64_t arraySize1, int 
 
         int j = 0;
 
-        while ( (j <= i) && pData[pIndex[j]] == -INFINITY )
+        while ((j <= i) && pData[pIndex[j]] == -INFINITY)
         {
             j++;
             negInfCount++;
@@ -360,17 +360,17 @@ PyObject * NanInfCount(void * pDataIn1, void * pIndex1, int64_t arraySize1, int 
     }
 
     // bool cannot have invalid
-    else if ( numpyInType > 0 )
+    else if (numpyInType > 0)
     {
         // check for integer which can have invalid in front
-        if ( numpyInType & 1 )
+        if (numpyInType & 1)
         {
             // SCAN FORWARD
             // printf("***scan forward\n");
             int64_t i = arraySize1 - 1;
             int j = 0;
 
-            while ( (j <= i) && pData[pIndex[j]] == defaultNan )
+            while ((j <= i) && pData[pIndex[j]] == defaultNan)
             {
                 j++;
                 negInfCount++;
@@ -382,7 +382,7 @@ PyObject * NanInfCount(void * pDataIn1, void * pIndex1, int64_t arraySize1, int 
             int64_t i = arraySize1 - 1;
 
             // check for default value?
-            while ( (i >= 0) && pData[pIndex[i]] == defaultNan )
+            while ((i >= 0) && pData[pIndex[i]] == defaultNan)
             {
                 i--;
                 posInfCount++;
@@ -401,7 +401,7 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
 {
     NAN_INF_COUNT result = NULL;
 
-    switch ( numpyInType )
+    switch (numpyInType)
     {
     case NPY_BOOL:
     case NPY_INT8: result = NanInfCount<int8_t, U>; break;
@@ -443,9 +443,9 @@ PyObject * NanInfCountFromSort(PyObject * self, PyObject * args)
 {
     CMultiListPrepare mlp(args);
 
-    if ( mlp.aInfo && mlp.tupleSize == 2 )
+    if (mlp.aInfo && mlp.tupleSize == 2)
     {
-        if ( mlp.aInfo[0].ArrayLength == mlp.aInfo[1].ArrayLength )
+        if (mlp.aInfo[0].ArrayLength == mlp.aInfo[1].ArrayLength)
         {
             void * pDataIn1 = mlp.aInfo[0].pData;
             void * pIndex1 = mlp.aInfo[1].pData;
@@ -455,7 +455,7 @@ PyObject * NanInfCountFromSort(PyObject * self, PyObject * args)
 
             NAN_INF_COUNT func = nullptr;
 
-            switch ( numpyIndexType )
+            switch (numpyIndexType)
             {
             CASE_NPY_INT32:
                 func = GetNanInfCount<int32_t>(numpyInType);
@@ -466,7 +466,7 @@ PyObject * NanInfCountFromSort(PyObject * self, PyObject * args)
                 break;
             }
 
-            if ( func != nullptr )
+            if (func != nullptr)
             {
                 return func(pDataIn1, pIndex1, arraySize1, numpyInType);
             }
@@ -512,7 +512,7 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     LOGGING("Array length %lld   bin length %lld   nancount %lld  neginfcount%lld\n", length, maxbin, nancount, neginfcount);
 
     // FIRST MARK all the bad bins in the beginning
-    for ( i = 0; i < neginfcount; i++ )
+    for (i = 0; i < neginfcount; i++)
     {
         U index = pIndex[i];
         LOGGING("setting index at %lld as invalid due to neginf\n", (long long)index);
@@ -520,7 +520,7 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     }
 
     // Now MARK all the bad bins at the end
-    for ( i = 0; i < (nancount + infcount); i++ )
+    for (i = 0; i < (nancount + infcount); i++)
     {
         U index = pIndex[length - i - 1];
         LOGGING("setting index at %lld as invalid due to naninf\n", (long long)index);
@@ -537,10 +537,10 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     // Start looking at beginning of real data
     // anything less, is bin 0, or the qcut invalid
     i = neginfcount;
-    while ( i < newlength )
+    while (i < newlength)
     {
         U index = pIndex[i];
-        if ( (double)pData[index] < compare )
+        if ((double)pData[index] < compare)
         {
             pOut[index] = 1;
         }
@@ -552,12 +552,12 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     }
 
     // Edge case test
-    if ( i < newlength )
+    if (i < newlength)
     {
         U index = pIndex[i];
-        if ( (double)pData[index] == compare )
+        if ((double)pData[index] == compare)
         {
-            if ( 1 < maxbin )
+            if (1 < maxbin)
             {
                 bin = 1;
                 compare = pBin1[bin];
@@ -566,24 +566,24 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     }
 
     // Now assign a valid bin to the good data in the middle
-    while ( i < newlength )
+    while (i < newlength)
     {
         U index = pIndex[i];
-        if ( (double)pData[index] <= compare )
+        if ((double)pData[index] <= compare)
         {
             pOut[index] = bin + 1;
         }
         else
         {
             // find next bin
-            while ( bin < maxbin && (double)pData[index] > compare )
+            while (bin < maxbin && (double)pData[index] > compare)
             {
                 // move to next bin
                 ++bin;
                 compare = pBin1[bin];
                 LOGGING("comparing to %lld %lld  %lf  %lf\n", i, (int64_t)bin, (double)pData[index], compare);
             }
-            if ( bin >= maxbin )
+            if (bin >= maxbin)
             {
                 break;
             }
@@ -593,7 +593,7 @@ void MakeBinsSorted(void * pDataIn1, void * pSortIndex1, void * pOut1, int64_t l
     }
 
     // Anything on end that is out of range
-    while ( i < newlength )
+    while (i < newlength)
     {
         U index = pIndex[i];
         pOut[index] = 1;
@@ -610,7 +610,7 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
 {
     MAKE_BINS_SORTED result = NULL;
 
-    switch ( numpyInType )
+    switch (numpyInType)
     {
     case NPY_BOOL:
     case NPY_INT8: result = MakeBinsSorted<int8_t, U, V>; break;
@@ -660,20 +660,20 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
 
     int binMode = 0;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &binArr1, &PyArray_Type, &indexArr1,
-                            &PyTuple_Type, &counts, &binMode) )
+    if (! PyArg_ParseTuple(args, "O!O!O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &binArr1, &PyArray_Type, &indexArr1,
+                           &PyTuple_Type, &counts, &binMode))
         return NULL;
 
     int64_t nancount = 0;
     int64_t infcount = 0;
     int64_t neginfcount = 0;
 
-    if ( ! PyArg_ParseTuple((PyObject *)counts, "LLL", &nancount, &infcount, &neginfcount) )
+    if (! PyArg_ParseTuple((PyObject *)counts, "LLL", &nancount, &infcount, &neginfcount))
         return NULL;
 
     LOGGING("counts %lld %lld %lld\n", nancount, infcount, neginfcount);
 
-    if ( PyArray_TYPE(binArr1) != NPY_DOUBLE )
+    if (PyArray_TYPE(binArr1) != NPY_DOUBLE)
     {
         PyErr_Format(PyExc_ValueError, "bin array must be float64 -- not %d", PyArray_TYPE(binArr1));
     }
@@ -685,13 +685,13 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
 
         // Choose INT8,INT16,int32_t for bin mode
         int binmode = 0;
-        if ( binSize > 100 )
+        if (binSize > 100)
         {
             binmode = 1;
-            if ( binSize > 30000 )
+            if (binSize > 30000)
             {
                 binmode = 2;
-                if ( binSize > 2000000000LL )
+                if (binSize > 2000000000LL)
                 {
                     binmode = 3;
                 }
@@ -699,10 +699,10 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
         }
         MAKE_BINS_SORTED func = NULL;
 
-        switch ( numpyIndexType )
+        switch (numpyIndexType)
         {
         CASE_NPY_INT32:
-            switch ( binmode )
+            switch (binmode)
             {
             case 0: func = GetMakeBinsSorted<int32_t, int8_t>(numpyInType); break;
             case 1: func = GetMakeBinsSorted<int32_t, int16_t>(numpyInType); break;
@@ -713,7 +713,7 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
 
         CASE_NPY_INT64:
 
-            switch ( binmode )
+            switch (binmode)
             {
             case 0: func = GetMakeBinsSorted<int64_t, int8_t>(numpyInType); break;
             case 1: func = GetMakeBinsSorted<int64_t, int16_t>(numpyInType); break;
@@ -723,10 +723,10 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
             break;
         }
 
-        if ( func != NULL )
+        if (func != NULL)
         {
             PyArrayObject * result = NULL;
-            switch ( binmode )
+            switch (binmode)
             {
             case 0: result = AllocateLikeNumpyArray(inArr1, NPY_INT8); break;
             case 1: result = AllocateLikeNumpyArray(inArr1, NPY_INT16); break;
@@ -734,7 +734,7 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
             case 3: result = AllocateLikeNumpyArray(inArr1, NPY_INT64); break;
             }
 
-            if ( result )
+            if (result)
             {
                 void * pDataOut = PyArray_BYTES(result);
                 void * pDataIn1 = PyArray_BYTES(inArr1);
@@ -778,11 +778,11 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
     LOGGING("SearchSortedLeft Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const T value = pData[i];
 
-        if ( value >= veryfirst && value < verylast )
+        if (value >= veryfirst && value < verylast)
         {
             // bin search
             V middle;
@@ -794,16 +794,16 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
             do
             {
                 middle = (first + last) >> 1; // this finds the mid point
-                if ( pBin1[middle] > val )    // if it's in the lower half
+                if (pBin1[middle] > val)      // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( pBin1[middle] < val )
+                else if (pBin1[middle] < val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -812,12 +812,12 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( val < pBin1[first] )
+            if (val < pBin1[first])
             {
                 pOut[i] = first;
             }
@@ -830,7 +830,7 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
         else
         {
             // First bin for invalid values
-            if ( value < veryfirst )
+            if (value < veryfirst)
             {
                 pOut[i] = 0;
             }
@@ -870,11 +870,11 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
     LOGGING("SearchSortedLeft Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const T value = pData[i];
 
-        if ( value > veryfirst && value <= verylast )
+        if (value > veryfirst && value <= verylast)
         {
             // bin search
             V middle;
@@ -886,16 +886,16 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
             do
             {
                 middle = (first + last) >> 1; // this finds the mid point
-                if ( pBin1[middle] > val )    // if it's in the lower half
+                if (pBin1[middle] > val)      // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( pBin1[middle] < val )
+                else if (pBin1[middle] < val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -904,12 +904,12 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( val <= pBin1[first] )
+            if (val <= pBin1[first])
             {
                 pOut[i] = first;
             }
@@ -922,7 +922,7 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
         else
         {
             // First bin for invalid values
-            if ( value <= veryfirst )
+            if (value <= veryfirst)
             {
                 pOut[i] = 0;
             }
@@ -940,11 +940,11 @@ NPY_INLINE static int STRING_LTEQ(const char * s1, const char * s2, int64_t len1
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
     int64_t i;
-    if ( len1 == len2 )
+    if (len1 == len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
@@ -952,30 +952,30 @@ NPY_INLINE static int STRING_LTEQ(const char * s1, const char * s2, int64_t len1
         // match
         return 1;
     }
-    else if ( len1 < len2 )
+    else if (len1 < len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
         }
-        if ( c2[i] == 0 )
+        if (c2[i] == 0)
             return 1; // equal
         // c2 is longer and therefore c1 < c2
         return 1;
     }
     else
     {
-        for ( i = 0; i < len2; ++i )
+        for (i = 0; i < len2; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
         }
-        if ( c1[i] == 0 )
+        if (c1[i] == 0)
             return 1; // equal
         // c1 is longer and therefore c1 > c2
         return 0;
@@ -987,11 +987,11 @@ NPY_INLINE static int STRING_LT(const char * s1, const char * s2, int64_t len1, 
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
     int64_t i;
-    if ( len1 == len2 )
+    if (len1 == len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
@@ -999,29 +999,29 @@ NPY_INLINE static int STRING_LT(const char * s1, const char * s2, int64_t len1, 
         // match
         return 0;
     }
-    else if ( len1 < len2 )
+    else if (len1 < len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
         }
-        if ( c2[i] == 0 )
+        if (c2[i] == 0)
             return 0; // equal
         return 1;     // c2 is longer and therefore c1 < c2
     }
     else
     {
-        for ( i = 0; i < len2; ++i )
+        for (i = 0; i < len2; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] < c2[i];
             }
         }
-        if ( c1[i] == 0 )
+        if (c1[i] == 0)
             return 0; // equal
         return 0;     // c1 is longer and therefore c1 > c2
     }
@@ -1032,11 +1032,11 @@ NPY_INLINE static int STRING_GTEQ(const char * s1, const char * s2, int64_t len1
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
     int64_t i;
-    if ( len1 == len2 )
+    if (len1 == len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
@@ -1044,29 +1044,29 @@ NPY_INLINE static int STRING_GTEQ(const char * s1, const char * s2, int64_t len1
         // match
         return 1;
     }
-    else if ( len1 < len2 )
+    else if (len1 < len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
         }
-        if ( c2[i] == 0 )
+        if (c2[i] == 0)
             return 1; // equal
         return 0;     // c2 is longer and therefore c1 < c2
     }
     else
     {
-        for ( i = 0; i < len2; ++i )
+        for (i = 0; i < len2; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
         }
-        if ( c1[i] == 0 )
+        if (c1[i] == 0)
             return 1; // equal
         return 1;     // c1 is longer and therefore c1 > c2
     }
@@ -1077,11 +1077,11 @@ NPY_INLINE static int STRING_GT(const char * s1, const char * s2, int64_t len1, 
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
     int64_t i;
-    if ( len1 == len2 )
+    if (len1 == len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
@@ -1089,29 +1089,29 @@ NPY_INLINE static int STRING_GT(const char * s1, const char * s2, int64_t len1, 
         // match
         return 0;
     }
-    else if ( len1 < len2 )
+    else if (len1 < len2)
     {
-        for ( i = 0; i < len1; ++i )
+        for (i = 0; i < len1; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
         }
-        if ( c2[i] == 0 )
+        if (c2[i] == 0)
             return 0; // equal
         return 0;     // c2 is longer and therefore c1 < c2
     }
     else
     {
-        for ( i = 0; i < len2; ++i )
+        for (i = 0; i < len2; ++i)
         {
-            if ( c1[i] != c2[i] )
+            if (c1[i] != c2[i])
             {
                 return c1[i] > c2[i];
             }
         }
-        if ( c1[i] == 0 )
+        if (c1[i] == 0)
             return 0; // equal
         return 1;     // c1 is longer and therefore c1 > c2
     }
@@ -1144,11 +1144,11 @@ void SearchSortedLeftString(void * pDataIn1, void * pOut1, const int64_t start, 
     LOGGING("SearchSortedLeftString Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const char * value = &pData[i * itemSizeValue];
 
-        if ( STRING_GT(value, veryfirst, itemSizeValue, itemSizeBin) && STRING_LTEQ(value, verylast, itemSizeValue, itemSizeBin) )
+        if (STRING_GT(value, veryfirst, itemSizeValue, itemSizeBin) && STRING_LTEQ(value, verylast, itemSizeValue, itemSizeBin))
         {
             // bin search
             OUT_TYPE middle;
@@ -1161,16 +1161,16 @@ void SearchSortedLeftString(void * pDataIn1, void * pOut1, const int64_t start, 
                 middle = (first + last) >> 1; // this finds the mid point
                 const char * pBinMiddle = &pBin1[middle * itemSizeBin];
 
-                if ( STRING_GT(pBinMiddle, value, itemSizeBin, itemSizeValue) ) // if it's in the lower half
+                if (STRING_GT(pBinMiddle, value, itemSizeBin, itemSizeValue)) // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( STRING_LT(pBinMiddle, value, itemSizeBin, itemSizeValue) )
+                else if (STRING_LT(pBinMiddle, value, itemSizeBin, itemSizeValue))
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -1179,12 +1179,12 @@ void SearchSortedLeftString(void * pDataIn1, void * pOut1, const int64_t start, 
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( STRING_LTEQ(value, &pBin1[first * itemSizeBin], itemSizeValue, itemSizeBin) )
+            if (STRING_LTEQ(value, &pBin1[first * itemSizeBin], itemSizeValue, itemSizeBin))
             {
                 pOut[i] = first;
             }
@@ -1197,7 +1197,7 @@ void SearchSortedLeftString(void * pDataIn1, void * pOut1, const int64_t start, 
         else
         {
             // First bin for invalid values
-            if ( STRING_LTEQ(value, veryfirst, itemSizeValue, itemSizeBin) )
+            if (STRING_LTEQ(value, veryfirst, itemSizeValue, itemSizeBin))
             {
                 pOut[i] = 0;
             }
@@ -1238,12 +1238,12 @@ void MakeBinsBSearchString(void * pDataIn1, void * pOut1, const int64_t start, c
             itemSizeBin, itemSizeValue);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const char * value = &pData[i * itemSizeValue];
 
-        if ( *value != 0 && STRING_GTEQ(value, veryfirst, itemSizeValue, itemSizeBin) &&
-             STRING_LTEQ(value, verylast, itemSizeValue, itemSizeBin) )
+        if (*value != 0 && STRING_GTEQ(value, veryfirst, itemSizeValue, itemSizeBin) &&
+            STRING_LTEQ(value, verylast, itemSizeValue, itemSizeBin))
         {
             // bin search
             OUT_TYPE middle;
@@ -1256,16 +1256,16 @@ void MakeBinsBSearchString(void * pDataIn1, void * pOut1, const int64_t start, c
                 const char * pBinMiddle = &pBin1[middle * itemSizeBin];
 
                 // OPTIMIZATION -- in one comparision can get > 0 ==0 <0
-                if ( STRING_GT(pBinMiddle, value, itemSizeBin, itemSizeValue) ) // if it's in the lower half
+                if (STRING_GT(pBinMiddle, value, itemSizeBin, itemSizeValue)) // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( STRING_LT(pBinMiddle, value, itemSizeBin, itemSizeValue) )
+                else if (STRING_LT(pBinMiddle, value, itemSizeBin, itemSizeValue))
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -1274,14 +1274,14 @@ void MakeBinsBSearchString(void * pDataIn1, void * pOut1, const int64_t start, c
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( first > 0 )
+            if (first > 0)
             {
-                if ( STRING_LTEQ(value, &pBin1[first * itemSizeBin], itemSizeValue, itemSizeBin) )
+                if (STRING_LTEQ(value, &pBin1[first * itemSizeBin], itemSizeValue, itemSizeBin))
                 {
                     pOut[i] = first;
                 }
@@ -1332,10 +1332,10 @@ void MakeBinsBSearchFloat(void * pDataIn1, void * pOut1, const int64_t start, co
     LOGGING("MakeBinsBSearchFloat Array length %lld   bin length %lld    bintype %d\n", length, maxbin1, numpyInType);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const T value = pData[i];
-        if ( std::isfinite(value) && value >= veryfirst && value <= verylast )
+        if (std::isfinite(value) && value >= veryfirst && value <= verylast)
         {
             // bin search
             OUT_TYPE middle;
@@ -1346,16 +1346,16 @@ void MakeBinsBSearchFloat(void * pDataIn1, void * pOut1, const int64_t start, co
             do
             {
                 middle = (first + last) >> 1; // this finds the mid point
-                if ( pBin1[middle] > val )    // if it's in the lower half
+                if (pBin1[middle] > val)      // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( pBin1[middle] < val )
+                else if (pBin1[middle] < val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -1364,14 +1364,14 @@ void MakeBinsBSearchFloat(void * pDataIn1, void * pOut1, const int64_t start, co
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( first > 0 )
+            if (first > 0)
             {
-                if ( val <= pBin1[first] )
+                if (val <= pBin1[first])
                 {
                     pOut[i] = first;
                 }
@@ -1425,11 +1425,11 @@ void MakeBinsBSearch(void * pDataIn1, void * pOut1, const int64_t start, const i
     LOGGING("MakeBinsBSearch Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
     // Now assign a valid bin to the good data in the middle
-    for ( int64_t i = 0; i < length; i++ )
+    for (int64_t i = 0; i < length; i++)
     {
         const T value = pData[i];
 
-        if ( value != defaultNan && value >= veryfirst && value <= verylast )
+        if (value != defaultNan && value >= veryfirst && value <= verylast)
         {
             // bin search
             OUT_TYPE middle;
@@ -1441,16 +1441,16 @@ void MakeBinsBSearch(void * pDataIn1, void * pOut1, const int64_t start, const i
             do
             {
                 middle = (first + last) >> 1; // this finds the mid point
-                if ( pBin1[middle] > val )    // if it's in the lower half
+                if (pBin1[middle] > val)      // if it's in the lower half
                 {
                     last = middle - 1;
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
-                else if ( pBin1[middle] < val )
+                else if (pBin1[middle] < val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if ( first >= last )
+                    if (first >= last)
                         break;
                 }
                 else
@@ -1459,14 +1459,14 @@ void MakeBinsBSearch(void * pDataIn1, void * pOut1, const int64_t start, const i
                     break;
                 }
             }
-            while ( 1 );
+            while (1);
 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last, (double)value, (double)pBin1[first]);
             // if (first > last) first = last;
 
-            if ( first > 0 )
+            if (first > 0)
             {
-                if ( val <= pBin1[first] )
+                if (val <= pBin1[first])
                 {
                     pOut[i] = first;
                 }
@@ -1498,9 +1498,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 {
     MAKE_BINS_BSEARCH result = NULL;
 
-    if ( searchMode == 0 )
+    if (searchMode == 0)
     {
-        switch ( numpyInType )
+        switch (numpyInType)
         {
         case NPY_BOOL:
         case NPY_INT8: result = MakeBinsBSearch<int8_t, OUT_TYPE, BINTYPE>; break;
@@ -1533,9 +1533,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
         }
         return result;
     }
-    if ( searchMode == 1 )
+    if (searchMode == 1)
     {
-        switch ( numpyInType )
+        switch (numpyInType)
         {
         case NPY_BOOL:
         case NPY_INT8: result = SearchSortedLeft<int8_t, OUT_TYPE, BINTYPE>; break;
@@ -1568,9 +1568,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
         }
         return result;
     }
-    if ( searchMode == 2 )
+    if (searchMode == 2)
     {
-        switch ( numpyInType )
+        switch (numpyInType)
         {
         case NPY_BOOL:
         case NPY_INT8: result = SearchSortedRight<int8_t, OUT_TYPE, BINTYPE>; break;
@@ -1611,7 +1611,7 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearch(int numpyInType, int binType, int searchMod
 {
     MAKE_BINS_BSEARCH result = NULL;
 
-    switch ( binType )
+    switch (binType)
     {
     case NPY_INT8: result = GetMakeBinsBSearchPart2<OUT_TYPE, int8_t>(numpyInType, searchMode); break;
     case NPY_INT16:
@@ -1657,7 +1657,7 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
 
     int searchMode = 0;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &binArr1, &searchMode) )
+    if (! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &binArr1, &searchMode))
         return NULL;
 
     int binType = PyArray_TYPE(binArr1);
@@ -1667,13 +1667,13 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
 
     // Choose INT8,INT16,int32_t for bin mode
     int binmode = 0;
-    if ( binSize > 100 )
+    if (binSize > 100)
     {
         binmode = 1;
-        if ( binSize > 30000 )
+        if (binSize > 30000)
         {
             binmode = 2;
-            if ( binSize > 2000000000 )
+            if (binSize > 2000000000)
             {
                 binmode = 3;
             }
@@ -1682,10 +1682,10 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
 
     bool isString = false;
 
-    if ( numpyInType == binType )
+    if (numpyInType == binType)
     {
         // string or unicode comparison
-        if ( numpyInType == NPY_STRING || numpyInType == NPY_UNICODE )
+        if (numpyInType == NPY_STRING || numpyInType == NPY_UNICODE)
         {
             isString = true;
         }
@@ -1693,7 +1693,7 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
 
     MAKE_BINS_BSEARCH func = NULL;
 
-    switch ( binmode )
+    switch (binmode)
     {
     case 0: func = GetMakeBinsBSearch<int8_t>(numpyInType, binType, searchMode); break;
     case 1: func = GetMakeBinsBSearch<int16_t>(numpyInType, binType, searchMode); break;
@@ -1701,10 +1701,10 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
     case 3: func = GetMakeBinsBSearch<int64_t>(numpyInType, binType, searchMode); break;
     }
 
-    if ( func != NULL || isString )
+    if (func != NULL || isString)
     {
         PyArrayObject * result = NULL;
-        switch ( binmode )
+        switch (binmode)
         {
         case 0: result = AllocateLikeNumpyArray(inArr1, NPY_INT8); break;
         case 1: result = AllocateLikeNumpyArray(inArr1, NPY_INT16); break;
@@ -1712,9 +1712,9 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
         case 3: result = AllocateLikeNumpyArray(inArr1, NPY_INT64); break;
         }
 
-        if ( result )
+        if (result)
         {
-            if ( isString )
+            if (isString)
             {
                 // handles string or unicode
                 struct BSearchCallbackStruct
@@ -1736,9 +1736,9 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
                     BSearchCallbackStruct * callbackArg = (BSearchCallbackStruct *)callbackArgT;
 
                     // printf("[%d] Bsearch string %lld %lld\n", core, start, length);
-                    if ( callbackArg->numpyInType == NPY_STRING )
+                    if (callbackArg->numpyInType == NPY_STRING)
                     {
-                        switch ( callbackArg->binmode )
+                        switch (callbackArg->binmode)
                         {
                         case 0:
                             MakeBinsBSearchString<int8_t>(callbackArg->pDataIn1, callbackArg->pDataOut, start, length,

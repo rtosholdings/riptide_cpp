@@ -244,7 +244,7 @@ struct stMATH_WORKER_ITEM
         // printf("working on block %llu\n", wBlock);
 
         // Make sure something to work on
-        if ( wBlock < BlockLast )
+        if (wBlock < BlockLast)
         {
             return wBlock;
         }
@@ -263,16 +263,16 @@ struct stMATH_WORKER_ITEM
         // printf("working on block %llu\n", wBlock);
 
         // Make sure something to work on
-        if ( wBlock < BlockLast )
+        if (wBlock < BlockLast)
         {
             int64_t lenWorkBlock;
             lenWorkBlock = BlockSize;
 
             // Check if this is the last workblock
-            if ( (wBlock + 1) == BlockLast )
+            if ((wBlock + 1) == BlockLast)
             {
                 // check if ends on perfect boundary
-                if ( (TotalElements & WORK_ITEM_MASK) != 0 )
+                if ((TotalElements & WORK_ITEM_MASK) != 0)
                 {
                     // This is the last block and may have an odd number of data to process
                     lenWorkBlock = TotalElements & WORK_ITEM_MASK;
@@ -353,12 +353,12 @@ struct stWorkerRing
 
 #if defined(_WIN32)
         // Are we allowed to wake threads?
-        if ( g_WakeAllAddress != NULL )
+        if (g_WakeAllAddress != NULL)
         {
-            if ( maxThreadsToWake < 5 )
+            if (maxThreadsToWake < 5)
             {
                 // In windows faster to wake single if just a few threads
-                for ( int i = 0; i < maxThreadsToWake; i++ )
+                for (int i = 0; i < maxThreadsToWake; i++)
                 {
                     g_WakeSingleAddress((void *)&WorkIndex);
                 }
@@ -373,7 +373,7 @@ struct stWorkerRing
 #elif defined(__linux__)
         // Linux thread wakeup
         int s = futex((int *)&WorkIndex, FUTEX_WAKE, maxThreadsToWake, NULL, NULL, 0);
-        if ( s == -1 )
+        if (s == -1)
             printf("***error futex-FUTEX_WAKE\n"); // TODO: Change to use fprintf(stderr, msg) instead
 
 #elif defined(__APPLE__)

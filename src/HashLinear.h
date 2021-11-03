@@ -414,7 +414,7 @@ public:
     inline int IsBitSet(int64_t position)
     {
         uint64_t index = position >> 6;
-        if ( pBitFields[index] & (1LL << (position & 63)) )
+        if (pBitFields[index] & (1LL << (position & 63)))
         {
             return 1;
         }

@@ -57,7 +57,7 @@
 static __inline int npy_get_msb(uint64_t unum)
 {
     int depth_limit = 0;
-    while ( unum >>= 1 )
+    while (unum >>= 1)
     {
         depth_limit++;
     }
@@ -125,9 +125,9 @@ NPY_INLINE static int STRING_LT(const char * s1, const char * s2, size_t len)
     const unsigned char * c2 = (unsigned char *)s2;
     size_t i;
 
-    for ( i = 0; i < len; ++i )
+    for (i = 0; i < len; ++i)
     {
-        if ( c1[i] != c2[i] )
+        if (c1[i] != c2[i])
         {
             return c1[i] < c2[i];
         }
@@ -146,9 +146,9 @@ NPY_INLINE static int UNICODE_LT(const char * s1, const char * s2, size_t len)
 
     size_t lenunicode = len / 4;
 
-    for ( i = 0; i < lenunicode; ++i )
+    for (i = 0; i < lenunicode; ++i)
     {
-        if ( c1[i] != c2[i] )
+        if (c1[i] != c2[i])
         {
             return c1[i] < c2[i];
         }
@@ -161,82 +161,82 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
 
-    switch ( len )
+    switch (len)
     {
     case 1:
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return *c1 < *c2;
         }
         return 0;
     case 2:
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return *(uint16_t *)c1 < *(uint16_t *)c2;
         }
         return 0;
     case 3:
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return *(uint16_t *)c1 < *(uint16_t *)c2;
         }
         c1 += 2;
         c2 += 2;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return *c1 < *c2;
         }
         return 0;
     case 4:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return *(uint32_t *)c1 < *(uint32_t *)c2;
         }
         return 0;
     case 5:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return *(uint32_t *)c1 < *(uint32_t *)c2;
         }
         c1 += 4;
         c2 += 4;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return *c1 < *c2;
         }
         return 0;
     case 6:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return *(uint32_t *)c1 < *(uint32_t *)c2;
         }
         c1 += 4;
         c2 += 4;
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return *(uint16_t *)c1 < *(uint16_t *)c2;
         }
         return 0;
     case 7:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return *(uint32_t *)c1 < *(uint32_t *)c2;
         }
         c1 += 4;
         c2 += 4;
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return *(uint16_t *)c1 < *(uint16_t *)c2;
         }
         c1 += 2;
         c2 += 2;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return *c1 < *c2;
         }
         return 0;
     case 8:
-        if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+        if (*(uint64_t *)c1 != *(uint64_t *)c2)
         {
             return *(uint64_t *)c1 < *(uint64_t *)c2;
         }
@@ -244,9 +244,9 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     default:
         {
             // compare 8 bytes at a time
-            while ( len > 8 )
+            while (len > 8)
             {
-                if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+                if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
                     return *(uint64_t *)c1 < *(uint64_t *)c2;
                 }
@@ -254,82 +254,82 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
                 c2 += 8;
                 len -= 8;
             }
-            switch ( len )
+            switch (len)
             {
             case 1:
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return *c1 < *c2;
                 }
                 return 0;
             case 2:
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return *(uint16_t *)c1 < *(uint16_t *)c2;
                 }
                 return 0;
             case 3:
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return *(uint16_t *)c1 < *(uint16_t *)c2;
                 }
                 c1 += 2;
                 c2 += 2;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return *c1 < *c2;
                 }
                 return 0;
             case 4:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return *(uint32_t *)c1 < *(uint32_t *)c2;
                 }
                 return 0;
             case 5:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return *(uint32_t *)c1 < *(uint32_t *)c2;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return *c1 < *c2;
                 }
                 return 0;
             case 6:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return *(uint32_t *)c1 < *(uint32_t *)c2;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return *(uint16_t *)c1 < *(uint16_t *)c2;
                 }
                 return 0;
             case 7:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return *(uint32_t *)c1 < *(uint32_t *)c2;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return *(uint16_t *)c1 < *(uint16_t *)c2;
                 }
                 c1 += 2;
                 c2 += 2;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return *c1 < *c2;
                 }
                 return 0;
             case 8:
-                if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+                if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
                     return *(uint64_t *)c1 < *(uint64_t *)c2;
                 }
@@ -346,91 +346,91 @@ NPY_INLINE static int BINARY_LT(const char * s1, const char * s2, size_t len)
     const unsigned char * c1 = (unsigned char *)s1;
     const unsigned char * c2 = (unsigned char *)s2;
 
-    switch ( len )
+    switch (len)
     {
     case 1:
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return 1;
         }
         return 0;
     case 2:
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return 1;
         }
         return 0;
     case 3:
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return 1;
         }
         c1 += 2;
         c2 += 2;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return 1;
         }
         return 0;
     case 4:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return 1;
         }
         return 0;
     case 5:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return 1;
         }
         c1 += 4;
         c2 += 4;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return 1;
         }
         return 0;
     case 6:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return 1;
         }
         c1 += 4;
         c2 += 4;
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return 1;
         }
         return 0;
     case 7:
-        if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+        if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
             return 1;
         }
         c1 += 4;
         c2 += 4;
-        if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+        if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
             return 1;
         }
         c1 += 2;
         c2 += 2;
-        if ( *c1 != *c2 )
+        if (*c1 != *c2)
         {
             return *c1 < *c2;
         }
         return 0;
     case 8:
-        if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+        if (*(uint64_t *)c1 != *(uint64_t *)c2)
         {
             return 1;
         }
         return 0;
     default:
         {
-            while ( len > 8 )
+            while (len > 8)
             {
-                if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+                if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
                     return 1;
                 }
@@ -438,82 +438,82 @@ NPY_INLINE static int BINARY_LT(const char * s1, const char * s2, size_t len)
                 c2 += 8;
                 len -= 8;
             }
-            switch ( len )
+            switch (len)
             {
             case 1:
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return 1;
                 }
                 return 0;
             case 2:
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return 1;
                 }
                 return 0;
             case 3:
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return 1;
                 }
                 c1 += 2;
                 c2 += 2;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return 1;
                 }
                 return 0;
             case 4:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return 1;
                 }
                 return 0;
             case 5:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return 1;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return 1;
                 }
                 return 0;
             case 6:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return 1;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return 1;
                 }
                 return 0;
             case 7:
-                if ( *(uint32_t *)c1 != *(uint32_t *)c2 )
+                if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
                     return 1;
                 }
                 c1 += 4;
                 c2 += 4;
-                if ( *(uint16_t *)c1 != *(uint16_t *)c2 )
+                if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
                     return 1;
                 }
                 c1 += 2;
                 c2 += 2;
-                if ( *c1 != *c2 )
+                if (*c1 != *c2)
                 {
                     return 1;
                 }
                 return 0;
             case 8:
-                if ( *(uint64_t *)c1 != *(uint64_t *)c2 )
+                if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
                     return 1;
                 }
@@ -754,16 +754,16 @@ template <typename T>
     /* The array needs to be offset by one for heapsort indexing */
     a = (T *)start - 1;
 
-    for ( l = n >> 1; l > 0; --l )
+    for (l = n >> 1; l > 0; --l)
     {
         tmp = a[l];
-        for ( i = l, j = l << 1; j <= n; )
+        for (i = l, j = l << 1; j <= n;)
         {
-            if ( j < n && T_LT(a[j], a[j + 1]) )
+            if (j < n && T_LT(a[j], a[j + 1]))
             {
                 j += 1;
             }
-            if ( T_LT(tmp, a[j]) )
+            if (T_LT(tmp, a[j]))
             {
                 a[i] = a[j];
                 i = j;
@@ -777,18 +777,18 @@ template <typename T>
         a[i] = tmp;
     }
 
-    for ( ; n > 1; )
+    for (; n > 1;)
     {
         tmp = a[n];
         a[n] = a[1];
         n -= 1;
-        for ( i = 1, j = 2; j <= n; )
+        for (i = 1, j = 2; j <= n;)
         {
-            if ( j < n && T_LT(a[j], a[j + 1]) )
+            if (j < n && T_LT(a[j], a[j + 1]))
             {
                 j++;
             }
-            if ( T_LT(tmp, a[j]) )
+            if (T_LT(tmp, a[j]))
             {
                 a[i] = a[j];
                 i = j;
@@ -814,16 +814,16 @@ static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
     /* The arrays need to be offset by one for heapsort indexing */
     a = tosort - 1;
 
-    for ( l = n >> 1; l > 0; --l )
+    for (l = n >> 1; l > 0; --l)
     {
         tmp = a[l];
-        for ( i = l, j = l << 1; j <= n; )
+        for (i = l, j = l << 1; j <= n;)
         {
-            if ( j < n && T_LT(v[a[j]], v[a[j + 1]]) )
+            if (j < n && T_LT(v[a[j]], v[a[j + 1]]))
             {
                 j += 1;
             }
-            if ( T_LT(v[tmp], v[a[j]]) )
+            if (T_LT(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -837,18 +837,18 @@ static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
         a[i] = tmp;
     }
 
-    for ( ; n > 1; )
+    for (; n > 1;)
     {
         tmp = a[n];
         a[n] = a[1];
         n -= 1;
-        for ( i = 1, j = 2; j <= n; )
+        for (i = 1, j = 2; j <= n;)
         {
-            if ( j < n && T_LT(v[a[j]], v[a[j + 1]]) )
+            if (j < n && T_LT(v[a[j]], v[a[j + 1]]))
             {
                 j++;
             }
-            if ( T_LT(v[tmp], v[a[j]]) )
+            if (T_LT(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -874,16 +874,16 @@ static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
     /* The arrays need to be offset by one for heapsort indexing */
     a = tosort - 1;
 
-    for ( l = n >> 1; l > 0; --l )
+    for (l = n >> 1; l > 0; --l)
     {
         tmp = a[l];
-        for ( i = l, j = l << 1; j <= n; )
+        for (i = l, j = l << 1; j <= n;)
         {
-            if ( j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]) )
+            if (j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]))
             {
                 j += 1;
             }
-            if ( FLOAT_LT(v[tmp], v[a[j]]) )
+            if (FLOAT_LT(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -897,18 +897,18 @@ static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
         a[i] = tmp;
     }
 
-    for ( ; n > 1; )
+    for (; n > 1;)
     {
         tmp = a[n];
         a[n] = a[1];
         n -= 1;
-        for ( i = 1, j = 2; j <= n; )
+        for (i = 1, j = 2; j <= n;)
         {
-            if ( j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]) )
+            if (j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]))
             {
                 j++;
             }
-            if ( FLOAT_LT(v[tmp], v[a[j]]) )
+            if (FLOAT_LT(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -941,36 +941,36 @@ template <typename T>
     int * psdepth = depth;
     int cdepth = npy_get_msb(num) * 2;
 
-    for ( ;; )
+    for (;;)
     {
-        if ( NPY_UNLIKELY(cdepth < 0) )
+        if (NPY_UNLIKELY(cdepth < 0))
         {
             heapsort_<T>(pl, pr - pl + 1);
             goto stack_pop;
         }
-        while ( (pr - pl) > SMALL_QUICKSORT )
+        while ((pr - pl) > SMALL_QUICKSORT)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if ( COMPARE_LT(*pm, *pl) )
+            if (COMPARE_LT(*pm, *pl))
                 T_SWAP(*pm, *pl);
-            if ( COMPARE_LT(*pr, *pm) )
+            if (COMPARE_LT(*pr, *pm))
                 T_SWAP(*pr, *pm);
-            if ( COMPARE_LT(*pm, *pl) )
+            if (COMPARE_LT(*pm, *pl))
                 T_SWAP(*pm, *pl);
             vp = *pm;
             pi = pl;
             pj = pr - 1;
             T_SWAP(*pm, *pj);
-            for ( ;; )
+            for (;;)
             {
                 do
                     ++pi;
-                while ( COMPARE_LT(*pi, vp) );
+                while (COMPARE_LT(*pi, vp));
                 do
                     --pj;
-                while ( COMPARE_LT(vp, *pj) );
-                if ( pi >= pj )
+                while (COMPARE_LT(vp, *pj));
+                if (pi >= pj)
                 {
                     break;
                 }
@@ -979,7 +979,7 @@ template <typename T>
             pk = pr - 1;
             T_SWAP(*pi, *pk);
             /* push largest partition on stack */
-            if ( pi - pl < pr - pi )
+            if (pi - pl < pr - pi)
             {
                 *sptr++ = pi + 1;
                 *sptr++ = pr;
@@ -995,19 +995,19 @@ template <typename T>
         }
 
         /* insertion sort */
-        for ( pi = pl + 1; pi <= pr; ++pi )
+        for (pi = pl + 1; pi <= pr; ++pi)
         {
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && COMPARE_LT(vp, *pk) )
+            while (pj > pl && COMPARE_LT(vp, *pk))
             {
                 *pj-- = *pk--;
             }
             *pj = vp;
         }
     stack_pop:
-        if ( sptr == stack )
+        if (sptr == stack)
         {
             break;
         }
@@ -1034,37 +1034,37 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
     int * psdepth = depth;
     int cdepth = npy_get_msb(num) * 2;
 
-    for ( ;; )
+    for (;;)
     {
-        if ( NPY_UNLIKELY(cdepth < 0) )
+        if (NPY_UNLIKELY(cdepth < 0))
         {
             aheapsort_<T, UINDEX>(vv, pl, (UINDEX)(pr - pl + 1));
             goto stack_pop;
         }
 
-        while ( (pr - pl) > SMALL_QUICKSORT )
+        while ((pr - pl) > SMALL_QUICKSORT)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if ( COMPARE_LT(v[*pm], v[*pl]) )
+            if (COMPARE_LT(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
-            if ( COMPARE_LT(v[*pr], v[*pm]) )
+            if (COMPARE_LT(v[*pr], v[*pm]))
                 INTP_SWAP(*pr, *pm);
-            if ( COMPARE_LT(v[*pm], v[*pl]) )
+            if (COMPARE_LT(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
             vp = v[*pm];
             pi = pl;
             pj = pr - 1;
             INTP_SWAP(*pm, *pj);
-            for ( ;; )
+            for (;;)
             {
                 do
                     ++pi;
-                while ( COMPARE_LT(v[*pi], vp) );
+                while (COMPARE_LT(v[*pi], vp));
                 do
                     --pj;
-                while ( COMPARE_LT(vp, v[*pj]) );
-                if ( pi >= pj )
+                while (COMPARE_LT(vp, v[*pj]));
+                if (pi >= pj)
                 {
                     break;
                 }
@@ -1073,7 +1073,7 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
             pk = pr - 1;
             INTP_SWAP(*pi, *pk);
             /* push largest partition on stack */
-            if ( pi - pl < pr - pi )
+            if (pi - pl < pr - pi)
             {
                 *sptr++ = pi + 1;
                 *sptr++ = pr;
@@ -1089,20 +1089,20 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
         }
 
         /* insertion sort */
-        for ( pi = pl + 1; pi <= pr; ++pi )
+        for (pi = pl + 1; pi <= pr; ++pi)
         {
             vi = *pi;
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && COMPARE_LT(vp, v[*pk]) )
+            while (pj > pl && COMPARE_LT(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
             *pj = vi;
         }
     stack_pop:
-        if ( sptr == stack )
+        if (sptr == stack)
         {
             break;
         }
@@ -1129,37 +1129,37 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
     int * psdepth = depth;
     int cdepth = npy_get_msb(num) * 2;
 
-    for ( ;; )
+    for (;;)
     {
-        if ( NPY_UNLIKELY(cdepth < 0) )
+        if (NPY_UNLIKELY(cdepth < 0))
         {
             aheapsort_float<T, UINDEX>(vv, pl, (UINDEX)(pr - pl + 1));
             goto stack_pop;
         }
 
-        while ( (pr - pl) > SMALL_QUICKSORT )
+        while ((pr - pl) > SMALL_QUICKSORT)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if ( FLOAT_LT(v[*pm], v[*pl]) )
+            if (FLOAT_LT(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
-            if ( FLOAT_LT(v[*pr], v[*pm]) )
+            if (FLOAT_LT(v[*pr], v[*pm]))
                 INTP_SWAP(*pr, *pm);
-            if ( FLOAT_LT(v[*pm], v[*pl]) )
+            if (FLOAT_LT(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
             vp = v[*pm];
             pi = pl;
             pj = pr - 1;
             INTP_SWAP(*pm, *pj);
-            for ( ;; )
+            for (;;)
             {
                 do
                     ++pi;
-                while ( FLOAT_LT(v[*pi], vp) );
+                while (FLOAT_LT(v[*pi], vp));
                 do
                     --pj;
-                while ( FLOAT_LT(vp, v[*pj]) );
-                if ( pi >= pj )
+                while (FLOAT_LT(vp, v[*pj]));
+                if (pi >= pj)
                 {
                     break;
                 }
@@ -1168,7 +1168,7 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
             pk = pr - 1;
             INTP_SWAP(*pi, *pk);
             /* push largest partition on stack */
-            if ( pi - pl < pr - pi )
+            if (pi - pl < pr - pi)
             {
                 *sptr++ = pi + 1;
                 *sptr++ = pr;
@@ -1184,20 +1184,20 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
         }
 
         /* insertion sort */
-        for ( pi = pl + 1; pi <= pr; ++pi )
+        for (pi = pl + 1; pi <= pr; ++pi)
         {
             vi = *pi;
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && FLOAT_LT(vp, v[*pk]) )
+            while (pj > pl && FLOAT_LT(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
             *pj = vi;
         }
     stack_pop:
-        if ( sptr == stack )
+        if (sptr == stack)
         {
             break;
         }
@@ -1215,7 +1215,7 @@ template <typename T>
 {
     T vp, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
@@ -1227,7 +1227,7 @@ template <typename T>
 #else
         pi = pw;
         pj = pl;
-        while ( pj < pm )
+        while (pj < pm)
         {
             *pi++ = *pj++;
         }
@@ -1236,9 +1236,9 @@ template <typename T>
         pi = pw + (pm - pl);
         pj = pw;
         pk = pl;
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( T_LT(*pm, *pj) )
+            if (T_LT(*pm, *pj))
             {
                 *pk++ = *pm++;
             }
@@ -1249,14 +1249,14 @@ template <typename T>
         }
 #ifdef USE_MEMCPY
         diff = pi - pj;
-        if ( diff > 0 )
+        if (diff > 0)
         {
             memcpy(pk, pj, sizeof(T) * diff);
             pk += diff;
             pj += diff;
         }
 #else
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -1265,12 +1265,12 @@ template <typename T>
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && T_LT(vp, *pk) )
+            while (pj > pl && T_LT(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1288,7 +1288,7 @@ template <typename T>
     pl = start;
     pr = pl + num;
     pw = (T *)WORKSPACE_ALLOC((num / 2) * sizeof(T));
-    if ( pw == NULL )
+    if (pw == NULL)
     {
         return -1;
     }
@@ -1309,7 +1309,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
     pl = start;
     pr = pl + num;
     pw = (T *)WORKSPACE_ALLOC((num / 2) * sizeof(T));
-    if ( pw == NULL )
+    if (pw == NULL)
     {
         return -1;
     }
@@ -1318,7 +1318,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
 
     pEnd = pr - SMALL_MERGESORT;
 
-    while ( pl < pEnd )
+    while (pl < pEnd)
     {
         T * pMiddle;
         T vp;
@@ -1326,12 +1326,12 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
         pMiddle = pl + SMALL_MERGESORT;
 
         /* insertion sort */
-        for ( pi = pl + 1; pi < pMiddle; ++pi )
+        for (pi = pl + 1; pi < pMiddle; ++pi)
         {
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && T_LT(vp, *pk) )
+            while (pj > pl && T_LT(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1343,7 +1343,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
 
     //-- reamining for insertion sort
     pEnd = pr;
-    while ( pl < pEnd )
+    while (pl < pEnd)
     {
         T * pMiddle;
         T vp;
@@ -1351,12 +1351,12 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
         pMiddle = pl + SMALL_MERGESORT;
 
         /* insertion sort */
-        for ( pi = pl + 1; pi < pMiddle; ++pi )
+        for (pi = pl + 1; pi < pMiddle; ++pi)
         {
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && T_LT(vp, *pk) )
+            while (pj > pl && T_LT(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1373,9 +1373,9 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
     pEnd = start + num;
     pl = start;
 
-    while ( (pl + startSize) < pEnd )
+    while ((pl + startSize) < pEnd)
     {
-        while ( (pl + startSize) < pEnd )
+        while ((pl + startSize) < pEnd)
         {
             pr = pl + (2 * startSize);
             pm = pl + ((pr - pl) >> 1);
@@ -1388,9 +1388,9 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
             pj = pw;
             pk = pl;
 
-            while ( pj < pi && pm < pr )
+            while (pj < pi && pm < pr)
             {
-                if ( T_LT(*pm, *pj) )
+                if (T_LT(*pm, *pj))
                 {
                     *pk++ = *pm++;
                 }
@@ -1401,7 +1401,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
             }
 
             // memcpy
-            while ( pj < pi )
+            while (pj < pi)
             {
                 *pk++ = *pj++;
             }
@@ -1428,7 +1428,7 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
 {
     T vp, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
@@ -1445,7 +1445,7 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
         pi += diff;
         pj += diff;
 #else
-        while ( pj < pm )
+        while (pj < pm)
         {
             *pi++ = *pj++;
         }
@@ -1453,9 +1453,9 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
         pi = pw + (pm - pl);
         pj = pw;
         pk = pl;
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( FLOAT_LT(*pm, *pj) )
+            if (FLOAT_LT(*pm, *pj))
             {
                 *pk++ = *pm++;
             }
@@ -1467,14 +1467,14 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
 
 #ifdef USE_MEMCPY
         diff = pi - pj;
-        if ( diff > 0 )
+        if (diff > 0)
         {
             memcpy(pk, pj, sizeof(T) * diff);
             pk += diff;
             pj += diff;
         }
 #else
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -1483,12 +1483,12 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && FLOAT_LT(vp, *pk) )
+            while (pj > pl && FLOAT_LT(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1506,7 +1506,7 @@ static int mergesort_float(T * start, int64_t num)
     pl = start;
     pr = pl + num;
     pw = (T *)WORKSPACE_ALLOC((num / 2) * sizeof(T));
-    if ( pw == NULL )
+    if (pw == NULL)
     {
         return -1;
     }
@@ -1523,22 +1523,22 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
     const char * vp;
     UINDEX vi, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
         amergesort0_string(pl, pm, strItem, pw, strlen);
         amergesort0_string(pm, pr, strItem, pw, strlen);
-        for ( pi = pw, pj = pl; pj < pm; )
+        for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
         }
         pi = pw + (pm - pl);
         pj = pw;
         pk = pl;
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( STRING_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen) )
+            if (STRING_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1547,7 +1547,7 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -1555,13 +1555,13 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vi = *pi;
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && STRING_LT(vp, strItem + (*pk) * strlen, strlen) )
+            while (pj > pl && STRING_LT(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1577,22 +1577,22 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
     const char * vp;
     UINDEX vi, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
         amergesort0_unicode(pl, pm, strItem, pw, strlen);
         amergesort0_unicode(pm, pr, strItem, pw, strlen);
-        for ( pi = pw, pj = pl; pj < pm; )
+        for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
         }
         pi = pw + (pm - pl);
         pj = pw;
         pk = pl;
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( UNICODE_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen) )
+            if (UNICODE_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1601,7 +1601,7 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -1609,13 +1609,13 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vi = *pi;
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && UNICODE_LT(vp, strItem + (*pk) * strlen, strlen) )
+            while (pj > pl && UNICODE_LT(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1631,22 +1631,22 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
     const char * vp;
     UINDEX vi, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
         amergesort0_void(pl, pm, strItem, pw, strlen);
         amergesort0_void(pm, pr, strItem, pw, strlen);
-        for ( pi = pw, pj = pl; pj < pm; )
+        for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
         }
         pi = pw + (pm - pl);
         pj = pw;
         pk = pl;
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( VOID_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen) )
+            if (VOID_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1655,7 +1655,7 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -1663,13 +1663,13 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vi = *pi;
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && VOID_LT(vp, strItem + (*pk) * strlen, strlen) )
+            while (pj > pl && VOID_LT(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1690,7 +1690,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
 
     // PLOGGING("merging %llu bytes of data at %p\n", pr - pl, v);
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
@@ -1716,7 +1716,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
             // Copy left side into workspace
             pi = pw;
             pj = pl;
-            while ( pj < pm )
+            while (pj < pm)
             {
                 *pi++ = *pj++;
             }
@@ -1726,9 +1726,9 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
             pj = pw;
             pk = pl;
 
-            while ( pj < pi && pm < pr )
+            while (pj < pi && pm < pr)
             {
-                if ( COMPARE_LT(v[*pm], v[*pj]) )
+                if (COMPARE_LT(v[*pm], v[*pj]))
                 {
                     *pk++ = *pm++;
                 }
@@ -1737,7 +1737,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
                     *pk++ = *pj++;
                 }
             }
-            while ( pj < pi )
+            while (pj < pi)
             {
                 *pk++ = *pj++;
             }
@@ -1746,13 +1746,13 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vi = *pi;
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && COMPARE_LT(vp, v[*pk]) )
+            while (pj > pl && COMPARE_LT(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1770,7 +1770,7 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
     T vp;
     UINDEX vi, *pi, *pj, *pk, *pm;
 
-    if ( pr - pl > SMALL_MERGESORT )
+    if (pr - pl > SMALL_MERGESORT)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
@@ -1780,18 +1780,18 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
         // check if already sorted
         // if the first element on the right is less than the last element on the left
         // printf("comparing %d to %d ", (int)pm[0], (int)pm[-1]);
-        if ( T_LT(v[*pm], v[*(pm - 1)]) )
+        if (T_LT(v[*pm], v[*(pm - 1)]))
         {
-            for ( pi = pw, pj = pl; pj < pm; )
+            for (pi = pw, pj = pl; pj < pm;)
             {
                 *pi++ = *pj++;
             }
             pi = pw + (pm - pl);
             pj = pw;
             pk = pl;
-            while ( pj < pi && pm < pr )
+            while (pj < pi && pm < pr)
             {
-                if ( T_LT(v[*pm], v[*pj]) )
+                if (T_LT(v[*pm], v[*pj]))
                 {
                     *pk++ = *pm++;
                 }
@@ -1800,7 +1800,7 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
                     *pk++ = *pj++;
                 }
             }
-            while ( pj < pi )
+            while (pj < pi)
             {
                 *pk++ = *pj++;
             }
@@ -1809,13 +1809,13 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
     else
     {
         /* insertion sort */
-        for ( pi = pl + 1; pi < pr; ++pi )
+        for (pi = pl + 1; pi < pr; ++pi)
         {
             vi = *pi;
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while ( pj > pl && T_LT(vp, v[*pk]) )
+            while (pj > pl && T_LT(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1835,7 +1835,7 @@ static int amergesort_(T * v, UINDEX * tosort, UINDEX num)
     pr = pl + num;
 
     pworkspace = (UINDEX *)WORKSPACE_ALLOC((num / 2) * sizeof(UINDEX));
-    if ( pworkspace == NULL )
+    if (pworkspace == NULL)
     {
         return -1;
     }
@@ -1854,7 +1854,7 @@ static int amergesort_float(T * v, UINDEX * tosort, UINDEX num)
     pr = pl + num;
 
     pworkspace = (UINDEX *)WORKSPACE_ALLOC((num / 2) * sizeof(UINDEX));
-    if ( pworkspace == NULL )
+    if (pworkspace == NULL)
     {
         return -1;
     }
@@ -1993,7 +1993,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
     //}
 
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-    if ( true || STRING_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen) )
+    if (true || STRING_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm],
         // (int64_t)pValue[*(pr - 1)]); printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1),
@@ -2006,9 +2006,9 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
         pj = pWorkSpace;
         pk = pl;
 
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( STRING_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen) )
+            if (STRING_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2017,7 +2017,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -2047,7 +2047,7 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
     UINDEX *pi, *pj, *pk, *pm;
     pm = pl + ((pr - pl) >> 1);
 
-    if ( true || UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen) )
+    if (true || UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm],
         // (int64_t)pValue[*(pr - 1)]); printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1),
@@ -2060,9 +2060,9 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
         pj = pWorkSpace;
         pk = pl;
 
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen) )
+            if (UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2071,7 +2071,7 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -2102,7 +2102,7 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
     pm = pl + ((pr - pl) >> 1);
 
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-    if ( true || VOID_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen) )
+    if (true || VOID_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -2111,9 +2111,9 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
         pj = pWorkSpace;
         pk = pl;
 
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( VOID_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen) )
+            if (VOID_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2122,7 +2122,7 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -2178,7 +2178,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
 
     // quickcheck to see if we have to copy
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting does not work.
-    if ( true || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)]) )
+    if (true || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)]))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl], (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm],
         // (int64_t)pValue[*(pr - 1)]); printf("%lld %lld %lld %lld %lld\n", (int64_t)*pl, (int64_t)*(pm - 2), (int64_t)*(pm - 1),
@@ -2191,9 +2191,9 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
         pj = pWorkSpace;
         pk = pl;
 
-        while ( pj < pi && pm < pr )
+        while (pj < pi && pm < pr)
         {
-            if ( COMPARE_LT(pValue[*pm], pValue[*pj]) )
+            if (COMPARE_LT(pValue[*pm], pValue[*pj]))
             {
                 *pk++ = *pm++;
             }
@@ -2202,7 +2202,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
                 *pk++ = *pj++;
             }
         }
-        while ( pj < pi )
+        while (pj < pi)
         {
             *pk++ = *pj++;
         }
@@ -2252,7 +2252,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
     int64_t workBlock;
 
     // As long as there is work to do
-    while ( (index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0 )
+    while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
     {
         // First index is 1 so we subtract
         index--;
@@ -2262,7 +2262,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
         // the very first index starts at 0
         int64_t pFirst = 0;
 
-        if ( index >= 1 )
+        if (index >= 1)
         {
             pFirst = Callback->EndPositions[index - 1];
         }
@@ -2285,7 +2285,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
 
         // Now find the buddy bit (adjacent bit)
         int64_t buddy = 0;
-        if ( index & 1 )
+        if (index & 1)
         {
             buddy = 1LL << (index - 1);
         }
@@ -2300,7 +2300,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
         // Check if our buddy was already set
         PLOGGING("index: %lld  %lld %lld -- %s\n", index, buddy, (result & buddy), buddy == (result & buddy) ? "GOOD" : "WAIT");
 
-        if ( buddy == (result & buddy) )
+        if (buddy == (result & buddy))
         {
             // Move to next level -- 4 things to sort
             index = index / 2;
@@ -2309,7 +2309,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
 
             pFirst = 0;
 
-            if ( index >= 2 )
+            if (index >= 2)
             {
                 pFirst = Callback->EndPositions[index - 2];
             }
@@ -2329,7 +2329,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
 
             // Now find the buddy bit (adjacent bit)
             buddy = 0;
-            if ( index & 1 )
+            if (index & 1)
             {
                 buddy = 1LL << (index - 1);
             }
@@ -2345,7 +2345,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
             PLOGGING("index -- LEVEL 2: %lld  %lld %lld -- %s\n", index, buddy, (result & buddy),
                      buddy == (result & buddy) ? "GOOD" : "WAIT");
 
-            if ( buddy == (result & buddy) )
+            if (buddy == (result & buddy))
             {
                 // Move to next level -- 2 things to sort
                 index = index / 2;
@@ -2354,7 +2354,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
 
                 pFirst = 0;
 
-                if ( index >= 4 )
+                if (index >= 4)
                 {
                     pFirst = Callback->EndPositions[index - 4];
                 }
@@ -2374,7 +2374,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
 
                 // Now find the buddy bit (adjacent bit)
                 buddy = 0;
-                if ( index & 1 )
+                if (index & 1)
                 {
                     buddy = 1LL << (index - 1);
                 }
@@ -2386,7 +2386,7 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
                 // Get back which bits were set before the OR operation
                 result = FMInterlockedOr(&Callback->Level[2], bitshift);
 
-                if ( buddy == (result & buddy) )
+                if (buddy == (result & buddy))
                 {
                     // Final merge
                     PLOGGING("%d : MergeFinal index: %llu  %lld  %lld  %lld\n", core, index, 0LL, Callback->ArrayLength, 0LL);
@@ -2434,12 +2434,12 @@ static int single_amergesort(void * pValuesT, void * pToSortU, int64_t arrayLeng
     UINDEX * pWorkSpace;
 
     pWorkSpace = (UINDEX *)WORKSPACE_ALLOC((arrayLength / 2) * sizeof(UINDEX));
-    if ( pWorkSpace == NULL )
+    if (pWorkSpace == NULL)
     {
         return -1;
     }
 
-    switch ( sortType )
+    switch (sortType)
     {
     case PAR_SORT_TYPE::Float: amergesort0_float(pToSort, pToSort + arrayLength, pValues, pWorkSpace); break;
     case PAR_SORT_TYPE::String:
@@ -2471,7 +2471,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 
                           int64_t arrayLength, int64_t strlen, PAR_SORT_TYPE sortType)
 {
-    if ( pCutOffs )
+    if (pCutOffs)
     {
         PLOGGING("partition version col: %lld  %p  %p  %p\n", cutOffLength, pToSort, pToSort + arrayLength, pValues);
 
@@ -2500,7 +2500,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
         psort.sortType = sortType;
 
         psort.sizeofUINDEX = sizeof(UINDEX);
-        if ( strlen > 0 )
+        if (strlen > 0)
         {
             psort.sizeofT = strlen;
         }
@@ -2516,7 +2516,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             int64_t partLength;
             int64_t partStart;
 
-            if ( t == 0 )
+            if (t == 0)
             {
                 partStart = 0;
             }
@@ -2543,7 +2543,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
     else
 
         // If size is large, go parallel
-        if ( arrayLength >= CMathWorker::WORK_ITEM_BIG )
+        if (arrayLength >= CMathWorker::WORK_ITEM_BIG)
     {
         PLOGGING("Parallel version  %p  %p  %p\n", pToSort, pToSort + arrayLength, pValues);
         // Divide into 8 jobs
@@ -2555,14 +2555,14 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
         //(UINDEX*)WORKSPACE_ALLOC(arrayLength * sizeof(UINDEX));
         pWorkSpace = WorkSpaceAllocLarge(allocSize);
 
-        if ( pWorkSpace == NULL )
+        if (pWorkSpace == NULL)
         {
             return -1;
         }
 
         MERGE_STEP_ONE mergeStepOne = NULL;
 
-        switch ( sortType )
+        switch (sortType)
         {
         case PAR_SORT_TYPE::Float: mergeStepOne = ParMergeFloat<T, UINDEX>; break;
         case PAR_SORT_TYPE::String: mergeStepOne = ParMergeString<UINDEX>; break;
@@ -2573,7 +2573,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 
         stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arrayLength);
 
-        if ( pWorkItem == NULL )
+        if (pWorkItem == NULL)
         {
             // Threading not allowed for this work item, call it directly from main thread
             mergeStepOne(pValues, pToSort, arrayLength, strlen, pWorkSpace);
@@ -2584,7 +2584,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             pWorkItem->WorkCallbackArg = &stParMergeCallback;
 
             stParMergeCallback.MergeCallbackOne = mergeStepOne;
-            switch ( sortType )
+            switch (sortType)
             {
             case PAR_SORT_TYPE::String: stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>; break;
             case PAR_SORT_TYPE::Unicode: stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>; break;
@@ -2600,7 +2600,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             stParMergeCallback.StrLen = strlen;
             stParMergeCallback.pWorkSpace = pWorkSpace;
             stParMergeCallback.TypeSizeInput = sizeof(T);
-            if ( strlen )
+            if (strlen)
             {
                 stParMergeCallback.TypeSizeInput = strlen;
             }
@@ -2609,17 +2609,17 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             // NOTE set this value to 2,4 or 8
             stParMergeCallback.MergeBlocks = 8;
 
-            for ( int i = 0; i < 3; i++ )
+            for (int i = 0; i < 3; i++)
             {
                 stParMergeCallback.Level[i] = 0;
             }
 
-            if ( stParMergeCallback.MergeBlocks == 2 )
+            if (stParMergeCallback.MergeBlocks == 2)
             {
                 stParMergeCallback.EndPositions[1] = arrayLength;
                 stParMergeCallback.EndPositions[0] = arrayLength / 2;
             }
-            else if ( stParMergeCallback.MergeBlocks == 4 )
+            else if (stParMergeCallback.MergeBlocks == 4)
             {
                 stParMergeCallback.EndPositions[3] = arrayLength;
                 stParMergeCallback.EndPositions[1] = arrayLength / 2;
@@ -2669,7 +2669,7 @@ static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 {
     int result = 0;
 
-    switch ( mode )
+    switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT: result = quicksort_((T *)pDataIn1, arraySize1); break;
 
@@ -2678,7 +2678,7 @@ static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
     case SORT_MODE::SORT_MODE_HEAP: result = heapsort_<T>((T *)pDataIn1, arraySize1); break;
     }
 
-    if ( result != 0 )
+    if (result != 0)
     {
         printf("**Error sorting.  size %llu   mode %d\n", arraySize1, mode);
     }
@@ -2693,7 +2693,7 @@ static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 {
     int result = 0;
 
-    switch ( mode )
+    switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT: result = quicksort_((T *)pDataIn1, arraySize1); break;
 
@@ -2702,7 +2702,7 @@ static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
     case SORT_MODE::SORT_MODE_HEAP: result = heapsort_<T>((T *)pDataIn1, arraySize1); break;
     }
 
-    if ( result != 0 )
+    if (result != 0)
     {
         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
     }
@@ -2716,7 +2716,7 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
 {
     int result = 0;
 
-    switch ( mode )
+    switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT: result = aquicksort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
 
@@ -2731,7 +2731,7 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
     case SORT_MODE::SORT_MODE_HEAP: result = aheapsort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
     }
 
-    if ( result != 0 )
+    if (result != 0)
     {
         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
     }
@@ -2746,7 +2746,7 @@ static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pData
 {
     int result = 0;
 
-    switch ( mode )
+    switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT: result = aquicksort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
 
@@ -2758,7 +2758,7 @@ static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pData
     case SORT_MODE::SORT_MODE_HEAP: result = aheapsort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
     }
 
-    if ( result != 0 )
+    if (result != 0)
     {
         printf("**Error sorting.  size %llu   mode %d\n", (int64_t)arraySize1, mode);
     }
@@ -2772,7 +2772,7 @@ static int SortIndexString(int64_t * pCutOffs, int64_t cutOffLength, const char 
                            SORT_MODE mode, UINDEX strlen)
 {
     int result = 0;
-    switch ( mode )
+    switch (mode)
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
@@ -2790,7 +2790,7 @@ static int SortIndexUnicode(int64_t * pCutOffs, int64_t cutOffLength, const char
                             SORT_MODE mode, UINDEX strlen)
 {
     int result = 0;
-    switch ( mode )
+    switch (mode)
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
@@ -2808,7 +2808,7 @@ static int SortIndexVoid(int64_t * pCutOffs, int64_t cutOffLength, const char * 
                          SORT_MODE mode, UINDEX strlen)
 {
     int result = 0;
-    switch ( mode )
+    switch (mode)
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
@@ -2824,7 +2824,7 @@ static int SortIndexVoid(int64_t * pCutOffs, int64_t cutOffLength, const char * 
 //===============================================================================
 static void SortArray(void * pDataIn1, int64_t arraySize1, int32_t arrayType1, SORT_MODE mode)
 {
-    switch ( arrayType1 )
+    switch (arrayType1)
     {
     case NPY_STRING: SortInPlace<char>(pDataIn1, arraySize1, mode); break;
     case NPY_BOOL: SortInPlace<bool>(pDataIn1, arraySize1, mode); break;
@@ -2864,7 +2864,7 @@ PyObject * SortInPlace(PyObject * self, PyObject * args)
     PyArrayObject * inArr1 = NULL;
     int sortMode;
 
-    if ( ! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode) )
+    if (! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode))
         return NULL;
 
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -2900,7 +2900,7 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
 
     // THIS CODE IS NOT FINSIHED
 
-    if ( ! PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &inArr1, &PyArray_Type, &inSort) )
+    if (! PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &inArr1, &PyArray_Type, &inSort))
         return NULL;
 
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -2909,53 +2909,53 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
     int64_t arraySize1 = ArrayLength(inArr1);
     int64_t sortSize = ArrayLength(inSort);
 
-    if ( arrayType1 == NPY_INT32 && sortType == NPY_INT32 )
+    if (arrayType1 == NPY_INT32 && sortType == NPY_INT32)
     {
         int32_t * pDataIn = (int32_t *)PyArray_BYTES(inArr1);
         int32_t * pSort = (int32_t *)PyArray_BYTES(inSort);
 
         int32_t * inverseSort = (int32_t *)WORKSPACE_ALLOC(sortSize * sizeof(int32_t));
-        for ( int i = 0; i < sortSize; i++ )
+        for (int i = 0; i < sortSize; i++)
         {
             inverseSort[pSort[i]] = i;
         }
 
-        for ( int i = 0; i < arraySize1; i++ )
+        for (int i = 0; i < arraySize1; i++)
         {
             pDataIn[i] = inverseSort[pDataIn[i]];
         }
 
         WORKSPACE_FREE(inverseSort);
     }
-    else if ( arrayType1 == NPY_INT32 && sortType == NPY_INT64 )
+    else if (arrayType1 == NPY_INT32 && sortType == NPY_INT64)
     {
         int32_t * pDataIn = (int32_t *)PyArray_BYTES(inArr1);
         int64_t * pSort = (int64_t *)PyArray_BYTES(inSort);
 
         int64_t * inverseSort = (int64_t *)WORKSPACE_ALLOC(sortSize * sizeof(int64_t));
-        for ( int64_t i = 0; i < sortSize; i++ )
+        for (int64_t i = 0; i < sortSize; i++)
         {
             inverseSort[pSort[i]] = i;
         }
 
-        for ( int i = 0; i < arraySize1; i++ )
+        for (int i = 0; i < arraySize1; i++)
         {
             pDataIn[i] = (int32_t)inverseSort[pDataIn[i]];
         }
         WORKSPACE_FREE(inverseSort);
     }
-    else if ( arrayType1 == NPY_INT64 && sortType == NPY_INT64 )
+    else if (arrayType1 == NPY_INT64 && sortType == NPY_INT64)
     {
         int64_t * pDataIn = (int64_t *)PyArray_BYTES(inArr1);
         int64_t * pSort = (int64_t *)PyArray_BYTES(inSort);
 
         int64_t * inverseSort = (int64_t *)WORKSPACE_ALLOC(sortSize * sizeof(int64_t));
-        for ( int64_t i = 0; i < sortSize; i++ )
+        for (int64_t i = 0; i < sortSize; i++)
         {
             inverseSort[pSort[i]] = i;
         }
 
-        for ( int64_t i = 0; i < arraySize1; i++ )
+        for (int64_t i = 0; i < arraySize1; i++)
         {
             pDataIn[i] = inverseSort[pDataIn[i]];
         }
@@ -2978,7 +2978,7 @@ PyObject * Sort(PyObject * self, PyObject * args)
     PyArrayObject * inArr1 = NULL;
     int sortMode;
 
-    if ( ! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode) )
+    if (! PyArg_ParseTuple(args, "O!i", &PyArray_Type, &inArr1, &sortMode))
         return NULL;
 
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -2990,7 +2990,7 @@ PyObject * Sort(PyObject * self, PyObject * args)
     // The output is a boolean where the nth item was found
     PyArrayObject * duplicateArray = AllocateNumpyArray(ndim, dims, arrayType1);
 
-    if ( duplicateArray == NULL )
+    if (duplicateArray == NULL)
     {
         PyErr_Format(PyExc_ValueError, "Sort out of memory");
         return NULL;
@@ -3019,7 +3019,7 @@ static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
 
                       void * pDataIn1, UINDEX arraySize1, UINDEX * pDataOut1, SORT_MODE mode, int32_t arrayType1, UINDEX strlen)
 {
-    switch ( arrayType1 )
+    switch (arrayType1)
     {
     case NPY_UNICODE:
         SortIndexUnicode<UINDEX>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
@@ -3069,12 +3069,12 @@ static int IsSortedFloat(const char * pDataIn1, int64_t arraySize1, int64_t strl
 
     int64_t i = arraySize1 - 1;
 
-    while ( (i > 0) && (pData[i] != pData[i]) )
+    while ((i > 0) && (pData[i] != pData[i]))
     {
         i--;
     }
 
-    while ( (i > 0) && pData[i] >= pData[i - 1] )
+    while ((i > 0) && pData[i] >= pData[i - 1])
     {
         i--;
     }
@@ -3091,7 +3091,7 @@ static int IsSorted(const char * pDataIn1, int64_t arraySize1, int64_t strlennot
 
     int64_t i = arraySize1 - 1;
 
-    while ( (i > 0) && pData[i] >= pData[i - 1] )
+    while ((i > 0) && pData[i] >= pData[i - 1])
     {
         i--;
     }
@@ -3106,7 +3106,7 @@ static int IsSortedString(const char * pData, int64_t arraySize1, int64_t strlen
 
     int64_t i = arraySize1 - 1;
 
-    while ( (i > 0) && ! (STRING_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)) )
+    while ((i > 0) && ! (STRING_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3121,7 +3121,7 @@ static int IsSortedUnicode(const char * pData, int64_t arraySize1, int64_t strle
 
     int64_t i = arraySize1 - 1;
 
-    while ( (i > 0) && ! (UNICODE_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)) )
+    while ((i > 0) && ! (UNICODE_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3136,7 +3136,7 @@ static int IsSortedVoid(const char * pData, int64_t arraySize1, int64_t strlen)
 
     int64_t i = arraySize1 - 1;
 
-    while ( (i > 0) && ! (VOID_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)) )
+    while ((i > 0) && ! (VOID_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3151,7 +3151,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
 {
     PyArrayObject * inArr1 = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr1) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &inArr1))
         return NULL;
 
     int32_t arrayType1 = PyArray_TYPE(inArr1);
@@ -3160,7 +3160,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
 
     int64_t itemSize = PyArray_ITEMSIZE(inArr1);
 
-    if ( ndim != 1 || itemSize != PyArray_STRIDE(inArr1, 0) )
+    if (ndim != 1 || itemSize != PyArray_STRIDE(inArr1, 0))
     {
         PyErr_Format(PyExc_ValueError, "IsSorted arrays must be one dimensional and contiguous.  ndim is %d\n", ndim);
         return NULL;
@@ -3174,7 +3174,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
     int64_t result = 0;
     IS_SORTED_FUNC pSortedFunc = NULL;
 
-    switch ( arrayType1 )
+    switch (arrayType1)
     {
     case NPY_BOOL:
     case NPY_INT8: pSortedFunc = IsSorted<int8_t>; break;
@@ -3222,10 +3222,10 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
         IsSortedCallbackStruct * cb = (IsSortedCallbackStruct *)callbackArgT;
 
         // check if short circuited (any segment not sorted)
-        if ( cb->IsSorted )
+        if (cb->IsSorted)
         {
             // If not the first segment, then overlap by going back
-            if ( start != 0 )
+            if (start != 0)
             {
                 start--;
                 length++;
@@ -3233,7 +3233,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
             int result = cb->pSortedFunc(cb->pDataIn1 + (start * cb->ItemSize), length, cb->ItemSize);
 
             // on success, return true
-            if ( result )
+            if (result)
                 return true;
 
             // on failure, set the failure flag and return false
@@ -3248,7 +3248,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
 
     result = stISCallback.IsSorted;
 
-    if ( result )
+    if (result)
     {
         Py_INCREF(Py_True);
         return Py_True;
@@ -3267,16 +3267,16 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
 int64_t * GetCutOffs(PyObject * kwargs, int64_t & cutoffLength)
 {
     // Check for cutoffs kwarg to see if going into parallel mode
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         PyArrayObject * pCutOffs = NULL;
         // Borrowed reference
         // Returns NULL if key not present
         pCutOffs = (PyArrayObject *)PyDict_GetItemString(kwargs, "cutoffs");
 
-        if ( pCutOffs != NULL && PyArray_Check(pCutOffs) )
+        if (pCutOffs != NULL && PyArray_Check(pCutOffs))
         {
-            switch ( PyArray_TYPE(pCutOffs) )
+            switch (PyArray_TYPE(pCutOffs))
             {
             CASE_NPY_INT64:
                 cutoffLength = ArrayLength(pCutOffs);
@@ -3301,7 +3301,7 @@ static bool ARangeCallback(void * callbackArgT, int core, int64_t start, int64_t
     UINDEX istart = (UINDEX)start;
     UINDEX iend = istart + (UINDEX)length;
 
-    for ( UINDEX i = istart; i < iend; i++ )
+    for (UINDEX i = istart; i < iend; i++)
     {
         pDataOut[i] = i;
     }
@@ -3313,18 +3313,18 @@ static bool ARangeCallback(void * callbackArgT, int core, int64_t start, int64_t
 static PyArrayObject * GetKwargIndex(PyObject * kwargs, int64_t & indexLength, int & dtype)
 {
     // Check for 'index' kwarg to see if prime lexsort
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         PyArrayObject * pStartIndex = NULL;
         // Borrowed reference
         // Returns NULL if key not present
         pStartIndex = (PyArrayObject *)PyDict_GetItemString(kwargs, "index");
 
-        if ( pStartIndex != NULL && PyArray_Check(pStartIndex) )
+        if (pStartIndex != NULL && PyArray_Check(pStartIndex))
         {
             indexLength = ArrayLength(pStartIndex);
 
-            switch ( PyArray_TYPE(pStartIndex) )
+            switch (PyArray_TYPE(pStartIndex))
             {
             CASE_NPY_INT64:
                 dtype = NPY_INT64;
@@ -3367,19 +3367,19 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
 {
     CMultiListPrepare mlp(args);
 
-    if ( mlp.aInfo && mlp.tupleSize > 0 )
+    if (mlp.aInfo && mlp.tupleSize > 0)
     {
         int64_t arraySize1 = mlp.totalRows;
 
         int64_t cutOffLength = 0;
         int64_t * pCutOffs = GetCutOffs(kwargs, cutOffLength);
 
-        if ( pCutOffs && pCutOffs[cutOffLength - 1] != arraySize1 )
+        if (pCutOffs && pCutOffs[cutOffLength - 1] != arraySize1)
         {
             PyErr_Format(PyExc_ValueError, "LexSort last cutoff length does not match array length %lld", arraySize1);
             return NULL;
         }
-        if ( cutOffLength == -1 )
+        if (cutOffLength == -1)
         {
             PyErr_Format(PyExc_ValueError, "LexSort 'cutoffs' must be an array of type int64_t");
             return NULL;
@@ -3392,27 +3392,27 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
 
         PyArrayObject * result = NULL;
 
-        if ( indexLength == -1 )
+        if (indexLength == -1)
         {
             PyErr_Format(PyExc_ValueError, "LexSort 'index' must be an array of type int64_t or int32_t");
             return NULL;
         }
 
-        if ( indexLength > 0 )
+        if (indexLength > 0)
         {
-            if ( indexLength > arraySize1 )
+            if (indexLength > arraySize1)
             {
                 PyErr_Format(PyExc_ValueError, "LexSort 'index' is larger than value array");
                 return NULL;
             }
 
-            if ( sizeof(UINDEX) == 8 && indexDType != NPY_INT64 )
+            if (sizeof(UINDEX) == 8 && indexDType != NPY_INT64)
             {
                 PyErr_Format(PyExc_ValueError, "LexSort 'index' is not int64_t");
                 return NULL;
             }
 
-            if ( sizeof(UINDEX) == 4 && indexDType != NPY_INT32 )
+            if (sizeof(UINDEX) == 4 && indexDType != NPY_INT32)
             {
                 PyErr_Format(PyExc_ValueError, "LexSort 'index' is not int32_t");
                 return NULL;
@@ -3428,13 +3428,13 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
             result = AllocateLikeNumpyArray(mlp.aInfo[0].pObject, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
         }
 
-        if ( result )
+        if (result)
         {
             // Return the sorted index
             UINDEX * pDataOut = (UINDEX *)PyArray_BYTES(result);
 
             // BUG? what if we have index= and cutoffs= ??
-            if ( pCutOffs )
+            if (pCutOffs)
             {
                 LOGGING("Have cutoffs %lld\n", cutOffLength);
 
@@ -3442,11 +3442,11 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
                 UINDEX * pCounter = pDataOut;
 
                 int64_t startPos = 0;
-                for ( int64_t j = 0; j < cutOffLength; j++ )
+                for (int64_t j = 0; j < cutOffLength; j++)
                 {
                     int64_t endPos = pCutOffs[j];
                     int64_t partitionLength = endPos - startPos;
-                    for ( UINDEX i = 0; i < partitionLength; i++ )
+                    for (UINDEX i = 0; i < partitionLength; i++)
                     {
                         *pCounter++ = i;
                     }
@@ -3456,13 +3456,13 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
             else
             {
                 // If the user did not provide a start index, we make one
-                if ( index == NULL )
+                if (index == NULL)
                 {
                     g_cMathWorker->DoMultiThreadedChunkWork(arraySize1, ARangeCallback<UINDEX>, pDataOut);
                 }
             }
 
-            if ( pCutOffs )
+            if (pCutOffs)
             {
                 // Turn off caching of large memory allocs
                 g_cMathWorker->NoCaching = true;
@@ -3470,14 +3470,14 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
 
             // When multiple arrays are passed, we sort in order of how it is passed
             // Thus, the last array is the last sort, and therefore determines the primary sort order
-            for ( UINDEX i = 0; i < mlp.tupleSize; i++ )
+            for (UINDEX i = 0; i < mlp.tupleSize; i++)
             {
                 // For each array...
                 SortIndex<UINDEX>(pCutOffs, cutOffLength, mlp.aInfo[i].pData, (UINDEX)arraySize1, pDataOut,
                                   SORT_MODE::SORT_MODE_MERGE, mlp.aInfo[i].NumpyDType, (UINDEX)mlp.aInfo[i].ItemSize);
             }
 
-            if ( pCutOffs )
+            if (pCutOffs)
             {
                 g_cMathWorker->NoCaching = false;
             }
@@ -3510,16 +3510,16 @@ PyObject * LexSort64(PyObject * self, PyObject * args, PyObject * kwargs)
 static bool * GetFilter(PyObject * kwargs, int64_t & filterLength)
 {
     // Check for cutoffs kwarg to see if going into parallel mode
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         PyArrayObject * pFilter = NULL;
         // Borrowed reference
         // Returns NULL if key not present
         pFilter = (PyArrayObject *)PyDict_GetItemString(kwargs, "filter");
 
-        if ( pFilter != NULL && PyArray_Check(pFilter) )
+        if (pFilter != NULL && PyArray_Check(pFilter))
         {
-            switch ( PyArray_TYPE(pFilter) )
+            switch (PyArray_TYPE(pFilter))
             {
             case NPY_BOOL: filterLength = ArrayLength(pFilter); return (bool *)PyArray_BYTES(pFilter);
             }
@@ -3531,18 +3531,18 @@ static bool * GetFilter(PyObject * kwargs, int64_t & filterLength)
 
 static int64_t GetBaseIndex(PyObject * kwargs)
 {
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         PyObject * pBaseIndex = NULL;
         // Borrowed reference
         // Returns NULL if key not present
         pBaseIndex = PyDict_GetItemString(kwargs, "base_index");
-        if ( pBaseIndex != NULL && PyLong_Check(pBaseIndex) )
+        if (pBaseIndex != NULL && PyLong_Check(pBaseIndex))
         {
             long baseindex = PyLong_AsLong(pBaseIndex);
 
             // only zero or one allowed
-            if ( baseindex == 0 )
+            if (baseindex == 0)
                 return 0;
         }
     }
@@ -3621,7 +3621,7 @@ static int64_t GroupIndexStep2(void * pDataIn1, UINDEX arraySize1, UINDEX * pDat
     //}
 
     {
-        if ( base_index == 0 )
+        if (base_index == 0)
         {
             // SHIFT countout
 
@@ -3630,12 +3630,12 @@ static int64_t GroupIndexStep2(void * pDataIn1, UINDEX arraySize1, UINDEX * pDat
             pFirstOut[0] = curIndex;
             pGroupOut[curIndex] = 0;
 
-            for ( UINDEX i = 1; i < arraySize1; i++ )
+            for (UINDEX i = 1; i < arraySize1; i++)
             {
                 curIndex = pDataIndexIn[i];
                 T val2 = pDataIn[curIndex];
 
-                if ( val1 == val2 )
+                if (val1 == val2)
                 {
                     curCount++;
                     pGroupOut[curIndex] = curGroup;
@@ -3662,12 +3662,12 @@ static int64_t GroupIndexStep2(void * pDataIn1, UINDEX arraySize1, UINDEX * pDat
             pFirstOut[0] = curIndex;
             pGroupOut[curIndex] = 1;
 
-            for ( UINDEX i = 1; i < arraySize1; i++ )
+            for (UINDEX i = 1; i < arraySize1; i++)
             {
                 curIndex = pDataIndexIn[i];
                 T val2 = pDataIn[curIndex];
 
-                if ( val1 == val2 )
+                if (val1 == val2)
                 {
                     curCount++;
                     pGroupOut[curIndex] = curGroup + 1;
@@ -3706,12 +3706,12 @@ static int64_t GroupIndexStep2String(void * pDataIn1, UINDEX arraySize1, UINDEX 
     pFirstOut[0] = curIndex;
     pGroupOut[curIndex] = baseIndex;
 
-    for ( UINDEX i = 1; i < arraySize1; i++ )
+    for (UINDEX i = 1; i < arraySize1; i++)
     {
         curIndex = pDataIndexIn[i];
         T * val2 = &pDataIn[curIndex * strlen];
 
-        if ( BINARY_LT(val1, val2, strlen) == 0 )
+        if (BINARY_LT(val1, val2, strlen) == 0)
         {
             curCount++;
             pGroupOut[curIndex] = curGroup + baseIndex;
@@ -3754,7 +3754,7 @@ static int64_t GroupIndex(void * pDataIn1, int64_t arraySize1V, void * pDataInde
     UINDEX * pCountOut = (UINDEX *)pCountOutV;
     UINDEX arraySize1 = (UINDEX)arraySize1V;
 
-    switch ( strlen )
+    switch (strlen)
     {
     case 1:
         uniqueCount = GroupIndexStep2<int8_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter,
@@ -3796,15 +3796,15 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
     int64_t base_index = GetBaseIndex(kwargs);
 
-    if ( pCutOffs && pCutOffs[cutOffLength - 1] != indexLength )
+    if (pCutOffs && pCutOffs[cutOffLength - 1] != indexLength)
     {
         return PyErr_Format(PyExc_ValueError, "GroupFromLexSort last cutoff length does not match array length %lld", indexLength);
     }
-    if ( cutOffLength == -1 )
+    if (cutOffLength == -1)
     {
         return PyErr_Format(PyExc_ValueError, "GroupFromLexSort 'cutoffs' must be an array of type int64_t");
     }
-    if ( pFilter && filterLength != indexLength )
+    if (pFilter && filterLength != indexLength)
     {
         return PyErr_Format(PyExc_ValueError, "GroupFromLexSort filter length does not match array length %lld", indexLength);
     }
@@ -3819,14 +3819,14 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
     PyArrayObject * const count = AllocateNumpyArray(1, (npy_intp *)&worstCase, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
 
     // Make sure allocations succeeded
-    if ( ! keys || ! first || ! count )
+    if (! keys || ! first || ! count)
     {
         // Release/recycle any of the arrays which _were_ successfully allocated so they're not leaked.
-        if ( keys )
+        if (keys)
         {
             RecycleNumpyInternal(keys);
         }
-        if ( first )
+        if (first)
         {
             RecycleNumpyInternal(first);
         }
@@ -3841,7 +3841,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
     int64_t uniqueCount = 0;
     GROUP_INDEX_FUNC gpfunc = GroupIndex<UINDEX>;
 
-    if ( pCutOffs )
+    if (pCutOffs)
     {
         PyArrayObject * uniqueCounts = AllocateNumpyArray(1, (npy_intp *)&cutOffLength, NPY_INT64);
         int64_t * pUniqueCounts = (int64_t *)PyArray_BYTES(uniqueCounts);
@@ -3896,7 +3896,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             int64_t partLength;
             int64_t partStart;
 
-            if ( t == 0 )
+            if (t == 0)
             {
                 partStart = 0;
             }
@@ -3930,7 +3930,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
         // TODO: make global routine
         int64_t totalUniques = 0;
-        for ( int i = 0; i < cutOffLength; i++ )
+        for (int i = 0; i < cutOffLength; i++)
         {
             totalUniques += pUniqueCounts[i];
             pUniqueCounts[i] = totalUniques;
@@ -3982,7 +3982,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
         pgroupadd.pCountReduced = (char *)PyArray_BYTES(countReduced);
 
         // skip first value since reserved for zero bin (and assign it 0)
-        for ( int64_t c = 0; c < INDEX_SIZE; c++ )
+        for (int64_t c = 0; c < INDEX_SIZE; c++)
         {
             *pgroupadd.pCountReduced++ = 0;
         }
@@ -3998,7 +3998,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             int64_t partStart;
             int64_t uniquesBefore;
 
-            if ( t == 0 )
+            if (t == 0)
             {
                 partStart = 0;
                 uniquesBefore = 0;
@@ -4012,7 +4012,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             partLength = callbackArg->pCutOffs[t] - partStart;
             // printf("[%lld] start: %lld  length: %lld  ubefore: %lld\n", t, partStart, partLength, uniquesBefore);
 
-            if ( callbackArg->sizeofUINDEX == 4 )
+            if (callbackArg->sizeofUINDEX == 4)
             {
                 int32_t * pKey = (int32_t *)callbackArg->pKeyOut;
 
@@ -4030,12 +4030,12 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                 int32_t ubefore = (int32_t)uniquesBefore;
 
-                if ( t != 0 )
+                if (t != 0)
                 {
                     pKey += partStart;
                     pIndex += partStart;
 
-                    for ( int64_t i = 0; i < partLength; i++ )
+                    for (int64_t i = 0; i < partLength; i++)
                     {
                         pKey[i] += ((int32_t)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
                         pIndex[i] += (int32_t)partStart;
@@ -4045,7 +4045,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 {
                     pKey += partStart;
 
-                    for ( int64_t i = 0; i < partLength; i++ )
+                    for (int64_t i = 0; i < partLength; i++)
                     {
                         pKey[i] += ((int32_t)partStart + 1); // start at 1, becomes ikey
                     }
@@ -4062,7 +4062,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 // very first [0] is for zero bin
                 // pCount++;
 
-                for ( int64_t i = 0; i < uniqueLength; i++ )
+                for (int64_t i = 0; i < uniqueLength; i++)
                 {
                     pFirstReduced[i] = pFirst[i] + (int32_t)partStart;
                     // printf("setting %lld ", (int64_t)pCount[i]);
@@ -4087,12 +4087,12 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                 int64_t ubefore = (int64_t)uniquesBefore;
 
-                if ( t != 0 )
+                if (t != 0)
                 {
                     pKey += partStart;
                     pIndex += partStart;
 
-                    for ( int64_t i = 0; i < partLength; i++ )
+                    for (int64_t i = 0; i < partLength; i++)
                     {
                         pKey[i] += ((int64_t)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
                         pIndex[i] += (int64_t)partStart;
@@ -4102,7 +4102,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 {
                     pKey += partStart;
 
-                    for ( int64_t i = 0; i < partLength; i++ )
+                    for (int64_t i = 0; i < partLength; i++)
                     {
                         pKey[i] += ((int64_t)partStart + 1); // start at 1, becomes ikey
                     }
@@ -4119,7 +4119,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 // very first [0] is for zero bin
                 // pCount++;
 
-                for ( int64_t i = 0; i < uniqueLength; i++ )
+                for (int64_t i = 0; i < uniqueLength; i++)
                 {
                     pFirstReduced[i] = pFirst[i] + (int64_t)partStart;
                     // printf("setting %lld ", (int64_t)pCount[i]);
@@ -4195,7 +4195,7 @@ PyObject * GroupFromLexSort(PyObject * self, PyObject * args, PyObject * kwargs)
     PyArrayObject * inArrSortIndex = NULL;
     PyArrayObject * inArrValues = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &inArrSortIndex, &PyArray_Type, &inArrValues) )
+    if (! PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &inArrSortIndex, &PyArray_Type, &inArrValues))
     {
         return PyErr_Format(PyExc_TypeError, "Invalid argument types and/or count for GroupFromLexSort.");
     }
@@ -4205,7 +4205,7 @@ PyObject * GroupFromLexSort(PyObject * self, PyObject * args, PyObject * kwargs)
 
     // Due to filtering, now allow a smaller array length which might index the entire
     // size of inArrValues
-    if ( arrLength > arrLengthValues )
+    if (arrLength > arrLengthValues)
     {
         return PyErr_Format(PyExc_ValueError, "GroupFromLexSort input array lengths do not match: %lld vs %lld", arrLength,
                             arrLengthValues);
@@ -4218,7 +4218,7 @@ PyObject * GroupFromLexSort(PyObject * self, PyObject * args, PyObject * kwargs)
     void * pIndex = PyArray_BYTES(inArrSortIndex);
     void * pValues = PyArray_BYTES(inArrValues);
 
-    switch ( dtype )
+    switch (dtype)
     {
     CASE_NPY_INT32:
         return GroupFromLexSortInternal<int32_t>(kwargs, (int32_t *)pIndex, arrLength, arrLengthValues, pValues, itemSize);

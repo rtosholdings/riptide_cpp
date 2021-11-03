@@ -17,17 +17,17 @@ namespace internal
     auto LOADU = [](auto const * x) -> std::remove_pointer_t<decltype(x)> {
         using underlying_t = std::remove_pointer<decltype(x)>;
 
-        if constexpr ( std::is_same_v<__m256d const, underlying_t> )
+        if constexpr (std::is_same_v<__m256d const, underlying_t>)
         {
             return _mm256_loadu_pd(reinterpret_cast<double const *>(x));
         }
 
-        if constexpr ( std::is_same_v<__m256 const, underlying_t> )
+        if constexpr (std::is_same_v<__m256 const, underlying_t>)
         {
             return _mm256_loadu_ps(reinterpret_cast<float const *>(x));
         }
 
-        if constexpr ( std::is_same_v<__m256i const, underlying_t> )
+        if constexpr (std::is_same_v<__m256i const, underlying_t>)
         {
             return _mm256_loadu_si256(x);
         }
@@ -36,15 +36,15 @@ namespace internal
     };
 
     auto STOREU = [](auto const * x, auto const y) -> void {
-        if constexpr ( std::is_same_v<__m256d const, y> )
+        if constexpr (std::is_same_v<__m256d const, y>)
         {
             _mm256_storeu_pd((double *)x, y);
         }
-        if constexpr ( std::is_same_v<__m256 const, y> )
+        if constexpr (std::is_same_v<__m256 const, y>)
         {
             _mm256_storeu_ps((float *)x, y);
         }
-        if constexpr ( std::is_same_v<__m256i const, y> )
+        if constexpr (std::is_same_v<__m256i const, y>)
         {
             _mm256_storeu_si256(x, y);
         }
@@ -156,11 +156,11 @@ namespace internal
     //// IEEE Mask
     //// NOTE: Check NAN mask -- if not then return number, else return 0.0 or +INF or -INF
     //// For IEEE 754, MSB is the sign bit, then next section is the exponent.  If the exponent is all 1111s, it is some kind of
-    ///NAN
+    /// NAN
     //#define NAN_TO_NUM_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :  (((*(uint32_t*)&x)  & 0x007fffff) != 0) ?
-    //0.0f : (((*(uint32_t*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX) #define NAN_TO_NUM_F64(x) ((((*(uint64_t*)&x)  &
-    //0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(uint64_t*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 : (((*(uint64_t*)&x)
-    //& 0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
+    // 0.0f : (((*(uint32_t*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX) #define NAN_TO_NUM_F64(x) ((((*(uint64_t*)&x)  &
+    // 0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(uint64_t*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 :
+    // (((*(uint64_t*)&x) & 0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
     //
     //#define NAN_TO_ZERO_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :   0.0f )
     //#define NAN_TO_ZERO_F64(x) ((((*(uint64_t*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x : 0.0 )

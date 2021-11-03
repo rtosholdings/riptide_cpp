@@ -23,7 +23,7 @@
 
 // For supporting older versions of PyPy.
 // Source: https://github.com/numpy/numpy/blob/504fd7b2eedb90dd3aa0b326ac8c3120118b5f2d/numpy/core/src/multiarray/typeinfo.c#L8
-#if ( defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM <= 0x07030000) )
+#if (defined(PYPY_VERSION_NUM) && (PYPY_VERSION_NUM <= 0x07030000))
     // PyPy issue 3160
     #include <structseq.h>
 #endif
@@ -42,8 +42,9 @@ static PyStructSequence_Field SDSArrayCutoffs_fields[] = {
     { "arrays",
       "A sequence of arrays created by stacking the columns of one or more files or one or more sections of a single file." },
     // typing.Sequence[riptide_cpp.SDSContainerItem]
-    { "array_infos", "A sequence of the same length as the sequence provided in the 'arrays' component, where each element of the "
-                     "sequence contains an object with the name and SDS flags of the corresponding stacked array in 'arrays'." },
+    { "array_infos",
+      "A sequence of the same length as the sequence provided in the 'arrays' component, where each element of the "
+      "sequence contains an object with the name and SDS flags of the corresponding stacked array in 'arrays'." },
     // typing.Sequence[np.ndarray]
     { "array_cutoffs",
       "A sequence of non-negative integer arrays; each array corresponds to the same-indexed array in the 'arrays' component and "
@@ -52,8 +53,9 @@ static PyStructSequence_Field SDSArrayCutoffs_fields[] = {
     { "file_metadata",
       "A sequence where each element is the raw SDS file metadata for the corresponding element of the 'files' component." },
     // typing.Sequence[bytes]
-    { "filenames", "A sequence containing the ASCII-encoded filenames of SDS files from which data was read from during the "
-                   "stacking operation." },
+    { "filenames",
+      "A sequence containing the ASCII-encoded filenames of SDS files from which data was read from during the "
+      "stacking operation." },
     // typing.Optional[typing.Mapping[str, typing.Any]]
     { "first_file_header", "A dictionary created from the SDS file header in the first file being stacked." },
     { NULL, NULL }
@@ -72,13 +74,15 @@ static PyStructSequence_Desc SDSArrayCutoffs_desc = {
 
 static PyStructSequence_Field SDSFileInfo_fields[] = {
     // bytes
-    { "column_metadata", "JSON-formatted metadata for columns (arrays) within the Dataset which have types subclassing FastArray "
-                         "(such as Categorical or DateTimeNano)." },
+    { "column_metadata",
+      "JSON-formatted metadata for columns (arrays) within the Dataset which have types subclassing FastArray "
+      "(such as Categorical or DateTimeNano)." },
     // Union[Sequence[np.ndarray], Sequence[riptide_cpp.SDSArrayInfo]]
     //   Sequence[np.ndarray] when loading data;
     //   Sequence[riptide_cpp.SDSArrayInfo] when only loading metadata.
-    { "columns", "A sequence of ndarrays (or derived array types) stored in the file; or, if reading an SDS file in info-only "
-                 "mode, a sequence of objects describing the type, shape, etc. of each of the columns stored in the file." },
+    { "columns",
+      "A sequence of ndarrays (or derived array types) stored in the file; or, if reading an SDS file in info-only "
+      "mode, a sequence of objects describing the type, shape, etc. of each of the columns stored in the file." },
     // Sequence[riptide_cpp.SDSContainerItem]
     { "container_items", "A sequence of objects, each describing an item stored within the SDS file." },
     // bytes
@@ -149,7 +153,7 @@ static PyObject * Create_SDSArrayCutoffs(PyObject * const returnArrayTuple, PyOb
 {
     PyObject * entry = PyStructSequence_New(&PyType_SDSArrayCutoffs);
 
-    if ( ! entry )
+    if (! entry)
         return NULL;
 
     // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
@@ -160,7 +164,7 @@ static PyObject * Create_SDSArrayCutoffs(PyObject * const returnArrayTuple, PyOb
     PyStructSequence_SET_ITEM(entry, 4, pyFiles);
     PyStructSequence_SET_ITEM(entry, 5, firstFileHeader);
 
-    if ( PyErr_Occurred() )
+    if (PyErr_Occurred())
     {
         Py_DECREF(entry);
         return NULL;
@@ -174,7 +178,7 @@ static PyObject * Create_SDSArrayInfo(PyObject * const arrayShapeTuple, const in
 {
     PyObject * entry = PyStructSequence_New(&PyType_SDSArrayInfo);
 
-    if ( ! entry )
+    if (! entry)
         return NULL;
 
     // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
@@ -183,7 +187,7 @@ static PyObject * Create_SDSArrayInfo(PyObject * const arrayShapeTuple, const in
     PyStructSequence_SET_ITEM(entry, 2, PyLong_FromLong(flags));
     PyStructSequence_SET_ITEM(entry, 3, PyLong_FromLong(itemsize));
 
-    if ( PyErr_Occurred() )
+    if (PyErr_Occurred())
     {
         Py_DECREF(entry);
         return NULL;
@@ -196,7 +200,7 @@ static PyObject * Create_SDSContainerItem(const char * const arrayName, const un
 {
     PyObject * entry = PyStructSequence_New(&PyType_SDSContainerItem);
 
-    if ( ! entry )
+    if (! entry)
         return NULL;
 
     // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
@@ -205,7 +209,7 @@ static PyObject * Create_SDSContainerItem(const char * const arrayName, const un
     //       we should create an instance of that type for the next tuple element instead of a plain integer.
     PyStructSequence_SET_ITEM(entry, 1, PyLong_FromUnsignedLong(sdsFlags));
 
-    if ( PyErr_Occurred() )
+    if (PyErr_Occurred())
     {
         Py_DECREF(entry);
         return NULL;
@@ -219,7 +223,7 @@ static PyObject * Create_SDSFileInfo(PyObject * const columnMetadataBytes, PyObj
 {
     PyObject * entry = PyStructSequence_New(&PyType_SDSFileInfo);
 
-    if ( ! entry )
+    if (! entry)
         return NULL;
 
     // Py_BuildValue docs: https://docs.python.org/3/c-api/arg.html#c.Py_BuildValue
@@ -228,7 +232,7 @@ static PyObject * Create_SDSFileInfo(PyObject * const columnMetadataBytes, PyObj
     PyStructSequence_SET_ITEM(entry, 2, containerItems);
     PyStructSequence_SET_ITEM(entry, 3, fileMetadataDict);
 
-    if ( PyErr_Occurred() )
+    if (PyErr_Occurred())
     {
         Py_DECREF(entry);
         return NULL;
@@ -249,40 +253,40 @@ bool RegisterSdsPythonTypes(PyObject * module_dict)
     // For each of the Struct Sequence (C-API version of namedtuple) types defined for SDS,
     // initialize the PyTypeObject then add it to the module dictionary provided by the caller.
 
-    if ( PyStructSequence_InitType2(&PyType_SDSArrayCutoffs, &SDSArrayCutoffs_desc) < 0 )
+    if (PyStructSequence_InitType2(&PyType_SDSArrayCutoffs, &SDSArrayCutoffs_desc) < 0)
     {
         return false;
     }
-    if ( PyDict_SetItemString(module_dict, "SDSArrayCutoffs", (PyObject *)&PyType_SDSArrayCutoffs) < 0 )
+    if (PyDict_SetItemString(module_dict, "SDSArrayCutoffs", (PyObject *)&PyType_SDSArrayCutoffs) < 0)
     {
         return false;
     }
 
-    if ( PyStructSequence_InitType2(&PyType_SDSFileInfo, &SDSFileInfo_desc) < 0 )
+    if (PyStructSequence_InitType2(&PyType_SDSFileInfo, &SDSFileInfo_desc) < 0)
     {
         return false;
     }
-    if ( PyDict_SetItemString(module_dict, "SDSFileInfo", (PyObject *)&PyType_SDSFileInfo) < 0 )
+    if (PyDict_SetItemString(module_dict, "SDSFileInfo", (PyObject *)&PyType_SDSFileInfo) < 0)
     {
         return false;
     }
 
     // TODO: Do we need to Py_DECREF(&SDSFileInfo_desc) here to keep the refcounts correct?
 
-    if ( PyStructSequence_InitType2(&PyType_SDSContainerItem, &SDSContainerItem_desc) < 0 )
+    if (PyStructSequence_InitType2(&PyType_SDSContainerItem, &SDSContainerItem_desc) < 0)
     {
         return false;
     }
-    if ( PyDict_SetItemString(module_dict, "SDSContainerItem", (PyObject *)&PyType_SDSContainerItem) < 0 )
+    if (PyDict_SetItemString(module_dict, "SDSContainerItem", (PyObject *)&PyType_SDSContainerItem) < 0)
     {
         return false;
     }
 
-    if ( PyStructSequence_InitType2(&PyType_SDSArrayInfo, &SDSArrayInfo_desc) < 0 )
+    if (PyStructSequence_InitType2(&PyType_SDSArrayInfo, &SDSArrayInfo_desc) < 0)
     {
         return false;
     }
-    if ( PyDict_SetItemString(module_dict, "SDSArrayInfo", (PyObject *)&PyType_SDSArrayInfo) < 0 )
+    if (PyDict_SetItemString(module_dict, "SDSArrayInfo", (PyObject *)&PyType_SDSArrayInfo) < 0)
     {
         return false;
     }
@@ -331,7 +335,7 @@ static void ClearErrors()
 // Returns true if there was an error
 static bool CheckErrors()
 {
-    if ( g_lastexception )
+    if (g_lastexception)
     {
         PyErr_Format(PyExc_ValueError, g_errorbuffer);
         return true;
@@ -371,7 +375,7 @@ static SDS_ARRAY_BLOCK * GetArrayBlock(char * baseOffset, int64_t arrayNum)
 
 void DestroyStringList(SDS_STRING_LIST * pStringList)
 {
-    for ( const char * filename : *pStringList )
+    for (const char * filename : *pStringList)
     {
         WORKSPACE_FREE((void *)filename);
     }
@@ -385,16 +389,16 @@ SDS_STRING_LIST * StringListToVector(PyObject * listFilenames)
 {
     SDS_STRING_LIST * returnList = new SDS_STRING_LIST;
 
-    if ( PyList_Check(listFilenames) )
+    if (PyList_Check(listFilenames))
     {
         int64_t filenameCount = PyList_GET_SIZE(listFilenames);
         returnList->reserve(filenameCount);
 
-        for ( int64_t i = 0; i < filenameCount; i++ )
+        for (int64_t i = 0; i < filenameCount; i++)
         {
             PyObject * pBytes = PyList_GET_ITEM(listFilenames, i);
             const char * fileName = NULL;
-            if ( PyBytes_Check(pBytes) )
+            if (PyBytes_Check(pBytes))
             {
                 fileName = PyBytes_AsString(pBytes);
 
@@ -406,10 +410,10 @@ SDS_STRING_LIST * StringListToVector(PyObject * listFilenames)
                 // add to our own list
                 returnList->push_back(pNewString);
             }
-            else if ( PyUnicode_Check(pBytes) )
+            else if (PyUnicode_Check(pBytes))
             {
                 PyObject * temp2 = PyUnicode_AsASCIIString(pBytes);
-                if ( temp2 != NULL )
+                if (temp2 != NULL)
                 {
                     fileName = PyBytes_AsString(temp2);
                     int64_t strSize = strlen(fileName);
@@ -440,15 +444,15 @@ int64_t BuildListInfo(PyListObject * inListNames, OUT char * pListNames)
     int64_t listNameCount = PyList_GET_SIZE(inListNames);
     char * pStart = pListNames;
 
-    for ( int i = 0; i < listNameCount; i++ )
+    for (int i = 0; i < listNameCount; i++)
     {
         PyObject * pTuple = PyList_GET_ITEM(inListNames, i);
 
-        if ( pTuple && PyTuple_Check(pTuple) )
+        if (pTuple && PyTuple_Check(pTuple))
         {
             PyObject * pBytes = PyTuple_GET_ITEM(pTuple, 0);
 
-            if ( PyBytes_Check(pBytes) )
+            if (PyBytes_Check(pBytes))
             {
                 int overflow = 0;
                 int64_t value = PyLong_AsLongLongAndOverflow(PyTuple_GET_ITEM(pTuple, 1), &overflow);
@@ -457,7 +461,7 @@ int64_t BuildListInfo(PyListObject * inListNames, OUT char * pListNames)
                 char * pName = PyBytes_AS_STRING(pBytes);
                 LOGGING("Name is %s -- size %d  value %d\n", pName, (int)strSize, (int)value);
 
-                while ( (*pListNames++ = *pName++) )
+                while ((*pListNames++ = *pName++))
                     ;
 
                 // Store the 1 byte enum type
@@ -491,13 +495,13 @@ PyObject * MakeListNames(const char * pArrayNames, int64_t nameBlockCount, const
 
     int64_t curPos = 0;
     // for every name
-    while ( nameBlockCount )
+    while (nameBlockCount)
     {
         nameBlockCount--;
         const char * pStart = pArrayNames;
 
         // skip to end (search for 0 terminating char)
-        while ( *pArrayNames++ )
+        while (*pArrayNames++)
             ;
 
         // Read the 1-byte SDSFlags enum value that's stored just after the NUL ('\0') character.
@@ -514,7 +518,7 @@ PyObject * MakeListNames(const char * pArrayNames, int64_t nameBlockCount, const
         curPos++;
 
         // If we ran too far, break
-        if ( (pArrayNames - nameData) >= nameSize )
+        if ((pArrayNames - nameData) >= nameSize)
             break;
     }
     return pyListName;
@@ -529,7 +533,7 @@ PyObject * ReadListNamesPython(char * nameData, SDS_FILE_HEADER * pFileHeader)
     LOGGING("ReadListNames %p\n", nameData);
 
     PyObject * pListName = NULL;
-    if ( nameData )
+    if (nameData)
     {
         // return list of SDSContainerItem
         // GIL must be held to create the list
@@ -552,12 +556,12 @@ PyObject * ReadListNamesPython(char * nameData, SDS_FILE_HEADER * pFileHeader)
 // TODO: This should be 'constexpr' but can't be as long as we want to support old versions of GCC.
 /*constexpr*/ static /*NPY_TYPES*/ int FixupDType(const /*NPY_TYPES*/ int dtype, const int64_t itemsize)
 {
-    if ( dtype == NPY_LONG )
+    if (dtype == NPY_LONG)
     {
         // types 7 (NPY_LONG) and 8 (NPY_ULONG) are ambiguous due to differences
         // in 64-bit OS memory models (LLP64 vs. LP64).
         // https://en.wikipedia.org/wiki/64-bit_computing#64-bit_data_models
-        if ( itemsize == 4 )
+        if (itemsize == 4)
         {
             return NPY_INT;
         }
@@ -567,10 +571,10 @@ PyObject * ReadListNamesPython(char * nameData, SDS_FILE_HEADER * pFileHeader)
         }
     }
 
-    if ( dtype == NPY_ULONG )
+    if (dtype == NPY_ULONG)
     {
         // types 7 and 8 are ambiguous
-        if ( itemsize == 4 )
+        if (itemsize == 4)
         {
             return NPY_UINT;
         }
@@ -586,7 +590,7 @@ PyObject * ReadListNamesPython(char * nameData, SDS_FILE_HEADER * pFileHeader)
 // Return empty string on failure
 PyObject * GetMetaData(const char * const metaData, const int64_t metaSize)
 {
-    if ( metaData )
+    if (metaData)
     {
         // caller wants a pystring
         // this will make a copy of the data
@@ -607,7 +611,7 @@ int SetStringLong(PyObject * pDict, const char * strkey, long long value)
 PyObject * GetFileHeaderDict(const SDS_FILE_HEADER * const pFileHeader, SDS_FINAL_CALLBACK * const pSDSFinalCallback)
 {
     PyObject * pDict = PyDict_New();
-    if ( pFileHeader && pDict )
+    if (pFileHeader && pDict)
     {
         SetStringLong(pDict, "VersionHigh", (long long)(pFileHeader->VersionHigh));
         SetStringLong(pDict, "VersionLow", (long long)(pFileHeader->VersionLow));
@@ -642,17 +646,17 @@ PyObject * GetFileHeaderDict(const SDS_FILE_HEADER * const pFileHeader, SDS_FINA
 
         SetStringLong(pDict, "FileOffset", (long long)(pFileHeader->FileOffset));
         SetStringLong(pDict, "TimeStampUTCNanos", (long long)(pFileHeader->TimeStampUTCNanos));
-        if ( pSDSFinalCallback && pSDSFinalCallback->strFileName )
+        if (pSDSFinalCallback && pSDSFinalCallback->strFileName)
         {
             PyDict_SetItemString(pDict, "Filename", PyUnicode_FromString(pSDSFinalCallback->strFileName));
             SDSSectionName * pSection = pSDSFinalCallback->pSectionName;
 
             // The sectionoffset is used to reorder
-            if ( pSection )
+            if (pSection)
                 SetStringLong(pDict, "SectionOffset", pSection->SectionOffset);
 
             // Check if we have sections
-            if ( pSection && pSection->SectionCount )
+            if (pSection && pSection->SectionCount)
             {
                 // Create a new list of strings containing section names
                 PyObject * pSectionList = PyList_New(pSection->SectionCount);
@@ -660,7 +664,7 @@ PyObject * GetFileHeaderDict(const SDS_FILE_HEADER * const pFileHeader, SDS_FINA
                 PyDict_SetItemString(pDict, "Sections", pSectionList);
                 PyDict_SetItemString(pDict, "SectionOffsets", pSectionListOffset);
 
-                for ( int64_t n = 0; n < pSection->SectionCount; n++ )
+                for (int64_t n = 0; n < pSection->SectionCount; n++)
                 {
                     PyList_SetItem(pSectionList, n, PyUnicode_FromString(pSection->pSectionNames[n]));
                     PyList_SetItem(pSectionListOffset, n, (PyObject *)PyLong_FromLongLong(pSection->pSectionOffsets[n]));
@@ -693,7 +697,7 @@ PyObject * GetSDSFileInfo(PyObject * const pListName, PyObject * const pystring,
     LOGGING("In GetSDSFileInfo -- %lld   %p\n", arrayCount, pArrayBlockFirst);
 
     // Insert all the arrays
-    for ( int64_t i = 0; i < arrayCount; i++ )
+    for (int64_t i = 0; i < arrayCount; i++)
     {
         const SDS_ARRAY_BLOCK * pArrayBlock = &pArrayBlockFirst[i];
 
@@ -701,7 +705,7 @@ PyObject * GetSDSFileInfo(PyObject * const pListName, PyObject * const pystring,
         // pArrayBlock->ArrayUncompressedSize);
 
         PyObject * shapeTuple = PyTuple_New(pArrayBlock->NDim);
-        for ( int64_t j = 0; j < pArrayBlock->NDim; j++ )
+        for (int64_t j = 0; j < pArrayBlock->NDim; j++)
         {
             PyTuple_SET_ITEM(shapeTuple, j, PyLong_FromLongLong(pArrayBlock->Dimensions[j]));
         }
@@ -739,9 +743,9 @@ PyObject * GetSDSFileInfo(PyObject * const pListName, PyObject * const pystring,
 // otherwise it returns NULL
 const char * FindBang(const char * pString)
 {
-    while ( *pString )
+    while (*pString)
     {
-        if ( *pString == '!' )
+        if (*pString == '!')
             return pString;
         pString++;
     }
@@ -752,19 +756,19 @@ const char * FindBang(const char * pString)
 bool IsIncluded(PyObject * pInclusionList, const char * pArrayName)
 {
     // If there is no inclusion list, assume all are included
-    if ( pInclusionList )
+    if (pInclusionList)
     {
         PyObject * includeDict = pInclusionList;
         PyObject * exists = PyDict_GetItemString(includeDict, pArrayName);
 
         // NOTE: to do... check for !
-        if ( ! exists )
+        if (! exists)
         {
             // The pArrayName might be a categorical column
             // If so, it will be in the format categoricalname!col0
 
             char * pHasBang = (char *)FindBang(pArrayName);
-            if ( pHasBang )
+            if (pHasBang)
             {
                 // temp remove bang
                 *pHasBang = 0;
@@ -776,7 +780,7 @@ bool IsIncluded(PyObject * pInclusionList, const char * pArrayName)
                 *pHasBang = '!';
 
                 // if we matched return true
-                if ( exists )
+                if (exists)
                 {
                     LOGGING("categorical columns !array was included %s\n", pArrayName);
                     return true;
@@ -799,10 +803,10 @@ void ClearWriteableFlag(PyArrayObject * pArray)
 
     // Also clear the base flag
     PyArrayObject * pBase = (PyArrayObject *)PyArray_BASE(pArray);
-    while ( pBase != NULL )
+    while (pBase != NULL)
     {
         // make sure base object is a numpy array object
-        if ( ! PyArray_Check(pBase) )
+        if (! PyArray_Check(pBase))
         {
             break;
         }
@@ -829,7 +833,7 @@ void * ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK * pSMCB)
 
     //----------- LOAD ARRAY NAMES -------------------------
     int64_t nameSize = pFileHeader->NameBlockSize;
-    if ( nameSize )
+    if (nameSize)
     {
         char * nameData = GetMemoryOffset(baseOffset, pFileHeader->NameBlockOffset);
         pListName = MakeListNames(nameData, pFileHeader->NameBlockCount, nameSize);
@@ -847,7 +851,7 @@ void * ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK * pSMCB)
     //--------------- LOAD ARRAYS ---------------------------
     int64_t arrayCount = pFileHeader->ArraysWritten;
 
-    if ( mode == COMPRESSION_MODE_INFO )
+    if (mode == COMPRESSION_MODE_INFO)
     {
         return GetSDSFileInfo(pListName, pystring, arrayCount, GetArrayBlock(baseOffset, 0), pFileHeader);
     }
@@ -857,7 +861,7 @@ void * ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK * pSMCB)
     LOGGING("Number of arrays %lld\n", arrayCount);
 
     // Insert all the arrays
-    for ( int64_t i = 0; i < arrayCount; i++ )
+    for (int64_t i = 0; i < arrayCount; i++)
     {
         SDS_ARRAY_BLOCK * pArrayBlock = GetArrayBlock(baseOffset, i);
 
@@ -878,7 +882,7 @@ void * ReadFromSharedMemory(SDS_SHARED_MEMORY_CALLBACK * pSMCB)
                                       pArrayBlock->Flags, (npy_intp *)pArrayBlock->Strides);
         CHECK_MEMORY_ERROR(pArray);
 
-        if ( pArray )
+        if (pArray)
         {
             // Make it read only since in shared memory
             ClearWriteableFlag(pArray);
@@ -911,7 +915,7 @@ PyObject * ReadFinalStackArrays(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t 
     // not currently used
     // int hasFilter = (pSDSFilter && pSDSFilter->pBoolMask && pSDSFilter->pFilterInfo);
 
-    for ( int t = 0; t < arraysWritten; t++ )
+    for (int t = 0; t < arraysWritten; t++)
     {
         PyObject * item = NULL;
 
@@ -920,7 +924,7 @@ PyObject * ReadFinalStackArrays(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t 
         LOGGING("Setting item %d  %p\n", t, item);
 
         // Return NONE for any arrays with memory issues
-        if ( item == NULL )
+        if (item == NULL)
         {
             LOGGING("!! removed item %d -- setting to PyNone\n", t);
             Py_INCREF(Py_None);
@@ -939,7 +943,7 @@ PyObject * ReadFinalStackArrays(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t 
 
         //==============
         PyArrayObject * pOffsetArray = AllocateNumpyArray(1, (npy_intp *)&fileCount, NPY_LONGLONG);
-        if ( pOffsetArray )
+        if (pOffsetArray)
         {
             int64_t * pOffsets = (int64_t *)PyArray_GETPTR1(pOffsetArray, 0);
 
@@ -961,7 +965,7 @@ PyObject * ReadFinalStackArrays(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t 
     PyObject * pyFiles = PyList_New(fileCount);
     PyObject * pyMeta = PyList_New(fileCount);
 
-    for ( int f = 0; f < fileCount; f++ )
+    for (int f = 0; f < fileCount; f++)
     {
         // printf("filename: %s\n  meta: %s\n ", pSDSFileInfo[f].Filename, pSDSFileInfo[f].MetaData);
         PyList_SET_ITEM(pyFiles, f, PyBytes_FromString(pSDSFileInfo[f].Filename));
@@ -970,7 +974,7 @@ PyObject * ReadFinalStackArrays(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t 
 
     // Return the first fileheader to help autodetect the type of file when stacking
     PyObject * pDict{};
-    if ( fileCount > 0 )
+    if (fileCount > 0)
     {
         pDict = GetFileHeaderDict(pSDSFileInfo[0].pFileHeader, NULL);
     }
@@ -994,7 +998,7 @@ PyObject * ReadFinalArrays(int64_t arraysWritten, SDSArrayInfo * pArrayInfo)
     PyObject * returnArrayTuple = PyTuple_New(arraysWritten);
 
     // Decompression
-    for ( int t = 0; t < arraysWritten; t++ )
+    for (int t = 0; t < arraysWritten; t++)
     {
         PyObject * item = NULL;
 
@@ -1003,7 +1007,7 @@ PyObject * ReadFinalArrays(int64_t arraysWritten, SDSArrayInfo * pArrayInfo)
         LOGGING("Setting item %d  %p\n", t, item);
 
         // Return NONE for any arrays with memory issues
-        if ( item == NULL )
+        if (item == NULL)
         {
             LOGGING("!! removed item %d -- setting to PyNone\n", t);
             Py_INCREF(Py_None);
@@ -1022,7 +1026,7 @@ PyObject * ReadFinalArrays(int64_t arraysWritten, SDSArrayInfo * pArrayInfo)
 // May pass in NULL
 PyObject * ReadFinalWrap(SDS_FINAL_CALLBACK * pSDSFinalCallback)
 {
-    if ( pSDSFinalCallback == NULL )
+    if (pSDSFinalCallback == NULL)
     {
         Py_INCREF(Py_None);
         return Py_None;
@@ -1038,7 +1042,7 @@ PyObject * ReadFinalWrap(SDS_FINAL_CALLBACK * pSDSFinalCallback)
     PyObject * pystring = GetMetaData(pSDSFinalCallback->metaData, pSDSFinalCallback->metaSize);
 
     // -- STOP EARLY IF THE USER JUST WANTS THE INFORMATION -----------------
-    if ( mode == COMPRESSION_MODE_INFO )
+    if (mode == COMPRESSION_MODE_INFO)
     {
         LOGGING("Returning just the info\n");
         PyObject * returnObject = GetSDSFileInfo(pListName, pystring, arraysWritten, pArrayBlocks, pFileHeader, pSDSFinalCallback);
@@ -1066,7 +1070,7 @@ void * ReadFinal(SDS_FINAL_CALLBACK * pSDSFinalCallback, int64_t finalCount)
 {
     PyObject * returnItem = NULL;
 
-    if ( finalCount <= 0 )
+    if (finalCount <= 0)
     {
         // No valid files found, just return None
         Py_INCREF(Py_None);
@@ -1078,7 +1082,7 @@ void * ReadFinal(SDS_FINAL_CALLBACK * pSDSFinalCallback, int64_t finalCount)
         returnItem = PyList_New(finalCount);
 
         // Wrap the item for every file
-        for ( int64_t file = 0; file < finalCount; file++ )
+        for (int64_t file = 0; file < finalCount; file++)
         {
             PyObject * item = ReadFinalWrap(&pSDSFinalCallback[file]);
 
@@ -1100,7 +1104,7 @@ void * ReadFinalStack(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t finalCount
 {
     PyObject * returnItem = NULL;
 
-    if ( finalCount <= 0 )
+    if (finalCount <= 0)
     {
         Py_INCREF(Py_None);
         returnItem = Py_None;
@@ -1121,7 +1125,7 @@ void * ReadFinalStack(SDS_STACK_CALLBACK * pSDSFinalCallback, int64_t finalCount
 void CopyUnicodeString(PyObject * pUnicode, char ** returnString, int64_t * returnSize)
 {
     PyObject * temp2 = PyUnicode_AsASCIIString(pUnicode);
-    if ( temp2 != NULL )
+    if (temp2 != NULL)
     {
         *returnString = PyBytes_AsString(temp2);
         *returnSize = strlen(*returnString);
@@ -1146,12 +1150,12 @@ void CopyUnicodeString(PyObject * pUnicode, char ** returnString, int64_t * retu
 // returns 0 if no section
 int64_t GetStringFromDict(const char * dictstring, PyObject * kwargs, char ** returnString, int64_t * returnSize)
 {
-    if ( ! kwargs )
+    if (! kwargs)
         return 0;
 
     PyObject * sectionObject = PyDict_GetItemString(kwargs, dictstring);
 
-    if ( sectionObject && PyUnicode_Check(sectionObject) )
+    if (sectionObject && PyUnicode_Check(sectionObject))
     {
         CopyUnicodeString(sectionObject, returnString, returnSize);
         return *returnSize;
@@ -1171,12 +1175,12 @@ int64_t GetStringFromDict(const char * dictstring, PyObject * kwargs, char ** re
 // returns NULL if no list of strings found
 SDS_STRING_LIST * GetSectionsName(PyObject * kwargs)
 {
-    if ( ! kwargs )
+    if (! kwargs)
         return NULL;
 
     PyObject * sectionNameObject = PyDict_GetItemString(kwargs, "sections");
 
-    if ( sectionNameObject && PyList_Check(sectionNameObject) )
+    if (sectionNameObject && PyList_Check(sectionNameObject))
     {
         return StringListToVector(sectionNameObject);
     }
@@ -1190,17 +1194,17 @@ SDS_STRING_LIST * GetSectionsName(PyObject * kwargs)
 // returns 0 if no bandsize
 int64_t GetBandSize(PyObject * kwargs)
 {
-    if ( ! kwargs )
+    if (! kwargs)
         return 0;
 
     PyObject * bandsizeObject = PyDict_GetItemString(kwargs, "bandsize");
 
-    if ( bandsizeObject && PyLong_Check(bandsizeObject) )
+    if (bandsizeObject && PyLong_Check(bandsizeObject))
     {
         int64_t result = PyLong_AsLongLong(bandsizeObject);
 
         // minimum bandsize is 10K
-        if ( result < 0 )
+        if (result < 0)
             result = 0;
         return result;
     }
@@ -1214,12 +1218,12 @@ int64_t GetBandSize(PyObject * kwargs)
 // returns NULL of no list of strings found
 SDS_STRING_LIST * GetFoldersName(PyObject * kwargs)
 {
-    if ( ! kwargs )
+    if (! kwargs)
         return NULL;
 
     PyObject * folderNameObject = PyDict_GetItemString(kwargs, "folders");
 
-    if ( folderNameObject && PyList_Check(folderNameObject) )
+    if (folderNameObject && PyList_Check(folderNameObject))
     {
         return StringListToVector(folderNameObject);
     }
@@ -1265,8 +1269,8 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
     int32_t level = ZSTD_CLEVEL_DEFAULT;
     int32_t fileType = 0;
 
-    if ( ! PyArg_ParseTuple(args, "y#y#OO!iii|y#", &fileName, &fileNameSize, &metaData, &metaDataSize, &inListArrays, &PyList_Type,
-                            &inListNames, &compType, &level, &fileType, &shareName, &shareNameSize) )
+    if (! PyArg_ParseTuple(args, "y#y#OO!iii|y#", &fileName, &fileNameSize, &metaData, &metaDataSize, &inListArrays, &PyList_Type,
+                           &inListNames, &compType, &level, &fileType, &shareName, &shareNameSize))
     {
         return NULL;
     }
@@ -1283,7 +1287,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 
     GetStringFromDict("section", kwargs, &pSectionName, &sectionSize);
 
-    if ( sectionSize >= SDS_MAX_SECTIONNAME )
+    if (sectionSize >= SDS_MAX_SECTIONNAME)
     {
         PyErr_Format(PyExc_ValueError, "section name too large: %lld", sectionSize);
         return NULL;
@@ -1300,7 +1304,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 
     // alloc worst case scenario
     char * pListNames = (char *)WORKSPACE_ALLOC((SDS_MAX_FILENAME * listNameCount) + 8);
-    if ( ! pListNames )
+    if (! pListNames)
     {
         return NULL;
     }
@@ -1315,7 +1319,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
     ArrayInfo * aInfo = BuildArrayInfo(inListArrays, &arrayCount, &totalItemSize, false);
 
     // CHECK FOR ERRORS
-    if ( aInfo )
+    if (aInfo)
     {
         SDS_WRITE_CALLBACKS SDSWriteCallbacks;
 
@@ -1331,7 +1335,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
         SDSArrayInfo * pDest = SDSWriteInfo.aInfo;
         ArrayInfo * pSrc = aInfo;
 
-        for ( int64_t i = 0; i < arrayCount; i++ )
+        for (int64_t i = 0; i < arrayCount; i++)
         {
             pDest->ArrayLength = pSrc->ArrayLength;
             pDest->ItemSize = (int32_t)pSrc->ItemSize;
@@ -1341,7 +1345,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
             pDest->pData = pSrc->pData;
 
             int32_t ndim = pSrc->NDim;
-            if ( ndim > SDS_MAX_DIMS )
+            if (ndim > SDS_MAX_DIMS)
             {
                 printf("!!!SDS: array dimensions too high: %d\n", ndim);
                 ndim = SDS_MAX_DIMS;
@@ -1352,19 +1356,19 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
             //}
             pDest->NDim = ndim;
 
-            for ( int dim_idx = 0; dim_idx < SDS_MAX_DIMS; dim_idx++ )
+            for (int dim_idx = 0; dim_idx < SDS_MAX_DIMS; dim_idx++)
             {
                 pDest->Dimensions[dim_idx] = 0;
                 pDest->Strides[dim_idx] = 0;
             }
 
             // None can be passed in for an array now
-            if ( pSrc->pObject )
+            if (pSrc->pObject)
             {
                 npy_intp * pdims = ((PyArrayObject_fields *)pSrc->pObject)->dimensions;
                 npy_intp * pstrides = ((PyArrayObject_fields *)pSrc->pObject)->strides;
 
-                for ( int dim_idx = 0; dim_idx < ndim; dim_idx++ )
+                for (int dim_idx = 0; dim_idx < ndim; dim_idx++)
                 {
                     pDest->Dimensions[dim_idx] = pdims[dim_idx];
                     pDest->Strides[dim_idx] = pstrides[dim_idx];
@@ -1373,7 +1377,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
                 pDest->Flags = PyArray_FLAGS((PyArrayObject *)(pSrc->pObject));
 
                 // make sure C or F contiguous
-                if ( ! (pDest->Flags & (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS)) )
+                if (! (pDest->Flags & (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS)))
                 {
                     // pSrc->pObject = PyArray_FromAny(pSrc->pObject, NULL, 0, 0, NPY_ARRAY_ENSURECOPY, NULL);
 
@@ -1419,7 +1423,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
         SDSWriteInfo.sectionNameSize = 0;
 
         // if the kwarg section exists,
-        if ( pSectionName )
+        if (pSectionName)
         {
             SDSWriteInfo.appendRowsMode = true;
             SDSWriteInfo.sectionName = pSectionName;
@@ -1437,17 +1441,17 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 
     WORKSPACE_FREE(pListNames);
 
-    if ( pSectionName )
+    if (pSectionName)
     {
         WORKSPACE_FREE(pSectionName);
     }
-    if ( folderName )
+    if (folderName)
     {
         DestroyStringList(folderName);
     }
 
     // If there are errors, return NULL
-    if ( CheckErrors() )
+    if (CheckErrors())
     {
         return NULL;
     }
@@ -1474,15 +1478,15 @@ void AllocateArrayCallback(SDS_ALLOCATE_ARRAY * pAllocateArray)
     pDestInfo->pData = NULL;
 
     // if (IsIncluded((PyObject*)pAllocateArray->pInclusionList, pArrayName)) {
-    if ( true )
+    if (true)
     {
         // If we have no dimensions, do not allocate
-        if ( ndim )
+        if (ndim)
         {
             int64_t * dims = pAllocateArray->dims;
             int64_t * strides = pAllocateArray->strides;
 
-            if ( pAllocateArray->data )
+            if (pAllocateArray->data)
             {
                 LOGGING("Shared memory was set to %p\n", pAllocateArray->data);
             }
@@ -1493,7 +1497,7 @@ void AllocateArrayCallback(SDS_ALLOCATE_ARRAY * pAllocateArray)
             // Use different array-creation functions based on whether we're allocating new (or reclaiming recycled) memory,
             // or we have some existing backing memory (e.g. shared memory) and we're creating the new array object to just
             // wrap that memory.
-            if ( pAllocateArray->data )
+            if (pAllocateArray->data)
             {
                 pDestInfo->pArrayObject = AllocateNumpyArrayForData(pAllocateArray->ndim, (npy_intp *)dims,
                                                                     pAllocateArray->numpyType, pAllocateArray->itemsize,
@@ -1512,9 +1516,9 @@ void AllocateArrayCallback(SDS_ALLOCATE_ARRAY * pAllocateArray)
             }
 
             // check for successful allocation
-            if ( pDestInfo->pArrayObject )
+            if (pDestInfo->pArrayObject)
             {
-                if ( pAllocateArray->data )
+                if (pAllocateArray->data)
                 {
                     // Flip off writeable flag at low level if came from shared memory
                     ClearWriteableFlag((PyArrayObject *)(pDestInfo->pArrayObject));
@@ -1538,7 +1542,7 @@ void GetFilters(PyObject * kwargs, SDS_READ_CALLBACKS * pRCB)
 
     pRCB->MustExist = false;
 
-    if ( kwargs )
+    if (kwargs)
     {
         //-------------------
         // This DOES NOT change the ref count (borrowed reference)
@@ -1554,9 +1558,9 @@ void GetFilters(PyObject * kwargs, SDS_READ_CALLBACKS * pRCB)
 
         PyObject * maskItem = PyDict_GetItemString(kwargs, "mask");
 
-        if ( maskItem && PyArray_Check(maskItem) )
+        if (maskItem && PyArray_Check(maskItem))
         {
-            if ( PyArray_TYPE((PyArrayObject *)maskItem) == NPY_BOOL )
+            if (PyArray_TYPE((PyArrayObject *)maskItem) == NPY_BOOL)
             {
                 pRCB->Filter.BoolMaskLength = ArrayLength((PyArrayObject *)maskItem);
                 pRCB->Filter.pBoolMask = (bool *)PyArray_GETPTR1((PyArrayObject *)maskItem, 0);
@@ -1567,9 +1571,9 @@ void GetFilters(PyObject * kwargs, SDS_READ_CALLBACKS * pRCB)
         }
 
         PyObject * mustexist = PyDict_GetItemString(kwargs, "mustexist");
-        if ( mustexist && PyBool_Check(mustexist) )
+        if (mustexist && PyBool_Check(mustexist))
         {
-            if ( mustexist == Py_True )
+            if (mustexist == Py_True)
             {
                 pRCB->MustExist = true;
             }
@@ -1604,18 +1608,18 @@ PyObject * DecompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 
     PyObject * includeDict = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "y#i|y#", &fileName, &fileNameSize, &mode, &shareName, &shareNameSize) )
+    if (! PyArg_ParseTuple(args, "y#i|y#", &fileName, &fileNameSize, &mode, &shareName, &shareNameSize))
     {
         return NULL;
     }
 
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         // Borrowed reference
         // Returns NULL if key not present
         PyObject * includedItem = PyDict_GetItemString(kwargs, "include");
 
-        if ( includedItem && PyDict_Check(includedItem) )
+        if (includedItem && PyDict_Check(includedItem))
         {
             LOGGING("Found valid inclusion dict\n");
             includeDict = includedItem;
@@ -1656,23 +1660,23 @@ PyObject * DecompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
     //==============================================
     void * result = SDSReadFile(fileName, shareName, folderName, sectionsName, &sdsRI, &sdsRCB);
 
-    if ( folderName )
+    if (folderName)
     {
         DestroyStringList(folderName);
     }
 
-    if ( sectionsName )
+    if (sectionsName)
     {
         DestroyStringList(sectionsName);
     }
 
     // If there are errors, return NULL
-    if ( ! result && CheckErrors() )
+    if (! result && CheckErrors())
     {
         return NULL;
     }
 
-    if ( ! result )
+    if (! result)
     {
         PyErr_Format(PyExc_ValueError, "NULL is returned from SDSReadFile but no error string was found");
     }
@@ -1694,7 +1698,7 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
 
     int32_t mode = COMPRESSION_MODE_DECOMPRESS_FILE;
 
-    if ( ! PyArg_ParseTuple(args, "O!|i", &PyList_Type, &listFilenames, &mode) )
+    if (! PyArg_ParseTuple(args, "O!|i", &PyList_Type, &listFilenames, &mode))
     {
         return NULL;
     }
@@ -1702,11 +1706,11 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     //--------------------------------------------------
     // Check if we are flipping into info modes
     //
-    if ( multiMode == SDS_MULTI_MODE_READ_MANY && mode != COMPRESSION_MODE_DECOMPRESS_FILE )
+    if (multiMode == SDS_MULTI_MODE_READ_MANY && mode != COMPRESSION_MODE_DECOMPRESS_FILE)
     {
         multiMode = SDS_MULTI_MODE_READ_MANY_INFO;
     }
-    if ( multiMode == SDS_MULTI_MODE_STACK_MANY && mode != COMPRESSION_MODE_DECOMPRESS_FILE )
+    if (multiMode == SDS_MULTI_MODE_STACK_MANY && mode != COMPRESSION_MODE_DECOMPRESS_FILE)
     {
         multiMode = SDS_MULTI_MODE_STACK_MANY_INFO;
     }
@@ -1720,22 +1724,22 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     int64_t maskLength = 0;
     bool * pBooleanMask = NULL;
 
-    if ( multiMode == SDS_MULTI_MODE_CONCAT_MANY )
+    if (multiMode == SDS_MULTI_MODE_CONCAT_MANY)
     {
         GetStringFromDict("output", kwargs, &pOutputName, &outputSize);
-        if ( ! pOutputName )
+        if (! pOutputName)
         {
             PyErr_Format(PyExc_ValueError, "The output= must be a filename when concatenating files");
         }
     }
 
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         // Borrowed reference
         // Returns NULL if key not present
         PyObject * includedItem = PyDict_GetItemString(kwargs, "include");
 
-        if ( includedItem && PyList_Check(includedItem) )
+        if (includedItem && PyList_Check(includedItem))
         {
             LOGGING("Found valid inclusion list\n");
             pInclusionList = StringListToVector(includedItem);
@@ -1748,7 +1752,7 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
 
         PyObject * reserveItem = PyDict_GetItemString(kwargs, "reserve");
 
-        if ( reserveItem && PyFloat_Check(reserveItem) )
+        if (reserveItem && PyFloat_Check(reserveItem))
         {
             reserveSpace = PyFloat_AsDouble(reserveItem);
             LOGGING("Found valid reserve space as %lf\n", reserveSpace);
@@ -1762,16 +1766,16 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     int64_t fileCount = pFilenames->size();
 
     LOGGING("InternalDecompress filecount: %lld  mode: %d", fileCount, multiMode);
-    if ( fileCount )
+    if (fileCount)
     {
         SDS_MULTI_READ * pMultiRead = (SDS_MULTI_READ *)WORKSPACE_ALLOC(sizeof(SDS_MULTI_READ) * fileCount);
 
-        if ( pMultiRead )
+        if (pMultiRead)
         {
             int64_t i = 0;
 
             // loop over all filenames and build callback
-            for ( const char * filename : *pFilenames )
+            for (const char * filename : *pFilenames)
             {
                 memset(&pMultiRead[i].FinalCallback, 0, sizeof(SDS_FINAL_CALLBACK));
                 pMultiRead[i].pFileName = filename;
@@ -1811,18 +1815,18 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     }
 
     // Free what might have been allocated
-    if ( pOutputName )
+    if (pOutputName)
     {
         WORKSPACE_FREE(pOutputName);
     }
 
     DestroyStringList(pFilenames);
 
-    if ( pInclusionList )
+    if (pInclusionList)
     {
         DestroyStringList(pInclusionList);
     }
-    if ( pFolderList )
+    if (pFolderList)
     {
         DestroyStringList(pFolderList);
     }
@@ -1832,12 +1836,12 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     bool isThereAnError = CheckErrors();
 
     // If there are errors, return NULL
-    if ( ! result && isThereAnError )
+    if (! result && isThereAnError)
     {
         return NULL;
     }
 
-    if ( isThereAnError && fileCount == 1 )
+    if (isThereAnError && fileCount == 1)
     {
         // result is good, but there is an error.  decrement the result so we can get rid of it
         Py_DecRef((PyObject *)result);
@@ -1845,7 +1849,7 @@ PyObject * InternalDecompressFiles(PyObject * self, PyObject * args, PyObject * 
     }
 
     // We might have a partial error if we get here
-    if ( ! result )
+    if (! result)
     {
         Py_INCREF(Py_None);
         return Py_None;
@@ -1895,7 +1899,7 @@ PyObject * SetLustreGateway(PyObject * self, PyObject * args)
 
     PyObject * tuple;
 
-    if ( ! PyArg_ParseTuple(args, "y#O!", &fileName, &fileNameSize, &PyTuple_Type, &tuple) )
+    if (! PyArg_ParseTuple(args, "y#O!", &fileName, &fileNameSize, &PyTuple_Type, &tuple))
     {
         return NULL;
     }
@@ -1906,7 +1910,7 @@ PyObject * SetLustreGateway(PyObject * self, PyObject * args)
     int64_t tupleLength = PyTuple_GET_SIZE(tuple);
     g_gatewaylist.reserve(tupleLength);
 
-    for ( int64_t i = 0; i < tupleLength; i++ )
+    for (int64_t i = 0; i < tupleLength; i++)
     {
         const char * gateway = PyBytes_AsString(PyTuple_GET_ITEM(tuple, i));
         // printf("gw: %s\n", gateway);

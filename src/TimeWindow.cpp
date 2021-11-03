@@ -32,15 +32,15 @@ public:
 
         U currentSum = 0;
 
-        for ( int64_t i = start; i < (start + length); i++ )
+        for (int64_t i = start; i < (start + length); i++)
         {
             currentSum = pIn[i];
             int64_t timeIndex = i - 1;
-            while ( timeIndex >= 0 )
+            while (timeIndex >= 0)
             {
                 // see if in time difference within range
                 int64_t deltaTime = pTime[i] - pTime[timeIndex];
-                if ( deltaTime <= timeDelta )
+                if (deltaTime <= timeDelta)
                 {
                     // keep tallying
                     currentSum += pIn[timeIndex];
@@ -63,15 +63,15 @@ public:
 
         U currentProd = 1;
 
-        for ( int64_t i = start; i < (start + length); i++ )
+        for (int64_t i = start; i < (start + length); i++)
         {
             currentProd = pIn[i];
             int64_t timeIndex = i - 1;
-            while ( timeIndex >= 0 )
+            while (timeIndex >= 0)
             {
                 // see if in time difference within range
                 int64_t deltaTime = pTime[i] - pTime[timeIndex];
-                if ( deltaTime <= timeDelta )
+                if (deltaTime <= timeDelta)
                 {
                     // keep tallying
                     currentProd *= pIn[timeIndex];
@@ -88,7 +88,7 @@ public:
 
     static TIMEWINDOW_FUNC GeTimeWindowFunction(int64_t func)
     {
-        switch ( func )
+        switch (func)
         {
         case TIMEWINDOW_SUM: return TimeWindowSum;
         case TIMEWINDOW_PROD: return TimeWindowProd;
@@ -99,7 +99,7 @@ public:
 
 TIMEWINDOW_FUNC GeTimeWindowFunction(int64_t func, int32_t inputType, int32_t * outputType)
 {
-    switch ( inputType )
+    switch (inputType)
     {
     case NPY_BOOL: *outputType = NPY_INT64; return TimeWindowBase<int8_t, int64_t, int64_t>::GeTimeWindowFunction(func);
     case NPY_FLOAT: *outputType = NPY_FLOAT; return TimeWindowBase<float, float, int64_t>::GeTimeWindowFunction(func);
@@ -149,7 +149,7 @@ PyObject * TimeWindow(PyObject * self, PyObject * args)
     int64_t func = 0;
     int64_t param1 = 0;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!LL", &PyArray_Type, &inArr, &PyArray_Type, &timeArr, &func, &param1) )
+    if (! PyArg_ParseTuple(args, "O!O!LL", &PyArray_Type, &inArr, &PyArray_Type, &timeArr, &func, &param1))
     {
         return NULL;
     }
@@ -161,14 +161,14 @@ PyObject * TimeWindow(PyObject * self, PyObject * args)
     int64_t arrayLengthTime = ArrayLength(timeArr);
 
     // TODO: Check to make sure inArr and timeArr sizes are the same
-    if ( arrayLength != arrayLengthTime )
+    if (arrayLength != arrayLengthTime)
     {
         PyErr_Format(PyExc_ValueError, "TimeWindow array and time array must have same length: %lld  %lld", arrayLength,
                      arrayLengthTime);
         return NULL;
     }
 
-    switch ( PyArray_TYPE(timeArr) )
+    switch (PyArray_TYPE(timeArr))
     {
     CASE_NPY_INT64:
 
@@ -183,12 +183,12 @@ PyObject * TimeWindow(PyObject * self, PyObject * args)
 
     pTimeWindowFunc = GeTimeWindowFunction(func, dType, &numpyOutType);
 
-    if ( pTimeWindowFunc )
+    if (pTimeWindowFunc)
     {
         // Dont bother allocating if we cannot call the function
         outArray = AllocateNumpyArray(1, (npy_intp *)&arrayLength, numpyOutType);
 
-        if ( outArray )
+        if (outArray)
         {
             // MT callback
             struct TWCallbackStruct

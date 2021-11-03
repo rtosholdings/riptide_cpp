@@ -174,9 +174,9 @@ const union
 //// NOTE: Check NAN mask -- if not then return number, else return 0.0 or +INF or -INF
 //// For IEEE 754, MSB is the sign bit, then next section is the exponent.  If the exponent is all 1111s, it is some kind of NAN
 //#define NAN_TO_NUM_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :  (((*(uint32_t*)&x)  & 0x007fffff) != 0) ?
-//0.0f : (((*(uint32_t*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX) #define NAN_TO_NUM_F64(x) ((((*(uint64_t*)&x)  &
-//0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(uint64_t*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 : (((*(uint64_t*)&x)  &
-//0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
+// 0.0f : (((*(uint32_t*)&x)  & 0x80000000) == 0) ?  FLT_MAX : -FLT_MAX) #define NAN_TO_NUM_F64(x) ((((*(uint64_t*)&x)  &
+// 0x7ff0000000000000) != 0x7ff0000000000000) ?  x :  (((*(uint64_t*)&x)  & 0x000fffffffffffff) != 0) ? 0.0 : (((*(uint64_t*)&x)  &
+// 0x8000000000000000) == 0) ?  DBL_MAX : -DBL_MAX )
 //
 //#define NAN_TO_ZERO_F32(x) ((((*(uint32_t*)&x)  & 0x7f800000) != 0x7f800000) ?  x :   0.0f )
 //#define NAN_TO_ZERO_F64(x) ((((*(uint64_t*)&x)  & 0x7ff0000000000000) != 0x7ff0000000000000) ?  x : 0.0 )
@@ -658,7 +658,7 @@ static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
     LOGGING("unary op fast strides %lld %lld   sizeof: %lld\n", strideIn, strideOut, sizeof(T));
-    if ( sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         // possible to align 32 bit boundary?
         // if (((int64_t)pDataOut & 31) != 0) {
@@ -685,7 +685,7 @@ static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int
             pIn1_256 += 1;
             pOut_256 += 1;
         }
-        while ( pOut_256 < pEnd_256 );
+        while (pOut_256 < pEnd_256);
 
         // update thin pointers to last location of wide pointers
         pIn = (T *)pIn1_256;
@@ -693,7 +693,7 @@ static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(T, pOut, strideOut);
@@ -715,7 +715,7 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
 
     // TOOD: ensure stride*len < 2billion
     // assumes output not strided
-    if ( sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         const int64_t innerloopLen = chunkSize * (len / chunkSize);
         T * pEnd = &pOut[innerloopLen];
@@ -740,14 +740,14 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
             pIn = (T *)((char *)pIn + (strideIn * 8));
             pOut_256 += 1;
         }
-        while ( pOut_256 < pEnd_256 );
+        while (pOut_256 < pEnd_256);
 
         // update thin pointers to last location of wide pointers
         pOut = (T *)pOut_256;
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(T, pOut, strideOut);
@@ -768,7 +768,7 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -776,7 +776,7 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
         U256 * pIn1_256 = (U256 *)pDataIn;
         int64_t * pOut_i64 = (int64_t *)pDataOut;
 
-        while ( pOut_i64 < pEnd_i64 )
+        while (pOut_i64 < pEnd_i64)
         {
             //// Use 256 bit registers which hold 8 floats or 4 doubles
 
@@ -795,7 +795,7 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -815,7 +815,7 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, v
     bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -823,7 +823,7 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, v
         U256 * pIn1_256 = (U256 *)pDataIn;
         int32_t * pOut_i32 = (int32_t *)pDataOut;
 
-        while ( pOut_i32 < pEnd_i32 )
+        while (pOut_i32 < pEnd_i32)
         {
             // Use 256 bit registers which hold 8 floats or 4 doubles
             U256 m0 = LOADU(pIn1_256++);
@@ -838,7 +838,7 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, v
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -859,7 +859,7 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -867,7 +867,7 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
         U256 * pIn1_256 = (U256 *)pDataIn;
         int64_t * pOut_i64 = (int64_t *)pDataOut;
 
-        while ( pOut_i64 < pEnd_i64 )
+        while (pOut_i64 < pEnd_i64)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -883,7 +883,7 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -904,7 +904,7 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -912,7 +912,7 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
         U256 * pIn1_256 = (U256 *)pDataIn;
         int32_t * pOut_i32 = (int32_t *)pDataOut;
 
-        while ( pOut_i32 < pEnd_i32 )
+        while (pOut_i32 < pEnd_i32)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -926,7 +926,7 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -947,7 +947,7 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -958,7 +958,7 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
         // finite_comp 0x7f800000
         const __m256 m_finitecomp = _mm256_load_ps(__f32vec8_finite_compare.f);
 
-        while ( pOut_i64 < pEnd_i64 )
+        while (pOut_i64 < pEnd_i64)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -974,7 +974,7 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -994,7 +994,7 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
     bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -1004,7 +1004,7 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
 
         const __m256d m_finitecomp = _mm256_load_pd(__f64vec4_finite_compare.d);
 
-        while ( pOut_i32 < pEnd_i32 )
+        while (pOut_i32 < pEnd_i32)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -1020,7 +1020,7 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1041,7 +1041,7 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pData
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -1052,7 +1052,7 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pData
         // finite_comp 0x7f800000
         const __m256 m_finitecomp = _mm256_load_ps(__f32vec8_finite_compare.f);
 
-        while ( pOut_i64 < pEnd_i64 )
+        while (pOut_i64 < pEnd_i64)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -1068,7 +1068,7 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pData
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1089,7 +1089,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDat
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if ( sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize )
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -1099,7 +1099,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDat
 
         const __m256d m_finitecomp = _mm256_load_pd(__f64vec4_finite_compare.d);
 
-        while ( pOut_i32 < pEnd_i32 )
+        while (pOut_i32 < pEnd_i32)
         {
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
@@ -1116,7 +1116,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDat
     }
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1136,7 +1136,7 @@ static void UnaryOpSlow(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut
     T * pLastOut = (T *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(T, pOut, strideOut);
@@ -1157,7 +1157,7 @@ static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pD
     double * pLastOut = (double *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP((double)*pIn);
         pOut = STRIDE_NEXT(double, pOut, strideOut);
@@ -1178,7 +1178,7 @@ static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void * pDataIn, void * pDat
     bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
         *pOut = MATH_OP(*pIn);
         pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1188,7 +1188,7 @@ static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void * pDataIn, void * pDat
 
 static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
-    if ( strideOut == sizeof(bool) )
+    if (strideOut == sizeof(bool))
     {
         memset(pDataOut, 1, len);
     }
@@ -1196,7 +1196,7 @@ static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, 
     {
         bool * pOut = (bool *)pDataOut;
         bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
-        while ( pOut != pLastOut )
+        while (pOut != pLastOut)
         {
             *pOut = 1;
             pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1206,7 +1206,7 @@ static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, 
 
 static void UnaryOpSlow_FillFalse(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
-    if ( strideOut == sizeof(bool) )
+    if (strideOut == sizeof(bool))
     {
         memset(pDataOut, 0, len);
     }
@@ -1214,7 +1214,7 @@ static void UnaryOpSlow_FillFalse(void * pDataIn1, void * pDataOut, int64_t len,
     {
         bool * pOut = (bool *)pDataOut;
         bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
-        while ( pOut != pLastOut )
+        while (pOut != pLastOut)
         {
             *pOut = 0;
             pOut = STRIDE_NEXT(bool, pOut, strideOut);
@@ -1284,9 +1284,9 @@ static void UnaryOpSlow_ISINVALID(void * pDataIn1, void * pDataOut, int64_t len,
     int8_t * pLastOut = (int8_t *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
-        if ( *pIn == invalid )
+        if (*pIn == invalid)
         {
             *pOut = true;
         }
@@ -1308,9 +1308,9 @@ static void UnaryOpSlow_ISINVALIDORZERO(void * pDataIn1, void * pDataOut, int64_
     int8_t * pLastOut = (int8_t *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
-        if ( *pIn == invalid || *pIn == 0 )
+        if (*pIn == invalid || *pIn == 0)
         {
             *pOut = true;
         }
@@ -1332,9 +1332,9 @@ static void UnaryOpSlow_ISNOTINVALID(void * pDataIn1, void * pDataOut, int64_t l
     int8_t * pLastOut = (int8_t *)((char *)pOut + (strideOut * len));
 
     // Slow loop, handle 1 at a time
-    while ( pOut != pLastOut )
+    while (pOut != pLastOut)
     {
-        if ( *pIn == invalid )
+        if (*pIn == invalid)
         {
             *pOut = false;
         }
@@ -1574,7 +1574,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 {
     LOGGING("Looking for func slow %d  type %d  outtype: %d\n", func, numpyInType1, numpyOutType);
 
-    switch ( func )
+    switch (func)
     {
     case MATH_OPERATION::FABS:
         //*wantedOutType = NPY_DOUBLE;
@@ -1589,7 +1589,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::ABS:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_ABS<float>;
         case NPY_DOUBLE: return UnaryOpSlow_ABS<double>;
@@ -1607,7 +1607,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::SIGN:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_FLOATSIGN<float>;
         case NPY_DOUBLE: return UnaryOpSlow_FLOATSIGN<double>;
@@ -1626,7 +1626,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::NEG:
     case MATH_OPERATION::NEGATIVE:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_NEG<float>;
         case NPY_DOUBLE: return UnaryOpSlow_NEG<double>;
@@ -1646,9 +1646,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         *wantedOutType = NPY_BOOL;
         // TJD: Not sure why bool works and others do not
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_UINT8:
             case NPY_INT8:
@@ -1674,7 +1674,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::BITWISE_NOT:
     case MATH_OPERATION::INVERT:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         CASE_NPY_INT32:
             return UnaryOpSlow_INVERT<int32_t>;
@@ -1697,9 +1697,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISFINITE:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISFINITE<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISFINITE<double>;
@@ -1729,9 +1729,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         *wantedOutType = NPY_BOOL;
 
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNOTFINITE<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNOTFINITE<double>;
@@ -1761,9 +1761,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         *wantedOutType = NPY_BOOL;
 
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNAN<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNAN<double>;
@@ -1794,9 +1794,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         *wantedOutType = NPY_BOOL;
 
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNANORZERO<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNANORZERO<double>;
@@ -1826,9 +1826,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISNOTNAN:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNOTNAN<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNOTNAN<double>;
@@ -1856,9 +1856,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISINF:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISINF<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISINF<double>;
@@ -1870,9 +1870,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISNOTINF:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNOTINF<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNOTINF<double>;
@@ -1884,9 +1884,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISNORMAL:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNORMAL<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNORMAL<double>;
@@ -1898,9 +1898,9 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::ISNOTNORMAL:
         *wantedOutType = NPY_BOOL;
         // Can only handle when output type is bool or not defined
-        if ( numpyOutType == 0 || numpyOutType == -1 )
+        if (numpyOutType == 0 || numpyOutType == -1)
         {
-            switch ( numpyInType1 )
+            switch (numpyInType1)
             {
             case NPY_FLOAT: return UnaryOpSlow_ISNOTNORMAL<float>;
             case NPY_DOUBLE: return UnaryOpSlow_ISNOTNORMAL<double>;
@@ -1912,7 +1912,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::FLOOR:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_DOUBLE: return UnaryOpSlow_FLOOR<double>;
         case NPY_LONGDOUBLE: return UnaryOpSlow_FLOOR<long double>;
@@ -1920,7 +1920,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::CEIL:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_DOUBLE: return UnaryOpSlow_CEIL<double>;
         case NPY_LONGDOUBLE: return UnaryOpSlow_CEIL<long double>;
@@ -1928,7 +1928,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::TRUNC:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_DOUBLE: return UnaryOpSlow_TRUNC<double>;
         case NPY_LONGDOUBLE: return UnaryOpSlow_TRUNC<long double>;
@@ -1936,7 +1936,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::ROUND:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_DOUBLE: return UnaryOpSlow_ROUND<double>;
         case NPY_LONGDOUBLE: return UnaryOpSlow_ROUND<long double>;
@@ -1944,15 +1944,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::SQRT:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         CASE_NPY_INT32:
             return UnaryOpSlowDouble_SQRT<int32_t>;
@@ -1970,15 +1970,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::CBRT:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         CASE_NPY_INT32:
             return UnaryOpSlowDouble_CBRT<int32_t>;
@@ -1995,15 +1995,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::LOG:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_LOG<float>;
         case NPY_DOUBLE: return UnaryOpSlow_LOG<double>;
@@ -2024,15 +2024,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::LOG10:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_LOG10<float>;
         case NPY_DOUBLE: return UnaryOpSlow_LOG10<double>;
@@ -2053,15 +2053,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::EXP:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_EXP<float>;
         case NPY_DOUBLE: return UnaryOpSlow_EXP<double>;
@@ -2082,15 +2082,15 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::EXP2:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        if ( numpyInType1 == NPY_LONGDOUBLE )
+        if (numpyInType1 == NPY_LONGDOUBLE)
         {
             *wantedOutType = NPY_LONGDOUBLE;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_EXP2<float>;
         case NPY_DOUBLE: return UnaryOpSlow_EXP2<double>;
@@ -2111,7 +2111,7 @@ UNARY_FUNC GetUnaryOpSlow(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::SIGNBIT:
         *wantedOutType = NPY_BOOL;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpSlow_SIGNBIT<float>;
         case NPY_DOUBLE: return UnaryOpSlow_SIGNBIT<double>;
@@ -2129,13 +2129,13 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
 {
     LOGGING("Looking for func %d  type:%d  outtype:%d\n", func, numpyInType1, numpyOutType);
 
-    switch ( func )
+    switch (func)
     {
     case MATH_OPERATION::FABS: break;
 
     case MATH_OPERATION::ABS:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, ABS_OP<float>, ABS_OP_256<__m256>>;
         case NPY_DOUBLE:
@@ -2148,7 +2148,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::ISNAN:
         *wantedOutType = NPY_BOOL;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast_NANF32<float, __m256>;
         case NPY_DOUBLE: return UnaryOpFast_NANF64<double, __m256d>;
@@ -2157,7 +2157,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::ISNOTNAN:
         *wantedOutType = NPY_BOOL;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast_NOTNANF32<float, __m256>;
         case NPY_DOUBLE: return UnaryOpFast_NOTNANF64<double, __m256d>;
@@ -2166,7 +2166,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::ISFINITE:
         *wantedOutType = NPY_BOOL;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast_FINITEF32<float, __m256>;
         case NPY_DOUBLE: return UnaryOpFast_FINITEF64<double, __m256d>;
@@ -2175,7 +2175,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::ISNOTFINITE:
         *wantedOutType = NPY_BOOL;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast_NOTFINITEF32<float, __m256>;
         case NPY_DOUBLE: return UnaryOpFast_NOTFINITEF64<double, __m256d>;
@@ -2184,7 +2184,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
 
     case MATH_OPERATION::NEG:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, NEG_OP<float>, NEG_OP_256<__m256>>;
         case NPY_DOUBLE:
@@ -2201,7 +2201,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
     case MATH_OPERATION::INVERT: break;
     case MATH_OPERATION::FLOOR:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, FLOOR_OP<float>, FLOOR_OP_256<__m256>>;
         case NPY_DOUBLE: return UnaryOpFast<double, __m256d, FLOOR_OP<double>, FLOOR_OP_256<__m256d>>;
@@ -2209,7 +2209,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::CEIL:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, CEIL_OP<float>, CEIL_OP_256<__m256>>;
         case NPY_DOUBLE: return UnaryOpFast<double, __m256d, CEIL_OP<double>, CEIL_OP_256<__m256d>>;
@@ -2217,7 +2217,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::TRUNC:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, TRUNC_OP<float>, TRUNC_OP_256<__m256>>;
         case NPY_DOUBLE: return UnaryOpFast<double, __m256d, TRUNC_OP<double>, TRUNC_OP_256<__m256d>>;
@@ -2225,7 +2225,7 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::ROUND:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, ROUND_OP<float>, ROUND_OP_256<__m256>>;
         case NPY_DOUBLE: return UnaryOpFast<double, __m256d, ROUND_OP<double>, ROUND_OP_256<__m256d>>;
@@ -2233,11 +2233,11 @@ UNARY_FUNC GetUnaryOpFast(int func, int numpyInType1, int numpyOutType, int * wa
         break;
     case MATH_OPERATION::SQRT:
         *wantedOutType = NPY_DOUBLE;
-        if ( numpyInType1 == NPY_FLOAT )
+        if (numpyInType1 == NPY_FLOAT)
         {
             *wantedOutType = NPY_FLOAT;
         }
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT: return UnaryOpFast<float, __m256, SQRT_OP<float>, SQRT_OP_256<__m256>>;
         case NPY_DOUBLE: return UnaryOpFast<double, __m256d, SQRT_OP<double>, SQRT_OP_256<__m256d>>;
@@ -2253,13 +2253,13 @@ UNARY_FUNC_STRIDED GetUnaryOpFastStrided(int func, int numpyInType1, int numpyOu
 {
     LOGGING("Looking for func %d  type:%d  outtype:%d\n", func, numpyInType1, numpyOutType);
 
-    switch ( func )
+    switch (func)
     {
     case MATH_OPERATION::FABS: break;
 
     case MATH_OPERATION::ABS:
         *wantedOutType = numpyInType1;
-        switch ( numpyInType1 )
+        switch (numpyInType1)
         {
         case NPY_FLOAT:
             return UnaryOpFastStrided<float, __m256, ABS_OP<float>, ABS_OP_256<__m256>>;
@@ -2279,10 +2279,10 @@ static UNARY_FUNC CheckMathOpOneInput(int func, int numpyInType1, int numpyOutTy
     UNARY_FUNC pOneFunc = NULL;
 
     // Not handling complex, 128bit, voids, objects, or strings here
-    if ( numpyInType1 <= NPY_LONGDOUBLE )
+    if (numpyInType1 <= NPY_LONGDOUBLE)
     {
         pOneFunc = GetUnaryOpFast(func, numpyInType1, numpyOutType, wantedOutType);
-        if ( pOneFunc == NULL )
+        if (pOneFunc == NULL)
         {
             LOGGING("Unary fast func not found for func %d  type %d\n", func, numpyInType1);
             pOneFunc = GetUnaryOpSlow(func, numpyInType1, numpyOutType, wantedOutType);
@@ -2298,7 +2298,7 @@ static UNARY_FUNC_STRIDED CheckMathOpOneInputStrided(int func, int numpyInType1,
     UNARY_FUNC_STRIDED pOneFunc = NULL;
 
     // Not handling complex, 128bit, voids, objects, or strings here
-    if ( numpyInType1 <= NPY_LONGDOUBLE )
+    if (numpyInType1 <= NPY_LONGDOUBLE)
     {
         pOneFunc = GetUnaryOpFastStrided(func, numpyInType1, numpyOutType, wantedOutType);
         // if (pOneFunc == NULL) {
@@ -2322,7 +2322,7 @@ static bool UnaryThreadCallbackStrided(struct stMATH_WORKER_ITEM * pstWorkerItem
     int64_t workBlock;
 
     // As long as there is work to do
-    while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
         int64_t inputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeIn;
         int64_t outputAdj = pstWorkerItem->BlockSize * workBlock * Callback->itemSizeOut;
@@ -2357,13 +2357,13 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
     int64_t len = CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(inArray));
 
     // Handle most common fast path up front
-    if ( directionIn == 0 && numpyOutType == -1 )
+    if (directionIn == 0 && numpyOutType == -1)
     {
         // wantedOutputType will be returned
         int wantedOutputType = -1;
         UNARY_FUNC pUnaryFunc = CheckMathOpOneInput(funcNumber, numpyInType1, numpyOutType, &wantedOutputType);
 
-        if ( pUnaryFunc )
+        if (pUnaryFunc)
         {
             LOGGING("Fastpath: Going to allocate   contig: %d  len: %lld\n",
                     PyArray_FLAGS(inArray) & (NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS), len);
@@ -2371,14 +2371,14 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
             PyArrayObject * outputArray = (ndim <= 1) ? AllocateNumpyArray(1, (npy_intp *)&len, wantedOutputType) :
                                                         AllocateLikeNumpyArray(inArray, wantedOutputType);
 
-            if ( outputArray )
+            if (outputArray)
             {
                 stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(len);
 
                 void * pDataIn = PyArray_BYTES(inArray);
                 void * pDataOut = PyArray_BYTES(outputArray);
 
-                if ( pWorkItem == NULL )
+                if (pWorkItem == NULL)
                 {
                     // Threading not allowed for this work item, call it directly from main thread
                     pUnaryFunc(pDataIn, pDataOut, len, strideIn, PyArray_ITEMSIZE(outputArray));
@@ -2418,12 +2418,12 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
     UNARY_FUNC pUnaryFunc = CheckMathOpOneInput(funcNumber, numpyInType1, numpyOutType, &wantedOutputType);
 
     // Check if we are aborting and punt this to numpy since we cannot do it/understand it
-    if ( pUnaryFunc && wantedOutputType != -1 )
+    if (pUnaryFunc && wantedOutputType != -1)
     {
         // Place holder for output array
         PyArrayObject * outputArray = NULL;
 
-        if ( numpyOutType != -1 && numpyOutType != wantedOutputType )
+        if (numpyOutType != -1 && numpyOutType != wantedOutputType)
         {
             LOGGING("Wanted output type %d does not match output type %d\n", wantedOutputType, numpyOutType);
             // punt to numpy
@@ -2432,14 +2432,14 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
 
         int64_t lenOut = len;
 
-        if ( numpyOutType == -1 )
+        if (numpyOutType == -1)
         {
             LOGGING("Going to allocate   contig: %d  len: %lld\n",
                     PyArray_FLAGS(inArray) & (NPY_ARRAY_F_CONTIGUOUS | NPY_ARRAY_C_CONTIGUOUS), len);
             // This will always produce a contiguous array
             outputArray = AllocateLikeNumpyArray(inArray, wantedOutputType);
 
-            if ( outputArray == NULL )
+            if (outputArray == NULL)
             {
                 RETURN_NONE;
             }
@@ -2450,7 +2450,7 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
             LOGGING("Output specified oref %llu\n", outObject1->ob_base.ob_refcnt);
             int64_t lenOut = ArrayLength(outputArray);
 
-            if ( len != lenOut )
+            if (len != lenOut)
             {
                 LOGGING("Wanted output length does not match %lld vs %lld or output is not contiguous\n", len, lenOut);
                 // punt to numpy
@@ -2470,10 +2470,10 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
         // F contig on 2 dim =>  dim0 * stride0 == stride1
         // C contig on 2 dim1 * stride1 == stride0
         // Handle single or 0 dim, can also handle contig any dim
-        if ( directionIn == 0 && directionOut == 0 )
+        if (directionIn == 0 && directionOut == 0)
         {
             stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(len);
-            if ( pWorkItem == NULL )
+            if (pWorkItem == NULL)
             {
                 // Threading not allowed for this work item, call it directly from main thread
                 pUnaryFunc(pDataIn, pDataOut, len, strideIn, strideOut);
@@ -2502,11 +2502,11 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
             // non-contiguous loop
             // Walk the input, dimension by dimension, getting the stride
             // Check if we can process, else punt to numpy
-            if ( directionIn == 1 && directionOut == 0 )
+            if (directionIn == 1 && directionOut == 0)
             {
                 // Row Major 2dim like array with output being fully contiguous
                 int64_t innerLen = 1;
-                for ( int i = directionIn; i < ndim; i++ )
+                for (int i = directionIn; i < ndim; i++)
                 {
                     innerLen *= PyArray_DIM(inArray, i);
                 }
@@ -2516,18 +2516,18 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
 
                 LOGGING("Row Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-                for ( int64_t j = 0; j < outerLen; j++ )
+                for (int64_t j = 0; j < outerLen; j++)
                 {
                     pUnaryFunc((char *)pDataIn + (j * outerStride), (char *)pDataOut + (j * innerLen * strideOut), innerLen,
                                strideIn, strideOut);
                 }
             }
-            else if ( directionIn == -1 && directionOut == 0 )
+            else if (directionIn == -1 && directionOut == 0)
             {
                 // Col Major 2dim like array with output being fully contiguous
                 int64_t innerLen = 1;
                 directionIn = -directionIn;
-                for ( int i = 0; i < directionIn; i++ )
+                for (int i = 0; i < directionIn; i++)
                 {
                     innerLen *= PyArray_DIM(inArray, i);
                 }
@@ -2537,7 +2537,7 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
 
                 LOGGING("Col Major  innerLen:%lld  outerLen:%lld  outerStride:%lld\n", innerLen, outerLen, outerStride);
 
-                for ( int64_t j = 0; j < outerLen; j++ )
+                for (int64_t j = 0; j < outerLen; j++)
                 {
                     pUnaryFunc((char *)pDataIn + (j * outerStride), (char *)pDataOut + (j * innerLen * strideOut), innerLen,
                                strideIn, strideOut);
@@ -2567,7 +2567,7 @@ PyObject * BasicMathOneInput(PyObject * self, PyObject * args)
     int64_t funcNumber;
     int64_t numpyOutputType;
 
-    if ( ! PyArg_ParseTuple(args, "OLL", &tuple, &funcNumber, &numpyOutputType) )
+    if (! PyArg_ParseTuple(args, "OLL", &tuple, &funcNumber, &numpyOutputType))
     {
         return NULL;
     }
@@ -2576,11 +2576,11 @@ PyObject * BasicMathOneInput(PyObject * self, PyObject * args)
     // Assume no tuple and object passied in is array
     PyObject * inObject1 = tuple;
 
-    if ( PyTuple_CheckExact(tuple) )
+    if (PyTuple_CheckExact(tuple))
     {
         tupleSize = PyTuple_GET_SIZE(tuple);
 
-        if ( tupleSize != 1 && tupleSize != 2 )
+        if (tupleSize != 1 && tupleSize != 2)
         {
             PyErr_Format(PyExc_ValueError, "BasicMathOneInput only takes 1 or 2 arguments instead of %llu args", tupleSize);
             return NULL;
@@ -2590,7 +2590,7 @@ PyObject * BasicMathOneInput(PyObject * self, PyObject * args)
         inObject1 = PyTuple_GET_ITEM(tuple, 0);
     }
 
-    if ( ! IsFastArrayOrNumpy((PyArrayObject *)inObject1) )
+    if (! IsFastArrayOrNumpy((PyArrayObject *)inObject1))
     {
         PyErr_Format(PyExc_ValueError, "BasicMathOneInput first argument is not an array");
         return NULL;
@@ -2601,11 +2601,11 @@ PyObject * BasicMathOneInput(PyObject * self, PyObject * args)
     PyArrayObject * outObject1 = NULL;
     int numpyOutType = -1;
 
-    if ( tupleSize == 2 )
+    if (tupleSize == 2)
     {
         outObject1 = (PyArrayObject *)PyTuple_GET_ITEM(tuple, 1);
 
-        if ( ! IsFastArrayOrNumpy(outObject1) )
+        if (! IsFastArrayOrNumpy(outObject1))
         {
             PyErr_Format(PyExc_ValueError, "BasicMathOneInput out argument is not an array but type %s",
                          outObject1->ob_base.ob_type->tp_name);
@@ -2630,7 +2630,7 @@ PyObject * BasicMathOneInputFromNumber(PyArrayObject * inObject1, int64_t funcNu
     int numpyOutType = -1;
 
     // For inplace use the same input as output
-    if ( inplace )
+    if (inplace)
     {
         outObject1 = inObject1;
         numpyOutType = PyArray_TYPE(outObject1);
@@ -2649,25 +2649,25 @@ PyObject * BasicMathUnaryOp(PyObject * self, PyObject * args, PyObject * kwargs)
     int numpyWantType = -1;
     PyArrayObject * outObject1 = NULL;
 
-    if ( kwargs )
+    if (kwargs)
     {
         PyObject * dtypekwarg = PyDict_GetItemString(kwargs, "dtype");
-        if ( dtypekwarg )
+        if (dtypekwarg)
         {
             PyArray_Descr * pDescr = DTypeToDescr(dtypekwarg);
 
             // check for error in dtype passed, if NULL error message already set
-            if ( ! pDescr )
+            if (! pDescr)
                 return NULL;
 
             numpyWantType = pDescr->type_num;
         }
         dtypekwarg = PyDict_GetItemString(kwargs, "out");
 
-        if ( dtypekwarg )
+        if (dtypekwarg)
         {
             outObject1 = (PyArrayObject *)dtypekwarg;
-            if ( ! IsFastArrayOrNumpy(outObject1) )
+            if (! IsFastArrayOrNumpy(outObject1))
             {
                 PyErr_Format(PyExc_ValueError, "BasicMathUnaryOp out= kwarg must be an array not type %s",
                              (PyObject *)dtypekwarg->ob_type->tp_name);
@@ -2676,15 +2676,15 @@ PyObject * BasicMathUnaryOp(PyObject * self, PyObject * args, PyObject * kwargs)
         }
     }
 
-    if ( Py_SIZE(args) > 1 )
+    if (Py_SIZE(args) > 1)
     {
         PyArrayObject * inObject = (PyArrayObject *)PyTuple_GET_ITEM(args, 0);
         PyObject * funcNumber = PyTuple_GET_ITEM(args, 1);
-        if ( PyLong_CheckExact(funcNumber) )
+        if (PyLong_CheckExact(funcNumber))
         {
             int64_t funcNum = PyLong_AsLongLong(funcNumber);
 
-            if ( IsFastArrayOrNumpy(inObject) )
+            if (IsFastArrayOrNumpy(inObject))
             {
                 PyObject * result = ProcessOneInput(inObject, NULL, (int)funcNum, PyArray_TYPE(inObject), -1);
                 return result;

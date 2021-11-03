@@ -143,7 +143,7 @@ FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
 
 // add this after memory allocation to help debug
 #define CHECK_MEMORY_ERROR(_X_) \
-    if ( ! _X_ ) \
+    if (! _X_) \
         printf("!!!Out of MEMORY: File: %s  Line: %d  Function: %s\n", __FILE__, (int)__LINE__, __FUNCTION__);
 
 #ifndef ASSERT

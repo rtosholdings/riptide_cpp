@@ -30,18 +30,18 @@
 int64_t SumBooleanMask(const int8_t * const pData, const int64_t length, const int64_t strideBoolean)
 {
     // Basic input validation.
-    if ( ! pData )
+    if (! pData)
     {
         return 0;
     }
-    else if ( length < 0 )
+    else if (length < 0)
     {
         return 0;
     }
     // Holds the accumulated result value.
     int64_t result = 0;
 
-    if ( strideBoolean == 1 )
+    if (strideBoolean == 1)
     {
         // Now that we know length is >= 0, it's safe to convert it to unsigned so it agrees with
         // the sizeof() math in the logic below.
@@ -69,19 +69,19 @@ int64_t SumBooleanMask(const int8_t * const pData, const int64_t length, const i
         // so we're primarily limited by memory bandwidth.
         const size_t vector_length = ulength / sizeof(__m256i);
         const auto pVectorData = (__m256i *)pData;
-        for ( size_t i = 0; i < vector_length; )
+        for (size_t i = 0; i < vector_length;)
         {
             // Determine how much we can process in _this_ iteration of the loop.
             // The maximum number of "inner" iterations here is CHAR_MAX (255),
             // because otherwise our byte-sized counters would overflow.
             auto inner_loop_iters = vector_length - i;
-            if ( inner_loop_iters > 255 )
+            if (inner_loop_iters > 255)
                 inner_loop_iters = 255;
 
             // Holds the current per-vector-lane (i.e. per-byte-within-vector) popcount.
             // PERF: If necessary, the loop below can be manually unrolled to ensure we saturate memory bandwidth.
             auto byte_popcounts = _mm256_setzero_si256();
-            for ( size_t j = 0; j < inner_loop_iters; j++ )
+            for (size_t j = 0; j < inner_loop_iters; j++)
             {
                 // Use an unaligned load to grab a chunk of data;
                 // then call _mm256_min_epu8 where one operand is the register we set
@@ -122,7 +122,7 @@ int64_t SumBooleanMask(const int8_t * const pData, const int64_t length, const i
             };
 
             mathreg[0] = byte_popcounts_64;
-            for ( int j = 0; j < 4; j++ )
+            for (int j = 0; j < 4; j++)
             {
                 result += horizontal[j];
             }
@@ -133,9 +133,9 @@ int64_t SumBooleanMask(const int8_t * const pData, const int64_t length, const i
 
         // Handle the last few bytes, if any, that couldn't be handled with the vectorized loop.
         const size_t vectorized_length = vector_length * sizeof(__m256i);
-        for ( size_t i = vectorized_length; i < ulength; i++ )
+        for (size_t i = vectorized_length; i < ulength; i++)
         {
-            if ( pData[i] )
+            if (pData[i])
             {
                 result++;
             }
@@ -143,9 +143,9 @@ int64_t SumBooleanMask(const int8_t * const pData, const int64_t length, const i
     }
     else
     {
-        for ( int64_t i = 0; i < length; i++ )
+        for (int64_t i = 0; i < length; i++)
         {
-            if ( pData[i * strideBoolean] )
+            if (pData[i * strideBoolean])
             {
                 result++;
             }
@@ -181,7 +181,7 @@ int64_t BooleanCount(PyArrayObject * aIndex, int64_t ** ppChunkCount, int64_t st
     // TOOD: try to allocate on stack when possible
     int64_t * const pChunkCount = (int64_t *)WORKSPACE_ALLOC(chunks * sizeof(int64_t));
 
-    if ( pChunkCount )
+    if (pChunkCount)
     {
         // MT callback
         struct BSCallbackStruct
@@ -232,7 +232,7 @@ int64_t BooleanCount(PyArrayObject * aIndex, int64_t ** ppChunkCount, int64_t st
 //
 PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
 {
-    if ( PyArray_TYPE(aIndex) != NPY_BOOL )
+    if (PyArray_TYPE(aIndex) != NPY_BOOL)
     {
         PyErr_Format(PyExc_ValueError, "Second argument must be a boolean array");
         return NULL;
@@ -247,17 +247,17 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
     int result2 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
     // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
-    if ( result1 != 0 )
+    if (result1 != 0)
     {
-        if ( ! PyArray_ISCONTIGUOUS(aValues) )
+        if (! PyArray_ISCONTIGUOUS(aValues))
         {
             PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional value array for boolean index.");
             return NULL;
         }
     }
-    if ( result2 != 0 )
+    if (result2 != 0)
     {
-        if ( ! PyArray_ISCONTIGUOUS(aIndex) )
+        if (! PyArray_ISCONTIGUOUS(aIndex))
         {
             PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array used as boolean index.");
             return NULL;
@@ -273,7 +273,7 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
     int64_t lengthBool = ArrayLength(aIndex);
     int64_t lengthValue = ArrayLength(aValues);
 
-    if ( lengthBool != lengthValue )
+    if (lengthBool != lengthValue)
     {
         PyErr_Format(PyExc_ValueError, "Array lengths must match %lld vs %lld", lengthBool, lengthValue);
         return NULL;
@@ -282,7 +282,7 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
     int64_t * pChunkCount = NULL;
     int64_t chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
 
-    if ( chunks == 0 )
+    if (chunks == 0)
     {
         PyErr_Format(PyExc_ValueError, "Out of memory");
         return NULL;
@@ -291,7 +291,7 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
     int64_t totalTrue = 0;
 
     // Store the offset
-    for ( int64_t i = 0; i < chunks; i++ )
+    for (int64_t i = 0; i < chunks; i++)
     {
         int64_t temp = totalTrue;
         totalTrue += pChunkCount[i];
@@ -308,10 +308,10 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
     // Now we know per chunk how many true there are... we can allocate the new array
     PyArrayObject * pReturnArray = AllocateLikeResize(aValues, totalTrue);
 
-    if ( pReturnArray )
+    if (pReturnArray)
     {
         // If the resulting array is empty there is no work to do
-        if ( totalTrue > 0 )
+        if (totalTrue > 0)
         {
             // MT callback
             struct BICallbackStruct
@@ -345,9 +345,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                 // process 8 booleans at a time in the loop
                 int64_t blength = length / 8;
 
-                if ( strideBoolean == 1 )
+                if (strideBoolean == 1)
                 {
-                    switch ( itemSize )
+                    switch (itemSize)
                     {
                     case 1:
                         {
@@ -357,17 +357,17 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             int8_t * pVOut = (int8_t *)pValuesOut;
                             int8_t * pVIn = (int8_t *)pValuesIn;
 
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
                                 uint64_t bitmask = *(uint64_t *)pData;
 
                                 // NOTE: the below can be optimized with vector intrinsics
                                 // little endian, so the first value is low bit (not high bit)
-                                if ( bitmask != 0 )
+                                if (bitmask != 0)
                                 {
-                                    for ( int j = 0; j < 8; j++ )
+                                    for (int j = 0; j < 8; j++)
                                     {
-                                        if ( bitmask & 0xff )
+                                        if (bitmask & 0xff)
                                         {
                                             *pVOut++ = *pVIn;
                                         }
@@ -386,9 +386,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             pBooleanMask = (int8_t *)pData;
 
                             blength = length & 7;
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
-                                if ( *pBooleanMask++ )
+                                if (*pBooleanMask++)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -401,16 +401,16 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             int16_t * pVOut = (int16_t *)pValuesOut;
                             int16_t * pVIn = (int16_t *)pValuesIn;
 
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
                                 uint64_t bitmask = *(uint64_t *)pData;
                                 uint64_t mask = 0xff;
                                 // little endian, so the first value is low bit (not high bit)
-                                if ( bitmask != 0 )
+                                if (bitmask != 0)
                                 {
-                                    for ( int j = 0; j < 8; j++ )
+                                    for (int j = 0; j < 8; j++)
                                     {
-                                        if ( bitmask & 0xff )
+                                        if (bitmask & 0xff)
                                         {
                                             *pVOut++ = *pVIn;
                                         }
@@ -429,9 +429,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             pBooleanMask = (int8_t *)pData;
 
                             blength = length & 7;
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
-                                if ( *pBooleanMask++ )
+                                if (*pBooleanMask++)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -444,15 +444,15 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             int32_t * pVOut = (int32_t *)pValuesOut;
                             int32_t * pVIn = (int32_t *)pValuesIn;
 
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
                                 // little endian, so the first value is low bit (not high bit)
                                 uint64_t bitmask = *(uint64_t *)pData;
-                                if ( bitmask != 0 )
+                                if (bitmask != 0)
                                 {
-                                    for ( int j = 0; j < 8; j++ )
+                                    for (int j = 0; j < 8; j++)
                                     {
-                                        if ( bitmask & 0xff )
+                                        if (bitmask & 0xff)
                                         {
                                             *pVOut++ = *pVIn;
                                         }
@@ -471,9 +471,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             pBooleanMask = (int8_t *)pData;
 
                             blength = length & 7;
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
-                                if ( *pBooleanMask++ )
+                                if (*pBooleanMask++)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -486,15 +486,15 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             int64_t * pVOut = (int64_t *)pValuesOut;
                             int64_t * pVIn = (int64_t *)pValuesIn;
 
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
                                 // little endian, so the first value is low bit (not high bit)
                                 uint64_t bitmask = *(uint64_t *)pData;
-                                if ( bitmask != 0 )
+                                if (bitmask != 0)
                                 {
-                                    for ( int j = 0; j < 8; j++ )
+                                    for (int j = 0; j < 8; j++)
                                     {
-                                        if ( bitmask & 0xff )
+                                        if (bitmask & 0xff)
                                         {
                                             *pVOut++ = *pVIn;
                                         }
@@ -513,9 +513,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             pBooleanMask = (int8_t *)pData;
 
                             blength = length & 7;
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
-                                if ( *pBooleanMask++ )
+                                if (*pBooleanMask++)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -526,16 +526,16 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
 
                     default:
                         {
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
                                 // little endian, so the first value is low bit (not high bit)
                                 uint64_t bitmask = *(uint64_t *)pData;
-                                if ( bitmask != 0 )
+                                if (bitmask != 0)
                                 {
                                     int counter = 8;
-                                    while ( counter-- )
+                                    while (counter--)
                                     {
-                                        if ( bitmask & 0xff )
+                                        if (bitmask & 0xff)
                                         {
                                             memcpy(pValuesOut, pValuesIn, itemSize);
                                             pValuesOut += itemSize;
@@ -555,9 +555,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                             pBooleanMask = (int8_t *)pData;
 
                             blength = length & 7;
-                            for ( int64_t i = 0; i < blength; i++ )
+                            for (int64_t i = 0; i < blength; i++)
                             {
-                                if ( *pBooleanMask++ )
+                                if (*pBooleanMask++)
                                 {
                                     memcpy(pValuesOut, pValuesIn, itemSize);
                                     pValuesOut += strideValues;
@@ -573,15 +573,15 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                     // The boolean mask is strided
                     // FUTURE OPTIMIZATION: We can use the gather command to speed this path
                     int8_t * pBool = (int8_t *)pData;
-                    switch ( itemSize )
+                    switch (itemSize)
                     {
                     case 1:
                         {
                             int8_t * pVOut = (int8_t *)pValuesOut;
                             int8_t * pVIn = (int8_t *)pValuesIn;
-                            for ( int64_t i = 0; i < length; i++ )
+                            for (int64_t i = 0; i < length; i++)
                             {
-                                if ( *pBool )
+                                if (*pBool)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -594,9 +594,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                         {
                             int16_t * pVOut = (int16_t *)pValuesOut;
                             int16_t * pVIn = (int16_t *)pValuesIn;
-                            for ( int64_t i = 0; i < length; i++ )
+                            for (int64_t i = 0; i < length; i++)
                             {
-                                if ( *pBool )
+                                if (*pBool)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -609,9 +609,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                         {
                             int32_t * pVOut = (int32_t *)pValuesOut;
                             int32_t * pVIn = (int32_t *)pValuesIn;
-                            for ( int64_t i = 0; i < length; i++ )
+                            for (int64_t i = 0; i < length; i++)
                             {
-                                if ( *pBool )
+                                if (*pBool)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -624,9 +624,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                         {
                             int64_t * pVOut = (int64_t *)pValuesOut;
                             int64_t * pVIn = (int64_t *)pValuesIn;
-                            for ( int64_t i = 0; i < length; i++ )
+                            for (int64_t i = 0; i < length; i++)
                             {
-                                if ( *pBool )
+                                if (*pBool)
                                 {
                                     *pVOut++ = *pVIn;
                                 }
@@ -639,9 +639,9 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
                         {
                             char * pVOut = (char *)pValuesOut;
                             char * pVIn = (char *)pValuesIn;
-                            for ( int64_t i = 0; i < length; i++ )
+                            for (int64_t i = 0; i < length; i++)
                             {
-                                if ( *pBool )
+                                if (*pBool)
                                 {
                                     memcpy(pVOut, pVIn, itemSize);
                                     pVOut += itemSize;
@@ -689,7 +689,7 @@ PyObject * BooleanIndex(PyObject * self, PyObject * args)
     PyArrayObject * aValues = NULL;
     PyArrayObject * aIndex = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!:BooleanIndex", &PyArray_Type, &aValues, &PyArray_Type, &aIndex) )
+    if (! PyArg_ParseTuple(args, "O!O!:BooleanIndex", &PyArray_Type, &aValues, &PyArray_Type, &aIndex))
     {
         return NULL;
     }
@@ -705,12 +705,12 @@ PyObject * BooleanSum(PyObject * self, PyObject * args)
 {
     PyArrayObject * aIndex = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &aIndex) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &aIndex))
     {
         return NULL;
     }
 
-    if ( PyArray_TYPE(aIndex) != NPY_BOOL )
+    if (PyArray_TYPE(aIndex) != NPY_BOOL)
     {
         PyErr_Format(PyExc_ValueError, "First argument must be boolean array");
         return NULL;
@@ -725,7 +725,7 @@ PyObject * BooleanSum(PyObject * self, PyObject * args)
     int64_t chunks = BooleanCount(aIndex, &pChunkCount, strideBoolean);
 
     int64_t totalTrue = 0;
-    for ( int64_t i = 0; i < chunks; i++ )
+    for (int64_t i = 0; i < chunks; i++)
     {
         totalTrue += pChunkCount[i];
     }
@@ -757,9 +757,9 @@ static void GetItemInt(void * aValues, void * aIndex, void * aDataOut, int64_t v
     LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
     VALUE * pDataOutEnd = pDataOut + len;
-    if ( sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex )
+    if (sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex)
     {
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             *pDataOut =
@@ -777,12 +777,12 @@ static void GetItemInt(void * aValues, void * aIndex, void * aDataOut, int64_t v
     else
     {
         // Either A or B or both are strided
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             // Make sure the item is in range; if the index is negative -- but otherwise
             // still in range -- mimic Python's negative-indexing support.
-            if ( index >= -valLength && index < valLength )
+            if (index >= -valLength && index < valLength)
             {
                 int64_t newindex = index >= 0 ? index : index + valLength;
                 newindex *= strideValue;
@@ -823,9 +823,9 @@ static void GetItemUInt(void * aValues, void * aIndex, void * aDataOut, int64_t 
     LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
     VALUE * pDataOutEnd = pDataOut + len;
-    if ( sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex )
+    if (sizeof(VALUE) == strideValue && sizeof(INDEX) == strideIndex)
     {
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             *pDataOut =
@@ -838,12 +838,12 @@ static void GetItemUInt(void * aValues, void * aIndex, void * aDataOut, int64_t 
     else
     {
         // Either A or B or both are strided
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             // Make sure the item is in range; if the index is negative -- but otherwise
             // still in range -- mimic Python's negative-indexing support.
-            if ( index < valLength )
+            if (index < valLength)
             {
                 *pDataOut = *(VALUE *)((char *)pValues + (strideValue * index));
             }
@@ -878,13 +878,13 @@ static void GetItemIntVariable(void * aValues, void * aIndex, void * aDataOut, i
     LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
     char * pDataOutEnd = pDataOut + (len * itemSize);
-    if ( itemSize == strideValue && sizeof(INDEX) == strideIndex )
+    if (itemSize == strideValue && sizeof(INDEX) == strideIndex)
     {
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             const char * pSrc;
-            if ( index >= -valLength && index < valLength )
+            if (index >= -valLength && index < valLength)
             {
                 int64_t newindex = index >= 0 ? index : index + valLength;
                 newindex *= itemSize;
@@ -897,13 +897,13 @@ static void GetItemIntVariable(void * aValues, void * aIndex, void * aDataOut, i
 
             char * pEnd = pDataOut + itemSize;
 
-            while ( pDataOut < (pEnd - 8) )
+            while (pDataOut < (pEnd - 8))
             {
                 *(int64_t *)pDataOut = *(int64_t *)pSrc;
                 pDataOut += 8;
                 pSrc += 8;
             }
-            while ( pDataOut < pEnd )
+            while (pDataOut < pEnd)
             {
                 *pDataOut++ = *pSrc++;
             }
@@ -915,11 +915,11 @@ static void GetItemIntVariable(void * aValues, void * aIndex, void * aDataOut, i
     else
     {
         // Either A or B or both are strided
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             const char * pSrc;
-            if ( index >= -valLength && index < valLength )
+            if (index >= -valLength && index < valLength)
             {
                 int64_t newindex = index >= 0 ? index : index + valLength;
                 newindex *= strideValue;
@@ -932,13 +932,13 @@ static void GetItemIntVariable(void * aValues, void * aIndex, void * aDataOut, i
 
             char * pEnd = pDataOut + itemSize;
 
-            while ( pDataOut < (pEnd - 8) )
+            while (pDataOut < (pEnd - 8))
             {
                 *(int64_t *)pDataOut = *(int64_t *)pSrc;
                 pDataOut += 8;
                 pSrc += 8;
             }
-            while ( pDataOut < pEnd )
+            while (pDataOut < pEnd)
             {
                 *pDataOut++ = *pSrc++;
             }
@@ -959,13 +959,13 @@ static void GetItemUIntVariable(void * aValues, void * aIndex, void * aDataOut, 
     LOGGING("**V %p    I %p    O  %p %llu \n", pValues, pIndex, pDataOut, valLength);
 
     char * pDataOutEnd = pDataOut + (len * itemSize);
-    if ( itemSize == strideValue && sizeof(INDEX) == strideIndex )
+    if (itemSize == strideValue && sizeof(INDEX) == strideIndex)
     {
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             const char * pSrc;
-            if ( index < valLength )
+            if (index < valLength)
             {
                 pSrc = pValues + (itemSize * index);
             }
@@ -976,13 +976,13 @@ static void GetItemUIntVariable(void * aValues, void * aIndex, void * aDataOut, 
 
             char * pEnd = pDataOut + itemSize;
 
-            while ( pDataOut < (pEnd - 8) )
+            while (pDataOut < (pEnd - 8))
             {
                 *(int64_t *)pDataOut = *(int64_t *)pSrc;
                 pDataOut += 8;
                 pSrc += 8;
             }
-            while ( pDataOut < pEnd )
+            while (pDataOut < pEnd)
             {
                 *pDataOut++ = *pSrc++;
             }
@@ -995,11 +995,11 @@ static void GetItemUIntVariable(void * aValues, void * aIndex, void * aDataOut, 
     else
     {
         // Either A or B or both are strided
-        while ( pDataOut != pDataOutEnd )
+        while (pDataOut != pDataOutEnd)
         {
             const INDEX index = *pIndex;
             const char * pSrc;
-            if ( index < valLength )
+            if (index < valLength)
             {
                 pSrc = pValues + (strideValue * index);
             }
@@ -1010,13 +1010,13 @@ static void GetItemUIntVariable(void * aValues, void * aIndex, void * aDataOut, 
 
             char * pEnd = pDataOut + itemSize;
 
-            while ( pDataOut < (pEnd - 8) )
+            while (pDataOut < (pEnd - 8))
             {
                 *(int64_t *)pDataOut = *(int64_t *)pSrc;
                 pDataOut += 8;
                 pSrc += 8;
             }
-            while ( pDataOut < pEnd )
+            while (pDataOut < pEnd)
             {
                 *pDataOut++ = *pSrc++;
             }
@@ -1066,7 +1066,7 @@ static bool GetItemCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, int core,
     int64_t workBlock;
 
     // As long as there is work to do
-    while ( (lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0 )
+    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
         // Do NOT move aValues
         // Move aIndex
@@ -1100,10 +1100,10 @@ static bool GetItemCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, int core,
 // indexType is Index type
 static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
 {
-    switch ( indexType )
+    switch (indexType)
     {
     case NPY_INT8:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemInt<int8_t, int8_t>;
         case 2: return GetItemInt<int16_t, int8_t>;
@@ -1114,7 +1114,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         }
         break;
     case NPY_UINT8:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemUInt<int8_t, int8_t>;
         case 2: return GetItemUInt<int16_t, int8_t>;
@@ -1126,7 +1126,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         break;
 
     case NPY_INT16:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemInt<int8_t, int16_t>;
         case 2: return GetItemInt<int16_t, int16_t>;
@@ -1137,7 +1137,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         }
         break;
     case NPY_UINT16:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemUInt<int8_t, int16_t>;
         case 2: return GetItemUInt<int16_t, int16_t>;
@@ -1149,7 +1149,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         break;
 
     CASE_NPY_INT32:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemInt<int8_t, int32_t>;
         case 2: return GetItemInt<int16_t, int32_t>;
@@ -1160,7 +1160,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         }
         break;
     CASE_NPY_UINT32:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemUInt<int8_t, int32_t>;
         case 2: return GetItemUInt<int16_t, int32_t>;
@@ -1172,7 +1172,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         break;
 
     CASE_NPY_INT64:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemInt<int8_t, int64_t>;
         case 2: return GetItemInt<int16_t, int64_t>;
@@ -1183,7 +1183,7 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
         }
         break;
     CASE_NPY_UINT64:
-        switch ( itemSize )
+        switch (itemSize)
         {
         case 1: return GetItemUInt<int8_t, int64_t>;
         case 2: return GetItemUInt<int16_t, int64_t>;
@@ -1221,15 +1221,15 @@ PyObject * MBGet(PyObject * self, PyObject * args)
     PyArrayObject * aIndex = NULL;
     PyObject * defaultValue = NULL;
 
-    if ( PyTuple_Size(args) == 2 )
+    if (PyTuple_Size(args) == 2)
     {
-        if ( ! PyArg_ParseTuple(args, "O!O!:getitem", &PyArray_Type, &aValues, &PyArray_Type, &aIndex) )
+        if (! PyArg_ParseTuple(args, "O!O!:getitem", &PyArray_Type, &aValues, &PyArray_Type, &aIndex))
         {
             return NULL;
         }
         defaultValue = Py_None;
     }
-    else if ( ! PyArg_ParseTuple(args, "O!O!O:getitem", &PyArray_Type, &aValues, &PyArray_Type, &aIndex, &defaultValue) )
+    else if (! PyArg_ParseTuple(args, "O!O!O:getitem", &PyArray_Type, &aValues, &PyArray_Type, &aIndex, &defaultValue))
     {
         return NULL;
     }
@@ -1238,14 +1238,14 @@ PyObject * MBGet(PyObject * self, PyObject * args)
     int32_t numpyIndexType = PyArray_TYPE(aIndex);
 
     // TODO: For boolean call
-    if ( numpyIndexType > NPY_LONGDOUBLE )
+    if (numpyIndexType > NPY_LONGDOUBLE)
     {
         PyErr_Format(PyExc_ValueError, "Dont know how to convert these types %d using index dtype: %d", numpyValuesType,
                      numpyIndexType);
         return NULL;
     }
 
-    if ( numpyIndexType == NPY_BOOL )
+    if (numpyIndexType == NPY_BOOL)
     {
         // special path for boolean
         return BooleanIndexInternal(aValues, aIndex);
@@ -1260,18 +1260,18 @@ PyObject * MBGet(PyObject * self, PyObject * args)
     int result2 = GetStridesAndContig(aIndex, ndimIndex, strideIndex);
 
     // This logic is not quite correct, if the strides on all dimensions are the same, we can use this routine
-    if ( result1 != 0 )
+    if (result1 != 0)
     {
-        if ( ! PyArray_ISCONTIGUOUS(aValues) )
+        if (! PyArray_ISCONTIGUOUS(aValues))
         {
             PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d",
                          numpyValuesType, numpyIndexType);
             return NULL;
         }
     }
-    if ( result2 != 0 )
+    if (result2 != 0)
     {
-        if ( ! PyArray_ISCONTIGUOUS(aIndex) )
+        if (! PyArray_ISCONTIGUOUS(aIndex))
         {
             PyErr_Format(PyExc_ValueError, "Dont know how to handle multidimensional array %d using index dtype: %d",
                          numpyValuesType, numpyIndexType);
@@ -1291,16 +1291,16 @@ PyObject * MBGet(PyObject * self, PyObject * args)
     // Get the proper function to call
     GETITEM_FUNC pFunction = GetItemFunction(aValueItemSize, numpyIndexType);
 
-    if ( pFunction != NULL || aIndexLength == 0 )
+    if (pFunction != NULL || aIndexLength == 0)
     {
         PyArrayObject * outArray = (PyArrayObject *)Py_None;
 
         // Allocate the size of aIndex but the type is the value
         outArray = AllocateLikeResize(aValues, aIndexLength);
 
-        if ( outArray )
+        if (outArray)
         {
-            if ( aIndexLength != 0 )
+            if (aIndexLength != 0)
             {
                 void * pDataOut = PyArray_BYTES(outArray);
                 void * pDefault = GetDefaultForType(numpyValuesType);
@@ -1309,14 +1309,14 @@ PyObject * MBGet(PyObject * self, PyObject * args)
                 _m256all tempDefault;
 
                 // Check if a default value was passed in as third parameter
-                if ( defaultValue != Py_None )
+                if (defaultValue != Py_None)
                 {
                     bool result;
                     int64_t itemSize;
                     void * pTempData = NULL;
                     // Try to convert the scalar
                     result = ConvertScalarObject(defaultValue, &tempDefault, numpyValuesType, &pTempData, &itemSize);
-                    if ( result )
+                    if (result)
                     {
                         // Assign the new default for out of range indexes
                         pDefault = &tempDefault;
@@ -1325,7 +1325,7 @@ PyObject * MBGet(PyObject * self, PyObject * args)
 
                 stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(aIndexLength);
 
-                if ( pWorkItem == NULL )
+                if (pWorkItem == NULL)
                 {
                     // Threading not allowed for this work item, call it directly from main thread
                     typedef void (*GETITEM_FUNC)(void * pDataIn, void * pDataIn2, void * pDataOut, int64_t valSize,
@@ -1383,14 +1383,14 @@ PyObject * MBGet(PyObject * self, PyObject * args)
 bool GetKwargBoth(PyObject * kwargs)
 {
     // Check for cutoffs kwarg to see if going into parallel mode
-    if ( kwargs && PyDict_Check(kwargs) )
+    if (kwargs && PyDict_Check(kwargs))
     {
         PyObject * pBoth = NULL;
         // Borrowed reference
         // Returns NULL if key not present
         pBoth = PyDict_GetItemString(kwargs, "both");
 
-        if ( pBoth != NULL && pBoth == Py_True )
+        if (pBoth != NULL && pBoth == Py_True)
         {
             return true;
         }
@@ -1410,12 +1410,12 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
 {
     PyArrayObject * aIndex = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &aIndex) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &aIndex))
     {
         return NULL;
     }
 
-    if ( PyArray_TYPE(aIndex) != NPY_BOOL )
+    if (PyArray_TYPE(aIndex) != NPY_BOOL)
     {
         PyErr_Format(PyExc_ValueError, "First argument must be boolean array");
         return NULL;
@@ -1436,7 +1436,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
 
     int64_t totalTrue = 0;
 
-    if ( bothMode )
+    if (bothMode)
     {
         // now count up the chunks
         // TJD: April 2019 note -- when the chunk size is between 65536 and 128000
@@ -1449,7 +1449,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
         int64_t totalFalse = 0;
 
         // Store the offset
-        for ( int64_t i = 0; i < chunks; i++ )
+        for (int64_t i = 0; i < chunks; i++)
         {
             int64_t temp = totalFalse;
 
@@ -1464,7 +1464,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
     }
 
     // Store the offset
-    for ( int64_t i = 0; i < chunks; i++ )
+    for (int64_t i = 0; i < chunks; i++)
     {
         int64_t temp = totalTrue;
         totalTrue += pChunkCount[i];
@@ -1476,12 +1476,12 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
     PyArrayObject * returnArray = NULL;
     int dtype = NPY_INT64;
     // INT32 or INT64
-    if ( indexLength < 2000000000 )
+    if (indexLength < 2000000000)
     {
         dtype = NPY_INT32;
     }
 
-    if ( bothMode )
+    if (bothMode)
     {
         // Allocate for both True and False
         returnArray = AllocateNumpyArray(1, (npy_intp *)&indexLength, dtype);
@@ -1494,7 +1494,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
 
     CHECK_MEMORY_ERROR(returnArray);
 
-    if ( returnArray )
+    if (returnArray)
     {
         // MT callback
         struct BTFCallbackStruct
@@ -1516,12 +1516,12 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
             int8_t * pBooleanMask = callbackArg->pBooleanMask;
             bool bothMode = callbackArg->bothMode;
 
-            if ( bothMode )
+            if (bothMode)
             {
                 int64_t chunkCountFalse = callbackArg->pChunkCountFalse[start / g_cMathWorker->WORK_ITEM_CHUNK];
                 // printf("[%lld] ccf %lld  length %lld\n", start, chunkCountFalse, length);
 
-                if ( callbackArg->dtype == NPY_INT64 )
+                if (callbackArg->dtype == NPY_INT64)
                 {
                     int64_t * pOut = (int64_t *)callbackArg->pValuesOut;
                     pOut = pOut + chunkCount;
@@ -1529,9 +1529,9 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
                     int64_t * pOutFalse = (int64_t *)callbackArg->pValuesOut;
                     pOutFalse = pOutFalse + callbackArg->totalTrue + chunkCountFalse;
 
-                    for ( int64_t i = start; i < (start + length); i++ )
+                    for (int64_t i = start; i < (start + length); i++)
                     {
-                        if ( pBooleanMask[i] )
+                        if (pBooleanMask[i])
                         {
                             *pOut++ = i;
                         }
@@ -1549,9 +1549,9 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
                     int32_t * pOutFalse = (int32_t *)callbackArg->pValuesOut;
                     pOutFalse = pOutFalse + callbackArg->totalTrue + chunkCountFalse;
 
-                    for ( int64_t i = start; i < (start + length); i++ )
+                    for (int64_t i = start; i < (start + length); i++)
                     {
-                        if ( pBooleanMask[i] )
+                        if (pBooleanMask[i])
                         {
                             *pOut++ = (int32_t)i;
                         }
@@ -1564,14 +1564,14 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
             }
             else
             {
-                if ( callbackArg->dtype == NPY_INT64 )
+                if (callbackArg->dtype == NPY_INT64)
                 {
                     int64_t * pOut = (int64_t *)callbackArg->pValuesOut;
                     pOut = pOut + chunkCount;
 
-                    for ( int64_t i = start; i < (start + length); i++ )
+                    for (int64_t i = start; i < (start + length); i++)
                     {
-                        if ( pBooleanMask[i] )
+                        if (pBooleanMask[i])
                         {
                             *pOut++ = i;
                         }
@@ -1582,9 +1582,9 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
                     int32_t * pOut = (int32_t *)callbackArg->pValuesOut;
                     pOut = pOut + chunkCount;
 
-                    for ( int64_t i = start; i < (start + length); i++ )
+                    for (int64_t i = start; i < (start + length); i++)
                     {
-                        if ( pBooleanMask[i] )
+                        if (pBooleanMask[i])
                         {
                             *pOut++ = (int32_t)i;
                         }
@@ -1610,11 +1610,11 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
     //_mm_i32gather_epi32
 
     WORKSPACE_FREE(pChunkCount);
-    if ( pChunkCountFalse )
+    if (pChunkCountFalse)
     {
         WORKSPACE_FREE(pChunkCountFalse);
     }
-    if ( bothMode )
+    if (bothMode)
     {
         // also return the true count so user knows cutoff
         PyObject * returnTuple = PyTuple_New(2);
@@ -1697,7 +1697,7 @@ bool ReIndexGroupsMT(void * preindexV, int core, int64_t t)
     // Base 1 loop
     int64_t starti = 0;
     int64_t start = 0;
-    if ( t > 0 )
+    if (t > 0)
     {
         starti = pICutOffs[t - 1];
         start = pUCutOffs[t - 1];
@@ -1708,15 +1708,15 @@ bool ReIndexGroupsMT(void * preindexV, int core, int64_t t)
 
     // Check for out of bounds when indexing uniques
     int64_t uKeyLength = preindex->uikey_length - start;
-    if ( uKeyLength < 0 )
+    if (uKeyLength < 0)
         uKeyLength = 0;
 
     LOGGING("Start %lld  Stop %lld  Len:%lld\n", starti, stopi, preindex->ikey_length);
 
-    for ( int64_t j = starti; j < stopi; j++ )
+    for (int64_t j = starti; j < stopi; j++)
     {
         KEYTYPE index = pIKey[j];
-        if ( index <= 0 || index > uKeyLength )
+        if (index <= 0 || index > uKeyLength)
         {
             // preserve filtered out or mark as filtered if out of range
             pIKey[j] = 0;
@@ -1745,23 +1745,23 @@ PyObject * ReIndexGroups(PyObject * self, PyObject * args)
     PyArrayObject * u_cutoffs = NULL;
     PyArrayObject * i_cutoffs = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!O!O!O!", &PyArray_Type, &ikey, &PyArray_Type, &uikey, &PyArray_Type, &u_cutoffs,
-                            &PyArray_Type, &i_cutoffs) )
+    if (! PyArg_ParseTuple(args, "O!O!O!O!", &PyArray_Type, &ikey, &PyArray_Type, &uikey, &PyArray_Type, &u_cutoffs, &PyArray_Type,
+                           &i_cutoffs))
     {
         return NULL;
     }
-    if ( PyArray_ITEMSIZE(u_cutoffs) != 8 )
+    if (PyArray_ITEMSIZE(u_cutoffs) != 8)
     {
         PyErr_Format(PyExc_ValueError, "u-cutoffs must be int64");
         return NULL;
     }
-    if ( PyArray_ITEMSIZE(i_cutoffs) != 8 )
+    if (PyArray_ITEMSIZE(i_cutoffs) != 8)
     {
         PyErr_Format(PyExc_ValueError, "i-cutoffs must be int64");
         return NULL;
     }
 
-    if ( PyArray_ITEMSIZE(uikey) != 4 )
+    if (PyArray_ITEMSIZE(uikey) != 4)
     {
         PyErr_Format(PyExc_ValueError, "uikey must be int32");
         return NULL;
@@ -1780,7 +1780,7 @@ PyObject * ReIndexGroups(PyObject * self, PyObject * args)
     preindex.u_cutoffs_length = u_cutoffs_length;
     preindex.uikey_length = ArrayLength(uikey);
 
-    switch ( PyArray_ITEMSIZE(ikey) )
+    switch (PyArray_ITEMSIZE(ikey))
     {
     case 1: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int8_t>, &preindex); break;
     case 2: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int16_t>, &preindex); break;
@@ -1811,10 +1811,10 @@ bool ReverseShuffleMT(void * preindexV, int core, int64_t start, int64_t length)
     KEYTYPE * pOut = (KEYTYPE *)preindex->pOutKey;
     int64_t maxindex = preindex->ikey_length;
 
-    for ( int64_t i = start; i < (start + length); i++ )
+    for (int64_t i = start; i < (start + length); i++)
     {
         KEYTYPE index = pIn[i];
-        if ( index >= 0 && index < maxindex )
+        if (index >= 0 && index < maxindex)
         {
             pOut[index] = (KEYTYPE)i;
         }
@@ -1837,7 +1837,7 @@ PyObject * ReverseShuffle(PyObject * self, PyObject * args)
 {
     PyArrayObject * ikey = NULL;
 
-    if ( ! PyArg_ParseTuple(args, "O!", &PyArray_Type, &ikey) )
+    if (! PyArg_ParseTuple(args, "O!", &PyArray_Type, &ikey))
     {
         return NULL;
     }
@@ -1847,7 +1847,7 @@ PyObject * ReverseShuffle(PyObject * self, PyObject * args)
     int dtype = PyArray_TYPE(ikey);
 
     // check for only signed ints
-    if ( dtype >= 10 || (dtype & 1) == 0 )
+    if (dtype >= 10 || (dtype & 1) == 0)
     {
         PyErr_Format(PyExc_ValueError, "ReverseShuffle: ikey must be int8/16/32/64");
         return NULL;
@@ -1855,7 +1855,7 @@ PyObject * ReverseShuffle(PyObject * self, PyObject * args)
 
     PyArrayObject * pReturnArray = AllocateLikeNumpyArray(ikey, dtype);
 
-    if ( pReturnArray )
+    if (pReturnArray)
     {
         preindex.pIKey = PyArray_BYTES(ikey);
         preindex.pOutKey = PyArray_BYTES(pReturnArray);
@@ -1863,7 +1863,7 @@ PyObject * ReverseShuffle(PyObject * self, PyObject * args)
         int64_t arrlength = ArrayLength(ikey);
         preindex.ikey_length = arrlength;
 
-        switch ( PyArray_ITEMSIZE(ikey) )
+        switch (PyArray_ITEMSIZE(ikey))
         {
         case 1: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int8_t>, &preindex); break;
         case 2: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int16_t>, &preindex); break;

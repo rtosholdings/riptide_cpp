@@ -40,7 +40,7 @@ bool CheckWindowsPrivilege(const char * pPrivilegeName)
     // This cannot fail, a pseudo handle that does not need to be closed
     hCurrentProccess = GetCurrentProcess();
 
-    if ( ! OpenProcessToken(hCurrentProccess, TOKEN_QUERY, &hProcessToken) )
+    if (! OpenProcessToken(hCurrentProccess, TOKEN_QUERY, &hProcessToken))
     {
         auto e = GetLastError();
         printf("OpenProcessToken error %u\n", e);
@@ -49,7 +49,7 @@ bool CheckWindowsPrivilege(const char * pPrivilegeName)
         return false;
     }
 
-    if ( ! LookupPrivilegeValue(NULL, pPrivilegeName, &luid) )
+    if (! LookupPrivilegeValue(NULL, pPrivilegeName, &luid))
     {
         CloseHandle(hProcessToken);
 
@@ -82,9 +82,9 @@ bool SetPrivilege(HANDLE hToken,         // access token handle
     TOKEN_PRIVILEGES tp;
     LUID luid;
 
-    if ( ! LookupPrivilegeValue(NULL,          // lookup privilege on local system
-                                lpszPrivilege, // privilege to lookup
-                                &luid) )       // receives LUID of privilege
+    if (! LookupPrivilegeValue(NULL,          // lookup privilege on local system
+                               lpszPrivilege, // privilege to lookup
+                               &luid))        // receives LUID of privilege
     {
         printf("LookupPrivilegeValue error: %u\n", GetLastError());
         return false;
@@ -92,20 +92,20 @@ bool SetPrivilege(HANDLE hToken,         // access token handle
 
     tp.PrivilegeCount = 1;
     tp.Privileges[0].Luid = luid;
-    if ( bEnablePrivilege )
+    if (bEnablePrivilege)
         tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
     else
         tp.Privileges[0].Attributes = 0;
 
     // Enable the privilege or disable all privileges.
 
-    if ( ! AdjustTokenPrivileges(hToken, false, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL) )
+    if (! AdjustTokenPrivileges(hToken, false, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
     {
         printf("AdjustTokenPrivileges error: %u\n", GetLastError());
         return false;
     }
 
-    if ( GetLastError() == ERROR_NOT_ALL_ASSIGNED )
+    if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 
     {
         printf("The token does not have the specified privilege. \n");
@@ -120,14 +120,14 @@ bool SetPrivilege(HANDLE hToken,         // access token handle
 bool CheckWindowsSharedMemoryPrerequisites(const char * pMappingName)
 {
     const char * pPrivilegeName = "SeCreateGlobalPrivilege";
-    if ( strstr(pMappingName, "Global") && ! CheckWindowsPrivilege(pPrivilegeName) )
+    if (strstr(pMappingName, "Global") && ! CheckWindowsPrivilege(pPrivilegeName))
     {
         printf("CheckWindowsSharedMemoryPrerequisites: privilege %s needs to be enabled for read / write to global file %s\n",
                pPrivilegeName, pMappingName);
         HANDLE currentToken = NULL;
 
         // More work to do here
-        if ( OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &currentToken) )
+        if (OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &currentToken))
         {
             bool newResult = SetPrivilege(currentToken, pPrivilegeName, true);
             CloseHandle(currentToken);
@@ -156,7 +156,7 @@ UtilSharedMemoryBegin(const char * pMappingName, INT64 Size, PMAPPED_VIEW_STRUCT
     //
     *pReturnStruct = NULL;
 
-    if ( ! CheckWindowsSharedMemoryPrerequisites(pMappingName) )
+    if (! CheckWindowsSharedMemoryPrerequisites(pMappingName))
     {
         hResult = S_FALSE;
         return -(hResult);
@@ -167,7 +167,7 @@ UtilSharedMemoryBegin(const char * pMappingName, INT64 Size, PMAPPED_VIEW_STRUCT
     //
     pMappedViewStruct = static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         hResult = E_OUTOFMEMORY;
         LogWarningLE(hResult);
@@ -186,7 +186,7 @@ UtilSharedMemoryBegin(const char * pMappingName, INT64 Size, PMAPPED_VIEW_STRUCT
     //
     // Check for errors in mapping
     //
-    if ( pMappedViewStruct->MapHandle == NULL )
+    if (pMappedViewStruct->MapHandle == NULL)
     {
         WORKSPACE_FREE(pMappedViewStruct);
         hResult = HRESULT_FROM_WIN32(GetLastError());
@@ -202,7 +202,7 @@ UtilSharedMemoryBegin(const char * pMappingName, INT64 Size, PMAPPED_VIEW_STRUCT
     //
     // Check for errors again
     //
-    if ( pMappedViewStruct->BaseAddress == NULL )
+    if (pMappedViewStruct->BaseAddress == NULL)
     {
         CloseHandle(pMappedViewStruct->MapHandle);
         WORKSPACE_FREE(pMappedViewStruct);
@@ -247,7 +247,7 @@ UtilSharedNumaMemoryBegin(const char * pMappingName, INT64 Size,
     //
     *pReturnStruct = NULL;
 
-    if ( ! CheckWindowsSharedMemoryPrerequisites(pMappingName) )
+    if (! CheckWindowsSharedMemoryPrerequisites(pMappingName))
     {
         hResult = S_FALSE;
         return -(hResult);
@@ -258,7 +258,7 @@ UtilSharedNumaMemoryBegin(const char * pMappingName, INT64 Size,
     //
     pMappedViewStruct = static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         hResult = E_OUTOFMEMORY;
         LogWarningLE(hResult);
@@ -276,7 +276,7 @@ UtilSharedNumaMemoryBegin(const char * pMappingName, INT64 Size,
     //
     // Check for errors in mapping
     //
-    if ( pMappedViewStruct->MapHandle == NULL )
+    if (pMappedViewStruct->MapHandle == NULL)
     {
         WORKSPACE_FREE(pMappedViewStruct);
         hResult = HRESULT_FROM_WIN32(GetLastError());
@@ -293,7 +293,7 @@ UtilSharedNumaMemoryBegin(const char * pMappingName, INT64 Size,
     //
     // Check for errors again
     //
-    if ( pMappedViewStruct->BaseAddress == NULL )
+    if (pMappedViewStruct->BaseAddress == NULL)
     {
         CloseHandle(pMappedViewStruct->MapHandle);
         WORKSPACE_FREE(pMappedViewStruct);
@@ -335,7 +335,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     //
     pMappedViewStruct = static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         LogWarningLE(E_OUTOFMEMORY);
         return (E_OUTOFMEMORY);
@@ -351,7 +351,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     //
     // Check for errors in mapping
     //
-    if ( pMappedViewStruct->MapHandle == NULL )
+    if (pMappedViewStruct->MapHandle == NULL)
     {
         WORKSPACE_FREE(pMappedViewStruct);
         hResult = HRESULT_FROM_WIN32(GetLastError());
@@ -364,7 +364,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     //
     // Check for errors again
     //
-    if ( pMappedViewStruct->BaseAddress == NULL )
+    if (pMappedViewStruct->BaseAddress == NULL)
     {
         CloseHandle(pMappedViewStruct->MapHandle);
         WORKSPACE_FREE(pMappedViewStruct);
@@ -389,18 +389,18 @@ UtilSharedMemoryEnd(PMAPPED_VIEW_STRUCT pMappedViewStruct)
 {
     HRESULT hResult;
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         return (E_POINTER);
     }
 
-    if ( UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false )
+    if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false)
     {
         hResult = HRESULT_FROM_WIN32(GetLastError());
         return (hResult);
     }
 
-    if ( CloseHandle(pMappedViewStruct->MapHandle) == false )
+    if (CloseHandle(pMappedViewStruct->MapHandle) == false)
     {
         hResult = HRESULT_FROM_WIN32(GetLastError());
         return (hResult);
@@ -428,7 +428,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
     //
     *pReturnStruct = NULL;
 
-    if ( ! CheckWindowsSharedMemoryPrerequisites(pMappingName) )
+    if (! CheckWindowsSharedMemoryPrerequisites(pMappingName))
     {
         return -(S_FALSE);
     }
@@ -438,7 +438,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
     //
     pMappedViewStruct = static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         return (E_OUTOFMEMORY);
     }
@@ -449,7 +449,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
     pMappedViewStruct->FileHandle = CreateFile(pszFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
-    if ( pMappedViewStruct->FileHandle == (void *)HFILE_ERROR )
+    if (pMappedViewStruct->FileHandle == (void *)HFILE_ERROR)
     {
         //
         // The "AutoCAD has the file as well" bug
@@ -458,7 +458,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
                                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     }
 
-    if ( pMappedViewStruct->FileHandle == (void *)HFILE_ERROR )
+    if (pMappedViewStruct->FileHandle == (void *)HFILE_ERROR)
     {
         WORKSPACE_FREE(pMappedViewStruct);
         return (HRESULT_FROM_WIN32(GetLastError()));
@@ -473,9 +473,9 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
         const char * pTemp = pszFilename;
         pMappingName = pTemp;
 
-        while ( *pTemp != 0 )
+        while (*pTemp != 0)
         {
-            if ( *pTemp == '\\' || *pTemp == ':' || *pTemp == '/' )
+            if (*pTemp == '\\' || *pTemp == ':' || *pTemp == '/')
             {
                 pMappingName = pTemp + 1;
             }
@@ -493,7 +493,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
     //
     // Check for errors in mapping
     //
-    if ( pMappedViewStruct->MapHandle == NULL )
+    if (pMappedViewStruct->MapHandle == NULL)
     {
         CloseHandle(pMappedViewStruct->FileHandle);
         WORKSPACE_FREE(pMappedViewStruct);
@@ -506,7 +506,7 @@ UtilMappedViewReadBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturnS
     //
     // Check for errors again
     //
-    if ( pulFile == NULL )
+    if (pulFile == NULL)
     {
         CloseHandle(pMappedViewStruct->MapHandle);
         CloseHandle(pMappedViewStruct->FileHandle);
@@ -535,24 +535,24 @@ UtilMappedViewReadEnd(PMAPPED_VIEW_STRUCT pMappedViewStruct)
 {
     HRESULT hResult;
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         return (E_POINTER);
     }
 
-    if ( UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false )
+    if (UnmapViewOfFile(pMappedViewStruct->BaseAddress) == false)
     {
         hResult = HRESULT_FROM_WIN32(GetLastError());
         return (hResult);
     }
 
-    if ( CloseHandle(pMappedViewStruct->MapHandle) == false )
+    if (CloseHandle(pMappedViewStruct->MapHandle) == false)
     {
         hResult = HRESULT_FROM_WIN32(GetLastError());
         return (hResult);
     }
 
-    if ( CloseHandle(pMappedViewStruct->FileHandle) == HFILE_ERROR )
+    if (CloseHandle(pMappedViewStruct->FileHandle) == HFILE_ERROR)
     {
         hResult = HRESULT_FROM_WIN32(GetLastError());
         return (hResult);
@@ -583,7 +583,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
     //
     *pReturnStruct = NULL;
 
-    if ( ! CheckWindowsSharedMemoryPrerequisites(pMappingName) )
+    if (! CheckWindowsSharedMemoryPrerequisites(pMappingName))
     {
         return -(S_FALSE);
     }
@@ -593,7 +593,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
     //
     pMappedViewStruct = static_cast<PMAPPED_VIEW_STRUCT>(WORKSPACE_ALLOC(sizeof(MAPPED_VIEW_STRUCT)));
 
-    if ( pMappedViewStruct == NULL )
+    if (pMappedViewStruct == NULL)
     {
         return (E_OUTOFMEMORY);
     }
@@ -604,7 +604,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
     pMappedViewStruct->FileHandle = CreateFile(pszFilename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
-    if ( pMappedViewStruct->FileHandle == (void *)HFILE_ERROR )
+    if (pMappedViewStruct->FileHandle == (void *)HFILE_ERROR)
     {
         //
         // The "AutoCAD has the file as well" bug
@@ -613,7 +613,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
                                                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     }
 
-    if ( pMappedViewStruct->FileHandle == (void *)HFILE_ERROR )
+    if (pMappedViewStruct->FileHandle == (void *)HFILE_ERROR)
     {
         WORKSPACE_FREE(pMappedViewStruct);
         return (HRESULT_FROM_WIN32(GetLastError()));
@@ -628,9 +628,9 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
         const char * pTemp = pszFilename;
         pMappingName = pTemp;
 
-        while ( *pTemp != 0 )
+        while (*pTemp != 0)
         {
-            if ( *pTemp == '\\' || *pTemp == ':' || *pTemp == '/' )
+            if (*pTemp == '\\' || *pTemp == ':' || *pTemp == '/')
             {
                 pMappingName = pTemp + 1;
             }
@@ -649,7 +649,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
     //
     // Check for errors in mapping
     //
-    if ( pMappedViewStruct->MapHandle == NULL )
+    if (pMappedViewStruct->MapHandle == NULL)
     {
         CloseHandle(pMappedViewStruct->FileHandle);
         WORKSPACE_FREE(pMappedViewStruct);
@@ -662,7 +662,7 @@ UtilMappedViewWriteBegin(const char * pszFilename, PMAPPED_VIEW_STRUCT * pReturn
     //
     // Check for errors again
     //
-    if ( pMappedViewStruct->BaseAddress == NULL )
+    if (pMappedViewStruct->BaseAddress == NULL)
     {
         CloseHandle(pMappedViewStruct->MapHandle);
         CloseHandle(pMappedViewStruct->FileHandle);
@@ -709,13 +709,13 @@ UtilSharedMemoryBegin(const char * pMappingName, int64_t size, PMAPPED_VIEW_STRU
     // Should we delete it?
     int fd = shm_open(pMappingName, O_RDWR | O_CREAT | O_EXCL, 0666);
 
-    if ( fd <= 0 )
+    if (fd <= 0)
     {
         // Try to delete link and re-open
         shm_unlink(pMappingName);
         fd = shm_open(pMappingName, O_RDWR | O_CREAT | O_EXCL, 0666);
     }
-    if ( fd <= 0 )
+    if (fd <= 0)
     {
         // todo use errno
         // this error can be expected if the shared memory does not exist yet
@@ -752,7 +752,7 @@ UtilSharedMemoryBegin(const char * pMappingName, int64_t size, PMAPPED_VIEW_STRU
 
     // Needed when non MAP_ANONYMOUS
     ftruncate(fd, size);
-    if ( errno < 0 )
+    if (errno < 0)
     {
         printf("Error UtilSharedMemoryCopy ftruncate: %s\n", strerror(errno));
         return -1;
@@ -761,7 +761,7 @@ UtilSharedMemoryBegin(const char * pMappingName, int64_t size, PMAPPED_VIEW_STRU
     // TJD: Note if do not use MAP_ANONYMOUS believe have to use fallocate or similar to actually reserve the space
     void * memaddress = mmap(0, size, protection, visibility, fd, 0);
 
-    if ( memaddress == (void *)-1 )
+    if (memaddress == (void *)-1)
     {
         printf("Error UtilSharedMemoryBegin mmap: %s\n", strerror(errno));
         return -1;
@@ -798,13 +798,13 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     LOGGING("Trying to open shared memory %s.\n", pMappingName);
     int fd = shm_open(pMappingName, O_RDWR, 0666);
 
-    if ( fd <= 0 )
+    if (fd <= 0)
     {
         bCanOnlyRead = true;
         fd = shm_open(pMappingName, O_RDONLY, 0666);
     }
 
-    if ( fd <= 0 )
+    if (fd <= 0)
     {
         // todo use errno
         printf("UtilSharedMemoryCopy: %s. Error memory copy: %s\n", pMappingName, strerror(errno));
@@ -814,7 +814,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     // Our memory buffer will be readable and writable:
     int protection = PROT_READ;
 
-    if ( ! bCanOnlyRead )
+    if (! bCanOnlyRead)
     {
         protection |= PROT_WRITE;
     }
@@ -826,7 +826,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
     struct stat sb;
     fstat(fd, &sb);
     off_t size = sb.st_size;
-    if ( errno < 0 )
+    if (errno < 0)
     {
         printf("Error UtilSharedMemoryCopy fstat: %s\n", strerror(errno));
         return -1;
@@ -834,7 +834,7 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
 
     void * memaddress = mmap(NULL, size, protection, visibility, fd, 0);
 
-    if ( memaddress == (void *)-1 )
+    if (memaddress == (void *)-1)
     {
         printf("Error UtilSharedMemoryCopy mmap: %s  %lld\n", strerror(errno), (long long)size);
         return -1;
