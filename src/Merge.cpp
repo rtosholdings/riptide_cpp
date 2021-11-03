@@ -193,7 +193,8 @@ int64_t BooleanCount(PyArrayObject * aIndex, int64_t ** ppChunkCount, int64_t st
 
         // This is the routine that will be called back from multiple threads
         // t64_t(*MTCHUNK_CALLBACK)(void* callbackArg, int core, int64_t start, int64_t length);
-        auto lambdaBSCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+        auto lambdaBSCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+        {
             BSCallbackStruct * callbackArg = (BSCallbackStruct *)callbackArgT;
 
             const int8_t * pBooleanMask = callbackArg->pBooleanMask;
@@ -328,7 +329,8 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
             //-----------------------------------------------
             //-----------------------------------------------
             // This is the routine that will be called back from multiple threads
-            auto lambdaBICallback2 = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+            auto lambdaBICallback2 = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+            {
                 BICallbackStruct * callbackArg = (BICallbackStruct *)callbackArgT;
 
                 int8_t * pBooleanMask = callbackArg->pBooleanMask;
@@ -1509,7 +1511,8 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
         };
 
         // This is the routine that will be called back from multiple threads
-        auto lambdaCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+        auto lambdaCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+        {
             BTFCallbackStruct * callbackArg = (BTFCallbackStruct *)callbackArgT;
 
             int64_t chunkCount = callbackArg->pChunkCount[start / g_cMathWorker->WORK_ITEM_CHUNK];

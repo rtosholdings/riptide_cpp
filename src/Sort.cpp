@@ -2510,7 +2510,8 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
         }
 
         // Use threads per partition
-        auto lambdaPSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaPSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             stPSORT * callbackArg = (stPSORT *)callbackArgT;
             int64_t t = workIndex;
             int64_t partLength;
@@ -3218,7 +3219,8 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
     } stISCallback{ 1, pSortedFunc, (const char *)pDataIn1, arraySize1, itemSize };
 
     // This is the routine that will be called back from multiple threads
-    auto lambdaISCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+    auto lambdaISCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+    {
         IsSortedCallbackStruct * cb = (IsSortedCallbackStruct *)callbackArgT;
 
         // check if short circuited (any segment not sorted)
@@ -3890,7 +3892,8 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
         pgroup.sizeofUINDEX = INDEX_SIZE;
 
         // Use threads per partition
-        auto lambdaPSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaPSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             stPGROUP * callbackArg = (stPGROUP *)callbackArgT;
             int64_t t = workIndex;
             int64_t partLength;
@@ -3991,7 +3994,8 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
         pgroupadd.sizeofUINDEX = sizeof(UINDEX);
 
         // Use threads per partition
-        auto lambdaPGADDCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaPGADDCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             stPGROUPADD * callbackArg = (stPGROUPADD *)callbackArgT;
             int64_t t = workIndex;
             int64_t partLength;

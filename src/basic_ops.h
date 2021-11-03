@@ -14,7 +14,8 @@
 namespace internal
 {
     // Rewrite this if pattern matching ever becomes a thing.
-    auto LOADU = [](auto const * x) -> std::remove_pointer_t<decltype(x)> {
+    auto LOADU = [](auto const * x) -> std::remove_pointer_t<decltype(x)>
+    {
         using underlying_t = std::remove_pointer<decltype(x)>;
 
         if constexpr (std::is_same_v<__m256d const, underlying_t>)
@@ -35,7 +36,8 @@ namespace internal
         throw(std::runtime_error("Attempt to load an illegal unaligned SIMD type"));
     };
 
-    auto STOREU = [](auto const * x, auto const y) -> void {
+    auto STOREU = [](auto const * x, auto const y) -> void
+    {
         if constexpr (std::is_same_v<__m256d const, y>)
         {
             _mm256_storeu_pd((double *)x, y);

@@ -203,7 +203,8 @@ PyObject * TimeWindow(PyObject * self, PyObject * args)
             TWCallbackStruct stTWCallback;
 
             // This is the routine that will be called back from multiple threads
-            auto lambdaTWCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+            auto lambdaTWCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+            {
                 TWCallbackStruct * callbackArg = (TWCallbackStruct *)callbackArgT;
 
                 // printf("[%d] TW %lld %lld\n", core, start, length);

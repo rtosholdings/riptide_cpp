@@ -5246,7 +5246,8 @@ static uint64_t GroupByImpl(const int64_t partitionLength, // may be 0
         };
 
         // This is the routine that will be called back from multiple threads
-        auto lambdaMKGBCallback = [](void * callbackArgT, int core, int64_t count) -> bool {
+        auto lambdaMKGBCallback = [](void * callbackArgT, int core, int64_t count) -> bool
+        {
             auto * cb = static_cast<MKGBCallbackStruct *>(callbackArgT);
 
             int64_t * pCutOffs = cb->pCutOffs;

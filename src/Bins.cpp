@@ -1732,7 +1732,8 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
                 BSearchCallbackStruct stBSearchCallback;
 
                 // This is the routine that will be called back from multiple threads
-                auto lambdaBSearchCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+                auto lambdaBSearchCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+                {
                     BSearchCallbackStruct * callbackArg = (BSearchCallbackStruct *)callbackArgT;
 
                     // printf("[%d] Bsearch string %lld %lld\n", core, start, length);
@@ -1816,7 +1817,8 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
                 BSearchCallbackStruct stBSearchCallback;
 
                 // This is the routine that will be called back from multiple threads
-                auto lambdaBSearchCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+                auto lambdaBSearchCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+                {
                     BSearchCallbackStruct * callbackArg = (BSearchCallbackStruct *)callbackArgT;
 
                     // printf("[%d] Bsearch %lld %lld\n", core, start, length);

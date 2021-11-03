@@ -2074,7 +2074,8 @@ PyObject * GroupFromBinCount(PyObject * self, PyObject * args)
             stMaster.pstBinCount = pstBinCount;
             stMaster.pMakeIGroup = pMakeIGroup;
 
-            auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+            auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+            {
                 stBinMaster * callbackArg = (stBinMaster *)callbackArgT;
                 int64_t t = workIndex;
 
@@ -2252,7 +2253,8 @@ int64_t InternalBinCount(BIN_COUNT pBinFunc,
     stMaster.pstBinCount = pstBinCount;
     stMaster.pBinFunc = pBinFunc;
 
-    auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+    auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+    {
         stBinCountMaster * callbackArg = (stBinCountMaster *)callbackArgT;
         int64_t t = workIndex;
 
@@ -2492,7 +2494,8 @@ PyObject * BinCount(PyObject * self, PyObject * args, PyObject * kwargs)
                         stMaster.pstBinCount = pstBinCount;
                         stMaster.pMakeIGroup2 = pMakeIGroup2;
 
-                        auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+                        auto lambdaBinCountCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+                        {
                             stBinMaster * callbackArg = (stBinMaster *)callbackArgT;
                             int64_t t = workIndex;
 

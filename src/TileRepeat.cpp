@@ -225,7 +225,8 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
         stConvert.itemSize = itemSize;
         stConvert.lastRow = items - 1;
 
-        auto lambdaConvertRecCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaConvertRecCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             stConvertRec * callbackArg = (stConvertRec *)callbackArgT;
             int64_t startRow = callbackArg->startRow + (workIndex * CHUNKSIZE);
             int64_t totalRows = startRow + CHUNKSIZE;

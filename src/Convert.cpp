@@ -2799,7 +2799,8 @@ PyObject * HStack(PyObject * self, PyObject * args)
 
                     LOGGING("MT string hstack work on %lld\n", tupleSize);
 
-                    auto lambdaHSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+                    auto lambdaHSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+                    {
                         stSHSTACK * callbackArg = (stSHSTACK *)callbackArgT;
                         int64_t t = workIndex;
                         callbackArg->pHStack[t].ConvertSafeString(
@@ -2889,7 +2890,8 @@ PyObject * HStack(PyObject * self, PyObject * args)
 
                     LOGGING("MT hstack work on %lld\n", tupleSize);
 
-                    auto lambdaHSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+                    auto lambdaHSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+                    {
                         stSHSTACK * callbackArg = (stSHSTACK *)callbackArgT;
                         int64_t t = workIndex;
                         callbackArg->pHStack[t].ConvertSafe(
@@ -2957,7 +2959,8 @@ PyObject * ShiftArrays(PyObject * self, PyObject * args)
         myshift.aInfo = aInfo;
         myshift.shiftAmount = shiftAmount;
 
-        auto lambdaShiftCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaShiftCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             stSHIFT * pShift = (stSHIFT *)callbackArgT;
             int64_t t = workIndex;
 
@@ -3515,7 +3518,8 @@ PyObject * SetItemBooleanMaskLarge(PyArrayObject * arr, PyArrayObject * mask, Py
     {
         stBoolCounter.pBoolMask = (int8_t *)PyArray_BYTES(mask);
 
-        auto lambdaCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+        auto lambdaCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+        {
             ST_BOOLCOUNTER * pstBoolCounter = (ST_BOOLCOUNTER *)callbackArgT;
             int64_t t = workIndex;
 
@@ -3548,7 +3552,8 @@ PyObject * SetItemBooleanMaskLarge(PyArrayObject * arr, PyArrayObject * mask, Py
 
         if (bsum > 0 && bsum == arrlength)
         {
-            auto lambda2Callback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+            auto lambda2Callback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+            {
                 ST_BOOLCOUNTER * pstBoolCounter = (ST_BOOLCOUNTER *)callbackArgT;
                 int64_t t = workIndex;
 
@@ -3578,7 +3583,8 @@ PyObject * SetItemBooleanMaskLarge(PyArrayObject * arr, PyArrayObject * mask, Py
 
         if (bsum > 0 && arrlength == 1)
         {
-            auto lambda2Callback = [](void * callbackArgT, int core, int64_t workIndex) -> bool {
+            auto lambda2Callback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
+            {
                 ST_BOOLCOUNTER * pstBoolCounter = (ST_BOOLCOUNTER *)callbackArgT;
                 int64_t t = workIndex;
 
@@ -3767,7 +3773,8 @@ PyObject * PutMask(PyObject * self, PyObject * args)
                         MASK_CALLBACK_STRUCT stMask;
 
                         // This is the routine that will be called back from multiple threads
-                        auto lambdaMaskCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool {
+                        auto lambdaMaskCallback = [](void * callbackArgT, int core, int64_t start, int64_t length) -> bool
+                        {
                             MASK_CALLBACK_STRUCT * callbackArg = (MASK_CALLBACK_STRUCT *)callbackArgT;
 
                             // printf("[%d] Mask %lld %lld\n", core, start, length);

@@ -524,7 +524,8 @@ namespace internal
         // Output cannot be longer than the input
         char const * last_out_p{ out_p + sizeof(data_t) * len };
 
-        auto calc = [&](auto vectorization_object) {
+        auto calc = [&](auto vectorization_object)
+        {
             while (out_p < last_out_p)
             {
                 auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
