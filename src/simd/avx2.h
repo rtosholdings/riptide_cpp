@@ -68,14 +68,14 @@ namespace riptide
       template<>
       float const& min_with_nan_passthru(float const& x, float const& y)
       {
-         const auto blended = (x != x) ? x : y;
+         const auto& blended = (x != x) ? x : y;
          return x < blended ? x : blended;
       }
 
       template<>
       double const& min_with_nan_passthru(double const& x, double const& y)
       {
-         const auto blended = (x != x) ? x : y;
+         const auto& blended = (x != x) ? x : y;
          return x < blended ? x : blended;
       }
 
@@ -96,14 +96,14 @@ namespace riptide
       template<>
       float const& max_with_nan_passthru(float const& x, float const& y)
       {
-         const auto blended = (x != x) ? x : y;
+         const auto& blended = (x != x) ? x : y;
          return x > blended ? x : blended;
       }
 
       template<>
       double const& max_with_nan_passthru(double const& x, double const& y)
       {
-         const auto blended = (x != x) ? x : y;
+         const auto& blended = (x != x) ? x : y;
          return x > blended ? x : blended;
       }
    }

@@ -1739,6 +1739,7 @@ static UNARY_FUNC CheckMathOpOneInput(int func, int numpyInType1, int numpyOutTy
    return pOneFunc;
 }
 
+#if 0
 //--------------------------------------------------------------------
 // Check to see if we can compute this
 static UNARY_FUNC_STRIDED CheckMathOpOneInputStrided(int func, int numpyInType1, int numpyOutType, int* wantedOutType) {
@@ -1754,6 +1755,7 @@ static UNARY_FUNC_STRIDED CheckMathOpOneInputStrided(int func, int numpyInType1,
    }
    return pOneFunc;
 }
+#endif
 
 //------------------------------------------------------------------------------
 //  Concurrent callback from multiple threads
@@ -2081,7 +2083,6 @@ BasicMathOneInputFromNumber(PyArrayObject* inObject1, int64_t funcNumber, bool i
 // 
 PyObject *
 BasicMathUnaryOp(PyObject *self, PyObject *args, PyObject *kwargs) {
-   int numpyWantType = -1;
    PyArrayObject* outObject1 = NULL;
 
    if (kwargs) {
@@ -2091,8 +2092,6 @@ BasicMathUnaryOp(PyObject *self, PyObject *args, PyObject *kwargs) {
 
          // check for error in dtype passed, if NULL error message already set
          if (!pDescr) return NULL;
-
-         numpyWantType = pDescr->type_num;
       }
       dtypekwarg = PyDict_GetItemString(kwargs, "out");
 

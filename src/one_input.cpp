@@ -67,6 +67,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                 return Py_None;
             }
 
+
             PyArrayObject * result_array{ numpy_outtype == -1 ? AllocateLikeNumpyArray(in_array, wanted_outtype) : out_object_1 };
 
             if ((result_array == nullptr) || (result_array == out_object_1) && (len != ArrayLength(result_array)))
