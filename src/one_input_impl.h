@@ -572,8 +572,8 @@ namespace riptable_cpp
                 if constexpr (operation_t::simd_implementation::value)
                 {
                     using wide_sct = typename riptide::simd::avx2::template vec256<typename data_t::data_type>;
-                    constexpr size_t wide_size{ sizeof(wide_sct::reg_type) };
-                    constexpr size_t input_size{ sizeof(data_t::data_type) };
+                    constexpr size_t wide_size{ sizeof(typename wide_sct::reg_type) };
+                    constexpr size_t input_size{ sizeof(typename data_t::data_type) };
                     if (in_array_stride == sizeof(typename data_t::data_type) && out_stride_as_items == 1 &&
                         (wide_size / input_size) + starting_element < contig_elems)
                     {
