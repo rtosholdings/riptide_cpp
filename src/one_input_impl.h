@@ -366,12 +366,12 @@ namespace riptable_cpp
             }
             else
             {
-                return std::signbit(T(value)) ? std::numeric_limits< bitmask_T >::max() : bitmask_t{};
+                return std::signbit(T(value)) ? std::numeric_limits< bitmask_t >::max() : bitmask_t{};
             }
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, not_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, not_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type const;
@@ -435,7 +435,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -452,7 +452,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isnotfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isnotfinite_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -469,7 +469,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -486,7 +486,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isnotinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isnotinf_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -503,7 +503,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -520,7 +520,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isnotnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isnotnormal_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
@@ -537,7 +537,7 @@ namespace riptable_cpp
         }
 
         template <typename calculation_t, typename wide_ops_t>
-        bool calculate(char const * in_p, isnanorzero_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
+        decltype(auto) calculate(char const * in_p, isnanorzero_op const * requested_op, calculation_t const * in_type, wide_ops_t wide_ops)
         {
             using T = typename calculation_t::data_type const;
             T const value{ *reinterpret_cast<T const *>(in_p) };
@@ -545,11 +545,11 @@ namespace riptable_cpp
 
             if constexpr (not std::is_floating_point_v<T> == true)
             {
-                return (T(value) == T{}) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
+                return (not not T(value) == T{}) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
             }
             else
             {
-                return (T(value) == T{} || std::isnan(value)) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
+                return (not not T(value) == T{} || std::isnan(value)) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
             }
         }
 
