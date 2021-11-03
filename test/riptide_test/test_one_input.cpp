@@ -20,11 +20,15 @@ namespace
     std::array< float const, 31 > const input_data_nan_f = { -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, NAN, 1.0, 1.5, 2, 2.5, 3,
         3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10.5, 10.5, 11 };
    
+    std::array< float const, 31 > const input_data_inf_f = { -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, INFINITY, 1.0, 1.5, 2, 2.5, 3,
+        3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10.5, 10.5, 11 };
+   
     std::array< int32_t const, 31 > const input_data_simple_i = { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6,
         7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
 
     float const * p_float = input_data_simple_f.data();
     float const * p_nans = input_data_nan_f.data();
+    float const * p_inf = input_data_inf_f.data();
     int32_t const* p_int32 = input_data_simple_i.data();
 
     suite one_input = []
@@ -826,5 +830,56 @@ namespace
             expect(x[24] == 0_i);
             expect(x[25] == 0_i);
         };
+
+        "calculate_isfinite_signed"_test = []
+        {
+            isfinite_op op{};
+            int32_traits data_type{};
+            int32_t data{ -13 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<int32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), uint32_t>) << "Should return a uint32_t";
+        };
+
+        "calculate_isfinite_unsigned"_test = []
+        {
+            isfinite_op op{};
+            uint32_traits data_type{};
+            uint32_t data{ 42 };
+            auto x = calculate(reinterpret_cast<char const*>(&data), &op, &data_type, vec256<uint32_t>{});
+            expect(x == false);
+            expect(std::is_same_v<decltype(x), uint32_t>) << "Should return a uint32_t";
+        };
+
+        "calculate_isfinite_float"_test = []
+        {
+            isfinite_op op{};
+            float_traits data_type{};
+            auto x = calculate(reinterpret_cast<char const*>(p_inf + 5), &op, &data_type, vec256<float>{});
+            expect( x == false );
+            x = calculate(reinterpret_cast< char const * >( p_inf + 9 ), &op, &data_type, vec256<float>{} );
+            expect( x == true );
+            expect(std::is_same_v<uint32_t, decltype(x)>) << "Should return a uint32_t";
+        };
+#if 0
+        "walk_isfinite_float"_test = [&]
+        {
+            operation_t op{ isfinite_op{} };
+            data_type_t data_type{ float_traits{} };
+            std::array< int, 26 > x{};
+            walk_data_array(1, 26, 4, 4, reinterpret_cast<char const*>(p_inf + 5), reinterpret_cast<char*>(x.data()), op, data_type);
+            expect(x[0] == 0_i);
+            expect(x[1] == 0_i);
+            expect(x[2] == 0_i);
+            expect(x[3] == 0_i);
+            expect(x[4] == -1_i);
+            expect(x[5] == 0_i);
+            expect(x[6] == 0_i);
+            expect(x[7] == 0_i);
+            expect(x[8] == 0_i);
+            expect(x[24] == 0_i);
+            expect(x[25] == 0_i);
+        };
+#endif
 };
 }
