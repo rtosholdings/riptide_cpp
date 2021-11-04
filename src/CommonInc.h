@@ -21,54 +21,64 @@
 
 #endif
 
-using HANDLE = void *;
+using HANDLE = void*;
 
-#define RtlEqualMemory(Destination, Source, Length) (! memcmp((Destination), (Source), (Length)))
-#define RtlMoveMemory(Destination, Source, Length) memmove((Destination), (Source), (Length))
-#define RtlCopyMemory(Destination, Source, Length) memcpy((Destination), (Source), (Length))
-#define RtlFillMemory(Destination, Length, Fill) memset((Destination), (Fill), (Length))
-#define RtlZeroMemory(Destination, Length) memset((Destination), 0, (Length))
+#ifdef RtlEqualMemory
+#undef RtlEqualMemory
+#endif
+#define RtlEqualMemory(Destination,Source,Length) (!memcmp((Destination),(Source),(Length)))
+#ifdef RtlMoveMemory
+#undef RtlMoveMemory
+#endif
+#define RtlMoveMemory(Destination,Source,Length) memmove((Destination),(Source),(Length))
+#ifdef RtlCopyMemory
+#undef RtlCopyMemory
+#endif
+#define RtlCopyMemory(Destination,Source,Length) memcpy((Destination),(Source),(Length))
+#ifdef RtlFillMemory
+#undef RtlFillMemory
+#endif
+#define RtlFillMemory(Destination,Length,Fill) memset((Destination),(Fill),(Length))
+#ifdef RtlZeroMemory
+#undef RtlZeroMemory
+#endif
+#define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
 
-#if defined(_WIN32) && ! defined(__GNUC__)
-    #define WINAPI __stdcall
-    #define InterlockedCompareExchange128 _InterlockedCompareExchange128
-    #ifndef InterlockedAdd64
-        #define InterlockedAdd64 _InterlockedAdd64
-    #endif
-    #define InterlockedDecrement64 _InterlockedDecrement64
-    #define InterlockedIncrement64 _InterlockedIncrement64
+#if defined(_WIN32) && !defined(__GNUC__)
+#define WINAPI      __stdcall
+#define InterlockedCompareExchange128 _InterlockedCompareExchange128
+#ifndef InterlockedAdd64
+#define InterlockedAdd64 _InterlockedAdd64
+#endif
+#define InterlockedDecrement64 _InterlockedDecrement64
+#define InterlockedIncrement64 _InterlockedIncrement64
 
-    #define YieldProcessor _mm_pause
-    #define InterlockedIncrement _InterlockedIncrement
+#define YieldProcessor _mm_pause
+#define InterlockedIncrement _InterlockedIncrement
 
-    #define FMInterlockedOr(X, Y) _InterlockedOr64((int64_t *)X, Y)
+#define FMInterlockedOr(X,Y) _InterlockedOr64((int64_t*)X,Y)
 
-    #include <intrin.h>
-    #ifndef SFW_ALIGN
-        #define SFW_ALIGN(x) __declspec(align(x))
-        #define ALIGN(x) __declspec(align(64))
+#include <intrin.h>
+#ifndef SFW_ALIGN
+#define SFW_ALIGN(x) __declspec(align(x))
+#define ALIGN(x) __declspec(align(64))
 
-        #define FORCEINLINE __forceinline
-        #define FORCE_INLINE __forceinline
+#define FORCEINLINE __forceinline
+#define FORCE_INLINE __forceinline
 
-        #define ALIGNED_ALLOC(Size, Alignment) _aligned_malloc(Size, Alignment)
-        #define ALIGNED_FREE(block) _aligned_free(block)
+#define ALIGNED_ALLOC(Size,Alignment) _aligned_malloc(Size,Alignment)
+#define ALIGNED_FREE(block) _aligned_free(block)
 
-        #define lzcnt_64 _lzcnt_u64
+#define lzcnt_64 _lzcnt_u64
 
-        #define CASE_NPY_INT32 \
-        case NPY_INT32: \
-        case NPY_INT
-        #define CASE_NPY_UINT32 \
-        case NPY_UINT32: \
-        case NPY_UINT
-        #define CASE_NPY_INT64 case NPY_INT64
-        #define CASE_NPY_UINT64 case NPY_UINT64
-        #define CASE_NPY_FLOAT64 \
-        case NPY_DOUBLE: \
-        case NPY_LONGDOUBLE
+#define CASE_NPY_INT32      case NPY_INT32:       case NPY_INT
+#define CASE_NPY_UINT32     case NPY_UINT32:      case NPY_UINT
+#define CASE_NPY_INT64      case NPY_INT64
+#define CASE_NPY_UINT64     case NPY_UINT64
+#define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
 
-    #endif
+#endif
+
 #else
 
     #define CASE_NPY_INT32 case NPY_INT32
