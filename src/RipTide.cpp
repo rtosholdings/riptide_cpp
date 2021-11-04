@@ -987,14 +987,17 @@ bool ConvertSingleItemArray(void * pInput, int16_t numpyInType, _m256all * pDest
         fvalue = (double)*(double *)pInput;
         value = (int64_t)fvalue;
         break;
-    default: return false;
+    default:
+        return false;
     }
 
     switch (numpyOutType)
     {
     case NPY_BOOL:
     case NPY_INT8:
-    case NPY_UINT8: pDest->i = _mm256_set1_epi8((int8_t)value); break;
+    case NPY_UINT8:
+        pDest->i = _mm256_set1_epi8((int8_t)value);
+        break;
     case NPY_INT16:
     case NPY_UINT16:
         pDest->i = _mm256_set1_epi16((int16_t)value);
@@ -1010,7 +1013,9 @@ bool ConvertSingleItemArray(void * pInput, int16_t numpyInType, _m256all * pDest
         pDest->ci.i1 = _mm_set1_epi64x(value);
         pDest->ci.i2 = _mm_set1_epi64x(value);
         break;
-    case NPY_FLOAT32: pDest->s = _mm256_set1_ps((float)fvalue); break;
+    case NPY_FLOAT32:
+        pDest->s = _mm256_set1_ps((float)fvalue);
+        break;
     case NPY_FLOAT64:
         // printf("setting value to %lf\n", fvalue);
         pDest->d = _mm256_set1_pd((double)fvalue);
@@ -1065,7 +1070,9 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
         {
         case NPY_BOOL:
         case NPY_INT8:
-        case NPY_UINT8: pDest->i = _mm256_set1_epi8((int8_t)value); break;
+        case NPY_UINT8:
+            pDest->i = _mm256_set1_epi8((int8_t)value);
+            break;
         case NPY_INT16:
         case NPY_UINT16:
             pDest->i = _mm256_set1_epi16((int16_t)value);
@@ -1081,9 +1088,15 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
             pDest->ci.i1 = _mm_set1_epi64x(value);
             pDest->ci.i2 = _mm_set1_epi64x(value);
             break;
-        case NPY_FLOAT32: pDest->s = _mm256_set1_ps((float)value); break;
-        case NPY_FLOAT64: pDest->d = _mm256_set1_pd((double)value); break;
-        default: printf("unknown bool scalar type in convertScalarObject %d\n", numpyOutType); return false;
+        case NPY_FLOAT32:
+            pDest->s = _mm256_set1_ps((float)value);
+            break;
+        case NPY_FLOAT64:
+            pDest->d = _mm256_set1_pd((double)value);
+            break;
+        default:
+            printf("unknown bool scalar type in convertScalarObject %d\n", numpyOutType);
+            return false;
         }
     }
     else
@@ -1138,9 +1151,15 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
             switch (numpyOutType)
             {
             case NPY_BOOL:
-            case NPY_INT8: pDest->i = _mm256_set1_epi8((int8_t)value); break;
-            case NPY_UINT8: pDest->i = _mm256_set1_epi8((uint8_t)value2); break;
-            case NPY_INT16: pDest->i = _mm256_set1_epi16((int16_t)value); break;
+            case NPY_INT8:
+                pDest->i = _mm256_set1_epi8((int8_t)value);
+                break;
+            case NPY_UINT8:
+                pDest->i = _mm256_set1_epi8((uint8_t)value2);
+                break;
+            case NPY_INT16:
+                pDest->i = _mm256_set1_epi16((int16_t)value);
+                break;
             case NPY_UINT16:
                 pDest->i = _mm256_set1_epi16((uint16_t)value2);
                 break;
@@ -1160,9 +1179,15 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->ci.i1 = _mm_set1_epi64x(value2);
                 pDest->ci.i2 = _mm_set1_epi64x(value2);
                 break;
-            case NPY_FLOAT32: pDest->s = _mm256_set1_ps((float)value); break;
-            case NPY_FLOAT64: pDest->d = _mm256_set1_pd((double)value); break;
-            default: printf("unknown long scalar type in convertScalarObject %d\n", numpyOutType); return false;
+            case NPY_FLOAT32:
+                pDest->s = _mm256_set1_ps((float)value);
+                break;
+            case NPY_FLOAT64:
+                pDest->d = _mm256_set1_pd((double)value);
+                break;
+            default:
+                printf("unknown long scalar type in convertScalarObject %d\n", numpyOutType);
+                return false;
             }
         }
         else if (PyFloat_Check(inObject1) || PyArray_IsScalar((inObject1), Floating))
@@ -1172,9 +1197,15 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
             switch (numpyOutType)
             {
             case NPY_BOOL:
-            case NPY_INT8: pDest->i = _mm256_set1_epi8((int8_t)value); break;
-            case NPY_UINT8: pDest->i = _mm256_set1_epi8((uint8_t)value); break;
-            case NPY_INT16: pDest->i = _mm256_set1_epi16((int16_t)value); break;
+            case NPY_INT8:
+                pDest->i = _mm256_set1_epi8((int8_t)value);
+                break;
+            case NPY_UINT8:
+                pDest->i = _mm256_set1_epi8((uint8_t)value);
+                break;
+            case NPY_INT16:
+                pDest->i = _mm256_set1_epi16((int16_t)value);
+                break;
             case NPY_UINT16:
                 pDest->i = _mm256_set1_epi16((uint16_t)value);
                 break;
@@ -1194,10 +1225,18 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->ci.i1 = _mm_set1_epi64x((int64_t)value);
                 pDest->ci.i2 = _mm_set1_epi64x((int64_t)value);
                 break;
-            case NPY_FLOAT32: pDest->s = _mm256_set1_ps((float)value); break;
-            case NPY_FLOAT64: pDest->d = _mm256_set1_pd((double)value); break;
-            case NPY_LONGDOUBLE: pDest->d = _mm256_set1_pd((double)(long double)value); break;
-            default: printf("unknown float scalar type in convertScalarObject %d\n", numpyOutType); return false;
+            case NPY_FLOAT32:
+                pDest->s = _mm256_set1_ps((float)value);
+                break;
+            case NPY_FLOAT64:
+                pDest->d = _mm256_set1_pd((double)value);
+                break;
+            case NPY_LONGDOUBLE:
+                pDest->d = _mm256_set1_pd((double)(long double)value);
+                break;
+            default:
+                printf("unknown float scalar type in convertScalarObject %d\n", numpyOutType);
+                return false;
             }
         }
         else if (PyBytes_Check(inObject1))
@@ -2006,14 +2045,20 @@ void * GetDefaultForType(int numpyInType)
 
     switch (numpyInType)
     {
-    case NPY_FLOAT: pgDefault = &gDefaultFloat; break;
+    case NPY_FLOAT:
+        pgDefault = &gDefaultFloat;
+        break;
     case NPY_LONGDOUBLE:
     case NPY_DOUBLE:
         pgDefault = &gDefaultDouble;
         break;
         // BOOL should not really have an invalid value inhabiting the type
-    case NPY_BOOL: pgDefault = &gDefaultBool; break;
-    case NPY_BYTE: pgDefault = &gDefaultInt8; break;
+    case NPY_BOOL:
+        pgDefault = &gDefaultBool;
+        break;
+    case NPY_BYTE:
+        pgDefault = &gDefaultInt8;
+        break;
     case NPY_INT16:
         pgDefault = &gDefaultInt16;
         break;
@@ -2025,7 +2070,9 @@ void * GetDefaultForType(int numpyInType)
 
         pgDefault = &gDefaultInt64;
         break;
-    case NPY_UINT8: pgDefault = &gDefaultUInt8; break;
+    case NPY_UINT8:
+        pgDefault = &gDefaultUInt8;
+        break;
     case NPY_UINT16:
         pgDefault = &gDefaultUInt16;
         break;
@@ -2037,9 +2084,14 @@ void * GetDefaultForType(int numpyInType)
 
         pgDefault = &gDefaultUInt64;
         break;
-    case NPY_STRING: pgDefault = &gString; break;
-    case NPY_UNICODE: pgDefault = &gString; break;
-    default: printf("!!! likely problem in GetDefaultForType\n");
+    case NPY_STRING:
+        pgDefault = &gString;
+        break;
+    case NPY_UNICODE:
+        pgDefault = &gString;
+        break;
+    default:
+        printf("!!! likely problem in GetDefaultForType\n");
     }
 
     return pgDefault;

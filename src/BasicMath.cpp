@@ -888,7 +888,8 @@ inline void SimpleMathOpFast(void * pDataIn1X, void * pDataIn2X, void * pDataOut
             }
             break;
         }
-    default: printf("**error - impossible scalar mode\n");
+    default:
+        printf("**error - impossible scalar mode\n");
     }
 }
 
@@ -1082,7 +1083,8 @@ inline void SimpleMathOpFastSymmetric(void * pDataIn1X, void * pDataIn2X, void *
             }
             break;
         }
-    default: printf("**error - impossible scalar mode\n");
+    default:
+        printf("**error - impossible scalar mode\n");
     }
 }
 
@@ -1156,7 +1158,8 @@ inline void SimpleMathOpFastDouble(MathFunctionPtr MATH_OP, MathFunctionConvert 
             }
             break;
         }
-    default: printf("**error - impossible scalar mode\n");
+    default:
+        printf("**error - impossible scalar mode\n");
     }
 }
 
@@ -1272,8 +1275,10 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
-        case NPY_FLOAT: return SimpleMathOpFastSymmetric<float, __m256, AddOp<float>, ADD_OP_256f32>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
+        case NPY_FLOAT:
+            return SimpleMathOpFastSymmetric<float, __m256, AddOp<float>, ADD_OP_256f32>;
         case NPY_DOUBLE:
             return SimpleMathOpFastSymmetric<double, __m256d, AddOp<double>, ADD_OP_256f64>;
             // proof of concept for i32 addition loop
@@ -1282,8 +1287,10 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         CASE_NPY_INT64:
 
             return SimpleMathOpFastSymmetric<int64_t, __m256i, AddOp<int64_t>, ADD_OP_256i64>;
-        case NPY_INT16: return SimpleMathOpFastSymmetric<int16_t, __m256i, AddOp<int16_t>, ADD_OP_256i16>;
-        case NPY_INT8: return SimpleMathOpFastSymmetric<int8_t, __m256i, AddOp<int8_t>, ADD_OP_256i8>;
+        case NPY_INT16:
+            return SimpleMathOpFastSymmetric<int16_t, __m256i, AddOp<int16_t>, ADD_OP_256i16>;
+        case NPY_INT8:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, AddOp<int8_t>, ADD_OP_256i8>;
         }
         return nullptr;
 
@@ -1293,8 +1300,10 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
-        case NPY_FLOAT: return SimpleMathOpFastSymmetric<float, __m256, MulOp<float>, MUL_OP_256f32>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
+        case NPY_FLOAT:
+            return SimpleMathOpFastSymmetric<float, __m256, MulOp<float>, MUL_OP_256f32>;
         case NPY_DOUBLE:
             return SimpleMathOpFastSymmetric<double, __m256d, MulOp<double>, MUL_OP_256f64>;
         CASE_NPY_INT32:
@@ -1320,7 +1329,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_FLOAT: return SimpleMathOpFast<float, __m256, SubOp<float>, SUB_OP_256f32>;
+        case NPY_FLOAT:
+            return SimpleMathOpFast<float, __m256, SubOp<float>, SUB_OP_256f32>;
         case NPY_DOUBLE:
             return SimpleMathOpFast<double, __m256d, SubOp<double>, SUB_OP_256f64>;
         CASE_NPY_INT32:
@@ -1328,8 +1338,10 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         CASE_NPY_INT64:
 
             return SimpleMathOpFast<int64_t, __m256i, SubOp<int64_t>, SUB_OP_256i64>;
-        case NPY_INT16: return SimpleMathOpFast<int16_t, __m256i, SubOp<int16_t>, SUB_OP_256i16>;
-        case NPY_INT8: return SimpleMathOpFast<int8_t, __m256i, SubOp<int8_t>, SUB_OP_256i8>;
+        case NPY_INT16:
+            return SimpleMathOpFast<int16_t, __m256i, SubOp<int16_t>, SUB_OP_256i16>;
+        case NPY_INT8:
+            return SimpleMathOpFast<int8_t, __m256i, SubOp<int8_t>, SUB_OP_256i8>;
         }
         return nullptr;
 
@@ -1341,18 +1353,22 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         switch (*wantedOutType)
         {
         // TODO: Vector routine needs to be written
-        case NPY_FLOAT: return SimpleMathOpSlowMin<float>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowMin<float>;
         case NPY_DOUBLE:
             return SimpleMathOpSlowMin<double>;
         CASE_NPY_INT32:
             return SimpleMathOpFastSymmetric<int32_t, __m256i, MinOp<int32_t>, MIN_OPi32>;
-        case NPY_INT16: return SimpleMathOpFastSymmetric<int16_t, __m256i, MinOp<int16_t>, MIN_OPi16>;
+        case NPY_INT16:
+            return SimpleMathOpFastSymmetric<int16_t, __m256i, MinOp<int16_t>, MIN_OPi16>;
         case NPY_INT8:
             return SimpleMathOpFastSymmetric<int8_t, __m256i, MinOp<int8_t>, MIN_OPi8>;
         CASE_NPY_UINT32:
             return SimpleMathOpFastSymmetric<uint32_t, __m256i, MinOp<uint32_t>, MIN_OPu32>;
-        case NPY_UINT16: return SimpleMathOpFastSymmetric<uint16_t, __m256i, MinOp<uint16_t>, MIN_OPu16>;
-        case NPY_UINT8: return SimpleMathOpFastSymmetric<uint8_t, __m256i, MinOp<uint8_t>, MIN_OPu8>;
+        case NPY_UINT16:
+            return SimpleMathOpFastSymmetric<uint16_t, __m256i, MinOp<uint16_t>, MIN_OPu16>;
+        case NPY_UINT8:
+            return SimpleMathOpFastSymmetric<uint8_t, __m256i, MinOp<uint8_t>, MIN_OPu8>;
         }
         return nullptr;
 
@@ -1364,18 +1380,22 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         switch (*wantedOutType)
         {
         // TODO: Vector routine needs to be written
-        case NPY_FLOAT: return SimpleMathOpSlowMax<float>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowMax<float>;
         case NPY_DOUBLE:
             return SimpleMathOpSlowMax<double>;
         CASE_NPY_INT32:
             return SimpleMathOpFastSymmetric<int32_t, __m256i, MaxOp<int32_t>, MAX_OPi32>;
-        case NPY_INT16: return SimpleMathOpFastSymmetric<int16_t, __m256i, MaxOp<int16_t>, MAX_OPi16>;
+        case NPY_INT16:
+            return SimpleMathOpFastSymmetric<int16_t, __m256i, MaxOp<int16_t>, MAX_OPi16>;
         case NPY_INT8:
             return SimpleMathOpFastSymmetric<int8_t, __m256i, MaxOp<int8_t>, MAX_OPi8>;
         CASE_NPY_UINT32:
             return SimpleMathOpFastSymmetric<uint32_t, __m256i, MaxOp<uint32_t>, MAX_OPu32>;
-        case NPY_UINT16: return SimpleMathOpFastSymmetric<uint16_t, __m256i, MaxOp<uint16_t>, MAX_OPu16>;
-        case NPY_UINT8: return SimpleMathOpFastSymmetric<uint8_t, __m256i, MaxOp<uint8_t>, MAX_OPu8>;
+        case NPY_UINT16:
+            return SimpleMathOpFastSymmetric<uint16_t, __m256i, MaxOp<uint16_t>, MAX_OPu16>;
+        case NPY_UINT8:
+            return SimpleMathOpFastSymmetric<uint8_t, __m256i, MaxOp<uint8_t>, MAX_OPu8>;
         }
         return nullptr;
 
@@ -1393,7 +1413,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         }
         switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1)
         {
-        case NPY_FLOAT: return SimpleMathOpFast<float, __m256, DivOp<float>, DIV_OP_256f32>;
+        case NPY_FLOAT:
+            return SimpleMathOpFast<float, __m256, DivOp<float>, DIV_OP_256f32>;
         case NPY_DOUBLE:
             return SimpleMathOpFast<double, __m256d, DivOp<double>, DIV_OP_256f64>;
         CASE_NPY_INT32:
@@ -1407,7 +1428,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
         }
         return nullptr;
 
@@ -1419,7 +1441,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, AndOp<int8_t>, AND_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFastSymmetric<int16_t, __m256i, AndOp<int16_t>, AND_OP_256>;
@@ -1440,7 +1463,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
         }
         return nullptr;
 
@@ -1452,7 +1476,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, OrOp<int8_t>, OR_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFastSymmetric<int16_t, __m256i, OrOp<int16_t>, OR_OP_256>;
@@ -1475,7 +1500,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
@@ -1497,7 +1523,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastSymmetric<int8_t, __m256i, XorOp<int8_t>, XOR_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFastSymmetric<int16_t, __m256i, XorOp<int16_t>, XOR_OP_256>;
@@ -1520,7 +1547,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFastReverse<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFastReverse<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFastReverse<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
@@ -1543,7 +1571,8 @@ static ANY_TWO_FUNC GetSimpleMathOpFast(int func, int scalarMode, int numpyInTyp
         {
         case NPY_INT8:
         case NPY_UINT8:
-        case NPY_BOOL: return SimpleMathOpFast<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
+        case NPY_BOOL:
+            return SimpleMathOpFast<int8_t, __m256i, AndNotOp<int8_t>, ANDNOT_OP_256>;
         case NPY_UINT16:
         case NPY_INT16:
             return SimpleMathOpFast<int16_t, __m256i, AndNotOp<int16_t>, ANDNOT_OP_256>;
@@ -1575,9 +1604,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpSlowAdd<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowAdd<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowAdd<double>;
+        case NPY_BOOL:
+            return SimpleMathOpSlowAdd<bool>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowAdd<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowAdd<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowAdd<long double>;
         CASE_NPY_INT32:
@@ -1590,10 +1622,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowAdd<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowAdd<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowAdd<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowAdd<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowAdd<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowAdd<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowAdd<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowAdd<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowAdd<uint16_t>;
         case NPY_STRING:
             if (numpyInType1 == numpyInType2 && scalarMode == SCALAR_MODE::NO_SCALARS)
             {
@@ -1614,9 +1650,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpSlowSub<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowSub<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowSub<double>;
+        case NPY_BOOL:
+            return SimpleMathOpSlowSub<bool>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowSub<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowSub<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowSub<long double>;
         CASE_NPY_INT32:
@@ -1629,10 +1668,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowSub<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowSub<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowSub<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowSub<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowSub<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowSub<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowSub<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowSub<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowSub<uint16_t>;
         }
         return nullptr;
 
@@ -1643,8 +1686,10 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         switch (*wantedOutType)
         {
         // case NPY_BOOL:   return SimpleMathOpSlowMul<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowMul<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowMul<double>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowMul<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowMul<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowMul<long double>;
         CASE_NPY_INT32:
@@ -1657,10 +1702,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowMul<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowMul<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowMul<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowMul<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowMul<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowMul<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowMul<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowMul<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowMul<uint16_t>;
         }
         return nullptr;
 
@@ -1679,9 +1728,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
 
         switch (scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR ? numpyInType2 : numpyInType1)
         {
-        case NPY_BOOL: return SimpleMathOpSlowDiv<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowDivFloat<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowDiv<double>;
+        case NPY_BOOL:
+            return SimpleMathOpSlowDiv<bool>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowDivFloat<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowDiv<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowDiv<long double>;
         CASE_NPY_INT32:
@@ -1694,10 +1746,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowDiv<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowDiv<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowDiv<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowDiv<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowDiv<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowDiv<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowDiv<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowDiv<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowDiv<uint16_t>;
         }
         return nullptr;
 
@@ -1736,8 +1792,10 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         switch (*wantedOutType)
         {
             // case NPY_BOOL:   return SimpleMathOpSlowMul<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowFloorDiv<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowFloorDiv<double>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowFloorDiv<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowFloorDiv<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowFloorDiv<long double>;
         CASE_NPY_INT32:
@@ -1752,10 +1810,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             return SimpleMathOpSlowFloorDiv<uint64_t>;
 
 #ifndef RT_COMPILER_CLANG // possible error with int8 array and np.floor_divide() with vextractps instruction
-        case NPY_INT8: return SimpleMathOpSlowFloorDiv<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowFloorDiv<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowFloorDiv<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowFloorDiv<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowFloorDiv<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowFloorDiv<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowFloorDiv<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowFloorDiv<uint16_t>;
 #endif
         }
         return nullptr;
@@ -1766,9 +1828,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_BOOL: return SimpleMathOpSlowMod<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowRemainder<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowRemainder<double>;
+        case NPY_BOOL:
+            return SimpleMathOpSlowMod<bool>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowRemainder<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowRemainder<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowRemainder<long double>;
         CASE_NPY_INT32:
@@ -1781,10 +1846,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowMod<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowMod<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowMod<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowMod<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowMod<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowMod<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowMod<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowMod<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowMod<uint16_t>;
         }
         return nullptr;
 
@@ -1795,8 +1864,10 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         switch (*wantedOutType)
         {
         // case NPY_BOOL:   return SimpleMathOpSlowPower<bool>;
-        case NPY_FLOAT: return SimpleMathOpSlowPower<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowPower<double>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowPower<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowPower<double>;
         case NPY_LONGDOUBLE:
             return SimpleMathOpSlowPower<long double>;
         CASE_NPY_INT32:
@@ -1809,10 +1880,14 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_UINT64:
 
             return SimpleMathOpSlowPower<uint64_t>;
-        case NPY_INT8: return SimpleMathOpSlowPower<int8_t>;
-        case NPY_INT16: return SimpleMathOpSlowPower<int16_t>;
-        case NPY_UINT8: return SimpleMathOpSlowPower<uint8_t>;
-        case NPY_UINT16: return SimpleMathOpSlowPower<uint16_t>;
+        case NPY_INT8:
+            return SimpleMathOpSlowPower<int8_t>;
+        case NPY_INT16:
+            return SimpleMathOpSlowPower<int16_t>;
+        case NPY_UINT8:
+            return SimpleMathOpSlowPower<uint8_t>;
+        case NPY_UINT16:
+            return SimpleMathOpSlowPower<uint16_t>;
         }
         return nullptr;
 
@@ -1822,9 +1897,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_FLOAT: return SimpleMathOpSlowRemainder<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowRemainder<double>;
-        case NPY_LONGDOUBLE: return SimpleMathOpSlowRemainder<long double>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowRemainder<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowRemainder<double>;
+        case NPY_LONGDOUBLE:
+            return SimpleMathOpSlowRemainder<long double>;
         }
         return nullptr;
 
@@ -1834,9 +1912,12 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
             *wantedOutType = numpyInType2;
         switch (*wantedOutType)
         {
-        case NPY_FLOAT: return SimpleMathOpSlowFmod<float>;
-        case NPY_DOUBLE: return SimpleMathOpSlowFmod<double>;
-        case NPY_LONGDOUBLE: return SimpleMathOpSlowFmod<long double>;
+        case NPY_FLOAT:
+            return SimpleMathOpSlowFmod<float>;
+        case NPY_DOUBLE:
+            return SimpleMathOpSlowFmod<double>;
+        case NPY_LONGDOUBLE:
+            return SimpleMathOpSlowFmod<long double>;
         }
         return nullptr;
     }
@@ -3773,11 +3854,21 @@ PyObject * Where(PyObject * self, PyObject * args)
 
             switch (numpyItemSize)
             {
-            case 1: g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int8_t>, &WCBS); break;
-            case 2: g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int16_t>, &WCBS); break;
-            case 4: g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int32_t>, &WCBS); break;
-            case 8: g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int64_t>, &WCBS); break;
-            default: g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallbackString, &WCBS); break;
+            case 1:
+                g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int8_t>, &WCBS);
+                break;
+            case 2:
+                g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int16_t>, &WCBS);
+                break;
+            case 4:
+                g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int32_t>, &WCBS);
+                break;
+            case 8:
+                g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallback<int64_t>, &WCBS);
+                break;
+            default:
+                g_cMathWorker->DoMultiThreadedChunkWork(length, WhereCallbackString, &WCBS);
+                break;
             }
 
             //==========================================================================================

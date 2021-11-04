@@ -1107,92 +1107,140 @@ static GETITEM_FUNC GetItemFunction(int64_t itemSize, int indexType)
     case NPY_INT8:
         switch (itemSize)
         {
-        case 1: return GetItemInt<int8_t, int8_t>;
-        case 2: return GetItemInt<int16_t, int8_t>;
-        case 4: return GetItemInt<int32_t, int8_t>;
-        case 8: return GetItemInt<int64_t, int8_t>;
-        case 16: return GetItemInt<__m128, int8_t>;
-        default: return GetItemIntVariable<int8_t>;
+        case 1:
+            return GetItemInt<int8_t, int8_t>;
+        case 2:
+            return GetItemInt<int16_t, int8_t>;
+        case 4:
+            return GetItemInt<int32_t, int8_t>;
+        case 8:
+            return GetItemInt<int64_t, int8_t>;
+        case 16:
+            return GetItemInt<__m128, int8_t>;
+        default:
+            return GetItemIntVariable<int8_t>;
         }
         break;
     case NPY_UINT8:
         switch (itemSize)
         {
-        case 1: return GetItemUInt<int8_t, int8_t>;
-        case 2: return GetItemUInt<int16_t, int8_t>;
-        case 4: return GetItemUInt<int32_t, int8_t>;
-        case 8: return GetItemUInt<int64_t, int8_t>;
-        case 16: return GetItemUInt<__m128, int8_t>;
-        default: return GetItemUIntVariable<int8_t>;
+        case 1:
+            return GetItemUInt<int8_t, int8_t>;
+        case 2:
+            return GetItemUInt<int16_t, int8_t>;
+        case 4:
+            return GetItemUInt<int32_t, int8_t>;
+        case 8:
+            return GetItemUInt<int64_t, int8_t>;
+        case 16:
+            return GetItemUInt<__m128, int8_t>;
+        default:
+            return GetItemUIntVariable<int8_t>;
         }
         break;
 
     case NPY_INT16:
         switch (itemSize)
         {
-        case 1: return GetItemInt<int8_t, int16_t>;
-        case 2: return GetItemInt<int16_t, int16_t>;
-        case 4: return GetItemInt<int32_t, int16_t>;
-        case 8: return GetItemInt<int64_t, int16_t>;
-        case 16: return GetItemInt<__m128, int16_t>;
-        default: return GetItemIntVariable<int16_t>;
+        case 1:
+            return GetItemInt<int8_t, int16_t>;
+        case 2:
+            return GetItemInt<int16_t, int16_t>;
+        case 4:
+            return GetItemInt<int32_t, int16_t>;
+        case 8:
+            return GetItemInt<int64_t, int16_t>;
+        case 16:
+            return GetItemInt<__m128, int16_t>;
+        default:
+            return GetItemIntVariable<int16_t>;
         }
         break;
     case NPY_UINT16:
         switch (itemSize)
         {
-        case 1: return GetItemUInt<int8_t, int16_t>;
-        case 2: return GetItemUInt<int16_t, int16_t>;
-        case 4: return GetItemUInt<int32_t, int16_t>;
-        case 8: return GetItemUInt<int64_t, int16_t>;
-        case 16: return GetItemUInt<__m128, int16_t>;
-        default: return GetItemUIntVariable<int16_t>;
+        case 1:
+            return GetItemUInt<int8_t, int16_t>;
+        case 2:
+            return GetItemUInt<int16_t, int16_t>;
+        case 4:
+            return GetItemUInt<int32_t, int16_t>;
+        case 8:
+            return GetItemUInt<int64_t, int16_t>;
+        case 16:
+            return GetItemUInt<__m128, int16_t>;
+        default:
+            return GetItemUIntVariable<int16_t>;
         }
         break;
 
     CASE_NPY_INT32:
         switch (itemSize)
         {
-        case 1: return GetItemInt<int8_t, int32_t>;
-        case 2: return GetItemInt<int16_t, int32_t>;
-        case 4: return GetItemInt<int32_t, int32_t>;
-        case 8: return GetItemInt<int64_t, int32_t>;
-        case 16: return GetItemInt<__m128, int32_t>;
-        default: return GetItemIntVariable<int32_t>;
+        case 1:
+            return GetItemInt<int8_t, int32_t>;
+        case 2:
+            return GetItemInt<int16_t, int32_t>;
+        case 4:
+            return GetItemInt<int32_t, int32_t>;
+        case 8:
+            return GetItemInt<int64_t, int32_t>;
+        case 16:
+            return GetItemInt<__m128, int32_t>;
+        default:
+            return GetItemIntVariable<int32_t>;
         }
         break;
     CASE_NPY_UINT32:
         switch (itemSize)
         {
-        case 1: return GetItemUInt<int8_t, int32_t>;
-        case 2: return GetItemUInt<int16_t, int32_t>;
-        case 4: return GetItemUInt<int32_t, int32_t>;
-        case 8: return GetItemUInt<int64_t, int32_t>;
-        case 16: return GetItemUInt<__m128, int32_t>;
-        default: return GetItemUIntVariable<int32_t>;
+        case 1:
+            return GetItemUInt<int8_t, int32_t>;
+        case 2:
+            return GetItemUInt<int16_t, int32_t>;
+        case 4:
+            return GetItemUInt<int32_t, int32_t>;
+        case 8:
+            return GetItemUInt<int64_t, int32_t>;
+        case 16:
+            return GetItemUInt<__m128, int32_t>;
+        default:
+            return GetItemUIntVariable<int32_t>;
         }
         break;
 
     CASE_NPY_INT64:
         switch (itemSize)
         {
-        case 1: return GetItemInt<int8_t, int64_t>;
-        case 2: return GetItemInt<int16_t, int64_t>;
-        case 4: return GetItemInt<int32_t, int64_t>;
-        case 8: return GetItemInt<int64_t, int64_t>;
-        case 16: return GetItemInt<__m128, int64_t>;
-        default: return GetItemIntVariable<int64_t>;
+        case 1:
+            return GetItemInt<int8_t, int64_t>;
+        case 2:
+            return GetItemInt<int16_t, int64_t>;
+        case 4:
+            return GetItemInt<int32_t, int64_t>;
+        case 8:
+            return GetItemInt<int64_t, int64_t>;
+        case 16:
+            return GetItemInt<__m128, int64_t>;
+        default:
+            return GetItemIntVariable<int64_t>;
         }
         break;
     CASE_NPY_UINT64:
         switch (itemSize)
         {
-        case 1: return GetItemUInt<int8_t, int64_t>;
-        case 2: return GetItemUInt<int16_t, int64_t>;
-        case 4: return GetItemUInt<int32_t, int64_t>;
-        case 8: return GetItemUInt<int64_t, int64_t>;
-        case 16: return GetItemUInt<__m128, int64_t>;
-        default: return GetItemUIntVariable<int64_t>;
+        case 1:
+            return GetItemUInt<int8_t, int64_t>;
+        case 2:
+            return GetItemUInt<int16_t, int64_t>;
+        case 4:
+            return GetItemUInt<int32_t, int64_t>;
+        case 8:
+            return GetItemUInt<int64_t, int64_t>;
+        case 16:
+            return GetItemUInt<__m128, int64_t>;
+        default:
+            return GetItemUIntVariable<int64_t>;
         }
         break;
     }
@@ -1785,11 +1833,21 @@ PyObject * ReIndexGroups(PyObject * self, PyObject * args)
 
     switch (PyArray_ITEMSIZE(ikey))
     {
-    case 1: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int8_t>, &preindex); break;
-    case 2: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int16_t>, &preindex); break;
-    case 4: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int32_t>, &preindex); break;
-    case 8: g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int64_t>, &preindex); break;
-    default: PyErr_Format(PyExc_ValueError, "ikey must be int8/16/32/64"); return NULL;
+    case 1:
+        g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int8_t>, &preindex);
+        break;
+    case 2:
+        g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int16_t>, &preindex);
+        break;
+    case 4:
+        g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int32_t>, &preindex);
+        break;
+    case 8:
+        g_cMathWorker->DoMultiThreadedWork((int)u_cutoffs_length, ReIndexGroupsMT<int64_t>, &preindex);
+        break;
+    default:
+        PyErr_Format(PyExc_ValueError, "ikey must be int8/16/32/64");
+        return NULL;
     }
 
     Py_IncRef((PyObject *)ikey);
@@ -1868,11 +1926,21 @@ PyObject * ReverseShuffle(PyObject * self, PyObject * args)
 
         switch (PyArray_ITEMSIZE(ikey))
         {
-        case 1: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int8_t>, &preindex); break;
-        case 2: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int16_t>, &preindex); break;
-        case 4: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int32_t>, &preindex); break;
-        case 8: g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int64_t>, &preindex); break;
-        default: PyErr_Format(PyExc_ValueError, "ReverseShuffle: ikey must be int8/16/32/64"); return NULL;
+        case 1:
+            g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int8_t>, &preindex);
+            break;
+        case 2:
+            g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int16_t>, &preindex);
+            break;
+        case 4:
+            g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int32_t>, &preindex);
+            break;
+        case 8:
+            g_cMathWorker->DoMultiThreadedChunkWork(arrlength, ReverseShuffleMT<int64_t>, &preindex);
+            break;
+        default:
+            PyErr_Format(PyExc_ValueError, "ReverseShuffle: ikey must be int8/16/32/64");
+            return NULL;
         }
 
         return (PyObject *)pReturnArray;

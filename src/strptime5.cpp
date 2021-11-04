@@ -134,7 +134,9 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
         /*
          * "Complex" conversion rules, implemented through recursion.
          */
-        case 'c': /* Date and time, using the locale's format. */ new_fmt = "%x %X"; goto recurse;
+        case 'c': /* Date and time, using the locale's format. */
+            new_fmt = "%x %X";
+            goto recurse;
 
         case 'D': /* The date as "%m/%d/%y". */
             new_fmt = "%m/%d/%y";
@@ -161,7 +163,9 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             LEGAL_ALT(0);
             goto recurse;
 
-        case 'X': /* The time, using the locale's format. */ new_fmt = "%H:%M:%S"; goto recurse;
+        case 'X': /* The time, using the locale's format. */
+            new_fmt = "%H:%M:%S";
+            goto recurse;
 
         case 'x': /* The date, using the locale's format. */
             new_fmt = "%m/%d/%y";
@@ -297,7 +301,9 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             while (isdigit(*bp));
             continue;
 
-        case 'V': /* The ISO 8601:1988 week number as decimal */ bp = conv_num(bp, &i, 0, 53); continue;
+        case 'V': /* The ISO 8601:1988 week number as decimal */
+            bp = conv_num(bp, &i, 0, 53);
+            continue;
 
         case 'Y':             /* The year. */
             i = TM_YEAR_BASE; /* just for data sanity... */
@@ -387,7 +393,8 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                 if (*bp++ != 'T')
                     return NULL;
                 /*FALLTHROUGH*/
-            case 'Z': tm->tm_isdst = 0;
+            case 'Z':
+                tm->tm_isdst = 0;
 #ifdef TM_GMTOFF
                 tm->TM_GMTOFF = 0;
 #endif
@@ -395,8 +402,12 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                 tm->TM_ZONE = utc;
 #endif
                 continue;
-            case '+': neg = 0; break;
-            case '-': neg = 1; break;
+            case '+':
+                neg = 0;
+                break;
+            case '-':
+                neg = 1;
+                break;
             default:
                 --bp;
                 ep = find_string(bp, &i, nast, NULL, 4);
@@ -462,7 +473,9 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             }
             switch (i)
             {
-            case 2: offs *= 100; break;
+            case 2:
+                offs *= 100;
+                break;
             case 4:
                 i = offs % 100;
                 if (i >= 60)
@@ -470,7 +483,8 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
                 /* Convert minutes into decimal */
                 offs = (offs / 100) * 100 + (i * 50) / 30;
                 break;
-            default: return NULL;
+            default:
+                return NULL;
             }
             if (neg)
                 offs = -offs;
@@ -493,7 +507,8 @@ const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm)
             LEGAL_ALT(0);
             continue;
 
-        default: /* Unknown/unsupported conversion. */ return NULL;
+        default: /* Unknown/unsupported conversion. */
+            return NULL;
         }
     }
 

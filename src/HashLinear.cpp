@@ -135,13 +135,21 @@ static FORCEINLINE uint64_t crchash64(const char * buf, size_t count)
 
     switch (count)
     {
-    case 7: t ^= (uint64_t)buf[6] << 48;
-    case 6: t ^= (uint64_t)buf[5] << 40;
-    case 5: t ^= (uint64_t)buf[4] << 32;
-    case 4: t ^= (uint64_t)buf[3] << 24;
-    case 3: t ^= (uint64_t)buf[2] << 16;
-    case 2: t ^= (uint64_t)buf[1] << 8;
-    case 1: t ^= (uint64_t)buf[0]; return _mm_crc32_u64(h, t);
+    case 7:
+        t ^= (uint64_t)buf[6] << 48;
+    case 6:
+        t ^= (uint64_t)buf[5] << 40;
+    case 5:
+        t ^= (uint64_t)buf[4] << 32;
+    case 4:
+        t ^= (uint64_t)buf[3] << 24;
+    case 3:
+        t ^= (uint64_t)buf[2] << 16;
+    case 2:
+        t ^= (uint64_t)buf[1] << 8;
+    case 1:
+        t ^= (uint64_t)buf[0];
+        return _mm_crc32_u64(h, t);
     }
     return h;
 }
@@ -180,12 +188,18 @@ static FORCEINLINE uint64_t fasthash64(const void * buf, size_t len)
 
     switch (len)
     {
-    case 7: v ^= (uint64_t)pos2[6] << 48;
-    case 6: v ^= (uint64_t)pos2[5] << 40;
-    case 5: v ^= (uint64_t)pos2[4] << 32;
-    case 4: v ^= (uint64_t)pos2[3] << 24;
-    case 3: v ^= (uint64_t)pos2[2] << 16;
-    case 2: v ^= (uint64_t)pos2[1] << 8;
+    case 7:
+        v ^= (uint64_t)pos2[6] << 48;
+    case 6:
+        v ^= (uint64_t)pos2[5] << 40;
+    case 5:
+        v ^= (uint64_t)pos2[4] << 32;
+    case 4:
+        v ^= (uint64_t)pos2[3] << 24;
+    case 3:
+        v ^= (uint64_t)pos2[2] << 16;
+    case 2:
+        v ^= (uint64_t)pos2[1] << 8;
     case 1:
         v ^= (uint64_t)pos2[0];
         h ^= mix(v);
@@ -2041,11 +2055,21 @@ PyArrayObject * CopyToSmallerArray(void * pFirstArrayIndex, int64_t numUnique, i
     {
         switch (sizeof(INDEX_TYPE))
         {
-        case 1: firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT8); break;
-        case 2: firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT16); break;
-        case 4: firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT32); break;
-        case 8: firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT64); break;
-        default: printf("!!!Internal error CopyToSmallerArray\n"); break;
+        case 1:
+            firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT8);
+            break;
+        case 2:
+            firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT16);
+            break;
+        case 4:
+            firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT32);
+            break;
+        case 8:
+            firstArray = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT64);
+            break;
+        default:
+            printf("!!!Internal error CopyToSmallerArray\n");
+            break;
         }
     }
     CHECK_MEMORY_ERROR(firstArray);
@@ -4254,7 +4278,9 @@ bool MergePreBinned(int64_t size1, KEY_TYPE * pKey1, void * pInVal1, int64_t siz
         FindLastMatchCategorical<KEY_TYPE, float>(size1, size2, pKey1, pKey2, (float *)pInVal1, (float *)pInVal2, pOutput,
                                                   totalUniqueSize);
         break;
-    default: success = false; break;
+    default:
+        success = false;
+        break;
     }
     return success;
 }
@@ -4320,7 +4346,9 @@ bool AlignHashMK32(int64_t size1, void * pInput1, void * pInVal1, int64_t size2,
                                                 pOutput, totalItemSize, allowExact);
         }
         break;
-    default: success = false; break;
+    default:
+        success = false;
+        break;
     }
     delete pHashLinear;
     return success;
@@ -4386,7 +4414,9 @@ bool AlignHashMK64(int64_t size1, void * pInput1, void * pInVal1, int64_t size2,
                                                 pOutput, totalItemSize, allowExact);
         }
         break;
-    default: success = false; break;
+    default:
+        success = false;
+        break;
     }
     delete pHashLinear;
     return success;

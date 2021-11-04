@@ -484,7 +484,9 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
             FindFirstOccurence<int64_t>((int64_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
                                         unique2Length, baseoffset2);
             break;
-        default: PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup second argument is not INT8/16/32/64"); return NULL;
+        default:
+            PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup second argument is not INT8/16/32/64");
+            return NULL;
         }
 
         void * pArray1 = PyArray_BYTES(inArr1);
@@ -493,7 +495,9 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
 
         switch (array1Type)
         {
-        case NPY_INT8: FinalMatch<int8_t>((int8_t *)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1); break;
+        case NPY_INT8:
+            FinalMatch<int8_t>((int8_t *)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
+            break;
         case NPY_INT16:
             FinalMatch<int16_t>((int16_t *)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
             break;
@@ -504,7 +508,9 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
 
             FinalMatch<int64_t>((int64_t *)pArray1, pIndexOut, pBoolOut, reIndexArray, arraySize1, baseoffset1);
             break;
-        default: PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup first argument is not INT8/16/32/64"); return NULL;
+        default:
+            PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup first argument is not INT8/16/32/64");
+            return NULL;
         }
 
         WORKSPACE_FREE(reverseMapArray);

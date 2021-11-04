@@ -714,7 +714,9 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                         in_p, out_p, len, stride, *opt_op_trait, *opt_type_trait,
                         std::make_index_sequence<std::variant_size_v<internal::data_type_t>>{});
                     break;
-                case 1: internal::walk_row_major(in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait); break;
+                case 1:
+                    internal::walk_row_major(in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait);
+                    break;
                 case -1:
                     internal::walk_column_major(in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait);
                     break;
@@ -734,54 +736,98 @@ namespace internal
 
         switch (numpy_intype)
         {
-        case NPY_INT8: retval.second = int8_traits{}; break;
-        case NPY_INT16: retval.second = int16_traits{}; break;
+        case NPY_INT8:
+            retval.second = int8_traits{};
+            break;
+        case NPY_INT16:
+            retval.second = int16_traits{};
+            break;
 #if RT_COMPILER_MSVC
         case NPY_INT:
 #endif
-        case NPY_INT32: retval.second = int32_traits{}; break;
+        case NPY_INT32:
+            retval.second = int32_traits{};
+            break;
 #if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_LONGLONG:
 #endif
-        case NPY_INT64: retval.second = int64_traits{}; break;
-        case NPY_UINT8: retval.second = uint8_traits{}; break;
-        case NPY_UINT16: retval.second = uint16_traits{}; break;
+        case NPY_INT64:
+            retval.second = int64_traits{};
+            break;
+        case NPY_UINT8:
+            retval.second = uint8_traits{};
+            break;
+        case NPY_UINT16:
+            retval.second = uint16_traits{};
+            break;
 #if RT_COMPILER_MSVC
         case NPY_UINT:
 #endif
-        case NPY_UINT32: retval.second = uint32_traits{}; break;
+        case NPY_UINT32:
+            retval.second = uint32_traits{};
+            break;
 #if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_ULONGLONG:
 #endif
-        case NPY_UINT64: retval.second = uint64_traits{}; break;
-        case NPY_FLOAT: retval.second = float_traits{}; break;
-        case NPY_DOUBLE: retval.second = double_traits{}; break;
+        case NPY_UINT64:
+            retval.second = uint64_traits{};
+            break;
+        case NPY_FLOAT:
+            retval.second = float_traits{};
+            break;
+        case NPY_DOUBLE:
+            retval.second = double_traits{};
+            break;
         }
 
         switch (function_num)
         {
-        case MATH_OPERATION::ABS: retval.first = abs_op{}; break;
-        case MATH_OPERATION::ISNAN: retval.first = isnan_op{}; break;
+        case MATH_OPERATION::ABS:
+            retval.first = abs_op{};
+            break;
+        case MATH_OPERATION::ISNAN:
+            retval.first = isnan_op{};
+            break;
 
-        case MATH_OPERATION::ISNOTNAN: retval.first = isnotnan_op{}; break;
+        case MATH_OPERATION::ISNOTNAN:
+            retval.first = isnotnan_op{};
+            break;
 
-        case MATH_OPERATION::ISFINITE: retval.first = isfinite_op{}; break;
+        case MATH_OPERATION::ISFINITE:
+            retval.first = isfinite_op{};
+            break;
 
-        case MATH_OPERATION::ISNOTFINITE: retval.first = isnotfinite_op{}; break;
+        case MATH_OPERATION::ISNOTFINITE:
+            retval.first = isnotfinite_op{};
+            break;
 
-        case MATH_OPERATION::NEG: retval.first = bitwise_not_op{}; break;
+        case MATH_OPERATION::NEG:
+            retval.first = bitwise_not_op{};
+            break;
 
-        case MATH_OPERATION::INVERT: retval.first = bitwise_not_op{}; break;
+        case MATH_OPERATION::INVERT:
+            retval.first = bitwise_not_op{};
+            break;
 
-        case MATH_OPERATION::FLOOR: retval.first = floor_op{}; break;
+        case MATH_OPERATION::FLOOR:
+            retval.first = floor_op{};
+            break;
 
-        case MATH_OPERATION::CEIL: retval.first = ceil_op{}; break;
+        case MATH_OPERATION::CEIL:
+            retval.first = ceil_op{};
+            break;
 
-        case MATH_OPERATION::TRUNC: retval.first = trunc_op{}; break;
+        case MATH_OPERATION::TRUNC:
+            retval.first = trunc_op{};
+            break;
 
-        case MATH_OPERATION::ROUND: retval.first = round_op{}; break;
+        case MATH_OPERATION::ROUND:
+            retval.first = round_op{};
+            break;
 
-        case MATH_OPERATION::SQRT: retval.first = sqrt_op{}; break;
+        case MATH_OPERATION::SQRT:
+            retval.first = sqrt_op{};
+            break;
         }
 
         return retval;

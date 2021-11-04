@@ -965,34 +965,52 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
     case NPY_FLOAT:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareFloat<_CMP_EQ_OS, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareFloat<_CMP_NEQ_US, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareFloat<_CMP_GT_OS, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareFloat<_CMP_GE_OS, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareFloat<_CMP_LT_OS, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareFloat<_CMP_LE_OS, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareFloat<_CMP_EQ_OS, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareFloat<_CMP_NEQ_US, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareFloat<_CMP_GT_OS, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareFloat<_CMP_GE_OS, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareFloat<_CMP_LT_OS, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareFloat<_CMP_LE_OS, COMP_LE>;
         }
         break;
     case NPY_DOUBLE:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareDouble<_CMP_EQ_OS, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareDouble<_CMP_NEQ_US, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareDouble<_CMP_GT_OS, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareDouble<_CMP_GE_OS, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareDouble<_CMP_LT_OS, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareDouble<_CMP_LE_OS, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareDouble<_CMP_EQ_OS, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareDouble<_CMP_NEQ_US, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareDouble<_CMP_GT_OS, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareDouble<_CMP_GE_OS, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareDouble<_CMP_LT_OS, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareDouble<_CMP_LE_OS, COMP_LE>;
         }
         break;
     CASE_NPY_INT32:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareInt32S<COMP32i_EQS<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareInt32<COMP32i_GT<__m256i>, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareInt32<COMP32i_GE<__m256i>, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareInt32<COMP32i_LT<__m256i>, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareInt32<COMP32i_LE<__m256i>, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt32S<COMP32i_EQS<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareInt32<COMP32i_GT<__m256i>, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareInt32<COMP32i_GE<__m256i>, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareInt32<COMP32i_LT<__m256i>, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareInt32<COMP32i_LE<__m256i>, COMP_LE>;
         }
         break;
     CASE_NPY_UINT32:
@@ -1000,12 +1018,18 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
         {
         // NOTE: if this needs to get sped up, upcast from uint32_t to int64_t  using _mm256_cvtepu32_epi64 and cmpint64
         // For equal, not equal the sign does not matter
-        case MATH_OPERATION::CMP_EQ: return CompareInt32<COMP32i_EQ<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareAny<uint32_t, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareAny<uint32_t, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareAny<uint32_t, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareAny<uint32_t, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt32<COMP32i_EQ<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt32<COMP32i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareAny<uint32_t, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareAny<uint32_t, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareAny<uint32_t, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareAny<uint32_t, COMP_LE>;
         }
         break;
     CASE_NPY_INT64:
@@ -1015,24 +1039,36 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
         {
             switch (func)
             {
-            case MATH_OPERATION::CMP_EQ: return CompareAny<int64_t, COMP_EQ_uint64_t>;
-            case MATH_OPERATION::CMP_NE: return CompareAny<int64_t, COMP_NE_uint64_t>;
-            case MATH_OPERATION::CMP_GT: return CompareAny<int64_t, COMP_GT_int64_t>;
-            case MATH_OPERATION::CMP_GTE: return CompareAny<int64_t, COMP_GE_int64_t>;
-            case MATH_OPERATION::CMP_LT: return CompareAny<int64_t, COMP_LT_int64_t>;
-            case MATH_OPERATION::CMP_LTE: return CompareAny<int64_t, COMP_LE_int64_t>;
+            case MATH_OPERATION::CMP_EQ:
+                return CompareAny<int64_t, COMP_EQ_uint64_t>;
+            case MATH_OPERATION::CMP_NE:
+                return CompareAny<int64_t, COMP_NE_uint64_t>;
+            case MATH_OPERATION::CMP_GT:
+                return CompareAny<int64_t, COMP_GT_int64_t>;
+            case MATH_OPERATION::CMP_GTE:
+                return CompareAny<int64_t, COMP_GE_int64_t>;
+            case MATH_OPERATION::CMP_LT:
+                return CompareAny<int64_t, COMP_LT_int64_t>;
+            case MATH_OPERATION::CMP_LTE:
+                return CompareAny<int64_t, COMP_LE_int64_t>;
             }
         }
         else
         {
             switch (func)
             {
-            case MATH_OPERATION::CMP_EQ: return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
-            case MATH_OPERATION::CMP_NE: return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
-            case MATH_OPERATION::CMP_GT: return CompareInt64<COMP64i_GT<__m256i>, COMP_GT>;
-            case MATH_OPERATION::CMP_GTE: return CompareInt64<COMP64i_GE<__m256i>, COMP_GE>;
-            case MATH_OPERATION::CMP_LT: return CompareInt64<COMP64i_LT<__m256i>, COMP_LT>;
-            case MATH_OPERATION::CMP_LTE: return CompareInt64<COMP64i_LE<__m256i>, COMP_LE>;
+            case MATH_OPERATION::CMP_EQ:
+                return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
+            case MATH_OPERATION::CMP_NE:
+                return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
+            case MATH_OPERATION::CMP_GT:
+                return CompareInt64<COMP64i_GT<__m256i>, COMP_GT>;
+            case MATH_OPERATION::CMP_GTE:
+                return CompareInt64<COMP64i_GE<__m256i>, COMP_GE>;
+            case MATH_OPERATION::CMP_LT:
+                return CompareInt64<COMP64i_LT<__m256i>, COMP_LT>;
+            case MATH_OPERATION::CMP_LTE:
+                return CompareInt64<COMP64i_LE<__m256i>, COMP_LE>;
             }
         }
         break;
@@ -1044,12 +1080,18 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
             switch (func)
             {
                 // For equal, not equal the sign does not matter
-            case MATH_OPERATION::CMP_EQ: return CompareAny<int64_t, COMP_EQ>;
-            case MATH_OPERATION::CMP_NE: return CompareAny<int64_t, COMP_NE>;
-            case MATH_OPERATION::CMP_GT: return CompareAny<uint64_t, COMP_GT_uint64_t>;
-            case MATH_OPERATION::CMP_GTE: return CompareAny<uint64_t, COMP_GE_uint64_t>;
-            case MATH_OPERATION::CMP_LT: return CompareAny<uint64_t, COMP_LT_uint64_t>;
-            case MATH_OPERATION::CMP_LTE: return CompareAny<uint64_t, COMP_LE_uint64_t>;
+            case MATH_OPERATION::CMP_EQ:
+                return CompareAny<int64_t, COMP_EQ>;
+            case MATH_OPERATION::CMP_NE:
+                return CompareAny<int64_t, COMP_NE>;
+            case MATH_OPERATION::CMP_GT:
+                return CompareAny<uint64_t, COMP_GT_uint64_t>;
+            case MATH_OPERATION::CMP_GTE:
+                return CompareAny<uint64_t, COMP_GE_uint64_t>;
+            case MATH_OPERATION::CMP_LT:
+                return CompareAny<uint64_t, COMP_LT_uint64_t>;
+            case MATH_OPERATION::CMP_LTE:
+                return CompareAny<uint64_t, COMP_LE_uint64_t>;
             }
         }
         else
@@ -1057,12 +1099,18 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
             switch (func)
             {
                 // For equal, not equal the sign does not matter
-            case MATH_OPERATION::CMP_EQ: return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
-            case MATH_OPERATION::CMP_NE: return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
-            case MATH_OPERATION::CMP_GT: return CompareAny<uint64_t, COMP_GT>;
-            case MATH_OPERATION::CMP_GTE: return CompareAny<uint64_t, COMP_GE>;
-            case MATH_OPERATION::CMP_LT: return CompareAny<uint64_t, COMP_LT>;
-            case MATH_OPERATION::CMP_LTE: return CompareAny<uint64_t, COMP_LE>;
+            case MATH_OPERATION::CMP_EQ:
+                return CompareInt64<COMP64i_EQ<__m256i>, COMP_EQ>;
+            case MATH_OPERATION::CMP_NE:
+                return CompareInt64<COMP64i_NE<__m256i>, COMP_NE>;
+            case MATH_OPERATION::CMP_GT:
+                return CompareAny<uint64_t, COMP_GT>;
+            case MATH_OPERATION::CMP_GTE:
+                return CompareAny<uint64_t, COMP_GE>;
+            case MATH_OPERATION::CMP_LT:
+                return CompareAny<uint64_t, COMP_LT>;
+            case MATH_OPERATION::CMP_LTE:
+                return CompareAny<uint64_t, COMP_LE>;
             }
         }
         break;
@@ -1070,45 +1118,69 @@ ANY_TWO_FUNC GetComparisonOpFast(int func, int scalarMode, int numpyInType1, int
     case NPY_INT8:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareInt8<COMP8i_EQ<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt8<COMP8i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareInt8<COMP8i_GT<__m256i>, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareInt8<COMP8i_GE<__m256i>, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareInt8<COMP8i_LT<__m256i>, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareInt8<COMP8i_LE<__m256i>, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt8<COMP8i_EQ<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt8<COMP8i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareInt8<COMP8i_GT<__m256i>, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareInt8<COMP8i_GE<__m256i>, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareInt8<COMP8i_LT<__m256i>, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareInt8<COMP8i_LE<__m256i>, COMP_LE>;
         }
         break;
     case NPY_UINT8:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareInt8<COMP8i_EQ<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt8<COMP8i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareAny<uint8_t, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareAny<uint8_t, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareAny<uint8_t, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareAny<uint8_t, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt8<COMP8i_EQ<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt8<COMP8i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareAny<uint8_t, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareAny<uint8_t, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareAny<uint8_t, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareAny<uint8_t, COMP_LE>;
         }
     case NPY_INT16:
         switch (func)
         {
-        case MATH_OPERATION::CMP_EQ: return CompareInt16<COMP16i_EQ<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt16<COMP16i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareInt16<COMP16i_GT<__m256i>, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareInt16<COMP16i_GE<__m256i>, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareInt16<COMP16i_LT<__m256i>, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareInt16<COMP16i_LE<__m256i>, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt16<COMP16i_EQ<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt16<COMP16i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareInt16<COMP16i_GT<__m256i>, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareInt16<COMP16i_GE<__m256i>, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareInt16<COMP16i_LT<__m256i>, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareInt16<COMP16i_LE<__m256i>, COMP_LE>;
         }
         break;
     case NPY_UINT16:
         switch (func)
         {
             // NOTE: if this needs to get sped up, upcast from uint16_t to int32_t  using _mm256_cvtepu16_epi32 and cmpint32
-        case MATH_OPERATION::CMP_EQ: return CompareInt16<COMP16i_EQ<__m256i>, COMP_EQ>;
-        case MATH_OPERATION::CMP_NE: return CompareInt16<COMP16i_NE<__m256i>, COMP_NE>;
-        case MATH_OPERATION::CMP_GT: return CompareAny<uint16_t, COMP_GT>;
-        case MATH_OPERATION::CMP_GTE: return CompareAny<uint16_t, COMP_GE>;
-        case MATH_OPERATION::CMP_LT: return CompareAny<uint16_t, COMP_LT>;
-        case MATH_OPERATION::CMP_LTE: return CompareAny<uint16_t, COMP_LE>;
+        case MATH_OPERATION::CMP_EQ:
+            return CompareInt16<COMP16i_EQ<__m256i>, COMP_EQ>;
+        case MATH_OPERATION::CMP_NE:
+            return CompareInt16<COMP16i_NE<__m256i>, COMP_NE>;
+        case MATH_OPERATION::CMP_GT:
+            return CompareAny<uint16_t, COMP_GT>;
+        case MATH_OPERATION::CMP_GTE:
+            return CompareAny<uint16_t, COMP_GE>;
+        case MATH_OPERATION::CMP_LT:
+            return CompareAny<uint16_t, COMP_LT>;
+        case MATH_OPERATION::CMP_LTE:
+            return CompareAny<uint16_t, COMP_LE>;
         }
         break;
     }
@@ -1133,7 +1205,9 @@ ANY_TWO_FUNC GetComparisonOpSlow(int func, int scalarMode, int numpyInType1, int
     case MATH_OPERATION::CMP_GT:
     case MATH_OPERATION::CMP_GTE:
     case MATH_OPERATION::CMP_LT:
-    case MATH_OPERATION::CMP_LTE: *wantedOutType = NPY_BOOL; break;
+    case MATH_OPERATION::CMP_LTE:
+        *wantedOutType = NPY_BOOL;
+        break;
     }
 
     return NULL;

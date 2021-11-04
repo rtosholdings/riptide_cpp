@@ -620,7 +620,9 @@ public:
                 OldCallback->FunctionList->AnyOneStubCall(pDataInX + offsetAdj, pDataOutX + outputAdj, lenX, strideSizeIn,
                                                           strideSizeOut);
                 break;
-            default: printf("unknown worker function\n"); break;
+            default:
+                printf("unknown worker function\n");
+                break;
             }
 
             // Indicate we completed a block

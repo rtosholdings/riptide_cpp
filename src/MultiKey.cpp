@@ -67,8 +67,12 @@ char * RotateArrays(int64_t tupleSize, ArrayInfo * aInfo)
                     *(uint16_t *)pDest = *(uint16_t *)pSrc;
                     pDest += 2;
                     break;
-                case 1: *pDest++ = *pSrc; break;
-                default: memcpy(pDest, pSrc, itemSize); pDest += itemSize;
+                case 1:
+                    *pDest++ = *pSrc;
+                    break;
+                default:
+                    memcpy(pDest, pSrc, itemSize);
+                    pDest += itemSize;
                 }
             }
 
@@ -550,12 +554,22 @@ PyObject * MakeiNext(PyObject * self, PyObject * args)
 
         switch (PyArray_ITEMSIZE(ikey))
         {
-        case 1: MakeNextKey<int8_t>(mode, unique_rows, arrlength, pIKey, pOutKey); break;
-        case 2: MakeNextKey<int16_t>(mode, unique_rows, arrlength, pIKey, pOutKey); break;
-        case 4: MakeNextKey<int32_t>(mode, unique_rows, arrlength, pIKey, pOutKey); break;
-        case 8: MakeNextKey<int64_t>(mode, unique_rows, arrlength, pIKey, pOutKey); break;
+        case 1:
+            MakeNextKey<int8_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
+            break;
+        case 2:
+            MakeNextKey<int16_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
+            break;
+        case 4:
+            MakeNextKey<int32_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
+            break;
+        case 8:
+            MakeNextKey<int64_t>(mode, unique_rows, arrlength, pIKey, pOutKey);
+            break;
 
-        default: PyErr_Format(PyExc_ValueError, "MakeINext: ikey must be int8/16/32/64"); return NULL;
+        default:
+            PyErr_Format(PyExc_ValueError, "MakeINext: ikey must be int8/16/32/64");
+            return NULL;
         }
 
         return (PyObject *)pReturnArray;
@@ -830,7 +844,9 @@ PyObject * GroupByPack32(PyObject * self, PyObject * args)
 
             switch (numpyIndexType)
             {
-            case NPY_INT8: pNextArray = GroupByPackFixup32<int8_t>(numUnique, totalRows, pIndexArray, pGroupArray); break;
+            case NPY_INT8:
+                pNextArray = GroupByPackFixup32<int8_t>(numUnique, totalRows, pIndexArray, pGroupArray);
+                break;
             case NPY_INT16:
                 pNextArray = GroupByPackFixup32<int16_t>(numUnique, totalRows, pIndexArray, pGroupArray);
                 break;
@@ -841,7 +857,9 @@ PyObject * GroupByPack32(PyObject * self, PyObject * args)
 
                 pNextArray = GroupByPackFixup32<int64_t>(numUnique, totalRows, pIndexArray, pGroupArray);
                 break;
-            default: PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64"); return NULL;
+            default:
+                PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64");
+                return NULL;
             }
         }
         else
@@ -879,7 +897,9 @@ PyObject * GroupByPack32(PyObject * self, PyObject * args)
             bResult = GroupByPackFinal32<int64_t>(numUnique, totalRows, pIndexArray, pNextArray, pGroupArray, &sortGroupArray,
                                                   &firstArray, &countArray);
             break;
-        default: PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64"); return NULL;
+        default:
+            PyErr_Format(PyExc_ValueError, "GroupByPack32 index must be int8 int16, int32, int64");
+            return NULL;
         }
 
         if (bMustFree)
@@ -1826,7 +1846,9 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype)
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = MakeiGroup2<int8_t, int32_t>; break;
+        case NPY_INT8:
+            pBinFunc = MakeiGroup2<int8_t, int32_t>;
+            break;
         case NPY_INT16:
             pBinFunc = MakeiGroup2<int16_t, int32_t>;
             break;
@@ -1837,14 +1859,17 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype)
 
             pBinFunc = MakeiGroup2<int64_t, int32_t>;
             break;
-        default: printf("!!!internal error in MakeiGroup\n");
+        default:
+            printf("!!!internal error in MakeiGroup\n");
         }
     }
     else
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = MakeiGroup2<int8_t, int64_t>; break;
+        case NPY_INT8:
+            pBinFunc = MakeiGroup2<int8_t, int64_t>;
+            break;
         case NPY_INT16:
             pBinFunc = MakeiGroup2<int16_t, int64_t>;
             break;
@@ -1855,7 +1880,8 @@ MAKE_I_GROUP2 GetMakeIGroup2(int iKeyType, int outdtype)
 
             pBinFunc = MakeiGroup2<int64_t, int64_t>;
             break;
-        default: printf("!!!internal error in MakeiGroup\n");
+        default:
+            printf("!!!internal error in MakeiGroup\n");
         }
     }
     return pBinFunc;
@@ -1922,7 +1948,9 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype)
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = MakeiGroup<int8_t, int32_t>; break;
+        case NPY_INT8:
+            pBinFunc = MakeiGroup<int8_t, int32_t>;
+            break;
         case NPY_INT16:
             pBinFunc = MakeiGroup<int16_t, int32_t>;
             break;
@@ -1933,14 +1961,17 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype)
 
             pBinFunc = MakeiGroup<int64_t, int32_t>;
             break;
-        default: printf("!!!internal error in MakeiGroup\n");
+        default:
+            printf("!!!internal error in MakeiGroup\n");
         }
     }
     else
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = MakeiGroup<int8_t, int64_t>; break;
+        case NPY_INT8:
+            pBinFunc = MakeiGroup<int8_t, int64_t>;
+            break;
         case NPY_INT16:
             pBinFunc = MakeiGroup<int16_t, int64_t>;
             break;
@@ -1951,7 +1982,8 @@ MAKE_I_GROUP GetMakeIGroup(int iKeyType, int outdtype)
 
             pBinFunc = MakeiGroup<int64_t, int64_t>;
             break;
-        default: printf("!!!internal error in MakeiGroup\n");
+        default:
+            printf("!!!internal error in MakeiGroup\n");
         }
     }
     return pBinFunc;
@@ -2164,7 +2196,9 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype)
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = BinCountAlgo<int8_t, int32_t>; break;
+        case NPY_INT8:
+            pBinFunc = BinCountAlgo<int8_t, int32_t>;
+            break;
         case NPY_INT16:
             pBinFunc = BinCountAlgo<int16_t, int32_t>;
             break;
@@ -2175,14 +2209,17 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype)
 
             pBinFunc = BinCountAlgo<int64_t, int32_t>;
             break;
-        default: printf("!!!internal error in BinCount\n");
+        default:
+            printf("!!!internal error in BinCount\n");
         }
     }
     else
     {
         switch (iKeyType)
         {
-        case NPY_INT8: pBinFunc = BinCountAlgo<int8_t, int64_t>; break;
+        case NPY_INT8:
+            pBinFunc = BinCountAlgo<int8_t, int64_t>;
+            break;
         case NPY_INT16:
             pBinFunc = BinCountAlgo<int16_t, int64_t>;
             break;
@@ -2193,7 +2230,8 @@ BIN_COUNT InternalGetBinFunc(int32_t iKeyType, int outdtype)
 
             pBinFunc = BinCountAlgo<int64_t, int64_t>;
             break;
-        default: printf("!!!internal error in BinCount\n");
+        default:
+            printf("!!!internal error in BinCount\n");
         }
     }
     return pBinFunc;

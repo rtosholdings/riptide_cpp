@@ -85,10 +85,18 @@ static PyObject * test_setallocators(PyMemAllocatorDomain domain)
     hook.ctx = NULL;
     switch (domain)
     {
-    case PYMEM_DOMAIN_RAW: ptr = PyMem_RawMalloc(size); break;
-    case PYMEM_DOMAIN_MEM: ptr = PyMem_Malloc(size); break;
-    case PYMEM_DOMAIN_OBJ: ptr = PyObject_Malloc(size); break;
-    default: ptr = NULL; break;
+    case PYMEM_DOMAIN_RAW:
+        ptr = PyMem_RawMalloc(size);
+        break;
+    case PYMEM_DOMAIN_MEM:
+        ptr = PyMem_Malloc(size);
+        break;
+    case PYMEM_DOMAIN_OBJ:
+        ptr = PyObject_Malloc(size);
+        break;
+    default:
+        ptr = NULL;
+        break;
     }
 
     // put it back

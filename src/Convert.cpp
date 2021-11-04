@@ -508,11 +508,16 @@ static UNARY_FUNC GetConversionStep2(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvert;
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvert;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvert;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvert;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvert;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvert;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvert;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvert;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvert;
     CASE_NPY_INT32:
@@ -520,7 +525,8 @@ static UNARY_FUNC GetConversionStep2(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvert;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvert;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvert;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvert;
     CASE_NPY_UINT32:
@@ -537,11 +543,16 @@ static CONVERT_SAFE GetConversionStep2Safe(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertSafeBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvertSafe;
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafe;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafe;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvertSafe;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertSafeBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvertSafe;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvertSafe;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvertSafe;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvertSafe;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvertSafe;
     CASE_NPY_INT32:
@@ -549,7 +560,8 @@ static CONVERT_SAFE GetConversionStep2Safe(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvertSafe;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvertSafe;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvertSafe;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvertSafe;
     CASE_NPY_UINT32:
@@ -568,11 +580,16 @@ static CONVERT_SAFE GetConversionStep2Unsafe(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertSafeBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvertUnsafe;
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertUnsafe;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertUnsafe;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvertUnsafe;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertSafeBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvertUnsafe;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvertUnsafe;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvertUnsafe;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvertUnsafe;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvertUnsafe;
     CASE_NPY_INT32:
@@ -580,7 +597,8 @@ static CONVERT_SAFE GetConversionStep2Unsafe(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvertUnsafe;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvertUnsafe;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvertUnsafe;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvertUnsafe;
     CASE_NPY_UINT32:
@@ -597,11 +615,16 @@ static CONVERT_SAFE GetConversionStep2SafeFromFloat(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertSafeBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvertSafeFloat;
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloatToDouble; // very common
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertSafeBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvertSafeFloat;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvertSafeFloatToDouble; // very common
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvertSafeFloat;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
     CASE_NPY_INT32:
@@ -609,7 +632,8 @@ static CONVERT_SAFE GetConversionStep2SafeFromFloat(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
     CASE_NPY_UINT32:
@@ -626,11 +650,16 @@ static CONVERT_SAFE GetConversionStep2SafeFromDouble(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertSafeBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvertSafeDoubleToFloat; // very common
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloat;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertSafeBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvertSafeDoubleToFloat; // very common
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvertSafeFloat;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvertSafeFloat;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
     CASE_NPY_INT32:
@@ -638,7 +667,8 @@ static CONVERT_SAFE GetConversionStep2SafeFromDouble(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
     CASE_NPY_UINT32:
@@ -655,11 +685,16 @@ static CONVERT_SAFE GetConversionStep2SafeFloat(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::OneStubConvertSafeBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::OneStubConvertSafeFloat;
-    case NPY_DOUBLE: return ConvertBase<T, double>::OneStubConvertSafeFloat;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::OneStubConvertSafeFloat;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::OneStubConvertSafeBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::OneStubConvertSafeFloat;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::OneStubConvertSafeFloat;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::OneStubConvertSafeFloat;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::OneStubConvertSafeFloat;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::OneStubConvertSafeFloat;
     CASE_NPY_INT32:
@@ -667,7 +702,8 @@ static CONVERT_SAFE GetConversionStep2SafeFloat(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::OneStubConvertSafeFloat;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::OneStubConvertSafeFloat;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::OneStubConvertSafeFloat;
     CASE_NPY_UINT32:
@@ -685,7 +721,8 @@ static CONVERT_SAFE GetConversionFunctionSafeCopy(int inputType)
     {
     case NPY_BYTE:
     case NPY_UBYTE:
-    case NPY_BOOL: return ConvertBase<int8_t, int8_t>::OneStubConvertSafeCopy;
+    case NPY_BOOL:
+        return ConvertBase<int8_t, int8_t>::OneStubConvertSafeCopy;
 
     case NPY_INT16:
     case NPY_UINT16:
@@ -700,9 +737,11 @@ static CONVERT_SAFE GetConversionFunctionSafeCopy(int inputType)
 
     CASE_NPY_UINT64:
 
-    case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::OneStubConvertSafeCopy;
+    case NPY_DOUBLE:
+        return ConvertBase<int64_t, int64_t>::OneStubConvertSafeCopy;
 
-    case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::OneStubConvertSafeCopy;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<long double, long double>::OneStubConvertSafeCopy;
     }
     return NULL;
 }
@@ -718,11 +757,16 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType)
     switch (inputType)
     {
     // case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-    case NPY_BOOL: return GetConversionStep2Safe<int8_t>(outputType);
-    case NPY_FLOAT: return GetConversionStep2SafeFromFloat<float>(outputType);
-    case NPY_DOUBLE: return GetConversionStep2SafeFromDouble<double>(outputType);
-    case NPY_LONGDOUBLE: return GetConversionStep2SafeFloat<long double>(outputType);
-    case NPY_BYTE: return GetConversionStep2Safe<int8_t>(outputType);
+    case NPY_BOOL:
+        return GetConversionStep2Safe<int8_t>(outputType);
+    case NPY_FLOAT:
+        return GetConversionStep2SafeFromFloat<float>(outputType);
+    case NPY_DOUBLE:
+        return GetConversionStep2SafeFromDouble<double>(outputType);
+    case NPY_LONGDOUBLE:
+        return GetConversionStep2SafeFloat<long double>(outputType);
+    case NPY_BYTE:
+        return GetConversionStep2Safe<int8_t>(outputType);
     case NPY_INT16:
         return GetConversionStep2Safe<int16_t>(outputType);
     CASE_NPY_INT32:
@@ -733,7 +777,8 @@ static CONVERT_SAFE GetConversionFunctionSafe(int inputType, int outputType)
 
     // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
     // case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
-    case NPY_UBYTE: return GetConversionStep2Safe<uint8_t>(outputType);
+    case NPY_UBYTE:
+        return GetConversionStep2Safe<uint8_t>(outputType);
 
     case NPY_UINT16:
         return GetConversionStep2Safe<uint16_t>(outputType);
@@ -757,11 +802,16 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType)
     switch (inputType)
     {
         // case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-    case NPY_BOOL: return GetConversionStep2Unsafe<int8_t>(outputType);
-    case NPY_FLOAT: return GetConversionStep2Unsafe<float>(outputType);
-    case NPY_DOUBLE: return GetConversionStep2Unsafe<double>(outputType);
-    case NPY_LONGDOUBLE: return GetConversionStep2Unsafe<long double>(outputType);
-    case NPY_BYTE: return GetConversionStep2Unsafe<int8_t>(outputType);
+    case NPY_BOOL:
+        return GetConversionStep2Unsafe<int8_t>(outputType);
+    case NPY_FLOAT:
+        return GetConversionStep2Unsafe<float>(outputType);
+    case NPY_DOUBLE:
+        return GetConversionStep2Unsafe<double>(outputType);
+    case NPY_LONGDOUBLE:
+        return GetConversionStep2Unsafe<long double>(outputType);
+    case NPY_BYTE:
+        return GetConversionStep2Unsafe<int8_t>(outputType);
     case NPY_INT16:
         return GetConversionStep2Unsafe<int16_t>(outputType);
     CASE_NPY_INT32:
@@ -769,7 +819,8 @@ static CONVERT_SAFE GetConversionFunctionUnsafe(int inputType, int outputType)
     CASE_NPY_INT64:
 
         return GetConversionStep2Unsafe<int64_t>(outputType);
-    case NPY_UBYTE: return GetConversionStep2Unsafe<uint8_t>(outputType);
+    case NPY_UBYTE:
+        return GetConversionStep2Unsafe<uint8_t>(outputType);
     case NPY_UINT16:
         return GetConversionStep2Unsafe<uint16_t>(outputType);
     CASE_NPY_UINT32:
@@ -786,11 +837,16 @@ static MASK_CONVERT_SAFE GetConversionPutMask2Float(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::PutMaskCopyBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::PutMaskCopyFloat;
-    case NPY_DOUBLE: return ConvertBase<T, double>::PutMaskCopyFloat;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopyFloat;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::PutMaskCopyFloat;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::PutMaskCopyBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::PutMaskCopyFloat;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::PutMaskCopyFloat;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::PutMaskCopyFloat;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::PutMaskCopyFloat;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::PutMaskCopyFloat;
     CASE_NPY_INT32:
@@ -798,7 +854,8 @@ static MASK_CONVERT_SAFE GetConversionPutMask2Float(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::PutMaskCopyFloat;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::PutMaskCopyFloat;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::PutMaskCopyFloat;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::PutMaskCopyFloat;
     CASE_NPY_UINT32:
@@ -815,11 +872,16 @@ static MASK_CONVERT_SAFE GetConversionPutMask2(int outputType)
 {
     switch (outputType)
     {
-    case NPY_BOOL: return ConvertBase<T, bool>::PutMaskCopyBool;
-    case NPY_FLOAT: return ConvertBase<T, float>::PutMaskCopy;
-    case NPY_DOUBLE: return ConvertBase<T, double>::PutMaskCopy;
-    case NPY_LONGDOUBLE: return ConvertBase<T, long double>::PutMaskCopy;
-    case NPY_BYTE: return ConvertBase<T, int8_t>::PutMaskCopy;
+    case NPY_BOOL:
+        return ConvertBase<T, bool>::PutMaskCopyBool;
+    case NPY_FLOAT:
+        return ConvertBase<T, float>::PutMaskCopy;
+    case NPY_DOUBLE:
+        return ConvertBase<T, double>::PutMaskCopy;
+    case NPY_LONGDOUBLE:
+        return ConvertBase<T, long double>::PutMaskCopy;
+    case NPY_BYTE:
+        return ConvertBase<T, int8_t>::PutMaskCopy;
     case NPY_INT16:
         return ConvertBase<T, int16_t>::PutMaskCopy;
     CASE_NPY_INT32:
@@ -827,7 +889,8 @@ static MASK_CONVERT_SAFE GetConversionPutMask2(int outputType)
     CASE_NPY_INT64:
 
         return ConvertBase<T, int64_t>::PutMaskCopy;
-    case NPY_UBYTE: return ConvertBase<T, uint8_t>::PutMaskCopy;
+    case NPY_UBYTE:
+        return ConvertBase<T, uint8_t>::PutMaskCopy;
     case NPY_UINT16:
         return ConvertBase<T, uint16_t>::PutMaskCopy;
     CASE_NPY_UINT32:
@@ -848,7 +911,8 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType)
         {
         case NPY_BYTE:
         case NPY_UBYTE:
-        case NPY_BOOL: return ConvertBase<int8_t, int8_t>::PutMaskFast;
+        case NPY_BOOL:
+            return ConvertBase<int8_t, int8_t>::PutMaskFast;
 
         case NPY_INT16:
         case NPY_UINT16:
@@ -863,20 +927,27 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType)
 
         CASE_NPY_UINT64:
 
-        case NPY_DOUBLE: return ConvertBase<int64_t, int64_t>::PutMaskFast;
+        case NPY_DOUBLE:
+            return ConvertBase<int64_t, int64_t>::PutMaskFast;
 
-        case NPY_LONGDOUBLE: return ConvertBase<long double, long double>::PutMaskFast;
+        case NPY_LONGDOUBLE:
+            return ConvertBase<long double, long double>::PutMaskFast;
         }
     }
 
     switch (inputType)
     {
         // case NPY_BOOL:   return GetConversionStep2Safe<bool>(outputType);
-    case NPY_BOOL: return GetConversionPutMask2<int8_t>(outputType);
-    case NPY_FLOAT: return GetConversionPutMask2Float<float>(outputType);
-    case NPY_DOUBLE: return GetConversionPutMask2Float<double>(outputType);
-    case NPY_LONGDOUBLE: return GetConversionPutMask2Float<long double>(outputType);
-    case NPY_BYTE: return GetConversionPutMask2<int8_t>(outputType);
+    case NPY_BOOL:
+        return GetConversionPutMask2<int8_t>(outputType);
+    case NPY_FLOAT:
+        return GetConversionPutMask2Float<float>(outputType);
+    case NPY_DOUBLE:
+        return GetConversionPutMask2Float<double>(outputType);
+    case NPY_LONGDOUBLE:
+        return GetConversionPutMask2Float<long double>(outputType);
+    case NPY_BYTE:
+        return GetConversionPutMask2<int8_t>(outputType);
     case NPY_INT16:
         return GetConversionPutMask2<int16_t>(outputType);
     CASE_NPY_INT32:
@@ -887,7 +958,8 @@ static MASK_CONVERT_SAFE GetConversionPutMask(int inputType, int outputType)
 
         // DISCUSSION -- uint8_t and the value 255 or 0xFF will not be a sentinel
         // case NPY_UBYTE:  return GetConversionStep2Unsafe<uint8_t>(outputType);
-    case NPY_UBYTE: return GetConversionPutMask2<uint8_t>(outputType);
+    case NPY_UBYTE:
+        return GetConversionPutMask2<uint8_t>(outputType);
 
     case NPY_UINT16:
         return GetConversionPutMask2<uint16_t>(outputType);
@@ -1279,7 +1351,8 @@ static COMBINE_MASK GetCombineFunction(int outputType)
 {
     switch (outputType)
     {
-    case NPY_INT8: return CombineMask<int8_t>;
+    case NPY_INT8:
+        return CombineMask<int8_t>;
     case NPY_INT16:
         return CombineMask<int16_t>;
     CASE_NPY_INT32:
@@ -1376,7 +1449,9 @@ PyObject * CombineFilter(PyObject * self, PyObject * args)
 
     switch (numpyOutType)
     {
-    case NPY_INT8: pFunction = GetCombineFunction(numpyOutType); break;
+    case NPY_INT8:
+        pFunction = GetCombineFunction(numpyOutType);
+        break;
 
     case NPY_INT16:
         pFunction = GetCombineFunction(numpyOutType);
@@ -1548,7 +1623,8 @@ static COMBINE_ACCUM2_MASK GetCombineAccum2Function(int outputType)
 
     switch (outputType)
     {
-    case NPY_INT8: return CombineAccum2Mask<T, U, int8_t>;
+    case NPY_INT8:
+        return CombineAccum2Mask<T, U, int8_t>;
     case NPY_INT16:
         return CombineAccum2Mask<T, U, int16_t>;
     CASE_NPY_INT32:
@@ -1715,7 +1791,9 @@ PyObject * CombineAccum2Filter(PyObject * self, PyObject * args)
     case NPY_INT8:
         switch (type2)
         {
-        case NPY_INT8: pFunction = GetCombineAccum2Function<int8_t, int8_t>(numpyOutType); break;
+        case NPY_INT8:
+            pFunction = GetCombineAccum2Function<int8_t, int8_t>(numpyOutType);
+            break;
         case NPY_INT16:
             pFunction = GetCombineAccum2Function<int8_t, int16_t>(numpyOutType);
             break;
@@ -1732,7 +1810,9 @@ PyObject * CombineAccum2Filter(PyObject * self, PyObject * args)
     case NPY_INT16:
         switch (type2)
         {
-        case NPY_INT8: pFunction = GetCombineAccum2Function<int16_t, int8_t>(numpyOutType); break;
+        case NPY_INT8:
+            pFunction = GetCombineAccum2Function<int16_t, int8_t>(numpyOutType);
+            break;
         case NPY_INT16:
             pFunction = GetCombineAccum2Function<int16_t, int16_t>(numpyOutType);
             break;
@@ -1749,7 +1829,9 @@ PyObject * CombineAccum2Filter(PyObject * self, PyObject * args)
     CASE_NPY_INT32:
         switch (type2)
         {
-        case NPY_INT8: pFunction = GetCombineAccum2Function<int32_t, int8_t>(numpyOutType); break;
+        case NPY_INT8:
+            pFunction = GetCombineAccum2Function<int32_t, int8_t>(numpyOutType);
+            break;
         case NPY_INT16:
             pFunction = GetCombineAccum2Function<int32_t, int16_t>(numpyOutType);
             break;
@@ -1767,7 +1849,9 @@ PyObject * CombineAccum2Filter(PyObject * self, PyObject * args)
 
         switch (type2)
         {
-        case NPY_INT8: pFunction = GetCombineAccum2Function<int64_t, int8_t>(numpyOutType); break;
+        case NPY_INT8:
+            pFunction = GetCombineAccum2Function<int64_t, int8_t>(numpyOutType);
+            break;
         case NPY_INT16:
             pFunction = GetCombineAccum2Function<int64_t, int16_t>(numpyOutType);
             break;
@@ -2116,7 +2200,9 @@ PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
     COMBINE_1_FILTER pFunction = NULL;
     switch (dtype)
     {
-    case NPY_INT8: pFunction = Combine1Filter<int8_t>; break;
+    case NPY_INT8:
+        pFunction = Combine1Filter<int8_t>;
+        break;
     case NPY_INT16:
         pFunction = Combine1Filter<int16_t>;
         break;
@@ -2353,7 +2439,9 @@ PyObject * MakeiFirst(PyObject * self, PyObject * args)
     {
         switch (dtype)
         {
-        case NPY_INT8: pFunction = iLastFilter<int8_t>; break;
+        case NPY_INT8:
+            pFunction = iLastFilter<int8_t>;
+            break;
         case NPY_INT16:
             pFunction = iLastFilter<int16_t>;
             break;
@@ -2369,7 +2457,9 @@ PyObject * MakeiFirst(PyObject * self, PyObject * args)
     {
         switch (dtype)
         {
-        case NPY_INT8: pFunction = iFirstFilter<int8_t>; break;
+        case NPY_INT8:
+            pFunction = iFirstFilter<int8_t>;
+            break;
         case NPY_INT16:
             pFunction = iFirstFilter<int16_t>;
             break;
@@ -3689,10 +3779,14 @@ PyObject * SetItem(PyObject * self, PyObject * args)
                     // Fancy index
                     switch (PyArray_ITEMSIZE(arr))
                     {
-                    case 1: break;
-                    case 2: break;
-                    case 4: break;
-                    case 8: break;
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 4:
+                        break;
+                    case 8:
+                        break;
                     }
                 }
             }

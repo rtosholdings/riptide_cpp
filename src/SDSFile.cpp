@@ -110,30 +110,57 @@ void * SDSGetDefaultType(int32_t numpyInType)
 
     switch (numpyInType)
     {
-    case SDS_FLOAT: pgDefault = &gDefaultFloat; break;
-    case SDS_DOUBLE: pgDefault = &gDefaultDouble; break;
+    case SDS_FLOAT:
+        pgDefault = &gDefaultFloat;
+        break;
+    case SDS_DOUBLE:
+        pgDefault = &gDefaultDouble;
+        break;
     case SDS_LONGDOUBLE:
         pgDefault = &gDefaultLongDouble;
         break;
         // bool should not really have a default type
-    case SDS_BOOL: pgDefault = &gDefaultBool; break;
-    case SDS_BYTE: pgDefault = &gDefaultInt8; break;
-    case SDS_SHORT: pgDefault = &gDefaultInt16; break;
-    case SDS_INT: pgDefault = &gDefaultInt32; break;
+    case SDS_BOOL:
+        pgDefault = &gDefaultBool;
+        break;
+    case SDS_BYTE:
+        pgDefault = &gDefaultInt8;
+        break;
+    case SDS_SHORT:
+        pgDefault = &gDefaultInt16;
+        break;
+    case SDS_INT:
+        pgDefault = &gDefaultInt32;
+        break;
     case SDS_LONG:
         pgDefault = &gDefaultInt32; // ambiguous
         break;
-    case SDS_LONGLONG: pgDefault = &gDefaultInt64; break;
-    case SDS_UBYTE: pgDefault = &gDefaultUInt8; break;
-    case SDS_USHORT: pgDefault = &gDefaultUInt16; break;
-    case SDS_UINT: pgDefault = &gDefaultUInt32; break;
+    case SDS_LONGLONG:
+        pgDefault = &gDefaultInt64;
+        break;
+    case SDS_UBYTE:
+        pgDefault = &gDefaultUInt8;
+        break;
+    case SDS_USHORT:
+        pgDefault = &gDefaultUInt16;
+        break;
+    case SDS_UINT:
+        pgDefault = &gDefaultUInt32;
+        break;
     case SDS_ULONG:
         pgDefault = &gDefaultUInt32; // ambiguous
         break;
-    case SDS_ULONGLONG: pgDefault = &gDefaultUInt64; break;
-    case SDS_STRING: pgDefault = &gString; break;
-    case SDS_UNICODE: pgDefault = &gString; break;
-    default: printf("!!! likely problem in SDSGetDefaultType\n");
+    case SDS_ULONGLONG:
+        pgDefault = &gDefaultUInt64;
+        break;
+    case SDS_STRING:
+        pgDefault = &gString;
+        break;
+    case SDS_UNICODE:
+        pgDefault = &gString;
+        break;
+    default:
+        printf("!!! likely problem in SDSGetDefaultType\n");
     }
 
     return pgDefault;
@@ -4576,17 +4603,28 @@ static CONVERT_INPLACE GetInplaceConversionStep2Float(int32_t outputType)
     switch (outputType)
     {
         // case SDS_BOOL:     return ConvertInplace<T, bool>;
-    case SDS_FLOAT: return ConvertInplaceFloat<T, float>;
-    case SDS_DOUBLE: return ConvertInplaceFloat<T, double>;
-    case SDS_LONGDOUBLE: return ConvertInplaceFloat<T, long double>;
-    case SDS_BYTE: return ConvertInplaceFloat<T, int8_t>;
-    case SDS_SHORT: return ConvertInplaceFloat<T, int16_t>;
-    case SDS_INT: return ConvertInplaceFloat<T, int32_t>;
-    case SDS_LONGLONG: return ConvertInplaceFloat<T, int64_t>;
-    case SDS_UBYTE: return ConvertInplaceFloat<T, uint8_t>;
-    case SDS_USHORT: return ConvertInplaceFloat<T, uint16_t>;
-    case SDS_UINT: return ConvertInplaceFloat<T, uint32_t>;
-    case SDS_ULONGLONG: return ConvertInplaceFloat<T, uint64_t>;
+    case SDS_FLOAT:
+        return ConvertInplaceFloat<T, float>;
+    case SDS_DOUBLE:
+        return ConvertInplaceFloat<T, double>;
+    case SDS_LONGDOUBLE:
+        return ConvertInplaceFloat<T, long double>;
+    case SDS_BYTE:
+        return ConvertInplaceFloat<T, int8_t>;
+    case SDS_SHORT:
+        return ConvertInplaceFloat<T, int16_t>;
+    case SDS_INT:
+        return ConvertInplaceFloat<T, int32_t>;
+    case SDS_LONGLONG:
+        return ConvertInplaceFloat<T, int64_t>;
+    case SDS_UBYTE:
+        return ConvertInplaceFloat<T, uint8_t>;
+    case SDS_USHORT:
+        return ConvertInplaceFloat<T, uint16_t>;
+    case SDS_UINT:
+        return ConvertInplaceFloat<T, uint32_t>;
+    case SDS_ULONGLONG:
+        return ConvertInplaceFloat<T, uint64_t>;
     }
     return NULL;
 }
@@ -4597,17 +4635,28 @@ static CONVERT_INPLACE GetInplaceConversionStep2(int32_t outputType)
     switch (outputType)
     {
         // case SDS_BOOL:     return ConvertInplace<T, bool>;
-    case SDS_FLOAT: return ConvertInplace<T, float>;
-    case SDS_DOUBLE: return ConvertInplace<T, double>;
-    case SDS_LONGDOUBLE: return ConvertInplace<T, long double>;
-    case SDS_BYTE: return ConvertInplace<T, int8_t>;
-    case SDS_SHORT: return ConvertInplace<T, int16_t>;
-    case SDS_INT: return ConvertInplace<T, int32_t>;
-    case SDS_LONGLONG: return ConvertInplace<T, int64_t>;
-    case SDS_UBYTE: return ConvertInplace<T, uint8_t>;
-    case SDS_USHORT: return ConvertInplace<T, uint16_t>;
-    case SDS_UINT: return ConvertInplace<T, uint32_t>;
-    case SDS_ULONGLONG: return ConvertInplace<T, uint64_t>;
+    case SDS_FLOAT:
+        return ConvertInplace<T, float>;
+    case SDS_DOUBLE:
+        return ConvertInplace<T, double>;
+    case SDS_LONGDOUBLE:
+        return ConvertInplace<T, long double>;
+    case SDS_BYTE:
+        return ConvertInplace<T, int8_t>;
+    case SDS_SHORT:
+        return ConvertInplace<T, int16_t>;
+    case SDS_INT:
+        return ConvertInplace<T, int32_t>;
+    case SDS_LONGLONG:
+        return ConvertInplace<T, int64_t>;
+    case SDS_UBYTE:
+        return ConvertInplace<T, uint8_t>;
+    case SDS_USHORT:
+        return ConvertInplace<T, uint16_t>;
+    case SDS_UINT:
+        return ConvertInplace<T, uint32_t>;
+    case SDS_ULONGLONG:
+        return ConvertInplace<T, uint64_t>;
     }
     return NULL;
 }
@@ -4616,18 +4665,30 @@ static CONVERT_INPLACE GetInplaceConversionFunction(int32_t inputType, int32_t o
 {
     switch (inputType)
     {
-    case SDS_BOOL: return GetInplaceConversionStep2<bool>(outputType);
-    case SDS_FLOAT: return GetInplaceConversionStep2Float<float>(outputType);
-    case SDS_DOUBLE: return GetInplaceConversionStep2Float<double>(outputType);
-    case SDS_LONGDOUBLE: return GetInplaceConversionStep2Float<long double>(outputType);
-    case SDS_BYTE: return GetInplaceConversionStep2<int8_t>(outputType);
-    case SDS_SHORT: return GetInplaceConversionStep2<int16_t>(outputType);
-    case SDS_INT: return GetInplaceConversionStep2<int32_t>(outputType);
-    case SDS_LONGLONG: return GetInplaceConversionStep2<int64_t>(outputType);
-    case SDS_UBYTE: return GetInplaceConversionStep2<uint8_t>(outputType);
-    case SDS_USHORT: return GetInplaceConversionStep2<uint16_t>(outputType);
-    case SDS_UINT: return GetInplaceConversionStep2<uint32_t>(outputType);
-    case SDS_ULONGLONG: return GetInplaceConversionStep2<uint64_t>(outputType);
+    case SDS_BOOL:
+        return GetInplaceConversionStep2<bool>(outputType);
+    case SDS_FLOAT:
+        return GetInplaceConversionStep2Float<float>(outputType);
+    case SDS_DOUBLE:
+        return GetInplaceConversionStep2Float<double>(outputType);
+    case SDS_LONGDOUBLE:
+        return GetInplaceConversionStep2Float<long double>(outputType);
+    case SDS_BYTE:
+        return GetInplaceConversionStep2<int8_t>(outputType);
+    case SDS_SHORT:
+        return GetInplaceConversionStep2<int16_t>(outputType);
+    case SDS_INT:
+        return GetInplaceConversionStep2<int32_t>(outputType);
+    case SDS_LONGLONG:
+        return GetInplaceConversionStep2<int64_t>(outputType);
+    case SDS_UBYTE:
+        return GetInplaceConversionStep2<uint8_t>(outputType);
+    case SDS_USHORT:
+        return GetInplaceConversionStep2<uint16_t>(outputType);
+    case SDS_UINT:
+        return GetInplaceConversionStep2<uint32_t>(outputType);
+    case SDS_ULONGLONG:
+        return GetInplaceConversionStep2<uint64_t>(outputType);
     case SDS_STRING:
         if (outputType == SDS_UNICODE)
             return ConvertInplaceString<uint8_t, uint32_t>;
@@ -4861,18 +4922,30 @@ SDS_COPY_FORTRAN GetCopyFortran(int32_t dtype)
 {
     switch (dtype)
     {
-    case SDS_BOOL: return CopyFortran<int8_t>;
-    case SDS_FLOAT: return CopyFortran<int32_t>;
-    case SDS_DOUBLE: return CopyFortran<int64_t>;
-    case SDS_LONGDOUBLE: return CopyFortran<long double>;
-    case SDS_BYTE: return CopyFortran<int8_t>;
-    case SDS_SHORT: return CopyFortran<int16_t>;
-    case SDS_INT: return CopyFortran<int32_t>;
-    case SDS_LONGLONG: return CopyFortran<int64_t>;
-    case SDS_UBYTE: return CopyFortran<int8_t>;
-    case SDS_USHORT: return CopyFortran<int16_t>;
-    case SDS_UINT: return CopyFortran<int32_t>;
-    case SDS_ULONGLONG: return CopyFortran<int64_t>;
+    case SDS_BOOL:
+        return CopyFortran<int8_t>;
+    case SDS_FLOAT:
+        return CopyFortran<int32_t>;
+    case SDS_DOUBLE:
+        return CopyFortran<int64_t>;
+    case SDS_LONGDOUBLE:
+        return CopyFortran<long double>;
+    case SDS_BYTE:
+        return CopyFortran<int8_t>;
+    case SDS_SHORT:
+        return CopyFortran<int16_t>;
+    case SDS_INT:
+        return CopyFortran<int32_t>;
+    case SDS_LONGLONG:
+        return CopyFortran<int64_t>;
+    case SDS_UBYTE:
+        return CopyFortran<int8_t>;
+    case SDS_USHORT:
+        return CopyFortran<int16_t>;
+    case SDS_UINT:
+        return CopyFortran<int32_t>;
+    case SDS_ULONGLONG:
+        return CopyFortran<int64_t>;
     }
     return NULL;
 }
@@ -5053,18 +5126,30 @@ SDS_GAP_FILL_SPECIAL GetGapFillSpecial(int32_t dtype)
 {
     switch (dtype)
     {
-    case SDS_BOOL: return GapFillSpecial<bool>;
-    case SDS_FLOAT: return GapFillSpecial<float>;
-    case SDS_DOUBLE: return GapFillSpecial<double>;
-    case SDS_LONGDOUBLE: return GapFillSpecial<long double>;
-    case SDS_BYTE: return GapFillSpecial<int8_t>;
-    case SDS_SHORT: return GapFillSpecial<int16_t>;
-    case SDS_INT: return GapFillSpecial<int32_t>;
-    case SDS_LONGLONG: return GapFillSpecial<int64_t>;
-    case SDS_UBYTE: return GapFillSpecial<uint8_t>;
-    case SDS_USHORT: return GapFillSpecial<uint16_t>;
-    case SDS_UINT: return GapFillSpecial<uint32_t>;
-    case SDS_ULONGLONG: return GapFillSpecial<uint64_t>;
+    case SDS_BOOL:
+        return GapFillSpecial<bool>;
+    case SDS_FLOAT:
+        return GapFillSpecial<float>;
+    case SDS_DOUBLE:
+        return GapFillSpecial<double>;
+    case SDS_LONGDOUBLE:
+        return GapFillSpecial<long double>;
+    case SDS_BYTE:
+        return GapFillSpecial<int8_t>;
+    case SDS_SHORT:
+        return GapFillSpecial<int16_t>;
+    case SDS_INT:
+        return GapFillSpecial<int32_t>;
+    case SDS_LONGLONG:
+        return GapFillSpecial<int64_t>;
+    case SDS_UBYTE:
+        return GapFillSpecial<uint8_t>;
+    case SDS_USHORT:
+        return GapFillSpecial<uint16_t>;
+    case SDS_UINT:
+        return GapFillSpecial<uint32_t>;
+    case SDS_ULONGLONG:
+        return GapFillSpecial<uint64_t>;
     }
     return NULL;
 }

@@ -411,11 +411,15 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -423,7 +427,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -431,7 +436,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -495,11 +501,15 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -507,7 +517,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -515,7 +526,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -607,11 +619,15 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -619,7 +635,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -627,7 +644,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -718,11 +736,15 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -730,7 +752,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -738,7 +761,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -893,11 +917,15 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return avx2<float, __m256, __m128>;
-        case NPY_DOUBLE: return avx2<double, __m256d, __m128d>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return avx2<float, __m256, __m128>;
+        case NPY_DOUBLE:
+            return avx2<double, __m256d, __m128d>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return avx2<int8_t, __m256i, __m128i>;
+        case NPY_INT8:
+            return avx2<int8_t, __m256i, __m128i>;
         case NPY_INT16:
             return avx2<int16_t, __m256i, __m128i>;
         CASE_NPY_INT32:
@@ -905,7 +933,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -913,7 +942,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -1306,10 +1336,13 @@ public:
                 return avx2<float, __m256, __m128>;
             }
 
-        case NPY_DOUBLE: return avx2<double, __m256d, __m128d>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_DOUBLE:
+            return avx2<double, __m256d, __m128d>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
         case NPY_BOOL:
-        case NPY_INT8: return avx2<int8_t, __m256i, __m128i>;
+        case NPY_INT8:
+            return avx2<int8_t, __m256i, __m128i>;
         case NPY_INT16:
             return avx2<int16_t, __m256i, __m128i>;
         CASE_NPY_INT32:
@@ -1317,7 +1350,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -1325,7 +1359,8 @@ public:
         CASE_NPY_UINT64:
 
             return non_vector<uint64_t>;
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -1557,10 +1592,14 @@ public:
         switch (inputType)
         {
         // TODO: Enable avx2 implementation once it's been tested.
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -1568,7 +1607,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -1579,9 +1619,11 @@ public:
 
         // bools are currently handled specially; we don't consider bool to have a nan/invalid value
         // so we utilize the normal reduction operation for it.
-        case NPY_BOOL: return ReduceMin::GetScatterGatherFuncPtr(inputType);
+        case NPY_BOOL:
+            return ReduceMin::GetScatterGatherFuncPtr(inputType);
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -1813,10 +1855,14 @@ public:
         switch (inputType)
         {
         // TODO: Enable avx2 implementation once it's been tested.
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -1824,7 +1870,8 @@ public:
         CASE_NPY_INT64:
 
             return non_vector<int64_t>;
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -1835,9 +1882,11 @@ public:
 
         // bools are currently handled specially; we don't consider bool to have a nan/invalid value
         // so we utilize the normal reduction operation for it.
-        case NPY_BOOL: return ReduceMax::GetScatterGatherFuncPtr(inputType);
+        case NPY_BOOL:
+            return ReduceMax::GetScatterGatherFuncPtr(inputType);
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -2240,12 +2289,16 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return ReduceAddF32;
-        case NPY_DOUBLE: return ReduceAddD64;
-        case NPY_LONGDOUBLE: return ReduceAddSlow<long double>;
+        case NPY_FLOAT:
+            return ReduceAddF32;
+        case NPY_DOUBLE:
+            return ReduceAddD64;
+        case NPY_LONGDOUBLE:
+            return ReduceAddSlow<long double>;
 
         case NPY_BOOL: // TODO: Call/return our fast SumBooleanMask() implementation.
-        case NPY_INT8: return ReduceAddSlow<int8_t>;
+        case NPY_INT8:
+            return ReduceAddSlow<int8_t>;
         case NPY_INT16:
             return ReduceAddSlow<int16_t>;
         CASE_NPY_INT32:
@@ -2254,7 +2307,8 @@ public:
 
             return ReduceAddI64;
 
-        case NPY_UINT8: return ReduceAddSlow<uint8_t>;
+        case NPY_UINT8:
+            return ReduceAddSlow<uint8_t>;
         case NPY_UINT16:
             return ReduceAddSlow<uint16_t>;
         CASE_NPY_UINT32:
@@ -2263,7 +2317,8 @@ public:
 
             return ReduceAddU64;
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -2303,13 +2358,18 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
 
         // TODO: For booleans, use the optimized BooleanCount() function.
-        case NPY_BOOL: return non_vector<bool>;
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_BOOL:
+            return non_vector<bool>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -2318,7 +2378,8 @@ public:
 
             return non_vector<int64_t>;
 
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -2327,7 +2388,8 @@ public:
 
             return non_vector<uint64_t>;
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -2482,12 +2544,16 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return ReduceVarF32;
-        case NPY_DOUBLE: return ReduceVar<double>;
-        case NPY_LONGDOUBLE: return ReduceVar<long double>;
+        case NPY_FLOAT:
+            return ReduceVarF32;
+        case NPY_DOUBLE:
+            return ReduceVar<double>;
+        case NPY_LONGDOUBLE:
+            return ReduceVar<long double>;
 
         case NPY_BOOL:
-        case NPY_INT8: return ReduceVar<int8_t>;
+        case NPY_INT8:
+            return ReduceVar<int8_t>;
         case NPY_INT16:
             return ReduceVar<int16_t>;
         CASE_NPY_INT32:
@@ -2496,7 +2562,8 @@ public:
 
             return ReduceVar<int64_t>;
 
-        case NPY_UINT8: return ReduceVar<uint8_t>;
+        case NPY_UINT8:
+            return ReduceVar<uint8_t>;
         case NPY_UINT16:
             return ReduceVar<uint16_t>;
         CASE_NPY_UINT32:
@@ -2505,7 +2572,8 @@ public:
 
             return ReduceVar<uint64_t>;
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -2549,12 +2617,17 @@ public:
     {
         switch (inputType)
         {
-        case NPY_FLOAT: return non_vector<float>;
-        case NPY_DOUBLE: return non_vector<double>;
-        case NPY_LONGDOUBLE: return non_vector<long double>;
+        case NPY_FLOAT:
+            return non_vector<float>;
+        case NPY_DOUBLE:
+            return non_vector<double>;
+        case NPY_LONGDOUBLE:
+            return non_vector<long double>;
 
-        case NPY_BOOL: return non_vector<bool>;
-        case NPY_INT8: return non_vector<int8_t>;
+        case NPY_BOOL:
+            return non_vector<bool>;
+        case NPY_INT8:
+            return non_vector<int8_t>;
         case NPY_INT16:
             return non_vector<int16_t>;
         CASE_NPY_INT32:
@@ -2563,7 +2636,8 @@ public:
 
             return non_vector<int64_t>;
 
-        case NPY_UINT8: return non_vector<uint8_t>;
+        case NPY_UINT8:
+            return non_vector<uint8_t>;
         case NPY_UINT16:
             return non_vector<uint16_t>;
         CASE_NPY_UINT32:
@@ -2572,7 +2646,8 @@ public:
 
             return non_vector<uint64_t>;
 
-        default: return nullptr;
+        default:
+            return nullptr;
         }
     }
 };
@@ -2691,13 +2766,17 @@ static ARG_SCATTER_GATHER_FUNC GetArgReduceFuncPtr(const NPY_TYPES inputType, co
 {
     switch (func)
     {
-    case REDUCE_FUNCTIONS::REDUCE_ARGMIN: return ReduceArgMin::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_ARGMIN:
+        return ReduceArgMin::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_ARGMAX: return ReduceArgMax::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_ARGMAX:
+        return ReduceArgMax::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_NANARGMIN: return ReduceNanargmin::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANARGMIN:
+        return ReduceNanargmin::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_NANARGMAX: return ReduceNanargmax::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANARGMAX:
+        return ReduceNanargmax::GetScatterGatherFuncPtr(inputType);
 
     default:
         // Unknown/unsupported function requested; return nullptr.
@@ -2712,24 +2791,37 @@ static ANY_SCATTER_GATHER_FUNC GetReduceFuncPtr(const NPY_TYPES inputType, const
 {
     switch (func)
     {
-    case REDUCE_FUNCTIONS::REDUCE_SUM: return ReduceSum::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANSUM: return ReduceNanSum::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_SUM:
+        return ReduceSum::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANSUM:
+        return ReduceNanSum::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_MIN: return ReduceMin::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_MIN_NANAWARE: return ReduceMin::GetScatterGatherFuncPtr<true>(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANMIN: return ReduceNanMin::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_MIN:
+        return ReduceMin::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_MIN_NANAWARE:
+        return ReduceMin::GetScatterGatherFuncPtr<true>(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANMIN:
+        return ReduceNanMin::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_MAX: return ReduceMax::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANMAX: return ReduceNanMax::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_MAX:
+        return ReduceMax::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANMAX:
+        return ReduceNanMax::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_VAR: return ReduceVariance::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANVAR: return ReduceNanVariance::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_VAR:
+        return ReduceVariance::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANVAR:
+        return ReduceNanVariance::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_MEAN: return ReduceMean::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANMEAN: return ReduceNanMean::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_MEAN:
+        return ReduceMean::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANMEAN:
+        return ReduceNanMean::GetScatterGatherFuncPtr(inputType);
 
-    case REDUCE_FUNCTIONS::REDUCE_STD: return ReduceStdDev::GetScatterGatherFuncPtr(inputType);
-    case REDUCE_FUNCTIONS::REDUCE_NANSTD: return ReduceNanStdDev::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_STD:
+        return ReduceStdDev::GetScatterGatherFuncPtr(inputType);
+    case REDUCE_FUNCTIONS::REDUCE_NANSTD:
+        return ReduceNanStdDev::GetScatterGatherFuncPtr(inputType);
 
     default:
         // Unknown/unsupported reduction function requested.
@@ -2899,7 +2991,8 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
                     LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                     return PyFloat_FromDouble(sgFunc.resultOut);
                 }
-            default: break;
+            default:
+                break;
             }
         }
 
@@ -2920,9 +3013,11 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
             switch (func)
             {
             case REDUCE_FUNCTIONS::REDUCE_NANMIN:
-            case REDUCE_FUNCTIONS::REDUCE_NANMAX: return PyFloat_FromDouble(sgFunc.lenOut > 0 ? sgFunc.resultOut : Py_NAN);
+            case REDUCE_FUNCTIONS::REDUCE_NANMAX:
+                return PyFloat_FromDouble(sgFunc.lenOut > 0 ? sgFunc.resultOut : Py_NAN);
 
-            default: return PyFloat_FromDouble(sgFunc.resultOut);
+            default:
+                return PyFloat_FromDouble(sgFunc.resultOut);
             }
 
         default:

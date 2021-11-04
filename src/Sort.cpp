@@ -334,7 +334,8 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
                     return *(uint64_t *)c1 < *(uint64_t *)c2;
                 }
                 return 0;
-            default: return 0;
+            default:
+                return 0;
             }
         }
     }
@@ -518,7 +519,8 @@ NPY_INLINE static int BINARY_LT(const char * s1, const char * s2, size_t len)
                     return 1;
                 }
                 return 0;
-            default: return 0;
+            default:
+                return 0;
             }
         }
     }
@@ -2441,15 +2443,20 @@ static int single_amergesort(void * pValuesT, void * pToSortU, int64_t arrayLeng
 
     switch (sortType)
     {
-    case PAR_SORT_TYPE::Float: amergesort0_float(pToSort, pToSort + arrayLength, pValues, pWorkSpace); break;
+    case PAR_SORT_TYPE::Float:
+        amergesort0_float(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
+        break;
     case PAR_SORT_TYPE::String:
         amergesort0_string(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
         break;
     case PAR_SORT_TYPE::Unicode:
         amergesort0_unicode(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
         break;
-    case PAR_SORT_TYPE::Void: amergesort0_void(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen); break;
-    default: amergesort0_(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
+    case PAR_SORT_TYPE::Void:
+        amergesort0_void(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
+        break;
+    default:
+        amergesort0_(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
     }
 
     WORKSPACE_FREE(pWorkSpace);
@@ -2565,11 +2572,20 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 
         switch (sortType)
         {
-        case PAR_SORT_TYPE::Float: mergeStepOne = ParMergeFloat<T, UINDEX>; break;
-        case PAR_SORT_TYPE::String: mergeStepOne = ParMergeString<UINDEX>; break;
-        case PAR_SORT_TYPE::Unicode: mergeStepOne = ParMergeUnicode<UINDEX>; break;
-        case PAR_SORT_TYPE::Void: mergeStepOne = ParMergeVoid<UINDEX>; break;
-        default: mergeStepOne = ParMergeNormal<T, UINDEX>;
+        case PAR_SORT_TYPE::Float:
+            mergeStepOne = ParMergeFloat<T, UINDEX>;
+            break;
+        case PAR_SORT_TYPE::String:
+            mergeStepOne = ParMergeString<UINDEX>;
+            break;
+        case PAR_SORT_TYPE::Unicode:
+            mergeStepOne = ParMergeUnicode<UINDEX>;
+            break;
+        case PAR_SORT_TYPE::Void:
+            mergeStepOne = ParMergeVoid<UINDEX>;
+            break;
+        default:
+            mergeStepOne = ParMergeNormal<T, UINDEX>;
         }
 
         stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arrayLength);
@@ -2587,9 +2603,15 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             stParMergeCallback.MergeCallbackOne = mergeStepOne;
             switch (sortType)
             {
-            case PAR_SORT_TYPE::String: stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>; break;
-            case PAR_SORT_TYPE::Unicode: stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>; break;
-            case PAR_SORT_TYPE::Void: stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX>; break;
+            case PAR_SORT_TYPE::String:
+                stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>;
+                break;
+            case PAR_SORT_TYPE::Unicode:
+                stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>;
+                break;
+            case PAR_SORT_TYPE::Void:
+                stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX>;
+                break;
             default:
                 // Last Merge
                 stParMergeCallback.MergeCallbackTwo = ParMergeMerge<T, UINDEX>;
@@ -2672,11 +2694,17 @@ static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 
     switch (mode)
     {
-    case SORT_MODE::SORT_MODE_QSORT: result = quicksort_((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_QSORT:
+        result = quicksort_((T *)pDataIn1, arraySize1);
+        break;
 
-    case SORT_MODE::SORT_MODE_MERGE: result = mergesort_((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_MERGE:
+        result = mergesort_((T *)pDataIn1, arraySize1);
+        break;
 
-    case SORT_MODE::SORT_MODE_HEAP: result = heapsort_<T>((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_HEAP:
+        result = heapsort_<T>((T *)pDataIn1, arraySize1);
+        break;
     }
 
     if (result != 0)
@@ -2696,11 +2724,17 @@ static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 
     switch (mode)
     {
-    case SORT_MODE::SORT_MODE_QSORT: result = quicksort_((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_QSORT:
+        result = quicksort_((T *)pDataIn1, arraySize1);
+        break;
 
-    case SORT_MODE::SORT_MODE_MERGE: result = mergesort_float((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_MERGE:
+        result = mergesort_float((T *)pDataIn1, arraySize1);
+        break;
 
-    case SORT_MODE::SORT_MODE_HEAP: result = heapsort_<T>((T *)pDataIn1, arraySize1); break;
+    case SORT_MODE::SORT_MODE_HEAP:
+        result = heapsort_<T>((T *)pDataIn1, arraySize1);
+        break;
     }
 
     if (result != 0)
@@ -2719,7 +2753,9 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
 
     switch (mode)
     {
-    case SORT_MODE::SORT_MODE_QSORT: result = aquicksort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
+    case SORT_MODE::SORT_MODE_QSORT:
+        result = aquicksort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        break;
 
     // case SORT_MODE::SORT_MODE_MERGE:
     //   result = amergesort_<T, UINDEX>((T*)pDataIn1, (UINDEX*)toSort, arraySize1);
@@ -2729,7 +2765,9 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
                                            PAR_SORT_TYPE::Normal);
         break;
 
-    case SORT_MODE::SORT_MODE_HEAP: result = aheapsort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
+    case SORT_MODE::SORT_MODE_HEAP:
+        result = aheapsort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        break;
     }
 
     if (result != 0)
@@ -2749,14 +2787,18 @@ static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pData
 
     switch (mode)
     {
-    case SORT_MODE::SORT_MODE_QSORT: result = aquicksort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
+    case SORT_MODE::SORT_MODE_QSORT:
+        result = aquicksort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        break;
 
     case SORT_MODE::SORT_MODE_MERGE:
         result = par_amergesort<T, UINDEX>(pCutOffs, cutOffLength, (T *)pDataIn1, (UINDEX *)toSort, arraySize1, 0,
                                            PAR_SORT_TYPE::Float);
         break;
 
-    case SORT_MODE::SORT_MODE_HEAP: result = aheapsort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1); break;
+    case SORT_MODE::SORT_MODE_HEAP:
+        result = aheapsort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        break;
     }
 
     if (result != 0)
@@ -2827,9 +2869,15 @@ static void SortArray(void * pDataIn1, int64_t arraySize1, int32_t arrayType1, S
 {
     switch (arrayType1)
     {
-    case NPY_STRING: SortInPlace<char>(pDataIn1, arraySize1, mode); break;
-    case NPY_BOOL: SortInPlace<bool>(pDataIn1, arraySize1, mode); break;
-    case NPY_INT8: SortInPlace<int8_t>(pDataIn1, arraySize1, mode); break;
+    case NPY_STRING:
+        SortInPlace<char>(pDataIn1, arraySize1, mode);
+        break;
+    case NPY_BOOL:
+        SortInPlace<bool>(pDataIn1, arraySize1, mode);
+        break;
+    case NPY_INT8:
+        SortInPlace<int8_t>(pDataIn1, arraySize1, mode);
+        break;
     case NPY_INT16:
         SortInPlace<int16_t>(pDataIn1, arraySize1, mode);
         break;
@@ -2839,7 +2887,9 @@ static void SortArray(void * pDataIn1, int64_t arraySize1, int32_t arrayType1, S
     CASE_NPY_INT64:
         SortInPlace<int64_t>(pDataIn1, arraySize1, mode);
         break;
-    case NPY_UINT8: SortInPlace<uint8_t>(pDataIn1, arraySize1, mode); break;
+    case NPY_UINT8:
+        SortInPlace<uint8_t>(pDataIn1, arraySize1, mode);
+        break;
     case NPY_UINT16:
         SortInPlace<uint16_t>(pDataIn1, arraySize1, mode);
         break;
@@ -2849,10 +2899,18 @@ static void SortArray(void * pDataIn1, int64_t arraySize1, int32_t arrayType1, S
     CASE_NPY_UINT64:
         SortInPlace<uint64_t>(pDataIn1, arraySize1, mode);
         break;
-    case NPY_FLOAT: SortInPlaceFloat<float>(pDataIn1, arraySize1, mode); break;
-    case NPY_DOUBLE: SortInPlaceFloat<double>(pDataIn1, arraySize1, mode); break;
-    case NPY_LONGDOUBLE: SortInPlaceFloat<long double>(pDataIn1, arraySize1, mode); break;
-    default: printf("SortArray does not understand type %d\n", arrayType1); break;
+    case NPY_FLOAT:
+        SortInPlaceFloat<float>(pDataIn1, arraySize1, mode);
+        break;
+    case NPY_DOUBLE:
+        SortInPlaceFloat<double>(pDataIn1, arraySize1, mode);
+        break;
+    case NPY_LONGDOUBLE:
+        SortInPlaceFloat<long double>(pDataIn1, arraySize1, mode);
+        break;
+    default:
+        printf("SortArray does not understand type %d\n", arrayType1);
+        break;
     }
 }
 
@@ -3032,7 +3090,9 @@ static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
         SortIndexString<UINDEX>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
         break;
     case NPY_BOOL:
-    case NPY_INT8: SortIndex<int8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode); break;
+    case NPY_INT8:
+        SortIndex<int8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        break;
     case NPY_INT16:
         SortIndex<int16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
@@ -3042,7 +3102,9 @@ static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
     CASE_NPY_INT64:
         SortIndex<int64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
-    case NPY_UINT8: SortIndex<uint8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode); break;
+    case NPY_UINT8:
+        SortIndex<uint8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        break;
     case NPY_UINT16:
         SortIndex<uint16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
@@ -3052,10 +3114,17 @@ static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
     CASE_NPY_UINT64:
         SortIndex<uint64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
-    case NPY_FLOAT: SortIndexFloat<float, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode); break;
-    case NPY_DOUBLE: SortIndexFloat<double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode); break;
-    case NPY_LONGDOUBLE: SortIndexFloat<long double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode); break;
-    default: printf("SortIndex does not understand type %d\n", arrayType1);
+    case NPY_FLOAT:
+        SortIndexFloat<float, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        break;
+    case NPY_DOUBLE:
+        SortIndexFloat<double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        break;
+    case NPY_LONGDOUBLE:
+        SortIndexFloat<long double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        break;
+    default:
+        printf("SortIndex does not understand type %d\n", arrayType1);
     }
 }
 
@@ -3178,7 +3247,9 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
     switch (arrayType1)
     {
     case NPY_BOOL:
-    case NPY_INT8: pSortedFunc = IsSorted<int8_t>; break;
+    case NPY_INT8:
+        pSortedFunc = IsSorted<int8_t>;
+        break;
     case NPY_INT16:
         pSortedFunc = IsSorted<int16_t>;
         break;
@@ -3188,7 +3259,9 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
     CASE_NPY_INT64:
         pSortedFunc = IsSorted<int64_t>;
         break;
-    case NPY_UINT8: pSortedFunc = IsSorted<uint8_t>; break;
+    case NPY_UINT8:
+        pSortedFunc = IsSorted<uint8_t>;
+        break;
     case NPY_UINT16:
         pSortedFunc = IsSorted<uint16_t>;
         break;
@@ -3198,14 +3271,28 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
     CASE_NPY_UINT64:
         pSortedFunc = IsSorted<uint64_t>;
         break;
-    case NPY_FLOAT: pSortedFunc = IsSortedFloat<float>; break;
-    case NPY_DOUBLE: pSortedFunc = IsSortedFloat<double>; break;
-    case NPY_LONGDOUBLE: pSortedFunc = IsSortedFloat<long double>; break;
-    case NPY_VOID: pSortedFunc = IsSortedVoid; break;
-    case NPY_STRING: pSortedFunc = IsSortedString; break;
-    case NPY_UNICODE: pSortedFunc = IsSortedUnicode; break;
+    case NPY_FLOAT:
+        pSortedFunc = IsSortedFloat<float>;
+        break;
+    case NPY_DOUBLE:
+        pSortedFunc = IsSortedFloat<double>;
+        break;
+    case NPY_LONGDOUBLE:
+        pSortedFunc = IsSortedFloat<long double>;
+        break;
+    case NPY_VOID:
+        pSortedFunc = IsSortedVoid;
+        break;
+    case NPY_STRING:
+        pSortedFunc = IsSortedString;
+        break;
+    case NPY_UNICODE:
+        pSortedFunc = IsSortedUnicode;
+        break;
 
-    default: PyErr_Format(PyExc_ValueError, "IsSorted does not understand type %d\n", arrayType1); return NULL;
+    default:
+        PyErr_Format(PyExc_ValueError, "IsSorted does not understand type %d\n", arrayType1);
+        return NULL;
     }
 
     // MT callback
@@ -3523,7 +3610,9 @@ static bool * GetFilter(PyObject * kwargs, int64_t & filterLength)
         {
             switch (PyArray_TYPE(pFilter))
             {
-            case NPY_BOOL: filterLength = ArrayLength(pFilter); return (bool *)PyArray_BYTES(pFilter);
+            case NPY_BOOL:
+                filterLength = ArrayLength(pFilter);
+                return (bool *)PyArray_BYTES(pFilter);
             }
         }
     }
@@ -4232,6 +4321,7 @@ PyObject * GroupFromLexSort(PyObject * self, PyObject * args, PyObject * kwargs)
         return GroupFromLexSortInternal<int64_t>(kwargs, (int64_t *)pIndex, arrLength, arrLengthValues, pValues, itemSize);
         break;
 
-    default: return PyErr_Format(PyExc_ValueError, "GroupFromLexSort does not support index type of %d", dtype);
+    default:
+        return PyErr_Format(PyExc_ValueError, "GroupFromLexSort does not support index type of %d", dtype);
     }
 }

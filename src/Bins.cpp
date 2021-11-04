@@ -62,12 +62,18 @@ REINDEXCALLBACK ReIndexDataStep1(int64_t itemSize)
 {
     switch (itemSize)
     {
-    case 1: return ReIndexData<T, int8_t>;
-    case 2: return ReIndexData<T, int16_t>;
-    case 4: return ReIndexData<T, float>;
-    case 8: return ReIndexData<T, double>;
-    case 16: return ReIndexData<T, __m128>;
-    default: return ReIndexData<T>;
+    case 1:
+        return ReIndexData<T, int8_t>;
+    case 2:
+        return ReIndexData<T, int16_t>;
+    case 4:
+        return ReIndexData<T, float>;
+    case 8:
+        return ReIndexData<T, double>;
+    case 16:
+        return ReIndexData<T, __m128>;
+    default:
+        return ReIndexData<T>;
     }
     PyErr_Format(PyExc_ValueError, "ReIndexing failed on unknown index size");
     return NULL;
@@ -93,7 +99,8 @@ REINDEXCALLBACK ReIndexer(int64_t itemSize, int dtypeIndex)
     case NPY_DOUBLE:
         // allow matlab style float indexing?
         // return ReIndexDataStep1<double>(pDataOut, pDataIn, pIndex, size, itemSize);
-    default: break;
+    default:
+        break;
     }
     PyErr_Format(PyExc_ValueError, "ReIndexing failed on unknown indexer %d", dtypeIndex);
     return NULL;
@@ -233,7 +240,9 @@ REMAP_INDEX ReMapIndexStep1(int numpyOutputType)
 {
     switch (numpyOutputType)
     {
-    case NPY_INT8: return ReMapIndex<T, int8_t>; break;
+    case NPY_INT8:
+        return ReMapIndex<T, int8_t>;
+        break;
     case NPY_INT16:
         return ReMapIndex<T, int16_t>;
         break;
@@ -244,7 +253,9 @@ REMAP_INDEX ReMapIndexStep1(int numpyOutputType)
 
         return ReMapIndex<T, int64_t>;
         break;
-    default: printf("ReMapIndexStep1 does not understand type %d\n", numpyOutputType); break;
+    default:
+        printf("ReMapIndexStep1 does not understand type %d\n", numpyOutputType);
+        break;
     }
     return NULL;
 }
@@ -283,7 +294,9 @@ PyObject * ReMapIndex(PyObject * self, PyObject * args)
 
         switch (numpyInType)
         {
-        case NPY_INT8: func = ReMapIndexStep1<int8_t>(numpyOutType); break;
+        case NPY_INT8:
+            func = ReMapIndexStep1<int8_t>(numpyOutType);
+            break;
         case NPY_INT16:
             func = ReMapIndexStep1<int16_t>(numpyOutType);
             break;
@@ -294,7 +307,9 @@ PyObject * ReMapIndex(PyObject * self, PyObject * args)
 
             func = ReMapIndexStep1<int64_t>(numpyOutType);
             break;
-        default: printf("ReMapIndexStep1 does not understand type %d\n", numpyOutType); break;
+        default:
+            printf("ReMapIndexStep1 does not understand type %d\n", numpyOutType);
+            break;
         }
 
         if (func)
@@ -404,7 +419,9 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
     switch (numpyInType)
     {
     case NPY_BOOL:
-    case NPY_INT8: result = NanInfCount<int8_t, U>; break;
+    case NPY_INT8:
+        result = NanInfCount<int8_t, U>;
+        break;
     case NPY_INT16:
         result = NanInfCount<int16_t, U>;
         break;
@@ -415,7 +432,9 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
 
         result = NanInfCount<int64_t, U>;
         break;
-    case NPY_UINT8: result = NanInfCount<uint8_t, U>; break;
+    case NPY_UINT8:
+        result = NanInfCount<uint8_t, U>;
+        break;
     case NPY_UINT16:
         result = NanInfCount<uint16_t, U>;
         break;
@@ -426,11 +445,18 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
 
         result = NanInfCount<uint64_t, U>;
         break;
-    case NPY_FLOAT: result = NanInfCount<float, U>; break;
-    case NPY_DOUBLE: result = NanInfCount<double, U>; break;
-    case NPY_LONGDOUBLE: result = NanInfCount<long double, U>; break;
+    case NPY_FLOAT:
+        result = NanInfCount<float, U>;
+        break;
+    case NPY_DOUBLE:
+        result = NanInfCount<double, U>;
+        break;
+    case NPY_LONGDOUBLE:
+        result = NanInfCount<long double, U>;
+        break;
 
-    default: printf("NanInfCountFromSort does not understand type %d\n", numpyInType);
+    default:
+        printf("NanInfCountFromSort does not understand type %d\n", numpyInType);
     }
     return result;
 }
@@ -613,7 +639,9 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
     switch (numpyInType)
     {
     case NPY_BOOL:
-    case NPY_INT8: result = MakeBinsSorted<int8_t, U, V>; break;
+    case NPY_INT8:
+        result = MakeBinsSorted<int8_t, U, V>;
+        break;
     case NPY_INT16:
         result = MakeBinsSorted<int16_t, U, V>;
         break;
@@ -624,7 +652,9 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
 
         result = MakeBinsSorted<int64_t, U, V>;
         break;
-    case NPY_UINT8: result = MakeBinsSorted<uint8_t, U, V>; break;
+    case NPY_UINT8:
+        result = MakeBinsSorted<uint8_t, U, V>;
+        break;
     case NPY_UINT16:
         result = MakeBinsSorted<uint16_t, U, V>;
         break;
@@ -635,11 +665,18 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
 
         result = MakeBinsSorted<uint64_t, U, V>;
         break;
-    case NPY_FLOAT: result = MakeBinsSorted<float, U, V>; break;
-    case NPY_DOUBLE: result = MakeBinsSorted<double, U, V>; break;
-    case NPY_LONGDOUBLE: result = MakeBinsSorted<long double, U, V>; break;
+    case NPY_FLOAT:
+        result = MakeBinsSorted<float, U, V>;
+        break;
+    case NPY_DOUBLE:
+        result = MakeBinsSorted<double, U, V>;
+        break;
+    case NPY_LONGDOUBLE:
+        result = MakeBinsSorted<long double, U, V>;
+        break;
 
-    default: printf("MakeBinsSorted does not understand type %d\n", numpyInType);
+    default:
+        printf("MakeBinsSorted does not understand type %d\n", numpyInType);
     }
     return result;
 }
@@ -704,10 +741,18 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
         CASE_NPY_INT32:
             switch (binmode)
             {
-            case 0: func = GetMakeBinsSorted<int32_t, int8_t>(numpyInType); break;
-            case 1: func = GetMakeBinsSorted<int32_t, int16_t>(numpyInType); break;
-            case 2: func = GetMakeBinsSorted<int32_t, int32_t>(numpyInType); break;
-            case 3: func = GetMakeBinsSorted<int32_t, int64_t>(numpyInType); break;
+            case 0:
+                func = GetMakeBinsSorted<int32_t, int8_t>(numpyInType);
+                break;
+            case 1:
+                func = GetMakeBinsSorted<int32_t, int16_t>(numpyInType);
+                break;
+            case 2:
+                func = GetMakeBinsSorted<int32_t, int32_t>(numpyInType);
+                break;
+            case 3:
+                func = GetMakeBinsSorted<int32_t, int64_t>(numpyInType);
+                break;
             }
             break;
 
@@ -715,10 +760,18 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
 
             switch (binmode)
             {
-            case 0: func = GetMakeBinsSorted<int64_t, int8_t>(numpyInType); break;
-            case 1: func = GetMakeBinsSorted<int64_t, int16_t>(numpyInType); break;
-            case 2: func = GetMakeBinsSorted<int64_t, int32_t>(numpyInType); break;
-            case 3: func = GetMakeBinsSorted<int64_t, int64_t>(numpyInType); break;
+            case 0:
+                func = GetMakeBinsSorted<int64_t, int8_t>(numpyInType);
+                break;
+            case 1:
+                func = GetMakeBinsSorted<int64_t, int16_t>(numpyInType);
+                break;
+            case 2:
+                func = GetMakeBinsSorted<int64_t, int32_t>(numpyInType);
+                break;
+            case 3:
+                func = GetMakeBinsSorted<int64_t, int64_t>(numpyInType);
+                break;
             }
             break;
         }
@@ -728,10 +781,18 @@ PyObject * BinsToCutsSorted(PyObject * self, PyObject * args)
             PyArrayObject * result = NULL;
             switch (binmode)
             {
-            case 0: result = AllocateLikeNumpyArray(inArr1, NPY_INT8); break;
-            case 1: result = AllocateLikeNumpyArray(inArr1, NPY_INT16); break;
-            case 2: result = AllocateLikeNumpyArray(inArr1, NPY_INT32); break;
-            case 3: result = AllocateLikeNumpyArray(inArr1, NPY_INT64); break;
+            case 0:
+                result = AllocateLikeNumpyArray(inArr1, NPY_INT8);
+                break;
+            case 1:
+                result = AllocateLikeNumpyArray(inArr1, NPY_INT16);
+                break;
+            case 2:
+                result = AllocateLikeNumpyArray(inArr1, NPY_INT32);
+                break;
+            case 3:
+                result = AllocateLikeNumpyArray(inArr1, NPY_INT64);
+                break;
             }
 
             if (result)
@@ -1503,7 +1564,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
         switch (numpyInType)
         {
         case NPY_BOOL:
-        case NPY_INT8: result = MakeBinsBSearch<int8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_INT8:
+            result = MakeBinsBSearch<int8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_INT16:
             result = MakeBinsBSearch<int16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1514,7 +1577,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = MakeBinsBSearch<int64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_UINT8: result = MakeBinsBSearch<uint8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_UINT8:
+            result = MakeBinsBSearch<uint8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_UINT16:
             result = MakeBinsBSearch<uint16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1525,11 +1590,18 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = MakeBinsBSearch<uint64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_FLOAT: result = MakeBinsBSearchFloat<float, OUT_TYPE, BINTYPE>; break;
-        case NPY_DOUBLE: result = MakeBinsBSearchFloat<double, OUT_TYPE, BINTYPE>; break;
-        case NPY_LONGDOUBLE: result = MakeBinsBSearchFloat<long double, OUT_TYPE, BINTYPE>; break;
+        case NPY_FLOAT:
+            result = MakeBinsBSearchFloat<float, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_DOUBLE:
+            result = MakeBinsBSearchFloat<double, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_LONGDOUBLE:
+            result = MakeBinsBSearchFloat<long double, OUT_TYPE, BINTYPE>;
+            break;
 
-        default: printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
+        default:
+            printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
         }
         return result;
     }
@@ -1538,7 +1610,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
         switch (numpyInType)
         {
         case NPY_BOOL:
-        case NPY_INT8: result = SearchSortedLeft<int8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_INT8:
+            result = SearchSortedLeft<int8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_INT16:
             result = SearchSortedLeft<int16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1549,7 +1623,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = SearchSortedLeft<int64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_UINT8: result = SearchSortedLeft<uint8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_UINT8:
+            result = SearchSortedLeft<uint8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_UINT16:
             result = SearchSortedLeft<uint16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1560,11 +1636,18 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = SearchSortedLeft<uint64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_FLOAT: result = SearchSortedLeft<float, OUT_TYPE, BINTYPE>; break;
-        case NPY_DOUBLE: result = SearchSortedLeft<double, OUT_TYPE, BINTYPE>; break;
-        case NPY_LONGDOUBLE: result = SearchSortedLeft<long double, OUT_TYPE, BINTYPE>; break;
+        case NPY_FLOAT:
+            result = SearchSortedLeft<float, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_DOUBLE:
+            result = SearchSortedLeft<double, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_LONGDOUBLE:
+            result = SearchSortedLeft<long double, OUT_TYPE, BINTYPE>;
+            break;
 
-        default: printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
+        default:
+            printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
         }
         return result;
     }
@@ -1573,7 +1656,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
         switch (numpyInType)
         {
         case NPY_BOOL:
-        case NPY_INT8: result = SearchSortedRight<int8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_INT8:
+            result = SearchSortedRight<int8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_INT16:
             result = SearchSortedRight<int16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1584,7 +1669,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = SearchSortedRight<int64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_UINT8: result = SearchSortedRight<uint8_t, OUT_TYPE, BINTYPE>; break;
+        case NPY_UINT8:
+            result = SearchSortedRight<uint8_t, OUT_TYPE, BINTYPE>;
+            break;
         case NPY_UINT16:
             result = SearchSortedRight<uint16_t, OUT_TYPE, BINTYPE>;
             break;
@@ -1595,11 +1682,18 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
 
             result = SearchSortedRight<uint64_t, OUT_TYPE, BINTYPE>;
             break;
-        case NPY_FLOAT: result = SearchSortedRight<float, OUT_TYPE, BINTYPE>; break;
-        case NPY_DOUBLE: result = SearchSortedRight<double, OUT_TYPE, BINTYPE>; break;
-        case NPY_LONGDOUBLE: result = SearchSortedRight<long double, OUT_TYPE, BINTYPE>; break;
+        case NPY_FLOAT:
+            result = SearchSortedRight<float, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_DOUBLE:
+            result = SearchSortedRight<double, OUT_TYPE, BINTYPE>;
+            break;
+        case NPY_LONGDOUBLE:
+            result = SearchSortedRight<long double, OUT_TYPE, BINTYPE>;
+            break;
 
-        default: printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
+        default:
+            printf("MakeBinsBSearch does not understand type %d\n", numpyInType);
         }
         return result;
     }
@@ -1613,7 +1707,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearch(int numpyInType, int binType, int searchMod
 
     switch (binType)
     {
-    case NPY_INT8: result = GetMakeBinsBSearchPart2<OUT_TYPE, int8_t>(numpyInType, searchMode); break;
+    case NPY_INT8:
+        result = GetMakeBinsBSearchPart2<OUT_TYPE, int8_t>(numpyInType, searchMode);
+        break;
     case NPY_INT16:
         result = GetMakeBinsBSearchPart2<OUT_TYPE, int16_t>(numpyInType, searchMode);
         break;
@@ -1629,8 +1725,12 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearch(int numpyInType, int binType, int searchMod
 
         result = GetMakeBinsBSearchPart2<OUT_TYPE, uint64_t>(numpyInType, searchMode);
         break;
-    case NPY_FLOAT: result = GetMakeBinsBSearchPart2<OUT_TYPE, float>(numpyInType, searchMode); break;
-    case NPY_DOUBLE: result = GetMakeBinsBSearchPart2<OUT_TYPE, double>(numpyInType, searchMode); break;
+    case NPY_FLOAT:
+        result = GetMakeBinsBSearchPart2<OUT_TYPE, float>(numpyInType, searchMode);
+        break;
+    case NPY_DOUBLE:
+        result = GetMakeBinsBSearchPart2<OUT_TYPE, double>(numpyInType, searchMode);
+        break;
 
     default:
         // printf("MakeBinsBSearch does not support type %d\n", numpyInType);
@@ -1695,10 +1795,18 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
 
     switch (binmode)
     {
-    case 0: func = GetMakeBinsBSearch<int8_t>(numpyInType, binType, searchMode); break;
-    case 1: func = GetMakeBinsBSearch<int16_t>(numpyInType, binType, searchMode); break;
-    case 2: func = GetMakeBinsBSearch<int32_t>(numpyInType, binType, searchMode); break;
-    case 3: func = GetMakeBinsBSearch<int64_t>(numpyInType, binType, searchMode); break;
+    case 0:
+        func = GetMakeBinsBSearch<int8_t>(numpyInType, binType, searchMode);
+        break;
+    case 1:
+        func = GetMakeBinsBSearch<int16_t>(numpyInType, binType, searchMode);
+        break;
+    case 2:
+        func = GetMakeBinsBSearch<int32_t>(numpyInType, binType, searchMode);
+        break;
+    case 3:
+        func = GetMakeBinsBSearch<int64_t>(numpyInType, binType, searchMode);
+        break;
     }
 
     if (func != NULL || isString)
@@ -1706,10 +1814,18 @@ PyObject * BinsToCutsBSearch(PyObject * self, PyObject * args)
         PyArrayObject * result = NULL;
         switch (binmode)
         {
-        case 0: result = AllocateLikeNumpyArray(inArr1, NPY_INT8); break;
-        case 1: result = AllocateLikeNumpyArray(inArr1, NPY_INT16); break;
-        case 2: result = AllocateLikeNumpyArray(inArr1, NPY_INT32); break;
-        case 3: result = AllocateLikeNumpyArray(inArr1, NPY_INT64); break;
+        case 0:
+            result = AllocateLikeNumpyArray(inArr1, NPY_INT8);
+            break;
+        case 1:
+            result = AllocateLikeNumpyArray(inArr1, NPY_INT16);
+            break;
+        case 2:
+            result = AllocateLikeNumpyArray(inArr1, NPY_INT32);
+            break;
+        case 3:
+            result = AllocateLikeNumpyArray(inArr1, NPY_INT64);
+            break;
         }
 
         if (result)
