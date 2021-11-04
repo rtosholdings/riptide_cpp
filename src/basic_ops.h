@@ -14,8 +14,8 @@
 namespace internal
 {
     // Rewrite this if pattern matching ever becomes a thing.
-    auto LOADU = [](auto const * x) -> std::remove_cvref_t<std::remove_pointer<decltype(x)>> {
-        using underlying_t = std::remove_cvref_t<std::remove_pointer<decltype(x)>>;
+    auto LOADU = [](auto const * x) -> std::remove_cv_t<std::remove_reference_t<std::remove_pointer<decltype(x)>>> {
+        using underlying_t = std::remove_cv_t<std::remove_reference_t<std::remove_pointer<decltype(x)>>>;
 
         if constexpr (std::is_same_v<__m256d, underlying_t>)
         {
