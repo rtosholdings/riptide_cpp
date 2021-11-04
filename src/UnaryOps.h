@@ -1,27 +1,28 @@
 #ifndef RIPTIDECPP_UNARYOPS_H
 #define RIPTIDECPP_UNARYOPS_H
 
-PyObject * BasicMathOneInput(PyObject * self, PyObject * args);
+PyObject *
+BasicMathOneInput(PyObject *self, PyObject *args);
 
-PyObject * BasicMathOneInputFromNumber(PyArrayObject * inObject1, int64_t funcNumber, bool inplace);
+PyObject *
+BasicMathOneInputFromNumber(PyArrayObject* inObject1, int64_t funcNumber, bool inplace);
 
-PyObject * BasicMathUnaryOp(PyObject * self, PyObject * args, PyObject * kwargs);
+PyObject *
+BasicMathUnaryOp(PyObject *self, PyObject *args, PyObject *kwargs);
 
 //--------------------------------------------------------------------
 // multithreaded struct used for calling unary op codes
-struct UNARY_CALLBACK
-{
-    union
-    {
-        UNARY_FUNC pUnaryCallback;
-        UNARY_FUNC_STRIDED pUnaryCallbackStrided;
-    };
+struct UNARY_CALLBACK {
+   union {
+      UNARY_FUNC pUnaryCallback;
+      UNARY_FUNC_STRIDED pUnaryCallbackStrided;
+   };
 
-    char * pDataIn;
-    char * pDataOut;
+   char* pDataIn;
+   char* pDataOut;
 
-    int64_t itemSizeIn;
-    int64_t itemSizeOut;
+   int64_t itemSizeIn;
+   int64_t itemSizeOut;
 };
 
 #endif

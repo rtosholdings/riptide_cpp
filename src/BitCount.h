@@ -1,2 +1,2 @@
 #pragma once
-PyObject * BitCount(PyObject * self, PyObject * args);
+PyObject * BitCount(PyObject *self, PyObject *args);
