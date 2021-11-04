@@ -22,10 +22,25 @@
 
 using HANDLE = void*;
 
+#ifdef RtlEqualMemory
+#undef RtlEqualMemory
+#endif
 #define RtlEqualMemory(Destination,Source,Length) (!memcmp((Destination),(Source),(Length)))
+#ifdef RtlMoveMemory
+#undef RtlMoveMemory
+#endif
 #define RtlMoveMemory(Destination,Source,Length) memmove((Destination),(Source),(Length))
+#ifdef RtlCopyMemory
+#undef RtlCopyMemory
+#endif
 #define RtlCopyMemory(Destination,Source,Length) memcpy((Destination),(Source),(Length))
+#ifdef RtlFillMemory
+#undef RtlFillMemory
+#endif
 #define RtlFillMemory(Destination,Length,Fill) memset((Destination),(Fill),(Length))
+#ifdef RtlZeroMemory
+#undef RtlZeroMemory
+#endif
 #define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
 
 #if defined(_WIN32) && !defined(__GNUC__)
