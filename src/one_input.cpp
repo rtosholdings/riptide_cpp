@@ -41,9 +41,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                 char const * in_p = PyArray_BYTES(const_cast<PyArrayObject *>(in_array));
                 char * out_p{ PyArray_BYTES(const_cast<PyArrayObject *>(result_array)) };
 
-                riptable_cpp::calculate_for_active_data_type(
-                    in_p, out_p, len, stride, *opt_op_trait, *opt_type_trait,
-                    std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                riptable_cpp::walk_data_array( 1, len, stride, stride, in_p, out_p, *opt_op_trait, *opt_type_trait );
             }
             else
             {
@@ -93,9 +91,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                 switch (direction)
                 {
                 case 0:
-                    riptable_cpp::calculate_for_active_data_type(
-                        in_p, out_p, len, stride, *opt_op_trait, *opt_type_trait,
-                        std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                    riptable_cpp::walk_data_array( ndim, len, stride, stride_out, p_in, p_out, *opt_op_trait, *opt_type_trait );
                     break;
                 case 1:
                     riptable_cpp::walk_row_major(in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait);
