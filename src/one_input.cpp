@@ -91,7 +91,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                 switch (direction)
                 {
                 case 0:
-                    riptable_cpp::walk_data_array( ndim, len, stride, stride_out, p_in, p_out, *opt_op_trait, *opt_type_trait );
+                    riptable_cpp::walk_data_array( ndim, len, stride, stride_out, in_p, out_p, *opt_op_trait, *opt_type_trait );
                     break;
                 case 1:
                     riptable_cpp::walk_row_major(in_p, out_p, ndim, in_array, stride_out, *opt_op_trait, *opt_type_trait);
