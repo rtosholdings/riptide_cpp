@@ -2,46 +2,53 @@
 
 //---------------------------------------------------------------------
 // NOTE: See SDSArrayInfo and keep same
-struct ArrayInfo
-{
-    // Numpy object
-    PyArrayObject * pObject;
+struct ArrayInfo {
 
-    // First bytes
-    char * pData;
+   // Numpy object
+   PyArrayObject*   pObject;
 
-    // Width in bytes of one row
-    int64_t ItemSize;
+   // First bytes
+   char*       pData;
 
-    // total number of items
-    int64_t ArrayLength;
+   // Width in bytes of one row
+   int64_t       ItemSize;
 
-    int64_t NumBytes;
+   // total number of items
+   int64_t       ArrayLength;
 
-    int32_t NumpyDType;
-    int32_t NDim;
+   int64_t       NumBytes;
 
-    // When calling ensure contiguous, we might make a copy
-    // if so, pObject is the copy and must be deleted.  pOriginal was passed in
-    PyArrayObject * pOriginalObject;
+   int32_t       NumpyDType;
+   int32_t       NDim;
+
+   // When calling ensure contiguous, we might make a copy
+   // if so, pObject is the copy and must be deleted.  pOriginal was passed in
+   PyArrayObject*   pOriginalObject;
+
 };
 
-extern PyObject * MultiKeyHash(PyObject * self, PyObject * args);
-extern PyObject * GroupByPack32(PyObject * self, PyObject * args);
-extern PyObject * MultiKeyGroupBy32(PyObject * self, PyObject * args, PyObject * kwargs);
-extern PyObject * MultiKeyGroupBy32Super(PyObject * self, PyObject * args);
-extern PyObject * MultiKeyUnique32(PyObject * self, PyObject * args);
-extern PyObject * MultiKeyIsMember32(PyObject * self, PyObject * args);
-extern PyObject * MultiKeyAlign32(PyObject * self, PyObject * args);
-extern PyObject * BinCount(PyObject * self, PyObject * args, PyObject * kwargs);
-extern PyObject * MakeiNext(PyObject * self, PyObject * args);
-extern PyObject * GroupFromBinCount(PyObject * self, PyObject * args);
-extern PyObject * MultiKeyRolling(PyObject * self, PyObject * args);
+
+extern PyObject *MultiKeyHash(PyObject *self, PyObject *args);
+extern PyObject *GroupByPack32(PyObject* self, PyObject* args);
+extern PyObject *MultiKeyGroupBy32(PyObject* self, PyObject* args, PyObject *kwargs);
+extern PyObject *MultiKeyGroupBy32Super(PyObject* self, PyObject* args);
+extern PyObject *MultiKeyUnique32(PyObject* self, PyObject* args);
+extern PyObject *MultiKeyIsMember32(PyObject *self, PyObject *args);
+extern PyObject *MultiKeyAlign32(PyObject *self, PyObject *args);
+extern PyObject *BinCount(PyObject *self, PyObject *args, PyObject* kwargs);
+extern PyObject *MakeiNext(PyObject *self, PyObject *args);
+extern PyObject *GroupFromBinCount(PyObject *self, PyObject *args);
+extern PyObject *MultiKeyRolling(PyObject *self, PyObject *args);
 
 // really found in hashlinear.cpp
-extern PyObject * MergeBinnedAndSorted(PyObject * self, PyObject * args);
+extern PyObject *MergeBinnedAndSorted(PyObject *self, PyObject *args);
 
-extern ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, int64_t * pTotalItemSize, bool checkrows = true,
-                                  bool convert = true);
+extern ArrayInfo* BuildArrayInfo(
+   PyObject* listObject,
+   int64_t* pTupleSize,
+   int64_t* pTotalItemSize,
+   bool checkrows = true,
+   bool convert = true);
 
-extern void FreeArrayInfo(ArrayInfo * pArrayInfo);
+extern void FreeArrayInfo(ArrayInfo* pArrayInfo);
+

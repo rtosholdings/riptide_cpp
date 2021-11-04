@@ -2,65 +2,68 @@
 
 #include "CommonInc.h"
 
-// PyObject *
-// GroupByOp32(PyObject *self, PyObject *args);
+//PyObject *
+//GroupByOp32(PyObject *self, PyObject *args);
 
 // Basic call for sum, average
-PyObject * GroupByAll32(PyObject * self, PyObject * args);
+PyObject *
+GroupByAll32(PyObject *self, PyObject *args);
 
-PyObject * GroupByAll64(PyObject * self, PyObject * args);
+PyObject *
+GroupByAll64(PyObject *self, PyObject *args);
 
 // More advanced call to calculate median, nth, last
-PyObject * GroupByAllPack32(PyObject * self, PyObject * args);
+PyObject *
+GroupByAllPack32(PyObject *self, PyObject *args);
 
-struct stGroupByReturn
-{
-    union
-    {
-        PyArrayObject * outArray;
-        int64_t didWork;
-    };
+struct stGroupByReturn {
 
-    // for multithreaded sum this is set
-    void * pOutArray;
+   union {
+      PyArrayObject*    outArray;
+      int64_t             didWork;
+   };
 
-    int32_t * pCountOut;
+   // for multithreaded sum this is set
+   void*             pOutArray;
 
-    int32_t numpyOutType;
-    int32_t funcNum;
+   int32_t*            pCountOut;
 
-    int64_t binLow;
-    int64_t binHigh;
+   int32_t             numpyOutType;
+   int32_t             funcNum;
 
-    union
-    {
-        GROUPBY_TWO_FUNC pFunction;
-        GROUPBY_X_FUNC32 pFunctionX32;
-        GROUPBY_X_FUNC64 pFunctionX64;
-    };
+   int64_t             binLow;
+   int64_t             binHigh;
 
-    PyObject * returnObject;
+   union {
+      GROUPBY_TWO_FUNC  pFunction;
+      GROUPBY_X_FUNC32  pFunctionX32;
+      GROUPBY_X_FUNC64  pFunctionX64;
+   };
+
+   PyObject*         returnObject;
+
 };
 
-struct stGroupBy32
-{
-    ArrayInfo * aInfo;
-    int64_t tupleSize;
-    /*  int32_t    numpyOutType;
-      int32_t    reserved;
-    */
-    void * pDataIn2;
-    int64_t itemSize2;
+struct stGroupBy32 {
 
-    int64_t uniqueRows;
-    int64_t totalInputRows;
+   ArrayInfo* aInfo;
+   int64_t    tupleSize;
+ /*  int32_t    numpyOutType;
+   int32_t    reserved;
+ */  
+   void*    pDataIn2;
+   int64_t    itemSize2;
 
-    TYPE_OF_FUNCTION_CALL typeOfFunctionCall;
-    int64_t funcParam;
-    void * pKey;
-    void * pGroup;
-    void * pFirst;
-    void * pCount;
+   int64_t    uniqueRows;
+   int64_t    totalInputRows;
 
-    stGroupByReturn returnObjects[1];
+   TYPE_OF_FUNCTION_CALL   typeOfFunctionCall;
+   int64_t    funcParam;
+   void*    pKey;
+   void*    pGroup;
+   void*    pFirst;
+   void*    pCount;
+
+   stGroupByReturn returnObjects[1];
 };
+

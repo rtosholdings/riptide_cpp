@@ -37,110 +37,104 @@ TODO
 */
 
 #if defined(__GNUC__)
-    #define MEM_STATIC static __inline __attribute__((unused))
-#elif defined(__cplusplus) || (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
-    #define MEM_STATIC static inline
+#  define MEM_STATIC static __inline __attribute__((unused))
+#elif defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */)
+#  define MEM_STATIC static inline
 #elif defined(_MSC_VER)
-    #define MEM_STATIC static __inline
+#  define MEM_STATIC static __inline
 #else
-    #define MEM_STATIC static /* this version may generate warnings for unused static functions; disable the relevant warning */
+#  define MEM_STATIC static  /* this version may generate warnings for unused static functions; disable the relevant warning */
 #endif
 
-typedef struct
-{
-    uint32_t f1c;
-    uint32_t f1d;
-    uint32_t f7b;
-    uint32_t f7c;
+typedef struct {
+   uint32_t f1c;
+   uint32_t f1d;
+   uint32_t f7b;
+   uint32_t f7c;
 } ZSTD_cpuid_t;
 
-MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void)
-{
-    uint32_t f1c = 0;
-    uint32_t f1d = 0;
-    uint32_t f7b = 0;
-    uint32_t f7c = 0;
+MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void) {
+   uint32_t f1c = 0;
+   uint32_t f1d = 0;
+   uint32_t f7b = 0;
+   uint32_t f7c = 0;
 #ifdef _MSC_VER
-    int reg[4];
-    __cpuid((int *)reg, 0);
-    {
-        int const n = reg[0];
-        if (n >= 1)
-        {
-            __cpuid((int *)reg, 1);
-            f1c = (uint32_t)reg[2];
-            f1d = (uint32_t)reg[3];
-        }
-        if (n >= 7)
-        {
-            __cpuidex((int *)reg, 7, 0);
-            f7b = (uint32_t)reg[1];
-            f7c = (uint32_t)reg[2];
-        }
-    }
-#elif defined(__i386__) && defined(__PIC__) && ! defined(__clang__) && defined(__GNUC__)
-    /* The following block like the normal cpuid branch below, but gcc
-     * reserves ebx for use of its pic register so we must specially
-     * handle the save and restore to avoid clobbering the register
-     */
-    uint32_t n;
-    __asm__(
-        "pushl %%ebx\n\t"
-        "cpuid\n\t"
-        "popl %%ebx\n\t"
-        : "=a"(n)
-        : "a"(0)
-        : "ecx", "edx");
-    if (n >= 1)
-    {
-        uint32_t f1a;
-        __asm__(
-            "pushl %%ebx\n\t"
-            "cpuid\n\t"
-            "popl %%ebx\n\t"
-            : "=a"(f1a), "=c"(f1c), "=d"(f1d)
-            : "a"(1));
-    }
-    if (n >= 7)
-    {
-        __asm__(
-            "pushl %%ebx\n\t"
-            "cpuid\n\t"
-            "movl %%ebx, %%eax\n\r"
-            "popl %%ebx"
-            : "=a"(f7b), "=c"(f7c)
-            : "a"(7), "c"(0)
-            : "edx");
-    }
+   int reg[4];
+   __cpuid((int*)reg, 0);
+   {
+      int const n = reg[0];
+      if (n >= 1) {
+         __cpuid((int*)reg, 1);
+         f1c = (uint32_t)reg[2];
+         f1d = (uint32_t)reg[3];
+      }
+      if (n >= 7) {
+         __cpuidex((int*)reg, 7, 0);
+         f7b = (uint32_t)reg[1];
+         f7c = (uint32_t)reg[2];
+      }
+   }
+#elif defined(__i386__) && defined(__PIC__) && !defined(__clang__) && defined(__GNUC__)
+   /* The following block like the normal cpuid branch below, but gcc
+   * reserves ebx for use of its pic register so we must specially
+   * handle the save and restore to avoid clobbering the register
+   */
+   uint32_t n;
+   __asm__(
+      "pushl %%ebx\n\t"
+      "cpuid\n\t"
+      "popl %%ebx\n\t"
+      : "=a"(n)
+      : "a"(0)
+      : "ecx", "edx");
+   if (n >= 1) {
+      uint32_t f1a;
+      __asm__(
+         "pushl %%ebx\n\t"
+         "cpuid\n\t"
+         "popl %%ebx\n\t"
+         : "=a"(f1a), "=c"(f1c), "=d"(f1d)
+         : "a"(1));
+   }
+   if (n >= 7) {
+      __asm__(
+         "pushl %%ebx\n\t"
+         "cpuid\n\t"
+         "movl %%ebx, %%eax\n\r"
+         "popl %%ebx"
+         : "=a"(f7b), "=c"(f7c)
+         : "a"(7), "c"(0)
+         : "edx");
+   }
 #elif defined(__x86_64__) || defined(_M_X64) || defined(__i386__)
-    uint32_t n;
-    __asm__("cpuid" : "=a"(n) : "a"(0) : "ebx", "ecx", "edx");
-    if (n >= 1)
-    {
-        uint32_t f1a;
-        __asm__("cpuid" : "=a"(f1a), "=c"(f1c), "=d"(f1d) : "a"(1) : "ebx");
-    }
-    if (n >= 7)
-    {
-        uint32_t f7a;
-        __asm__("cpuid" : "=a"(f7a), "=b"(f7b), "=c"(f7c) : "a"(7), "c"(0) : "edx");
-    }
+   uint32_t n;
+   __asm__("cpuid" : "=a"(n) : "a"(0) : "ebx", "ecx", "edx");
+   if (n >= 1) {
+      uint32_t f1a;
+      __asm__("cpuid" : "=a"(f1a), "=c"(f1c), "=d"(f1d) : "a"(1) : "ebx");
+   }
+   if (n >= 7) {
+      uint32_t f7a;
+      __asm__("cpuid"
+         : "=a"(f7a), "=b"(f7b), "=c"(f7c)
+         : "a"(7), "c"(0)
+         : "edx");
+   }
 #endif
-    {
-        ZSTD_cpuid_t cpuid;
-        cpuid.f1c = f1c;
-        cpuid.f1d = f1d;
-        cpuid.f7b = f7b;
-        cpuid.f7c = f7c;
-        return cpuid;
-    }
+   {
+      ZSTD_cpuid_t cpuid;
+      cpuid.f1c = f1c;
+      cpuid.f1d = f1d;
+      cpuid.f7b = f7b;
+      cpuid.f7c = f7c;
+      return cpuid;
+   }
 }
 
-#define X(name, r, bit) \
-    MEM_STATIC int ZSTD_cpuid_##name(ZSTD_cpuid_t const cpuid) \
-    { \
-        return ((cpuid.r) & (1U << bit)) != 0; \
-    }
+#define X(name, r, bit)                                                        \
+  MEM_STATIC int ZSTD_cpuid_##name(ZSTD_cpuid_t const cpuid) {                 \
+    return ((cpuid.r) & (1U << bit)) != 0;                                     \
+  }
 
 /* cpuid(1): Processor Info and Feature Bits. */
 #define C(name, bit) X(name, f1c, bit)
@@ -245,245 +239,229 @@ int g_avx2 = 0;
 
 #if defined(RT_OS_WINDOWS)
 
-void PrintCPUInfo()
-{
-    int CPUInfo[4] = { -1 };
-    unsigned nExIds, i = 0;
-    char CPUBrandString[0x40];
-    // Get the information associated with each extended ID.
-    __cpuid(CPUInfo, 0x80000000);
-    nExIds = CPUInfo[0];
-    for (i = 0x80000000; i <= nExIds; ++i)
-    {
-        __cpuid(CPUInfo, i);
-        // Interpret CPU brand string
-        if (i == 0x80000002)
-            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000003)
-            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000004)
-            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
-    }
-    // NEW CODE
-    g_bmi2 = ZSTD_cpuid_bmi2(ZSTD_cpuid());
-    g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
+void PrintCPUInfo() {
+   int CPUInfo[4] = { -1 };
+   unsigned   nExIds, i = 0;
+   char CPUBrandString[0x40];
+   // Get the information associated with each extended ID.
+   __cpuid(CPUInfo, 0x80000000);
+   nExIds = CPUInfo[0];
+   for (i = 0x80000000; i <= nExIds; ++i)
+   {
+      __cpuid(CPUInfo, i);
+      // Interpret CPU brand string
+      if (i == 0x80000002)
+         memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+      else if (i == 0x80000003)
+         memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+      else if (i == 0x80000004)
+         memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+   }
+   // NEW CODE
+   g_bmi2 = ZSTD_cpuid_bmi2(ZSTD_cpuid());
+   g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
 
-    // printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
-    if (g_bmi2 == 0 || g_avx2 == 0)
-    {
-        printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
-    }
+   //printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
+   if (g_bmi2 == 0 || g_avx2 == 0) {
+      printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
+   }
+
 }
 
 #else
-extern "C"
-{
-    #include <pthread.h>
-    #include <sys/types.h>
-    #include <sched.h>
+extern "C" {
+#include <pthread.h>
+#include <sys/types.h>
+#include <sched.h>
 
-    #include <unistd.h>
-    #include <sys/syscall.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
-    #ifdef RT_OS_FREEBSD
-        #include <sys/thr.h> // Use thr_self() syscall under FreeBSD to get thread id
-    #endif                   // RT_OS_FREEBSD
+#ifdef RT_OS_FREEBSD
+#include <sys/thr.h> // Use thr_self() syscall under FreeBSD to get thread id
+#endif  // RT_OS_FREEBSD
 
-    pid_t gettid(void)
-    {
-    #if defined(RT_OS_LINUX)
-        return syscall(SYS_gettid);
+   pid_t gettid(void) {
+   #if defined(RT_OS_LINUX)
+      return syscall(SYS_gettid);
+      
+   #elif defined(RT_OS_DARWIN)
+      uint64_t thread_id;
+      return pthread_threadid_np(NULL, &thread_id) ? 0 : (pid_t)thread_id;
+      
+   #elif defined(RT_OS_FREEBSD)
+      // https://www.freebsd.org/cgi/man.cgi?query=thr_self
+      long thread_id;
+      return thr_self(&thread_id) ? 0 : (pid_t)thread_id;
+      
+   #else
+   #error Cannot determine how to get the identifier for the current thread on this platform.
+   #endif   // defined(RT_OS_LINUX)
+   }
 
-    #elif defined(RT_OS_DARWIN)
-        uint64_t thread_id;
-        return pthread_threadid_np(NULL, &thread_id) ? 0 : (pid_t)thread_id;
 
-    #elif defined(RT_OS_FREEBSD)
-        // https://www.freebsd.org/cgi/man.cgi?query=thr_self
-        long thread_id;
-        return thr_self(&thread_id) ? 0 : (pid_t)thread_id;
+   void Sleep(unsigned int dwMilliseconds) {
+      usleep(dwMilliseconds * 1000);
+   }
 
-    #else
-        #error Cannot determine how to get the identifier for the current thread on this platform.
-    #endif // defined(RT_OS_LINUX)
-    }
+   bool CloseHandle(THANDLE hObject) {
+      return true;
+   }
 
-    void Sleep(unsigned int dwMilliseconds)
-    {
-        usleep(dwMilliseconds * 1000);
-    }
+   pid_t GetCurrentThread() {
+      return gettid();
+   }
 
-    bool CloseHandle(THANDLE hObject)
-    {
-        return true;
-    }
+   uint64_t SetThreadAffinityMask(pid_t hThread, uint64_t dwThreadAffinityMask) {
+   #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
+      cpu_set_t cpuset;
 
-    pid_t GetCurrentThread()
-    {
-        return gettid();
-    }
+      uint64_t bitpos = 1;
+      int count = 0;
 
-    uint64_t SetThreadAffinityMask(pid_t hThread, uint64_t dwThreadAffinityMask)
-    {
-    #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
-        cpu_set_t cpuset;
+      while (!(bitpos & dwThreadAffinityMask)) {
+         bitpos <<= 1;
+         count++;
+         if (count > 63) {
+            break;
+         }
+      }
 
-        uint64_t bitpos = 1;
-        int count = 0;
+      //printf("**linux setting affinity %d\n", count);
 
-        while (! (bitpos & dwThreadAffinityMask))
-        {
-            bitpos <<= 1;
-            count++;
-            if (count > 63)
-            {
-                break;
-            }
-        }
+      if (count <= 63) {
 
-        // printf("**linux setting affinity %d\n", count);
+         CPU_ZERO(&cpuset);
+         CPU_SET(count, &cpuset);
+         //dwThreadAffinityMask
+         sched_setaffinity(GetCurrentThread(), sizeof(cpuset), &cpuset);
+      }
+      
+   #else
+   #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
+   #endif   // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
 
-        if (count <= 63)
-        {
-            CPU_ZERO(&cpuset);
-            CPU_SET(count, &cpuset);
-            // dwThreadAffinityMask
-            sched_setaffinity(GetCurrentThread(), sizeof(cpuset), &cpuset);
-        }
+      return 0;
+   }
 
-    #else
-        #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
-    #endif // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
+   bool GetProcessAffinityMask(HANDLE hProcess, uint64_t* lpProcessAffinityMask, uint64_t* lpSystemAffinityMask) {
+   #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
+      cpu_set_t cpuset;
+      sched_getaffinity(getpid(), sizeof(cpuset), &cpuset);
 
-        return 0;
-    }
+      *lpProcessAffinityMask = 0;
+      *lpSystemAffinityMask = 0;
 
-    bool GetProcessAffinityMask(HANDLE hProcess, uint64_t * lpProcessAffinityMask, uint64_t * lpSystemAffinityMask)
-    {
-    #if defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
-        cpu_set_t cpuset;
-        sched_getaffinity(getpid(), sizeof(cpuset), &cpuset);
+      uint64_t bitpos = 1;
+      for (int i = 0; i < 63; i++) {
+         if (CPU_ISSET(i, &cpuset)) {
+            *lpProcessAffinityMask |= bitpos;
+            *lpSystemAffinityMask |= bitpos;
+         }
+         bitpos <<= 1;
+      }
 
-        *lpProcessAffinityMask = 0;
-        *lpSystemAffinityMask = 0;
+      if (*lpProcessAffinityMask == 0) {
+         *lpSystemAffinityMask = 0xFF;
+         *lpSystemAffinityMask = 0xFF;
+      }
 
-        uint64_t bitpos = 1;
-        for (int i = 0; i < 63; i++)
-        {
-            if (CPU_ISSET(i, &cpuset))
-            {
-                *lpProcessAffinityMask |= bitpos;
-                *lpSystemAffinityMask |= bitpos;
-            }
-            bitpos <<= 1;
-        }
+      //CPU_ISSET = 0xFF;
+      return true;
+   
+   #else
+   #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
+      return false;
+      
+   #endif   // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
+   }
 
-        if (*lpProcessAffinityMask == 0)
-        {
-            *lpSystemAffinityMask = 0xFF;
-            *lpSystemAffinityMask = 0xFF;
-        }
 
-        // CPU_ISSET = 0xFF;
-        return true;
+   HANDLE GetCurrentProcess() {
+      return NULL;
+   }
 
-    #else
-        #warning No thread-affinity support implemented for this OS. This does not prevent riptide from running but overall performance may be reduced.
-        return false;
+   unsigned int  GetLastError() {
+      return 0;
+   }
 
-    #endif // defined(RT_OS_LINUX) || defined(RT_OS_FREEBSD)
-    }
+   HANDLE CreateThread(void* lpThreadAttributes, size_t dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, void* lpParameter, unsigned int dwCreationFlags, uint32_t* lpThreadId) {
+      return NULL;
+   }
 
-    HANDLE GetCurrentProcess()
-    {
-        return NULL;
-    }
+   HMODULE LoadLibraryW(const wchar_t* lpLibFileName) {
+      return NULL;
+   }
 
-    unsigned int GetLastError()
-    {
-        return 0;
-    }
-
-    HANDLE CreateThread(void * lpThreadAttributes, size_t dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, void * lpParameter,
-                        unsigned int dwCreationFlags, uint32_t * lpThreadId)
-    {
-        return NULL;
-    }
-
-    HMODULE LoadLibraryW(const wchar_t * lpLibFileName)
-    {
-        return NULL;
-    }
-
-    FARPROC GetProcAddress(HMODULE hModule, const char * lpProcName)
-    {
-        return NULL;
-    }
+   FARPROC GetProcAddress(HMODULE hModule, const char* lpProcName) {
+      return NULL;
+   }
 }
 
-    #include <cpuid.h>
+#include <cpuid.h>
 
-void PrintCPUInfo()
-{
-    char CPUBrandString[0x40];
-    unsigned int CPUInfo[4] = { 0, 0, 0, 0 };
+void PrintCPUInfo() {
+   char CPUBrandString[0x40];
+   unsigned int CPUInfo[4] = { 0,0,0,0 };
 
-    __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-    unsigned int nExIds = CPUInfo[0];
+   __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+   unsigned int nExIds = CPUInfo[0];
 
-    memset(CPUBrandString, 0, sizeof(CPUBrandString));
+   memset(CPUBrandString, 0, sizeof(CPUBrandString));
 
-    for (unsigned int i = 0x80000000; i <= nExIds; ++i)
-    {
-        __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+   for (unsigned int i = 0x80000000; i <= nExIds; ++i)
+   {
+      __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 
-        if (i == 0x80000002)
-            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000003)
-            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if (i == 0x80000004)
-            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
-    }
-    // printf("**CPU: %s\n", CPUBrandString);
+      if (i == 0x80000002)
+         memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+      else if (i == 0x80000003)
+         memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+      else if (i == 0x80000004)
+         memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+   }
+   //printf("**CPU: %s\n", CPUBrandString);
 
-    // NEW CODE
-    g_bmi2 = ZSTD_cpuid_bmi2(ZSTD_cpuid());
-    g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
+   // NEW CODE
+   g_bmi2 = ZSTD_cpuid_bmi2(ZSTD_cpuid());
+   g_avx2 = ZSTD_cpuid_avx2(ZSTD_cpuid());
 
-    // printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
-    if (g_bmi2 == 0 || g_avx2 == 0)
-    {
-        printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
-    }
+   //printf("**CPU: %s  AVX2:%d  BMI2:%d\n", CPUBrandString, g_avx2, g_bmi2);
+   if (g_bmi2 == 0 || g_avx2 == 0) {
+      printf("!!!NOTE: this system does not support AVX2 or BMI2 instructions, and will not work!\n");
+   }
+
 }
 
 #endif
 
-int GetProcCount()
-{
-    HANDLE proc = GetCurrentProcess();
 
-    uint64_t mask1;
-    uint64_t mask2;
-    int32_t count;
 
-    count = 0;
-    GetProcessAffinityMask(proc, &mask1, &mask2);
+int GetProcCount() {
 
-    while (mask1 != 0)
-    {
-        if (mask1 & 1)
-            count++;
-        mask1 = mask1 >> 1;
-    }
+   HANDLE proc = GetCurrentProcess();
 
-    // printf("**Process count: %d   riptide_cpp build date and time: %s %s\n", count, __DATE__, __TIME__);
+   uint64_t mask1;
+   uint64_t mask2;
+   int32_t count;
 
-    if (count == 0)
-        count = MAX_THREADS_WHEN_CANNOT_DETECT;
+   count = 0;
+   GetProcessAffinityMask(proc, &mask1, &mask2);
 
-    if (count > MAX_THREADS_ALLOWED)
-        count = MAX_THREADS_ALLOWED;
+   while (mask1 != 0) {
+      if (mask1 & 1) count++;
+      mask1 = mask1 >> 1;
+   }
 
-    return count;
+   //printf("**Process count: %d   riptide_cpp build date and time: %s %s\n", count, __DATE__, __TIME__);
+
+   if (count == 0) count = MAX_THREADS_WHEN_CANNOT_DETECT;
+
+   if (count > MAX_THREADS_ALLOWED) count = MAX_THREADS_ALLOWED;
+
+   return count;
+
 }
+
+
+
