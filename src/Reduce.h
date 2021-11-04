@@ -1,6 +1,5 @@
 #pragma once
 
-PyObject *
-Reduce(PyObject *self, PyObject *args);
+PyObject *Reduce(PyObject *self, PyObject *args);
 
-PyObject*  ReduceInternal(PyArrayObject *inArr1, int64_t func);
+PyObject *ReduceInternal(PyArrayObject *inArr1, int64_t func);

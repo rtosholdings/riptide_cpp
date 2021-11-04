@@ -1,5 +1,3 @@
 #pragma once
 
-PyObject *
-ToBeDone(PyObject *self, PyObject *args, PyObject *kwargs);
-
+PyObject *ToBeDone(PyObject *self, PyObject *args, PyObject *kwargs);

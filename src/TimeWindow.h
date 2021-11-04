@@ -2,5 +2,4 @@
 
 #include "CommonInc.h"
 
-PyObject *
-TimeWindow(PyObject *self, PyObject *args);
+PyObject *TimeWindow(PyObject *self, PyObject *args);
