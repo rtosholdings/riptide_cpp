@@ -524,7 +524,6 @@ namespace riptable_cpp
         {
             using T = typename calculation_t::data_type const;
             using bitmask_t = typename calculation_t::bitmask_type;
-            T const value{ *reinterpret_cast<T const *>(in_p) };
 
             if constexpr (not std::is_floating_point_v<T> == true)
             {
@@ -532,6 +531,7 @@ namespace riptable_cpp
             }
             else
             {
+                T const value{ *reinterpret_cast<T const *>(in_p) };
                 return (not std::isnormal(value)) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
             }
         }
@@ -545,11 +545,11 @@ namespace riptable_cpp
 
             if constexpr (not std::is_floating_point_v<T> == true)
             {
-                return (not not T(value) == T{}) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
+                return (not not (T(value) == T{})) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
             }
             else
             {
-                return (not not T(value) == T{} || std::isnan(value)) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
+                return (not not (T(value) == T{}) || std::isnan(value)) ? std::numeric_limits<bitmask_t>::max() : bitmask_t{};
             }
         }
 
