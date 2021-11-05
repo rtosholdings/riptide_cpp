@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonInc.h"
+#include "MultiKey.h"
 
 // PyObject *
 // GroupByOp32(PyObject *self, PyObject *args);

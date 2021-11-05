@@ -1,3 +1,4 @@
+#include "CommonInc.h"
 #include "MultiKey.h"
 #include "HashLinear.h"
 #include "MathWorker.h"

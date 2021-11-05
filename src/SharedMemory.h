@@ -1,3 +1,7 @@
+#ifndef RIPTIDE_CPP_SHAREDMEMORY_H
+#define RIPTIDE_CPP_SHAREDMEMORY_H
+
+#include "CommonInc.h"
 
 #if defined(_WIN32) && ! defined(__GNUC__)
 
@@ -62,4 +66,5 @@ UtilSharedMemoryCopy(const char * pMappingName, PMAPPED_VIEW_STRUCT * pReturnStr
 HRESULT
 UtilSharedMemoryEnd(PMAPPED_VIEW_STRUCT pMappedViewStruct);
 
+#endif
 #endif

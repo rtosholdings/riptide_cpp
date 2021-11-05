@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommonInc.h"
+
 PyObject * MBGet(PyObject * self, PyObject * args);
 
 PyObject * BooleanIndex(PyObject * self, PyObject * args);
