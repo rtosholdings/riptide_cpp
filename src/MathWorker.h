@@ -1,5 +1,4 @@
 #pragma once
-#include "CommonInc.h"
 #include "MathThreads.h"
 
 //#define MATHLOGGING printf

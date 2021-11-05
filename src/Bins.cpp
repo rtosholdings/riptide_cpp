@@ -1,9 +1,8 @@
-#include "Bins.h"
 #include "RipTide.h"
-#include "Sort.h"
-#include "ndarray.h"
 #include <Python.h>
-//#include "MultiKey.h"
+#include "ndarray.h"
+#include "Bins.h"
+#include "Sort.h"
 #include "MathWorker.h"
 
 #define LOGGING(...)

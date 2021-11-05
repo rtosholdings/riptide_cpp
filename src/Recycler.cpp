@@ -1,6 +1,6 @@
+#include "RipTide.h"
 #include "Recycler.h"
 #include "MathWorker.h"
-#include "RipTide.h"
 #include "immintrin.h"
 
 // Array to store what we can recycle

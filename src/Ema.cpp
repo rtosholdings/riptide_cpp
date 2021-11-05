@@ -1,8 +1,9 @@
-#include "Ema.h"
-#include "MathWorker.h"
-#include "MultiKey.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
+#include "MultiKey.h"
+#include "Ema.h"
+
 #include <cmath>
 #include <pymem.h>
 #include <stdio.h>

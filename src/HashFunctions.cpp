@@ -1,6 +1,6 @@
+#include "RipTide.h"
 #include "HashFunctions.h"
 #include "HashLinear.h"
-#include "RipTide.h"
 #include "ndarray.h"
 
 // struct ndbuf;

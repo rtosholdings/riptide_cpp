@@ -1,9 +1,9 @@
+#include "RipTide.h"
+#include "ndarray.h"
+#include "MathWorker.h"
 #include "Reduce.h"
 #include "Convert.h"
-#include "MathWorker.h"
-#include "RipTide.h"
 #include "missing_values.h"
-#include "ndarray.h"
 #include "platform_detect.h"
 
 #include <algorithm>

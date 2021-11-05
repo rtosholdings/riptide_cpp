@@ -1,5 +1,4 @@
 #pragma once
-#include "numpy/ndarraytypes.h"
 
 #include <cstdlib>
 #include <cstdint>

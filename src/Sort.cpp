@@ -1,9 +1,9 @@
-#include "Sort.h"
-#include "MathWorker.h"
-#include "MultiKey.h"
-#include "Recycler.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "Sort.h"
+#include "MultiKey.h"
+#include "MathWorker.h"
+#include "Recycler.h"
 
 #define LOGGING(...)
 //#define LOGGING printf

@@ -1,11 +1,11 @@
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
 
-#include "BasicMath.h"
 #include "CommonInc.h"
 #include "Compare.h"
 #include "Convert.h"
+#include "BasicMath.h"
 #include "platform_detect.h"
 
 //#define LOGGING printf

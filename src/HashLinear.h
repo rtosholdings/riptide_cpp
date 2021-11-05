@@ -1,3 +1,4 @@
+#pragma once
 #include <assert.h>
 
 PyObject * IsMember32(PyObject * self, PyObject * args);

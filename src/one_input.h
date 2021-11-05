@@ -1,8 +1,8 @@
 #ifndef RIPTABLECPP_ONE_INPUT_H
 #define RIPTABLECPP_ONE_INPUT_H
 
-#include "MathWorker.h"
 #include "RipTide.h"
+#include "MathWorker.h"
 #include "ndarray.h"
 #include "operation_traits.h"
 

@@ -1,10 +1,10 @@
-#include "Convert.h"
+#include "RipTide.h"
+#include "ndarray.h"
 #include "MathWorker.h"
+#include "Convert.h"
 #include "MultiKey.h"
 #include "Recycler.h"
 #include "Reduce.h"
-#include "RipTide.h"
-#include "ndarray.h"
 
 #include <algorithm>
 

@@ -1,8 +1,8 @@
-#include "Merge.h"
-#include "Convert.h"
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
+#include "Merge.h"
+#include "Convert.h"
 
 #include <algorithm>
 

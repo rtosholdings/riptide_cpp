@@ -1,7 +1,7 @@
-#include "BitCount.h"
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
+#include "BitCount.h"
 #include <nmmintrin.h>
 
 PyObject * BitCount(PyObject * self, PyObject * args)

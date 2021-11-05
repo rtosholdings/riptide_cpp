@@ -1,7 +1,7 @@
-#include "TimeWindow.h"
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
+#include "TimeWindow.h"
 #define LOGGING(...)
 
 typedef void (*TIMEWINDOW_FUNC)(void * pDataIn, void * pTimeIn, void * pDataOut, int64_t start, int64_t length,

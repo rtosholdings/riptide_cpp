@@ -1,13 +1,10 @@
 #include "stdafx.h"
-//#include "..\TestSD\stdafx.h"
-//#include <Windows.h>
-//#include <stdio.h>
+#include <memory>
 #include "CommonInc.h"
+#include "RipTide.h"
 #include "HashLinear.h"
 #include "MathWorker.h"
 #include "Recycler.h"
-#include "RipTide.h"
-#include <memory>
 
 #ifndef LogError
     #define LogError(...)

@@ -1,10 +1,9 @@
-#include "CommonInc.h"
+#include "RipTide.h"
+#include "ndarray.h"
 #include "MultiKey.h"
 #include "HashLinear.h"
 #include "MathWorker.h"
-#include "RipTide.h"
 #include "Sort.h"
-#include "ndarray.h"
 
 #define LOGGING(...)
 //#define LOGGING printf

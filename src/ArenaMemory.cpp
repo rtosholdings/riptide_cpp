@@ -1,9 +1,8 @@
 #include "RipTide.h"
 #include "ndarray.h"
 
-#include "ArenaMemory.h"
 #include "CommonInc.h"
-//#include <assert.h>
+#include "ArenaMemory.h"
 #include <pyarena.h>
 #include <pymem.h>
 

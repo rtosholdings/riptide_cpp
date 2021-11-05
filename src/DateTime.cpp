@@ -1,7 +1,7 @@
-#include "DateTime.h"
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
+#include "DateTime.h"
 
 const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm);
 

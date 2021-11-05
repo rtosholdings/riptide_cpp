@@ -1,9 +1,10 @@
-#include "GroupBy.h"
+#include "RipTide.h"
+#include "ndarray.h"
 #include "MathWorker.h"
 #include "MultiKey.h"
-#include "RipTide.h"
+#include "GroupBy.h"
 #include "Sort.h"
-#include "ndarray.h"
+
 #include <algorithm>
 #include <cmath>
 #include <stdio.h>

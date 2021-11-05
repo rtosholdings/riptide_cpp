@@ -1,10 +1,10 @@
-#include "MathWorker.h"
 #include "RipTide.h"
 #include "ndarray.h"
+#include "MathWorker.h"
 
-#include "Array.h"
 #include "CommonInc.h"
 #include "Compare.h"
+#include "Array.h"
 
 //#define LOGGING printf
 #define LOGGING(...)
