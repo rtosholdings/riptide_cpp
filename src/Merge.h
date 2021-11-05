@@ -1,19 +1,15 @@
 #pragma once
 
-PyObject *
-MBGet(PyObject *self, PyObject *args);
+#include "CommonInc.h"
 
-PyObject *
-BooleanIndex(PyObject *self, PyObject *args);
+PyObject * MBGet(PyObject * self, PyObject * args);
 
-PyObject *
-BooleanSum(PyObject *self, PyObject *args);
+PyObject * BooleanIndex(PyObject * self, PyObject * args);
 
-extern PyObject *
-BooleanToFancy(PyObject *self, PyObject *args, PyObject* kwargs);
+PyObject * BooleanSum(PyObject * self, PyObject * args);
 
-PyObject *
-ReIndexGroups(PyObject *self, PyObject *args);
+extern PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs);
 
-PyObject *
-ReverseShuffle(PyObject *self, PyObject *args);
+PyObject * ReIndexGroups(PyObject * self, PyObject * args);
+
+PyObject * ReverseShuffle(PyObject * self, PyObject * args);

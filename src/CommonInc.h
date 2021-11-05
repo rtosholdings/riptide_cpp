@@ -51,7 +51,6 @@ using HANDLE = void*;
 #endif
 #define InterlockedDecrement64 _InterlockedDecrement64
 #define InterlockedIncrement64 _InterlockedIncrement64
-
 #define YieldProcessor _mm_pause
 #define InterlockedIncrement _InterlockedIncrement
 
@@ -77,6 +76,7 @@ using HANDLE = void*;
 #define CASE_NPY_FLOAT64    case NPY_DOUBLE:     case NPY_LONGDOUBLE
 
 #endif
+
 #else
 
 #define CASE_NPY_INT32      case NPY_INT32
