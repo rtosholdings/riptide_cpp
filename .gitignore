@@ -12,7 +12,6 @@
 *.cod
 *.iobj
 *.exp
-*.sln
 
 # Precompiled Headers
 *.gch
