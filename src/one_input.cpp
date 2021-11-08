@@ -101,9 +101,10 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                 }
             }
         }
-        Py_INCREF(Py_None);
-        return Py_None;
     }
+
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 namespace riptable_cpp
