@@ -30,7 +30,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
         if (direction == 0 && numpy_outtype == -1)
         {
             numpy_outtype = riptable_cpp::get_active_value_return(
-                                *opt_op_trait, std::make_index_sequence<std::variant_size_v<riptable_cpp::operation_t>>{}) ?
+                                *opt_op_trait, std::make_index_sequence<std::variant_size_v<riptable_cpp::single_operation_t>>{}) ?
                                 numpy_intype :
                                 NPY_BOOL;
             PyArrayObject * result_array{ (ndim <= 1) ? AllocateNumpyArray(1, &len, numpy_outtype) :
@@ -53,10 +53,11 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
         }
         else
         {
-            int wanted_outtype = riptable_cpp::get_active_value_return(
-                                     *opt_op_trait, std::make_index_sequence<std::variant_size_v<riptable_cpp::operation_t>>{}) ?
-                                     numpy_intype :
-                                     NPY_BOOL;
+            int wanted_outtype =
+                riptable_cpp::get_active_value_return(
+                    *opt_op_trait, std::make_index_sequence<std::variant_size_v<riptable_cpp::single_operation_t>>{}) ?
+                    numpy_intype :
+                    NPY_BOOL;
 
             if (numpy_outtype != -1 && numpy_outtype != wanted_outtype)
             {
@@ -164,6 +165,12 @@ namespace riptable_cpp
         case MATH_OPERATION::ABS:
             retval.first = abs_op{};
             break;
+        case MATH_OPERATION::FABS:
+            retval.first = fabs_op{};
+            break;
+        case MATH_OPERATION::SIGN:
+            retval.first = sign_op{};
+            break;
         case MATH_OPERATION::ISNAN:
             retval.first = isnan_op{};
             break;
@@ -177,7 +184,7 @@ namespace riptable_cpp
             retval.first = isnotfinite_op{};
             break;
         case MATH_OPERATION::NEG:
-            retval.first = bitwise_not_op{};
+            retval.first = neg_op{};
             break;
         case MATH_OPERATION::INVERT:
             retval.first = bitwise_not_op{};
@@ -196,6 +203,55 @@ namespace riptable_cpp
             break;
         case MATH_OPERATION::SQRT:
             retval.first = sqrt_op{};
+            break;
+        case MATH_OPERATION::LOG:
+            retval.first = log_op{};
+            break;
+        case MATH_OPERATION::LOG2:
+            retval.first = log2_op{};
+            break;
+        case MATH_OPERATION::LOG10:
+            retval.first = log10_op{};
+            break;
+        case MATH_OPERATION::EXP:
+            retval.first = exp_op{};
+            break;
+        case MATH_OPERATION::EXP2:
+            retval.first = exp2_op{};
+            break;
+        case MATH_OPERATION::CBRT:
+            retval.first = cbrt_op{};
+            break;
+// BUG:: These are defined, but never called
+//        case MATH_OPERATION::TAN:
+//            retval.first = tan_op{};
+//            break;
+//        case MATH_OPERATION::SIN:
+//            retval.first = sin_op{};
+//            break;
+//        case MATH_OPERATION::COS:
+//            retval.first = cos_op{};
+//            break;
+        case MATH_OPERATION::SIGNBIT:
+            retval.first = signbit_op{};
+            break;
+        case MATH_OPERATION::LOGICAL_NOT:
+            retval.first = not_op{};
+            break;
+        case MATH_OPERATION::ISINF:
+            retval.first = isinf_op{};
+            break;
+        case MATH_OPERATION::ISNOTINF:
+            retval.first = isnotinf_op{};
+            break;
+        case MATH_OPERATION::ISNORMAL:
+            retval.first = isnormal_op{};
+            break;
+        case MATH_OPERATION::ISNOTNORMAL:
+            retval.first = isnotnormal_op{};
+            break;
+        case MATH_OPERATION::ISNANORZERO:
+            retval.first = isnanorzero_op{};
             break;
         }
 
