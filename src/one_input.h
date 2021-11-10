@@ -19,7 +19,7 @@ extern "C"
 
 namespace riptable_cpp
 {
-    using chosen_traits_t = std::pair<std::optional<operation_t>, std::optional<data_type_t>>;
+    using chosen_traits_t = std::pair<std::optional<single_operation_t>, std::optional<data_type_t>>;
 
     chosen_traits_t set_traits(int32_t const function_num, int32_t const numpy_intype);
 } // namespace riptable_cpp

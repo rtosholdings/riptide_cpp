@@ -79,7 +79,7 @@ namespace
 
         "walk_fabs_float"_test = [&]
         {
-            operation_t op{ fabs_op{} };
+            single_operation_t op{ fabs_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 28> x{};
             walk_data_array(1, 28, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -96,7 +96,7 @@ namespace
 
         "walk_abs_float"_test = [&]
         {
-            operation_t op{ abs_op{} };
+            single_operation_t op{ abs_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 28> x{};
             walk_data_array(1, 28, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -306,7 +306,7 @@ namespace
 
         "walk_round_float"_test = [&]
         {
-            operation_t op{ round_op{} };
+            single_operation_t op{ round_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -362,7 +362,7 @@ namespace
 
         "walk_floor_float"_test = [&]
         {
-            operation_t op{ floor_op{} };
+            single_operation_t op{ floor_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -418,7 +418,7 @@ namespace
 
         "walk_trunc_float"_test = [&]
         {
-            operation_t op{ trunc_op{} };
+            single_operation_t op{ trunc_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -474,7 +474,7 @@ namespace
 
         "walk_ceil_float"_test = [&]
         {
-            operation_t op{ ceil_op{} };
+            single_operation_t op{ ceil_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -525,7 +525,7 @@ namespace
 
         "walk_sqrt_float"_test = [&]
         {
-            operation_t op{ sqrt_op{} };
+            single_operation_t op{ sqrt_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<float, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_float + 5), reinterpret_cast<char *>(x.data()), op,
@@ -779,7 +779,7 @@ namespace
 
         "walk_isnotnan_float"_test = [&]
         {
-            operation_t op{ isnotnan_op{} };
+            single_operation_t op{ isnotnan_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<int, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_nans + 5), reinterpret_cast<char *>(x.data()), op,
@@ -836,7 +836,7 @@ namespace
 
         "walk_isnan_float"_test = [&]
         {
-            operation_t op{ isnan_op{} };
+            single_operation_t op{ isnan_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<int, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_nans + 5), reinterpret_cast<char *>(x.data()), op,
@@ -887,7 +887,7 @@ namespace
 
         "walk_isfinite_float"_test = [&]
         {
-            operation_t op{ isfinite_op{} };
+            single_operation_t op{ isfinite_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_inf + 5), reinterpret_cast<char *>(x.data()), op,
@@ -938,7 +938,7 @@ namespace
 
         "walk_isnotfinite_float"_test = [&]
         {
-            operation_t op{ isnotfinite_op{} };
+            single_operation_t op{ isnotfinite_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_inf + 5), reinterpret_cast<char *>(x.data()), op,
@@ -989,7 +989,7 @@ namespace
 
         "walk_isinf_float"_test = [&]
         {
-            operation_t op{ isinf_op{} };
+            single_operation_t op{ isinf_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_inf + 5), reinterpret_cast<char *>(x.data()), op,
@@ -1040,7 +1040,7 @@ namespace
 
         "walk_isnotinf_float"_test = [&]
         {
-            operation_t op{ isnotinf_op{} };
+            single_operation_t op{ isnotinf_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_inf + 5), reinterpret_cast<char *>(x.data()), op,
@@ -1097,7 +1097,7 @@ namespace
 
         "walk_isnormal_float"_test = [&]
         {
-            operation_t op{ isnormal_op{} };
+            single_operation_t op{ isnormal_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_norm + 5), reinterpret_cast<char *>(x.data()), op,
@@ -1154,7 +1154,7 @@ namespace
 
         "walk_isnotnormal_float"_test = [&]
         {
-            operation_t op{ isnotnormal_op{} };
+            single_operation_t op{ isnotnormal_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_norm + 5), reinterpret_cast<char *>(x.data()), op,
@@ -1217,7 +1217,7 @@ namespace
 
         "walk_isnanorzero_float"_test = [&]
         {
-            operation_t op{ isnanorzero_op{} };
+            single_operation_t op{ isnanorzero_op{} };
             data_type_t data_type{ float_traits{} };
             std::array<uint32_t, 26> x{};
             walk_data_array(1, 26, 4, 4, reinterpret_cast<char const *>(p_norm + 5), reinterpret_cast<char *>(x.data()), op,

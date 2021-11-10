@@ -192,7 +192,7 @@ namespace riptable_cpp
         using simd_implementation = std::false_type;
     };
 
-    using operation_t = std::variant<abs_op, fabs_op, sign_op, floatsign_op, neg_op, bitwise_not_op, not_op, isnotnan_op, isnan_op,
+    using single_operation_t = std::variant<abs_op, fabs_op, sign_op, floatsign_op, neg_op, bitwise_not_op, not_op, isnotnan_op, isnan_op,
                                      isfinite_op, isnotfinite_op, isinf_op, isnotinf_op, isnormal_op, isnotnormal_op,
                                      isnanorzero_op, round_op, floor_op, trunc_op, ceil_op, sqrt_op, log_op, log2_op, log10_op,
                                      exp_op, exp2_op, cbrt_op, tan_op, cos_op, sin_op, signbit_op>;
