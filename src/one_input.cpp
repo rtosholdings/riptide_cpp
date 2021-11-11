@@ -114,6 +114,8 @@ namespace riptable_cpp
     {
         chosen_traits_t retval{};
 
+        retval.second = data_type_trait( numpy_intype );
+
         switch (numpy_intype)
         {
         case NPY_INT8:
@@ -222,16 +224,16 @@ namespace riptable_cpp
         case MATH_OPERATION::CBRT:
             retval.first = cbrt_op{};
             break;
-// BUG:: These are defined, but never called
-//        case MATH_OPERATION::TAN:
-//            retval.first = tan_op{};
-//            break;
-//        case MATH_OPERATION::SIN:
-//            retval.first = sin_op{};
-//            break;
-//        case MATH_OPERATION::COS:
-//            retval.first = cos_op{};
-//            break;
+            // BUG:: These are defined, but never called
+            //        case MATH_OPERATION::TAN:
+            //            retval.first = tan_op{};
+            //            break;
+            //        case MATH_OPERATION::SIN:
+            //            retval.first = sin_op{};
+            //            break;
+            //        case MATH_OPERATION::COS:
+            //            retval.first = cos_op{};
+            //            break;
         case MATH_OPERATION::SIGNBIT:
             retval.first = signbit_op{};
             break;

@@ -5,6 +5,7 @@
 
 #include <type_traits>
 #include <variant>
+#include <optional>
 
 namespace riptable_cpp
 {
@@ -196,6 +197,77 @@ namespace riptable_cpp
                                      isfinite_op, isnotfinite_op, isinf_op, isnotinf_op, isnormal_op, isnotnormal_op,
                                      isnanorzero_op, round_op, floor_op, trunc_op, ceil_op, sqrt_op, log_op, log2_op, log10_op,
                                      exp_op, exp2_op, cbrt_op, tan_op, cos_op, sin_op, signbit_op>;
+
+    struct add_op{};
+    struct sub_op{};
+    struct mul_op{};
+    struct div_op{};
+    struct subdatetime_op{};
+    struct subdates_op{};
+    struct floor_div{};
+    struct mod_op{};
+    struct power_op{};
+    struct remainder_op{};
+    struct fmod_op{};
+
+    using multiarg_operation_t = std::variant< add_op, sub_op, mul_op, div_op, subdatetime_op, subdates_op, floor_div, mod_op, power_op, remainder_op, fmod_op >;
+
+    inline namespace implementation
+    {
+        std::optional<data_type_t> data_type_trait( int32_t numpy_type)
+        {
+            std::optional<data_type_t> retval{};
+
+            switch (numpy_type)
+            {
+            case NPY_INT8:
+                retval = int8_traits{};
+                break;
+            case NPY_INT16:
+                retval = int16_traits{};
+                break;
+#if RT_COMPILER_MSVC
+            case NPY_INT:
+#endif
+            case NPY_INT32:
+                retval = int32_traits{};
+                break;
+#if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
+            case NPY_LONGLONG:
+#endif
+            case NPY_INT64:
+                retval = int64_traits{};
+                break;
+            case NPY_UINT8:
+                retval = uint8_traits{};
+                break;
+            case NPY_UINT16:
+                retval = uint16_traits{};
+                break;
+#if RT_COMPILER_MSVC
+            case NPY_UINT:
+#endif
+            case NPY_UINT32:
+                retval = uint32_traits{};
+                break;
+#if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
+            case NPY_ULONGLONG:
+#endif
+            case NPY_UINT64:
+                retval = uint64_traits{};
+                break;
+            case NPY_FLOAT:
+                retval = float_traits{};
+                break;
+            case NPY_DOUBLE:
+                retval = double_traits{};
+                break;
+            };
+            
+            return retval;
+        }
+        
+    }
 
 } // namespace riptable_cpp
 

@@ -1626,12 +1626,10 @@ static ANY_TWO_FUNC GetSimpleMathOpSlow(int func, int scalarMode, int numpyInTyp
         CASE_NPY_INT32:
             return SimpleMathOpSlowAdd<int32_t>;
         CASE_NPY_INT64:
-
             return SimpleMathOpSlowAdd<int64_t>;
         CASE_NPY_UINT32:
             return SimpleMathOpSlowAdd<uint32_t>;
         CASE_NPY_UINT64:
-
             return SimpleMathOpSlowAdd<uint64_t>;
         case NPY_INT8:
             return SimpleMathOpSlowAdd<int8_t>;
