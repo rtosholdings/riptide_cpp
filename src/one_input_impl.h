@@ -616,8 +616,9 @@ namespace riptable_cpp
 
         template <typename type_variant, size_t... Is>
         void calculate_for_active_data_type(char const * in_p, char * out_p, ptrdiff_t & starting_element,
-                                            int64_t const in_array_stride, size_t contig_elems, single_operation_t const & requested_op,
-                                            type_variant const & in_type, std::index_sequence<Is...>)
+                                            int64_t const in_array_stride, size_t contig_elems,
+                                            single_operation_t const & requested_op, type_variant const & in_type,
+                                            std::index_sequence<Is...>)
         {
             (calculate_for_active_operation(in_p, out_p, starting_element, in_array_stride, contig_elems, requested_op,
                                             std::get_if<Is>(&in_type),

@@ -114,7 +114,7 @@ namespace riptable_cpp
     {
         chosen_traits_t retval{};
 
-        retval.second = data_type_trait( numpy_intype );
+        retval.second = data_type_trait(numpy_intype);
 
         switch (numpy_intype)
         {

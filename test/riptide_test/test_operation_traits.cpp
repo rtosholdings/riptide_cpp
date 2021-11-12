@@ -9,7 +9,8 @@ using boost::ut::suite;
 
 namespace
 {
-    suite operation_traits = [] { 
+    suite operation_traits = []
+    {
         "data_type_traits"_test = [] {
 
         };

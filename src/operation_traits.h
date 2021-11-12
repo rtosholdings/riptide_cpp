@@ -193,28 +193,51 @@ namespace riptable_cpp
         using simd_implementation = std::false_type;
     };
 
-    using single_operation_t = std::variant<abs_op, fabs_op, sign_op, floatsign_op, neg_op, bitwise_not_op, not_op, isnotnan_op, isnan_op,
-                                     isfinite_op, isnotfinite_op, isinf_op, isnotinf_op, isnormal_op, isnotnormal_op,
-                                     isnanorzero_op, round_op, floor_op, trunc_op, ceil_op, sqrt_op, log_op, log2_op, log10_op,
-                                     exp_op, exp2_op, cbrt_op, tan_op, cos_op, sin_op, signbit_op>;
+    using single_operation_t = std::variant<abs_op, fabs_op, sign_op, floatsign_op, neg_op, bitwise_not_op, not_op, isnotnan_op,
+                                            isnan_op, isfinite_op, isnotfinite_op, isinf_op, isnotinf_op, isnormal_op,
+                                            isnotnormal_op, isnanorzero_op, round_op, floor_op, trunc_op, ceil_op, sqrt_op, log_op,
+                                            log2_op, log10_op, exp_op, exp2_op, cbrt_op, tan_op, cos_op, sin_op, signbit_op>;
 
-    struct add_op{};
-    struct sub_op{};
-    struct mul_op{};
-    struct div_op{};
-    struct subdatetime_op{};
-    struct subdates_op{};
-    struct floor_div{};
-    struct mod_op{};
-    struct power_op{};
-    struct remainder_op{};
-    struct fmod_op{};
+    struct add_op
+    {
+    };
+    struct sub_op
+    {
+    };
+    struct mul_op
+    {
+    };
+    struct div_op
+    {
+    };
+    struct subdatetime_op
+    {
+    };
+    struct subdates_op
+    {
+    };
+    struct floor_div
+    {
+    };
+    struct mod_op
+    {
+    };
+    struct power_op
+    {
+    };
+    struct remainder_op
+    {
+    };
+    struct fmod_op
+    {
+    };
 
-    using multiarg_operation_t = std::variant< add_op, sub_op, mul_op, div_op, subdatetime_op, subdates_op, floor_div, mod_op, power_op, remainder_op, fmod_op >;
+    using multiarg_operation_t = std::variant<add_op, sub_op, mul_op, div_op, subdatetime_op, subdates_op, floor_div, mod_op,
+                                              power_op, remainder_op, fmod_op>;
 
     inline namespace implementation
     {
-        inline std::optional<data_type_t> data_type_trait( int32_t numpy_type)
+        inline std::optional<data_type_t> data_type_trait(int32_t numpy_type)
         {
             std::optional<data_type_t> retval{};
 
@@ -263,10 +286,10 @@ namespace riptable_cpp
                 retval = double_traits{};
                 break;
             };
-            
+
             return retval;
         }
-        
+
     }
 
 } // namespace riptable_cpp

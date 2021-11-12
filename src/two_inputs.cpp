@@ -22,7 +22,6 @@ namespace riptable_cpp
 
         using chosen_traits_t = std::pair<std::optional<data_type_t>, std::optional<data_type_t>>;
 
-
         template <typename operation_var, typename data_type_var>
         char * perform_calculation(data_objects const input1, data_objects const input2, char * output)
         {
