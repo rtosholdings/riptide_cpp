@@ -214,7 +214,7 @@ namespace riptable_cpp
 
     inline namespace implementation
     {
-        std::optional<data_type_t> data_type_trait( int32_t numpy_type)
+        inline std::optional<data_type_t> data_type_trait( int32_t numpy_type)
         {
             std::optional<data_type_t> retval{};
 

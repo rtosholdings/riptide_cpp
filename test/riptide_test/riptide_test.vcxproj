@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="test_one_input.cpp" />
+    <ClCompile Include="test_operation_traits.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\one_input.h" />
