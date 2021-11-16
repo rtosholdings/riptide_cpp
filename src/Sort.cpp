@@ -2988,7 +2988,7 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
         int32_t * pDataIn = (int32_t *)PyArray_BYTES(inArr1);
         int32_t * pSort = (int32_t *)PyArray_BYTES(inSort);
 
-        int32_t * inverseSort = (int32_t *)WORKSPACE_ALLOC(sortSize * sizeof(int32_t));
+        int32_t * inverseSort = (int32_t *)WORKSPACE_ALLOC(sortSize * sizeof(int32_t)); 
         for (int i = 0; i < sortSize; i++)
         {
             inverseSort[pSort[i]] = i;

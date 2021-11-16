@@ -482,7 +482,7 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
         PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup third argument must be type int32_t not %s",
                      NpyToString(uniqueType));
         return NULL;
-    }
+    } 
 
     LOGGING(
         "IsMemberCategoricalFixup uniqlength:%d   baseoffset1:%d   "

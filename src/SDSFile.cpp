@@ -3748,7 +3748,7 @@ public:
         {
             pArrayNames[i] = NULL;
         }
-        pArrayEnums = (int32_t *)WORKSPACE_ALLOC(NameCount * sizeof);
+        pArrayEnums = (int32_t *)WORKSPACE_ALLOC(NameCount * sizeof(int32_t));
         for (int32_t i = 0; i < NameCount; i++)
         {
             pArrayEnums[i] = 0;

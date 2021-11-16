@@ -2075,7 +2075,7 @@ int64_t Combine1Filter(void * pInputIndex,
     INDEX * pOutput = (INDEX *)pOutputIndex;
 
     // WORKSPACE_ALLOC
-    int64_t allocSize = hashLength * sizeof;
+    int64_t allocSize = hashLength * sizeof(int32_t);
 
     int32_t * pHash = (int32_t *)WorkSpaceAllocLarge(allocSize);
     memset(pHash, 0, allocSize);
@@ -2271,7 +2271,7 @@ PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
                 {
                     int32_t * pFirstReduced = (int32_t *)PyArray_BYTES(firstArrayReduced);
 
-                    memcpy(pFirstReduced, pFirst, uniqueCount * sizeof);
+                    memcpy(pFirstReduced, pFirst, uniqueCount * sizeof(int32_t));
                 }
                 Py_DecRef((PyObject *)firstArray);
                 firstArray = firstArrayReduced;
@@ -2303,7 +2303,7 @@ int64_t iFirstFilter(void * pInputIndex,
     INDEX * pInput = (INDEX *)pInputIndex;
     int64_t * pNewFirst = (int64_t *)pNewFirstIndex;
     int64_t invalid = (int64_t)(1LL << (sizeof(int64_t) * 8 - 1));
-
+    
     // Fill with invalid
     for (int64_t i = 0; i < hashLength; i++)
     {

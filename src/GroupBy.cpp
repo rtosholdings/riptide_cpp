@@ -2189,7 +2189,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
     U * pDataInBase = (U *)pDataInT;
     U * pDataOut = (U *)pDataOutT;
 
-    int64_t allocSize = sizeof * numUnique;
+    int64_t allocSize = sizeof(int32_t) * numUnique;
     int32_t * pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
     memset(pCountOut, 0, allocSize);
 
@@ -3636,7 +3636,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             if (hasCounts)
             {
                 // Zero out for them
-                int64_t allocSize = sizeof * unique_rows;
+                int64_t allocSize = sizeof(int32_t) * unique_rows;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
                 if (pCountOut == NULL)
                 {
@@ -3783,7 +3783,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             if (hasCounts)
             {
                 // Zero out for them
-                int64_t allocSize = sizeof * unique_rows * numCores;
+                int64_t allocSize = sizeof(int32_t) * unique_rows * numCores;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
                 if (pCountOut == NULL)
                 {
@@ -4047,12 +4047,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 if (hasCounts)
                 {
                     // Zero out for them
-                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof * unique_rows);
+                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows);
                     if (pCountOut == NULL)
                     {
                         return NULL;
                     }
-                    memset(pCountOut, 0, sizeof * unique_rows);
+                    memset(pCountOut, 0, sizeof(int32_t) * unique_rows);
                 }
             }
             else
@@ -4076,7 +4076,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         returnTuple = PyTuple_New(tupleSize);
         PyObject * returnCount = NULL;
 
-        // Fill in results
+        // Fill in results 
         for (int i = 0; i < tupleSize; i++)
         {
             PyObject * item = pstGroupBy32->returnObjects[i].returnObject;
