@@ -733,7 +733,7 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
         U256 * pIn1_256 = (U256 *)pIn;
         U256 * pOut_256 = (U256 *)pOut;
 
-        int32_t babyStride = (int32_t)strideIn;
+        ssize_t babyStride = strideIn;
         // add 8 strides everytime we process 8
         __m256i mindex = _mm256_mullo_epi32(_mm256_set1_epi32(babyStride), __vec8_strides.m);
 

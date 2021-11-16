@@ -1639,11 +1639,11 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
                     {
                         if (pBooleanMask[i])
                         {
-                            *pOut++ = (int32_t)i;
+                            *pOut++ = i;
                         }
                         else
                         {
-                            *pOutFalse++ = (int32_t)i;
+                            *pOutFalse++ = i;
                         }
                     }
                 }
@@ -1672,7 +1672,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
                     {
                         if (pBooleanMask[i])
                         {
-                            *pOut++ = (int32_t)i;
+                            *pOut++ = i;
                         }
                     }
                 }

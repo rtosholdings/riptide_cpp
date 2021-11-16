@@ -1049,7 +1049,7 @@ void * GetInvalid(int dtype)
 // NOTE: if they are the same type, special fast routine called
 PyObject * ConvertSafeInternal(PyArrayObject * const inArr1, const int64_t out_dtype)
 {
-    const int32_t numpyOutType = (int32_t)out_dtype;
+    const int32_t numpyOutType = out_dtype;
     const int32_t numpyInType = PyArray_TYPE(inArr1);
 
     if (numpyOutType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE)
@@ -1251,7 +1251,7 @@ PyObject * ConvertSafe(PyObject * self, PyObject * args)
 //       GetConversionFunctionUnsafe.
 PyObject * ConvertUnsafeInternal(PyArrayObject * inArr1, int64_t out_dtype)
 {
-    const int32_t numpyOutType = (int32_t)out_dtype;
+    const int32_t numpyOutType = out_dtype;
     const int32_t numpyInType = ObjectToDtype(inArr1);
 
     if (numpyOutType < 0 || numpyInType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE)
@@ -2075,7 +2075,7 @@ int64_t Combine1Filter(void * pInputIndex,
     INDEX * pOutput = (INDEX *)pOutputIndex;
 
     // WORKSPACE_ALLOC
-    int64_t allocSize = hashLength * sizeof(int32_t);
+    int64_t allocSize = hashLength * sizeof;
 
     int32_t * pHash = (int32_t *)WorkSpaceAllocLarge(allocSize);
     memset(pHash, 0, allocSize);
@@ -2096,7 +2096,7 @@ int64_t Combine1Filter(void * pInputIndex,
                     if (pHash[index] == 0)
                     {
                         // First time, assign FirstKey
-                        pNewFirst[uniquecount] = (int32_t)i;
+                        pNewFirst[uniquecount] = i;
                         uniquecount++;
 
                         // printf("reassign index:%lld to bin:%d\n", (int64_t)index,
@@ -2110,7 +2110,7 @@ int64_t Combine1Filter(void * pInputIndex,
                     {
                         // Get reassigned key
                         // printf("exiting  index:%lld to bin:%d\n", (int64_t)index,
-                        // (int32_t)pHash[index]);
+                        // pHash[index]);
                         pOutput[i] = (INDEX)pHash[index];
                     }
                 }
@@ -2141,7 +2141,7 @@ int64_t Combine1Filter(void * pInputIndex,
                 if (pHash[index] == 0)
                 {
                     // First time, assign FirstKey
-                    pNewFirst[uniquecount] = (int32_t)i;
+                    pNewFirst[uniquecount] = i;
                     uniquecount++;
 
                     // ReassignKey
@@ -2271,7 +2271,7 @@ PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
                 {
                     int32_t * pFirstReduced = (int32_t *)PyArray_BYTES(firstArrayReduced);
 
-                    memcpy(pFirstReduced, pFirst, uniqueCount * sizeof(int32_t));
+                    memcpy(pFirstReduced, pFirst, uniqueCount * sizeof);
                 }
                 Py_DecRef((PyObject *)firstArray);
                 firstArray = firstArrayReduced;
@@ -3242,7 +3242,7 @@ PyObject * HomogenizeArrays(PyObject * self, PyObject * args)
 
     if (aInfo)
     {
-        int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
+        int32_t dtype = PyLong_AsLong(dtypeObject);
 
         if (dtype != -1)
         {
@@ -4017,7 +4017,7 @@ PyObject * ApplyRows(PyObject * self, PyObject * args, PyObject * kwargs)
 
         if (aInfo)
         {
-            int32_t dtype = (int32_t)PyLong_AsLong(dtypeObject);
+            int32_t dtype = PyLong_AsLong(dtypeObject);
 
             if (dtype != -1)
             {

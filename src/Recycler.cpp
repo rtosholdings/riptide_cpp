@@ -664,7 +664,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
             ndim == 1 && strides != NULL && itemSize == strides[0])
         {
             // Based on size and type, lookup
-            int32_t log2 = (int32_t)lzcnt_64(totalSize);
+            int32_t log2 = lzcnt_64(totalSize);
 
             stRecycleList * pItems = &g_stRecycleList[log2][type];
 

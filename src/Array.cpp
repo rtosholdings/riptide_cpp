@@ -76,7 +76,7 @@ static PyObject * ConvertInt32(PyObject * object)
             Py_DecRef((PyObject *)pArray);
             return NULL;
         }
-        pInt32[i] = (int32_t)val;
+        pInt32[i] = val;
     }
     return (PyObject *)pArray;
 }

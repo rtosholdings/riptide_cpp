@@ -3014,7 +3014,7 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
 
         for (int i = 0; i < arraySize1; i++)
         {
-            pDataIn[i] = (int32_t)inverseSort[pDataIn[i]];
+            pDataIn[i] = inverseSort[pDataIn[i]];
         }
         WORKSPACE_FREE(inverseSort);
     }
@@ -4142,7 +4142,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 int32_t * pCount = (int32_t *)callbackArg->pCountOut;
                 int32_t * pCountReduced = (int32_t *)callbackArg->pCountReduced;
 
-                int32_t ubefore = (int32_t)uniquesBefore;
+                int32_t ubefore = uniquesBefore;
 
                 if (t != 0)
                 {
@@ -4151,8 +4151,8 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                     for (int64_t i = 0; i < partLength; i++)
                     {
-                        pKey[i] += ((int32_t)ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
-                        pIndex[i] += (int32_t)partStart;
+                        pKey[i] += (ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
+                        pIndex[i] += partStart;
                     }
                 }
                 else
@@ -4161,7 +4161,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                     for (int64_t i = 0; i < partLength; i++)
                     {
-                        pKey[i] += ((int32_t)partStart + 1); // start at 1, becomes ikey
+                        pKey[i] += (partStart + 1); // start at 1, becomes ikey
                     }
                 }
 
@@ -4178,7 +4178,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                 for (int64_t i = 0; i < uniqueLength; i++)
                 {
-                    pFirstReduced[i] = pFirst[i] + (int32_t)partStart;
+                    pFirstReduced[i] = pFirst[i] + partStart;
                     // printf("setting %lld ", (int64_t)pCount[i]);
                     pCountReduced[i] = pCount[i];
                 }

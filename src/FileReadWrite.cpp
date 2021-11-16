@@ -158,8 +158,8 @@ DWORD CFileReadWrite::ReadChunk(void * buffer, uint32_t count)
         OverlappedIO.hEvent = NULL;
         OverlappedIO.InternalHigh = 0;
         OverlappedIO.Internal = 0;
-        OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
-        OverlappedIO.Offset = (uint32_t)BufferPos;
+        OverlappedIO.OffsetHigh = (BufferPos >> 32);
+        OverlappedIO.Offset = BufferPos;
 
         bool bReadDone;
 
@@ -215,8 +215,8 @@ DWORD CFileReadWrite::ReadChunkAsync(void * buffer, uint32_t count, DWORD * last
     {
         pOverlapped->InternalHigh = 0;
         pOverlapped->Internal = 0;
-        pOverlapped->OffsetHigh = (uint32_t)(BufferPos >> 32);
-        pOverlapped->Offset = (uint32_t)BufferPos;
+        pOverlapped->OffsetHigh = (BufferPos >> 32);
+        pOverlapped->Offset = BufferPos;
 
         bool bReadDone;
 
@@ -330,8 +330,8 @@ DWORD CFileReadWrite::WriteChunk(void * buffer, uint32_t count)
         OverlappedIO.hEvent = 0;
         OverlappedIO.InternalHigh = 0;
         OverlappedIO.Internal = 0;
-        OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
-        OverlappedIO.Offset = (uint32_t)BufferPos;
+        OverlappedIO.OffsetHigh = (BufferPos >> 32);
+        OverlappedIO.Offset = BufferPos;
 
         bool bWriteDone;
 
@@ -391,8 +391,8 @@ DWORD CFileReadWrite::WriteChunkAsync(void * buffer, uint32_t count, DWORD * las
     {
         pOverlapped->InternalHigh = 0;
         pOverlapped->Internal = 0;
-        pOverlapped->OffsetHigh = (uint32_t)(BufferPos >> 32);
-        pOverlapped->Offset = (uint32_t)BufferPos;
+        pOverlapped->OffsetHigh = (BufferPos >> 32);
+        pOverlapped->Offset = BufferPos;
 
         bool bWriteDone;
 

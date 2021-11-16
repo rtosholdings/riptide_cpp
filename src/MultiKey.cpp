@@ -13,7 +13,7 @@
 char * RotateArrays(int64_t tupleSize, ArrayInfo * aInfo)
 {
     // TODO: Is it fast to calculate the hash here?
-    // uint32_t* pHashArray = (uint32_t*)malloc(sizeof(uint32_t) * totalRows);
+    // uint32_t* pHashArray = (uint32_t*)malloc(sizeof * totalRows);
 
     int64_t totalItemSize = 0;
     int64_t totalRows = 0;
@@ -599,7 +599,7 @@ int32_t * GroupByPackFixup32(int64_t numUnique, int64_t totalRows, void * pIndex
     // reserve for invalid bin
     numUnique += GB_BASE_INDEX;
 
-    int64_t size = sizeof(int32_t) * totalRows;
+    int64_t size = sizeof * totalRows;
     int32_t * pNextArray = (int32_t *)WORKSPACE_ALLOC(size);
 
     // mark all invalid
@@ -609,7 +609,7 @@ int32_t * GroupByPackFixup32(int64_t numUnique, int64_t totalRows, void * pIndex
     }
 
     // Go backwards
-    for (int32_t i = (int32_t)totalRows - 1; i >= 0; i--)
+    for (int32_t i = totalRows - 1; i >= 0; i--)
     {
         K group = pIndexArray[i];
 
@@ -657,7 +657,7 @@ bool GroupByPackFinal32(int64_t numUnique, int64_t totalRows, void * pIndexArray
         int32_t * pFirstArray = (int32_t *)PyArray_BYTES(firstArray);
         int32_t * pCountArray = (int32_t *)PyArray_BYTES(countArray);
 
-        int32_t i = (int32_t)totalRows;
+        int32_t i = totalRows;
 
         // TODO -- how to handle empty?
         pSortArray[0] = GB_INVALID_INDEX;
@@ -844,7 +844,7 @@ PyObject * GroupByPack32(PyObject * self, PyObject * args)
             // Next was not supplied and must be calculated
             bMustFree = true;
 
-            int64_t allocsize = sizeof(int32_t) * (numUnique + GB_BASE_INDEX);
+            int64_t allocsize = sizeof * (numUnique + GB_BASE_INDEX);
             pGroupArray = (int32_t *)WORKSPACE_ALLOC(allocsize);
 
             switch (numpyIndexType)
@@ -1151,8 +1151,8 @@ PyObject * MultiKeyGroupBy32Super(PyObject * self, PyObject * args)
                 int32_t * pNextArray = (int32_t *)PyArray_BYTES(nextArray);
 
                 // now one based, so zero reserved
-                int32_t * pUniqueArray = (int32_t *)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(int32_t));
-                int32_t * pUniqueCountArray = (int32_t *)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof(int32_t));
+                int32_t * pUniqueArray = (int32_t *)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof);
+                int32_t * pUniqueCountArray = (int32_t *)WORKSPACE_ALLOC((mkp.aInfo[0].ArrayLength + 1) * sizeof);
 
                 int64_t numUnique = 0;
 
@@ -1190,9 +1190,9 @@ PyObject * MultiKeyGroupBy32Super(PyObject * self, PyObject * args)
                 if (uniqueArray != NULL && uniqueCountArray != NULL)
                 {
                     int32_t * pUniqueArrayDest = (int32_t *)PyArray_BYTES(uniqueArray);
-                    memcpy(pUniqueArrayDest, pUniqueArray, numUnique * sizeof(int32_t));
+                    memcpy(pUniqueArrayDest, pUniqueArray, numUnique * sizeof);
                     int32_t * pUniqueCountArrayDest = (int32_t *)PyArray_BYTES(uniqueCountArray);
-                    memcpy(pUniqueCountArrayDest, pUniqueCountArray, numUnique * sizeof(int32_t));
+                    memcpy(pUniqueCountArrayDest, pUniqueCountArray, numUnique * sizeof);
                 }
                 WORKSPACE_FREE(pUniqueArray);
                 WORKSPACE_FREE(pUniqueCountArray);
@@ -1260,10 +1260,10 @@ PyObject * MultiKeyUnique32(PyObject * self, PyObject * args)
             if (mkp.totalRows < 2100000000)
             {
                 // worst case alloc
-                int32_t * pIndexArray = (int32_t *)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int32_t));
+                int32_t * pIndexArray = (int32_t *)WORKSPACE_ALLOC(mkp.totalRows * sizeof);
 
                 // worst case alloc
-                int32_t * pCountArray = (int32_t *)WORKSPACE_ALLOC(mkp.totalRows * sizeof(int32_t));
+                int32_t * pCountArray = (int32_t *)WORKSPACE_ALLOC(mkp.totalRows * sizeof);
 
                 if (pIndexArray == NULL || pCountArray == NULL)
                 {
@@ -1288,7 +1288,7 @@ PyObject * MultiKeyUnique32(PyObject * self, PyObject * args)
                     if (indexArray2 != NULL)
                     {
                         int32_t * pIndexArray2 = (int32_t *)PyArray_BYTES(indexArray2);
-                        memcpy(pIndexArray2, pIndexArray, numUnique * sizeof(int32_t));
+                        memcpy(pIndexArray2, pIndexArray, numUnique * sizeof);
                     }
 
                     PyArrayObject * countArray2 = AllocateNumpyArray(1, (npy_intp *)&numUnique, NPY_INT32);
@@ -1297,7 +1297,7 @@ PyObject * MultiKeyUnique32(PyObject * self, PyObject * args)
                     if (countArray2 != NULL)
                     {
                         int32_t * pCountArray2 = (int32_t *)PyArray_BYTES(countArray2);
-                        memcpy(pCountArray2, pCountArray, numUnique * sizeof(int32_t));
+                        memcpy(pCountArray2, pCountArray, numUnique * sizeof);
                     }
 
                     // free the side array
@@ -1513,7 +1513,7 @@ PyObject * MultiKeyHash(PyObject * self, PyObject * args)
 
             assert(mkp.totalRows < 2100000000);
 
-            int32_t i = (int32_t)mkp.totalRows;
+            int32_t i = mkp.totalRows;
 
             while (i > 0)
             {

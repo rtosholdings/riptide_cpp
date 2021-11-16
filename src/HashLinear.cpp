@@ -1224,7 +1224,7 @@ static void IsMemberMK(void * pHashLinearVoid, int64_t arraySize, void * pInputT
 //#define HASH_int32_t  uint64_t h = (uint64_t)item; h ^= (h >> 16); h= h &
 //(HashSize-1); #define HASH_int32_t uint64_t h= fasthash64_8(item) &
 //(HashSize-1);
-#define HASH_int32_t uint64_t h = _mm_crc32_u32(0, (uint32_t)item) & (HashSize - 1);
+#define HASH_int32_t uint64_t h = _mm_crc32_u32(0, item) & (HashSize - 1);
 
 //#define HASH_int64_t  uint64_t h= _mm_crc32_u64(0, item) & (HashSize-1);
 #define HASH_int64_t uint64_t h = fasthash64_8(item) & (HashSize - 1);

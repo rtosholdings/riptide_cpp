@@ -1031,7 +1031,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t nth = (int32_t)funcParam;
+        int32_t nth = funcParam;
 
         U invalid = GET_INVALID(pDest[0]);
 
@@ -1060,7 +1060,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t nth = (int32_t)funcParam;
+        int32_t nth = funcParam;
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -1203,7 +1203,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
@@ -1267,7 +1267,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
@@ -1387,7 +1387,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
@@ -1452,7 +1452,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
@@ -1581,7 +1581,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         LOGGING("in rolling count %lld %lld  sizeofdest %lld\n", binLow, binHigh, sizeof(U));
@@ -1642,7 +1642,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh,
@@ -1719,7 +1719,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = (int32_t)funcParam;
+        int32_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
@@ -1941,7 +1941,7 @@ public:
                 pEnd--;
             }
 
-            nCount = (int32_t)((pEnd + 1) - pSort);
+            nCount = ((pEnd + 1) - pSort);
 
             if (nCount == 0)
             {
@@ -2010,7 +2010,7 @@ public:
             // Copy over the items for this group
             for (int j = 0; j < nCount; j++)
             {
-                // printf("**[%lld][%d]  %d\n", i, index + j, (int32_t)pGroup[index +
+                // printf("**[%lld][%d]  %d\n", i, index + j, pGroup[index +
                 // j]);
                 pSort[j] = pSrc[pGroup[index + j]];
             }
@@ -2029,7 +2029,7 @@ public:
                 pEnd--;
             }
 
-            nCount = (int32_t)((pEnd + 1) - pSort);
+            nCount = ((pEnd + 1) - pSort);
 
             if (nCount == 0)
             {
@@ -2189,7 +2189,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
     U * pDataInBase = (U *)pDataInT;
     U * pDataOut = (U *)pDataOutT;
 
-    int64_t allocSize = sizeof(int32_t) * numUnique;
+    int64_t allocSize = sizeof * numUnique;
     int32_t * pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
     memset(pCountOut, 0, allocSize);
 
@@ -3498,7 +3498,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 = numpy array (int32_t) which has the index to the
+// columns in a dataset) Arg2 = numpy array  which has the index to the
 // unique keys (ikey from MultiKeyGroupBy32) Arg3 = integer unique rows Arg4 =
 // integer (function number to execute for sum,mean,min, max) Example:
 // GroupByOp2(array, ikey, 3, np.float32) Returns cells
@@ -3636,7 +3636,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             if (hasCounts)
             {
                 // Zero out for them
-                int64_t allocSize = sizeof(int32_t) * unique_rows;
+                int64_t allocSize = sizeof * unique_rows;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
                 if (pCountOut == NULL)
                 {
@@ -3687,7 +3687,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
                 // next low bin is the previous high bin
                 low = high;
 
-                pstGroupBy32->returnObjects[i].funcNum = (int32_t)firstFuncNum;
+                pstGroupBy32->returnObjects[i].funcNum = firstFuncNum;
                 pstGroupBy32->returnObjects[i].didWork = 0;
 
                 // Assign working memory per call
@@ -3783,7 +3783,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             if (hasCounts)
             {
                 // Zero out for them
-                int64_t allocSize = sizeof(int32_t) * unique_rows * numCores;
+                int64_t allocSize = sizeof * unique_rows * numCores;
                 pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
                 if (pCountOut == NULL)
                 {
@@ -3816,7 +3816,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             for (int i = 0; i < numCores; i++)
             {
-                pstGroupBy32->returnObjects[i].funcNum = (int32_t)firstFuncNum;
+                pstGroupBy32->returnObjects[i].funcNum = firstFuncNum;
                 pstGroupBy32->returnObjects[i].binLow = binLow;
                 pstGroupBy32->returnObjects[i].binHigh = binHigh;
 
@@ -3872,7 +3872,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 = iKey = numpy array (int32_t) which has the index
+// columns in a dataset) Arg2 = iKey = numpy array  which has the index
 // to the unique keys (ikey from MultiKeyGroupBy32) Arg3 = integer unique rows
 // Arg4 = LIST of integer (function number to execute for sum,mean,min, max)
 // Arg5 = LIST of integers (binLow -- invalid bin)
@@ -4015,7 +4015,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
             int overflow = 0;
             int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
-            pstGroupBy32->returnObjects[i].funcNum = (int32_t)funcNum;
+            pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);
             pstGroupBy32->returnObjects[i].binLow = binLow;
@@ -4047,12 +4047,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 if (hasCounts)
                 {
                     // Zero out for them
-                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows);
+                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof * unique_rows);
                     if (pCountOut == NULL)
                     {
                         return NULL;
                     }
-                    memset(pCountOut, 0, sizeof(int32_t) * unique_rows);
+                    memset(pCountOut, 0, sizeof * unique_rows);
                 }
             }
             else
@@ -4108,11 +4108,11 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 =iKey = numpy array (int32_t) which has the index
-// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 =iGroup: (int32_t)
+// columns in a dataset) Arg2 =iKey = numpy array  which has the index
+// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 =iGroup: 
 // array size is same as multikey, unique keys are grouped together Arg4
-// =iFirst: (int32_t) array size is number of unique keys, indexes into iGroup
-// Arg5 =nCount: (int32_t) array size is number of unique keys for the group, is
+// =iFirst:  array size is number of unique keys, indexes into iGroup
+// Arg5 =nCount:  array size is number of unique keys for the group, is
 // how many member of the group (paired with iFirst) Arg6 = integer unique rows
 // Arg7 = LIST of integers (function number to execute for sum,mean,min, max)
 // Arg8 = LIST of integers (binLow -- invalid bin)
@@ -4255,7 +4255,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         {
             int overflow = 0;
             int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
-            pstGroupBy32->returnObjects[i].funcNum = (int32_t)funcNum;
+            pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);
             pstGroupBy32->returnObjects[i].binLow = binLow;

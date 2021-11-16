@@ -41,7 +41,7 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
         CHUNKROWS = 1;
     }
 
-    __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32((int32_t)itemSize), _mm256_loadu_si256(&__vindex8_strides.m));
+    __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32(itemSize), _mm256_loadu_si256(&__vindex8_strides.m));
     __m128i vindex128 = _mm256_extracti128_si256(vindex, 0);
 
     while (startRow < totalRows)

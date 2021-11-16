@@ -76,14 +76,14 @@ MEM_STATIC ZSTD_cpuid_t ZSTD_cpuid(void)
         if (n >= 1)
         {
             __cpuid((int *)reg, 1);
-            f1c = (uint32_t)reg[2];
-            f1d = (uint32_t)reg[3];
+            f1c = reg[2];
+            f1d = reg[3];
         }
         if (n >= 7)
         {
             __cpuidex((int *)reg, 7, 0);
-            f7b = (uint32_t)reg[1];
-            f7c = (uint32_t)reg[2];
+            f7b = reg[1];
+            f7c = reg[2];
         }
     }
 #elif defined(__i386__) && defined(__PIC__) && ! defined(__clang__) && defined(__GNUC__)

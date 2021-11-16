@@ -725,7 +725,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = (int32_t)windowSize1;
+    int32_t windowSize = windowSize1;
 
     LOGGING("cumsum %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
 
@@ -848,7 +848,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = (int32_t)windowSize1;
+    int32_t windowSize = windowSize1;
 
     LOGGING("cumprod %lld  %lld  %p  %p\n", numUnique, totalInputRows, pIncludeMask, pResetMask);
 
@@ -1196,7 +1196,7 @@ public:
                         // (double)pLastEma[location], (double)-decayRate, (double)pTime[i],
                         // (double)pLastTime[location] );
                         pLastEma[location] = pSrc[i] + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
-                        // printf("[%d][%d] %lf\n", i, (int32_t)location,
+                        // printf("[%d][%d] %lf\n", i, location,
                         // (double)pLastEma[location]);
                         pLastTime[location] = pTime[i];
                         pDest[i] = pLastEma[location];
@@ -1827,7 +1827,7 @@ void EmaByCall(void * pEmaBy, int64_t i)
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 = iKey = numpy array (int32_t) which has the index
+// columns in a dataset) Arg2 = iKey = numpy array  which has the index
 // to the unique keys (ikey from MultiKeyGroupBy32) Arg3 = integer unique rows
 // Arg4 = integer (function number to execute for cumsum, ema)
 // Arg5 = params for function must be (decay/window, time, includemask,
@@ -1958,7 +1958,7 @@ PyObject * EmaAll32(PyObject * self, PyObject * args)
     stEma32 * pstEma32 = (stEma32 *)WORKSPACE_ALLOC((sizeof(stEma32) + 8 + sizeof(stEmaReturn)) * tupleSize);
 
     pstEma32->aInfo = aInfo;
-    pstEma32->funcNum = (int32_t)funcNum;
+    pstEma32->funcNum = funcNum;
     pstEma32->pKey = (int32_t *)PyArray_BYTES(iKey);
     pstEma32->tupleSize = tupleSize;
     pstEma32->uniqueRows = unique_rows;

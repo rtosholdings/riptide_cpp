@@ -1385,7 +1385,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
         for (int64_t i = 0; i < arrayCount; i++)
         {
             pDest->ArrayLength = pSrc->ArrayLength;
-            pDest->ItemSize = (int32_t)pSrc->ItemSize;
+            pDest->ItemSize = pSrc->ItemSize;
             pDest->pArrayObject = pSrc->pObject; // We do not need this..
             pDest->NumBytes = pSrc->NumBytes;
             pDest->NumpyDType = pSrc->NumpyDType;

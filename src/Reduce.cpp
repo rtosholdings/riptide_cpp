@@ -2942,7 +2942,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
         Py_RETURN_NONE;
     }
 
-    stScatterGatherFunc sgFunc = { (int32_t)numpyInType, 0, 0, 0, 0, 0 };
+    stScatterGatherFunc sgFunc = { numpyInType, 0, 0, 0, 0, 0 };
 
     FUNCTION_LIST fl{};
     fl.AnyScatterGatherCall = pFunction;

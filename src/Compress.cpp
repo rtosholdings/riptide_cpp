@@ -27,7 +27,7 @@ void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t
         pstNumpyHeader->ndim = (int8_t)ndim;
 
         pstNumpyHeader->flags = flags;
-        pstNumpyHeader->itemsize = (int32_t)itemsize;
+        pstNumpyHeader->itemsize = itemsize;
 
         if (pstNumpyHeader->ndim > 3)
         {

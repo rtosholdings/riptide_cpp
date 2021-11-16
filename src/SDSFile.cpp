@@ -508,8 +508,8 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
     OverlappedIO.hEvent = eventHandle;
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
-    OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
-    OverlappedIO.Offset = (uint32_t)BufferPos;
+    OverlappedIO.OffsetHigh = (BufferPos >> 32);
+    OverlappedIO.Offset = BufferPos;
 
     bool bReadDone;
 
@@ -594,8 +594,8 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
     OverlappedIO.hEvent = eventHandle;
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
-    OverlappedIO.OffsetHigh = (uint32_t)(BufferPos >> 32);
-    OverlappedIO.Offset = (uint32_t)BufferPos;
+    OverlappedIO.OffsetHigh = (BufferPos >> 32);
+    OverlappedIO.Offset = BufferPos;
 
     OVERLAPPED * pos = &OverlappedIO;
     DWORD n;
@@ -2725,8 +2725,8 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pArrayBlock->CompressionType = COMPRESSION_TYPE_ZSTD;
 
         // New version 4.3
-        pArrayBlock->ArrayBandCount = (int32_t)bandCount;
-        pArrayBlock->ArrayBandSize = (int32_t)bandSize;
+        pArrayBlock->ArrayBandCount = bandCount;
+        pArrayBlock->ArrayBandSize = bandSize;
 
         // record array dimensions
         int32_t ndim = pArrayInfo->NDim;
@@ -2752,7 +2752,7 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pArrayBlock->Flags = pArrayInfo->Flags;
 
         pArrayBlock->DType = pArrayInfo->NumpyDType;
-        pArrayBlock->ItemSize = (int32_t)pArrayInfo->ItemSize;
+        pArrayBlock->ItemSize = pArrayInfo->ItemSize;
         pArrayBlock->HeaderLength = sizeof(SDS_ARRAY_BLOCK);
         pArrayBlock->Magic = COMPRESSION_MAGIC;
 
@@ -2991,7 +2991,7 @@ bool SDSWriteFileInternal(const char * fileName,
                         }
                         pDestArrayBlock[arrayNumber].Flags = aInfo[arrayNumber].Flags;
                         pDestArrayBlock[arrayNumber].DType = aInfo[arrayNumber].NumpyDType;
-                        pDestArrayBlock[arrayNumber].ItemSize = (int32_t)aInfo[arrayNumber].ItemSize;
+                        pDestArrayBlock[arrayNumber].ItemSize = aInfo[arrayNumber].ItemSize;
                         pDestArrayBlock[arrayNumber].HeaderLength = sizeof(SDS_ARRAY_BLOCK);
                         pDestArrayBlock[arrayNumber].Magic = COMPRESSION_MAGIC;
 
@@ -3748,7 +3748,7 @@ public:
         {
             pArrayNames[i] = NULL;
         }
-        pArrayEnums = (int32_t *)WORKSPACE_ALLOC(NameCount * sizeof(int32_t));
+        pArrayEnums = (int32_t *)WORKSPACE_ALLOC(NameCount * sizeof);
         for (int32_t i = 0; i < NameCount; i++)
         {
             pArrayEnums[i] = 0;
@@ -6292,7 +6292,7 @@ public:
         }
 
         // track last valid row?
-        LastRow = (int32_t)fileRow;
+        LastRow = fileRow;
     }
 
     //------------------------------------------------

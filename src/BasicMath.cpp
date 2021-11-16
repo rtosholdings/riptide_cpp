@@ -236,7 +236,7 @@ static const inline T MaxOp(T x, T y)
 // x & y; }
 
 static const int64_t NAN_FOR_INT64 = (int64_t)0x8000000000000000LL;
-static const int64_t NAN_FOR_INT32 = (int32_t)0x80000000;
+static const int64_t NAN_FOR_INT32 = 0x80000000;
 
 template <typename T>
 static const inline double DivOp(T x, T y)

@@ -1015,7 +1015,7 @@ bool ConvertSingleItemArray(void * pInput, int16_t numpyInType, _m256all * pDest
         break;
     CASE_NPY_UINT32:
     CASE_NPY_INT32:
-        pDest->i = _mm256_set1_epi32((int32_t)value);
+        pDest->i = _mm256_set1_epi32(value);
         break;
     CASE_NPY_UINT64:
 
@@ -1092,7 +1092,7 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
             break;
         CASE_NPY_UINT32:
         CASE_NPY_INT32:
-            pDest->i = _mm256_set1_epi32((int32_t)value);
+            pDest->i = _mm256_set1_epi32(value);
             break;
         CASE_NPY_UINT64:
 
@@ -1177,10 +1177,10 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->i = _mm256_set1_epi16((uint16_t)value2);
                 break;
             CASE_NPY_INT32:
-                pDest->i = _mm256_set1_epi32((int32_t)value);
+                pDest->i = _mm256_set1_epi32(value);
                 break;
             CASE_NPY_UINT32:
-                pDest->i = _mm256_set1_epi32((uint32_t)value2);
+                pDest->i = _mm256_set1_epi32(value2);
                 break;
             CASE_NPY_INT64:
 
@@ -1223,10 +1223,10 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->i = _mm256_set1_epi16((uint16_t)value);
                 break;
             CASE_NPY_UINT32:
-                pDest->i = _mm256_set1_epi32((uint32_t)value);
+                pDest->i = _mm256_set1_epi32(value);
                 break;
             CASE_NPY_INT32:
-                pDest->i = _mm256_set1_epi32((int32_t)value);
+                pDest->i = _mm256_set1_epi32(value);
                 break;
             CASE_NPY_UINT64:
 
