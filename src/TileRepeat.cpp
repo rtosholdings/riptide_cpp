@@ -31,7 +31,7 @@ const union
 //-----------------------------------
 //
 void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, stOffsets * pstOffset, int64_t * pOffsets,
-                     int64_t numArrays, int64_t itemSize)
+                     int64_t numArrays, int32_t itemSize)
 {
     // Try to keep everything in L1Cache
     const int64_t L1CACHE = 32768;
@@ -172,7 +172,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    int64_t itemSize = PyArray_ITEMSIZE(inArr);
+    int32_t itemSize = static_cast<int32_t>(PyArray_ITEMSIZE(inArr));
 
     if (itemSize != PyArray_STRIDE(inArr, 0))
     {
@@ -219,7 +219,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
             stOffsets * pstOffset;
             int64_t * pOffsets;
             int64_t numArrays;
-            int64_t itemSize;
+            int32_t itemSize;
             int64_t lastRow;
         } stConvert;
 

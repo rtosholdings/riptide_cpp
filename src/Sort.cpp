@@ -2988,7 +2988,7 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
         int32_t * pDataIn = (int32_t *)PyArray_BYTES(inArr1);
         int32_t * pSort = (int32_t *)PyArray_BYTES(inSort);
 
-        int32_t * inverseSort = (int32_t *)WORKSPACE_ALLOC(sortSize * sizeof(int32_t)); 
+        int32_t * inverseSort = (int32_t *)WORKSPACE_ALLOC(sortSize * sizeof(int32_t));
         for (int i = 0; i < sortSize; i++)
         {
             inverseSort[pSort[i]] = i;
@@ -3014,7 +3014,7 @@ PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args)
 
         for (int i = 0; i < arraySize1; i++)
         {
-            pDataIn[i] = inverseSort[pDataIn[i]];
+            pDataIn[i] = static_cast<int32_t>(inverseSort[pDataIn[i]]);
         }
         WORKSPACE_FREE(inverseSort);
     }
@@ -4126,7 +4126,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             // printf("[%lld] start: %lld  length: %lld  ubefore: %lld\n", t,
             // partStart, partLength, uniquesBefore);
 
-            if (callbackArg->sizeofUINDEX == 4)
+            if constexpr (sizeof(UINDEX) == 4)
             {
                 int32_t * pKey = (int32_t *)callbackArg->pKeyOut;
 
@@ -4142,7 +4142,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 int32_t * pCount = (int32_t *)callbackArg->pCountOut;
                 int32_t * pCountReduced = (int32_t *)callbackArg->pCountReduced;
 
-                int32_t ubefore = uniquesBefore;
+                int32_t ubefore = static_cast<int32_t>(callbackArg->pUniqueCounts[t - 1]);
 
                 if (t != 0)
                 {
@@ -4151,8 +4151,8 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                     for (int64_t i = 0; i < partLength; i++)
                     {
-                        pKey[i] += (ubefore + 1); // start at 1 (to reserve zero bin), becomes ikey
-                        pIndex[i] += partStart;
+                        pKey[i] += static_cast<int32_t>(++ubefore); // start at 1 (to reserve zero bin), becomes ikey
+                        pIndex[i] += static_cast<int32_t>(partStart);
                     }
                 }
                 else
@@ -4161,7 +4161,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                     for (int64_t i = 0; i < partLength; i++)
                     {
-                        pKey[i] += (partStart + 1); // start at 1, becomes ikey
+                        pKey[i] += static_cast<int32_t>(++partStart); // start at 1, becomes ikey
                     }
                 }
 
@@ -4178,7 +4178,7 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
                 for (int64_t i = 0; i < uniqueLength; i++)
                 {
-                    pFirstReduced[i] = pFirst[i] + partStart;
+                    pFirstReduced[i] = static_cast<int32_t>(pFirst[i] + partStart);
                     // printf("setting %lld ", (int64_t)pCount[i]);
                     pCountReduced[i] = pCount[i];
                 }

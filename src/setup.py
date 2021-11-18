@@ -75,8 +75,8 @@ if sys.platform == 'win32':
         #extra_compile_args = ['/MT /Ox /Ob2 /Oi /Ot'],
         # For MSVC windows compiler 2019 it has the new __CxxFrameHandler4 which is found in vcrntime140_1.dll which is not on all systems
         # We use /dsFH4- to disable this frame handler
-        extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/W3','/FC','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
-        #extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/W3','/WX''/FC','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
+        #extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/W3','/FC','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
+        extra_compile_args = ['/Ox','/Ob2','/Oi','/Ot','/d2FH4-','/W3','/WX','/FC','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
         #extra_compile_args = ['/Od','/Z7','/d2FH4-','/W3','/WX','/FC','/Zc:__cplusplus','/std:c++17','/permissive-','/Zc:strictStrings-'],
         #extra_link_args = ['/debug']
         )

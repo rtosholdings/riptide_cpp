@@ -505,11 +505,17 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
     // LastError);
     OVERLAPPED OverlappedIO;
 
+    if (BufferPos > INT_MAX)
+    {
+        LogError("!! Overlapped only supports 32-bit file offsets !! [%lld]", BufferPos);
+        return 0;
+    }
+
     OverlappedIO.hEvent = eventHandle;
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
     OverlappedIO.OffsetHigh = (BufferPos >> 32);
-    OverlappedIO.Offset = BufferPos;
+    OverlappedIO.Offset = static_cast<int32_t>(BufferPos);
 
     bool bReadDone;
 
@@ -591,11 +597,17 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
     // LastError);
     OVERLAPPED OverlappedIO;
 
+    if (BufferPos > INT_MAX)
+    {
+        LogError("!! Overlapped only supports 32-bit file offsets !! [%lld]", BufferPos);
+        return 0;
+    }
+
     OverlappedIO.hEvent = eventHandle;
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
     OverlappedIO.OffsetHigh = (BufferPos >> 32);
-    OverlappedIO.Offset = BufferPos;
+    OverlappedIO.Offset = static_cast<int32_t>(BufferPos);
 
     OVERLAPPED * pos = &OverlappedIO;
     DWORD n;
@@ -2725,8 +2737,13 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pArrayBlock->CompressionType = COMPRESSION_TYPE_ZSTD;
 
         // New version 4.3
-        pArrayBlock->ArrayBandCount = bandCount;
-        pArrayBlock->ArrayBandSize = bandSize;
+        if (bandCount > INT_MAX || bandSize > INT_MAX)
+        {
+            LOGGING("bandCount [%lld] and bandSize [%lld] are only 32-bit values in the file array block", bandCount, bandSize);
+            return false;
+        }
+        pArrayBlock->ArrayBandCount = static_cast<int32_t>(bandCount);
+        pArrayBlock->ArrayBandSize = static_cast<int32_t>(bandSize);
 
         // record array dimensions
         int32_t ndim = pArrayInfo->NDim;

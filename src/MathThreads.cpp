@@ -82,7 +82,7 @@ void * WorkerThreadFunction(void * lpParam)
 {
     stWorkerRing * pWorkerRing = (stWorkerRing *)lpParam;
 
-    uint32_t core = (InterlockedIncrement64(&pWorkerRing->WorkThread));
+    uint32_t core = static_cast<uint32_t>((InterlockedIncrement64(&pWorkerRing->WorkThread)));
     core = core - 1;
 
     // if (core > 3) core += 16;

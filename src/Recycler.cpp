@@ -344,7 +344,7 @@ static inline void RemoveFromList(stRecycleList * pItems, int32_t slot)
 // On decrement it will decref array, set the slot to null and inc Tail
 // On increment it will incref array, time stamp, and inc Head
 // On Entry: the recycledArray must be valid
-static void RefCountNumpyArray(stRecycleList * pItems, int32_t lzcount, int32_t type, int32_t slot, bool bIncrement)
+static void RefCountNumpyArray(stRecycleList * pItems, int64_t lzcount, int32_t type, int32_t slot, bool bIncrement)
 {
     if (pItems->Item[slot].recycledArray == NULL)
     {
@@ -359,7 +359,7 @@ static void RefCountNumpyArray(stRecycleList * pItems, int32_t lzcount, int32_t 
 
         // timestamp
         pItems->Item[slot].tsc = __rdtsc();
-        LOGRECYCLE("Adding item to slot %d,%d,%d -- refcnt now is %llu\n", lzcount, type, slot,
+        LOGRECYCLE("Adding item to slot %lld,%d,%d -- refcnt now is %llu\n", lzcount, type, slot,
                    pItems->Item[slot].recycledArray->ob_base.ob_refcnt);
 
         // Only location head is incremented
@@ -374,7 +374,8 @@ static void RefCountNumpyArray(stRecycleList * pItems, int32_t lzcount, int32_t 
         RemoveFromList(pItems, slot);
 
         // If this is the last decref, python may free memory
-        LOGRECYCLE("Removing item in slot %d,%d,%d -- refcnt before is %llu\n", lzcount, type, slot, toDelete->ob_base.ob_refcnt);
+        LOGRECYCLE("Removing item in slot %lld,%d,%d -- refcnt before is %llu\n", lzcount, type, slot,
+                   toDelete->ob_base.ob_refcnt);
 
         // NOTE: If this is the last decref, it might "free" the memory which might
         // take time
@@ -664,7 +665,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
             ndim == 1 && strides != NULL && itemSize == strides[0])
         {
             // Based on size and type, lookup
-            int32_t log2 = lzcnt_64(totalSize);
+            int64_t log2 = lzcnt_64(totalSize);
 
             stRecycleList * pItems = &g_stRecycleList[log2][type];
 
@@ -743,7 +744,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
                 if (deltaHead < 0 || deltaHead > RECYCLE_MAXIMUM_SEARCH)
                 {
                     LogError(
-                        "!!! inner critical error with recycler items %d,%d,%d with "
+                        "!!! inner critical error with recycler items %lld,%d,%d with "
                         "deltahead %d  totalsize%lld\n",
                         log2, type, slot, deltaHead, pItems->Item[slot].totalSize);
                 }

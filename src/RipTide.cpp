@@ -920,6 +920,7 @@ int32_t GetArrDType(PyArrayObject * inArr)
     return dtype;
 }
 
+// TODO: Refactor this to be variant based.
 //-----------------------------------------------------------------------------------
 // Convert python object to
 // pInput: pointer to array value that needs to be converted
@@ -1015,7 +1016,7 @@ bool ConvertSingleItemArray(void * pInput, int16_t numpyInType, _m256all * pDest
         break;
     CASE_NPY_UINT32:
     CASE_NPY_INT32:
-        pDest->i = _mm256_set1_epi32(value);
+        pDest->i = _mm256_set1_epi32(static_cast<int32_t>(value));
         break;
     CASE_NPY_UINT64:
 
@@ -1092,7 +1093,7 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
             break;
         CASE_NPY_UINT32:
         CASE_NPY_INT32:
-            pDest->i = _mm256_set1_epi32(value);
+            pDest->i = _mm256_set1_epi32(static_cast<int32_t>(value));
             break;
         CASE_NPY_UINT64:
 
@@ -1177,10 +1178,10 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->i = _mm256_set1_epi16((uint16_t)value2);
                 break;
             CASE_NPY_INT32:
-                pDest->i = _mm256_set1_epi32(value);
+                pDest->i = _mm256_set1_epi32(static_cast<int32_t>(value));
                 break;
             CASE_NPY_UINT32:
-                pDest->i = _mm256_set1_epi32(value2);
+                pDest->i = _mm256_set1_epi32(static_cast<uint32_t>(value2));
                 break;
             CASE_NPY_INT64:
 
@@ -1223,10 +1224,10 @@ bool ConvertScalarObject(PyObject * inObject1, _m256all * pDest, int16_t numpyOu
                 pDest->i = _mm256_set1_epi16((uint16_t)value);
                 break;
             CASE_NPY_UINT32:
-                pDest->i = _mm256_set1_epi32(value);
+                pDest->i = _mm256_set1_epi32(static_cast<uint32_t>(value));
                 break;
             CASE_NPY_INT32:
-                pDest->i = _mm256_set1_epi32(value);
+                pDest->i = _mm256_set1_epi32(static_cast<int32_t>(value));
                 break;
             CASE_NPY_UINT64:
 
@@ -2254,19 +2255,19 @@ bool GetUpcastType(int numpyInType1, int numpyInType2, int & convertType1, int &
 //  return value 0: one loop can process all data, false = multiple loops
 //  NOTE: if return value is 0 and itemsze == stride, then vector math possible
 //
-int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int64_t & stride)
+int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int32_t & stride)
 {
-    stride = PyArray_ITEMSIZE(inArray);
+    stride = static_cast<int32_t>(PyArray_ITEMSIZE(inArray));
     int direction = 0;
     ndim = PyArray_NDIM(inArray);
     if (ndim > 0)
     {
-        stride = PyArray_STRIDE(inArray, 0);
+        stride = static_cast<int32_t>(PyArray_STRIDE(inArray, 0));
         if (ndim > 1)
         {
             // at least two strides
             int ndims = PyArray_NDIM(inArray);
-            int64_t lastStride = PyArray_STRIDE(inArray, ndims - 1);
+            int32_t lastStride = static_cast<int32_t>(PyArray_STRIDE(inArray, ndims - 1));
             if (lastStride == stride)
             {
                 // contiguous with one of the dimensions having length 1
@@ -2276,10 +2277,10 @@ int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int64_t & str
                 // Row Major - 'C' Style
                 // work backwards
                 int currentdim = ndims - 1;
-                int64_t curStrideLen = lastStride;
+                int32_t curStrideLen = lastStride;
                 while (currentdim != 0)
                 {
-                    curStrideLen *= PyArray_DIM(inArray, currentdim);
+                    curStrideLen *= static_cast<int32_t>(PyArray_DIM(inArray, currentdim));
                     LOGGING("'C' %lld vs %lld  dim: %lld  stride: %lld \n", curStrideLen, PyArray_STRIDE(inArray, currentdim - 1),
                             PyArray_DIM(inArray, currentdim - 1), lastStride);
                     if (PyArray_STRIDE(inArray, currentdim - 1) != curStrideLen)
@@ -2293,10 +2294,10 @@ int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int64_t & str
             {
                 // Col Major - 'F' Style
                 int currentdim = 0;
-                int64_t curStrideLen = stride;
+                int32_t curStrideLen = stride;
                 while (currentdim != (ndims - 1))
                 {
-                    curStrideLen *= PyArray_DIM(inArray, currentdim);
+                    curStrideLen *= static_cast<int32_t>(PyArray_DIM(inArray, currentdim));
                     LOGGING("'F' %lld vs %lld  dim:  %lld   stride: %lld \n", curStrideLen,
                             PyArray_STRIDE(inArray, currentdim + 1), PyArray_DIM(inArray, currentdim + 1), stride);
                     if (PyArray_STRIDE(inArray, currentdim + 1) != curStrideLen)

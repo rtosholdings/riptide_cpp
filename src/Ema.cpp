@@ -725,7 +725,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = windowSize1;
+    int32_t windowSize = std::lround(windowSize1);
 
     LOGGING("cumsum %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
 
@@ -848,7 +848,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = windowSize1;
+    int32_t windowSize = std::lround(windowSize1);
 
     LOGGING("cumprod %lld  %lld  %p  %p\n", numUnique, totalInputRows, pIncludeMask, pResetMask);
 
@@ -1958,7 +1958,7 @@ PyObject * EmaAll32(PyObject * self, PyObject * args)
     stEma32 * pstEma32 = (stEma32 *)WORKSPACE_ALLOC((sizeof(stEma32) + 8 + sizeof(stEmaReturn)) * tupleSize);
 
     pstEma32->aInfo = aInfo;
-    pstEma32->funcNum = funcNum;
+    pstEma32->funcNum = static_cast<int32_t>(funcNum);
     pstEma32->pKey = (int32_t *)PyArray_BYTES(iKey);
     pstEma32->tupleSize = tupleSize;
     pstEma32->uniqueRows = unique_rows;

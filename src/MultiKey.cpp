@@ -609,14 +609,14 @@ int32_t * GroupByPackFixup32(int64_t numUnique, int64_t totalRows, void * pIndex
     }
 
     // Go backwards
-    for (int32_t i = totalRows - 1; i >= 0; i--)
+    for (int64_t i = totalRows - 1; i >= 0; i--)
     {
         K group = pIndexArray[i];
 
         pNextArray[i] = pGroupArray[group];
 
         // printf("%d  - group %d next %d\n", i, (int)group, pNextArray[i]);
-        pGroupArray[group] = i;
+        pGroupArray[group] = static_cast<int32_t>(i);
     }
 
     return pNextArray;
@@ -657,7 +657,12 @@ bool GroupByPackFinal32(int64_t numUnique, int64_t totalRows, void * pIndexArray
         int32_t * pFirstArray = (int32_t *)PyArray_BYTES(firstArray);
         int32_t * pCountArray = (int32_t *)PyArray_BYTES(countArray);
 
-        int32_t i = totalRows;
+        if (totalRows > INT_MAX)
+        {
+            return false;
+        }
+
+        int32_t i = static_cast<int32_t>(totalRows);
 
         // TODO -- how to handle empty?
         pSortArray[0] = GB_INVALID_INDEX;
@@ -1513,7 +1518,7 @@ PyObject * MultiKeyHash(PyObject * self, PyObject * args)
 
             assert(mkp.totalRows < 2100000000);
 
-            int32_t i = mkp.totalRows;
+            int32_t i = static_cast<int32_t>(mkp.totalRows);
 
             while (i > 0)
             {
@@ -2148,7 +2153,7 @@ PyObject * GroupFromBinCount(PyObject * self, PyObject * args)
             LOGGING("multithread makeigroup   %lld cores   %lld unique   %lld rows\n", cores, totalUnique, totalRows);
 
             g_cMathWorker->DoMultiThreadedWork((int)cores, lambdaBinCountCallback, &stMaster);
-            WORKSPACE_FREE(pstBinCount); 
+            WORKSPACE_FREE(pstBinCount);
         }
         else
         {

@@ -3428,9 +3428,9 @@ PyObject * TwoInputsInternal(CTwoInputs & twoInputs, int64_t funcNumber)
             if (twoInputs.len2 > 1)
                 fl.Input2Strides = PyArray_STRIDE(twoInputs.inArr2, 0);
 
-            fl.InputItemSize =
-                twoInputs.len1 >= twoInputs.len2 ? PyArray_ITEMSIZE(twoInputs.inArr) : PyArray_ITEMSIZE(twoInputs.inArr2);
-            fl.OutputItemSize = PyArray_ITEMSIZE(outputArray);
+            fl.InputItemSize = twoInputs.len1 >= twoInputs.len2 ? static_cast<int32_t>(PyArray_ITEMSIZE(twoInputs.inArr)) :
+                                                                  static_cast<int32_t>(PyArray_ITEMSIZE(twoInputs.inArr2));
+            fl.OutputItemSize = static_cast<int32_t>(PyArray_ITEMSIZE(outputArray));
 
             fl.NumpyOutputType = wantedOutputType;
             fl.NumpyType = twoInputs.len1 >= twoInputs.len2 ? twoInputs.numpyInType1 : twoInputs.numpyInType2;

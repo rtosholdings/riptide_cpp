@@ -1049,8 +1049,8 @@ void * GetInvalid(int dtype)
 // NOTE: if they are the same type, special fast routine called
 PyObject * ConvertSafeInternal(PyArrayObject * const inArr1, const int64_t out_dtype)
 {
-    const int32_t numpyOutType = out_dtype;
-    const int32_t numpyInType = PyArray_TYPE(inArr1);
+    const int32_t numpyOutType = static_cast<int32_t>(out_dtype);
+    const int32_t numpyInType = static_cast<int32_t>(PyArray_TYPE(inArr1));
 
     if (numpyOutType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE)
     {
@@ -1095,11 +1095,11 @@ PyObject * ConvertSafeInternal(PyArrayObject * const inArr1, const int64_t out_d
     void * pBadOutput1 = GetDefaultForType(numpyOutType);
 
     // Check the strides of both the input and output to make sure we can handle
-    int64_t strideIn;
+    int32_t strideIn;
     int directionIn = GetStridesAndContig(inArr1, ndim, strideIn);
 
     int ndimOut;
-    int64_t strideOut;
+    int32_t strideOut;
     int directionOut = GetStridesAndContig(outArray, ndimOut, strideOut);
 
     // If the input is C and/or F-contiguous, the output should have
@@ -1251,8 +1251,8 @@ PyObject * ConvertSafe(PyObject * self, PyObject * args)
 //       GetConversionFunctionUnsafe.
 PyObject * ConvertUnsafeInternal(PyArrayObject * inArr1, int64_t out_dtype)
 {
-    const int32_t numpyOutType = out_dtype;
-    const int32_t numpyInType = ObjectToDtype(inArr1);
+    const int32_t numpyOutType = static_cast<int32_t>(out_dtype);
+    const int32_t numpyInType = static_cast<int32_t>(ObjectToDtype(inArr1));
 
     if (numpyOutType < 0 || numpyInType < 0 || numpyInType > NPY_LONGDOUBLE || numpyOutType > NPY_LONGDOUBLE)
     {
@@ -2085,6 +2085,11 @@ int64_t Combine1Filter(void * pInputIndex,
     {
         for (int64_t i = 0; i < arrayLength; i++)
         {
+            if (i > std::numeric_limits<INDEX>::max())
+            {
+                PyErr_Format(PyExc_ValueError, "Combine1Filter has attempted to exceed the size of the index value [%lld]", i);
+                return 0;
+            }
             if (pFilter[i])
             {
                 INDEX index = pInput[i];
@@ -2096,7 +2101,7 @@ int64_t Combine1Filter(void * pInputIndex,
                     if (pHash[index] == 0)
                     {
                         // First time, assign FirstKey
-                        pNewFirst[uniquecount] = i;
+                        pNewFirst[uniquecount] = static_cast<int32_t>(i);
                         uniquecount++;
 
                         // printf("reassign index:%lld to bin:%d\n", (int64_t)index,
@@ -2132,6 +2137,11 @@ int64_t Combine1Filter(void * pInputIndex,
         // When no filter provided
         for (int64_t i = 0; i < arrayLength; i++)
         {
+            if (i > std::numeric_limits<INDEX>::max())
+            {
+                PyErr_Format(PyExc_ValueError, "Combine1Filter has attempted to exceed the size of the index value [%lld]", i);
+                return 0;
+            }
             INDEX index = pInput[i];
             // printf("[%lld] got index\n", (int64_t)index);
 
@@ -2141,7 +2151,7 @@ int64_t Combine1Filter(void * pInputIndex,
                 if (pHash[index] == 0)
                 {
                     // First time, assign FirstKey
-                    pNewFirst[uniquecount] = i;
+                    pNewFirst[uniquecount] = static_cast<int32_t>(i);
                     uniquecount++;
 
                     // ReassignKey
@@ -2303,7 +2313,7 @@ int64_t iFirstFilter(void * pInputIndex,
     INDEX * pInput = (INDEX *)pInputIndex;
     int64_t * pNewFirst = (int64_t *)pNewFirstIndex;
     int64_t invalid = (int64_t)(1LL << (sizeof(int64_t) * 8 - 1));
-    
+
     // Fill with invalid
     for (int64_t i = 0; i < hashLength; i++)
     {

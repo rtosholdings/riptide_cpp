@@ -344,8 +344,8 @@ struct stScatterGatherFunc
 typedef double (*ANY_SCATTER_GATHER_FUNC)(void * pDataIn, int64_t len, stScatterGatherFunc * pstScatterGatherFunc);
 
 // typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, int64_t len);
-typedef void (*UNARY_FUNC)(void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut);
-typedef void (*UNARY_FUNC_STRIDED)(void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut);
+typedef void (*UNARY_FUNC)(void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut);
+typedef void (*UNARY_FUNC_STRIDED)(void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut);
 
 // Pass in two vectors and return one vector
 // Used for operations like C = A + B
@@ -474,8 +474,8 @@ struct FUNCTION_LIST
     int16_t NumpyOutputType;
 
     // The item size for two input arrays assumed to be the same
-    int64_t InputItemSize;
-    int64_t OutputItemSize;
+    int32_t InputItemSize;
+    int32_t OutputItemSize;
 
     // Strides may be 0 if it is a scalar or length 1
     int64_t Input1Strides;

@@ -16,7 +16,7 @@
 // Used when compressing from one numpy array to another numpy array
 //
 void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t ndim, int64_t * dims, int32_t flags,
-                       int64_t itemsize)
+                       int32_t itemsize)
 {
     if (pstNumpyHeader)
     {
@@ -46,7 +46,7 @@ void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t
 // Returns temporary array to compress into
 // Caller is responsible for freeing memory
 NUMPY_HEADERSIZE * AllocCompressedMemory(int64_t arraylength, int32_t dtype, int32_t ndim, int64_t * dims, int32_t flags,
-                                         int64_t itemsize)
+                                         int32_t itemsize)
 {
     int64_t source_size = arraylength * itemsize;
     int64_t dest_size = ZSTD_compressBound(source_size);
@@ -188,7 +188,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                     pstCompressArrays->pNumpyHeaders[t] =
                         AllocCompressedMemory(aInfo[t].ArrayLength, aInfo[t].NumpyDType, aInfo[t].NDim,
                                               (int64_t *)(((PyArrayObject_fields *)aInfo[t].pObject)->dimensions),
-                                              PyArray_FLAGS(aInfo[t].pObject), aInfo[t].ItemSize);
+                                              PyArray_FLAGS(aInfo[t].pObject), static_cast<int32_t>(aInfo[t].ItemSize));
                 }
 
                 // This will kick off the workerthread and call CompressMemoryArray

@@ -1308,7 +1308,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
     //   printf("%llu |", pBitFields[i]);
     //}
 
-    if (sizeof(T) <= 2)
+    if constexpr (sizeof(T) <= 2)
     {
         for (U i = 0; i < arraySize; i++)
         {
@@ -1321,7 +1321,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
     }
     else
     {
-        if (sizeof(T) == 4)
+        if constexpr (sizeof(T) == 4)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -1346,7 +1346,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                 }
             }
         }
-        else if (sizeof(T) == 8)
+        else if constexpr (sizeof(T) == 8)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -1409,7 +1409,7 @@ int64_t CHashLinear<T, U>::IsMemberCategorical(int64_t arraySize, T * pHashList,
     }
     else
     {
-        if (sizeof(T) == 4)
+        if constexpr (sizeof(T) == 4)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -1430,7 +1430,7 @@ int64_t CHashLinear<T, U>::IsMemberCategorical(int64_t arraySize, T * pHashList,
                 }
             }
         }
-        else if (sizeof(T) == 8)
+        else if constexpr (sizeof(T) == 8)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -1540,7 +1540,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
 
     // printf("\n");
 
-    if (sizeof(T) <= 2)
+    if constexpr (sizeof(T) <= 2)
     {
         LOGGING("Perfect hash\n");
         // perfect hash
@@ -1555,7 +1555,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
     {
         HASH_MODE HashMode = pHashLinear->HashMode;
 
-        if (sizeof(T) == 4)
+        if constexpr (sizeof(T) == 4)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -1582,7 +1582,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                 }
             }
         }
-        else if (sizeof(T) == 8)
+        else if constexpr (sizeof(T) == 8)
         {
             if (HashMode == HASH_MODE_PRIME)
             {
@@ -2221,9 +2221,8 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
     // make local reference on stack
     uint64_t * pBitFieldsX = pBitFields;
 
-    switch (sizeof(T))
+    if constexpr (sizeof(T) == 1)
     {
-    case 1:
         // TODO: Specially handle bools here -- they're 1-byte but logically have
         // only two buckets (zero/nonzero).
         // if (coreType == NPY_BOOL)
@@ -2254,8 +2253,9 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
                     pIndexArray[i] = 0;
                 }
             }
-        break;
-    case 2:
+    }
+    if constexpr (sizeof(T) == 2)
+    {
         if (pBoolFilter == NULL)
         {
             for (U i = 0; i < totalRows; i++)
@@ -2279,8 +2279,9 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
                     pIndexArray[i] = 0;
                 }
             }
-        break;
-    case 4:
+    }
+    if constexpr (sizeof(T) == 4)
+    {
         if (pBoolFilter == NULL)
         {
             for (U i = 0; i < totalRows; i++)
@@ -2306,8 +2307,9 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
                     pIndexArray[i] = 0;
                 }
             }
-        break;
-    case 8:
+    }
+    if constexpr (sizeof(T) == 8)
+    {
         if (pBoolFilter == NULL)
         {
             for (U i = 0; i < totalRows; i++)
@@ -2333,8 +2335,9 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
                     pIndexArray[i] = 0;
                 }
             }
-        break;
-    case 16:
+    }
+    if constexpr (sizeof(T) == 16)
+    {
         // TO BE WORKED ON...
         if (pBoolFilter == NULL)
         {
@@ -2361,7 +2364,6 @@ uint64_t CHashLinear<T, U>::GroupByItemSize(int64_t totalRows, int64_t totalItem
                     pIndexArray[i] = 0;
                 }
             }
-        break;
     }
 
     // printf("GroupByItem end! %d\n", numUnique);

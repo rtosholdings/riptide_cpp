@@ -1031,7 +1031,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t nth = funcParam;
+        int64_t nth = funcParam;
 
         U invalid = GET_INVALID(pDest[0]);
 
@@ -1040,7 +1040,7 @@ public:
         {
             if (pCount[i] > 0 && nth < pCount[i])
             {
-                int32_t grpIndex = pFirst[i] + nth;
+                int64_t grpIndex = pFirst[i] + nth;
                 int32_t bin = pGroup[grpIndex];
                 pDest[i] = pSrc[bin];
             }
@@ -1060,14 +1060,14 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t nth = funcParam;
+        int64_t nth = funcParam;
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
             if (pCount[i] > 0 && nth < pCount[i])
             {
-                int32_t grpIndex = pFirst[i] + nth;
+                int64_t grpIndex = pFirst[i] + nth;
                 int32_t bin = pGroup[grpIndex];
                 memcpy(&pDest[i * itemSize], &pSrc[bin * itemSize], itemSize);
             }
@@ -1203,17 +1203,17 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
-            int32_t last = start + pCount[0];
-            for (int j = start; j < last; j++)
+            int64_t last = start + pCount[0];
+            for (int64_t j = start; j < last; j++)
             {
-                int32_t index = pGroup[j];
+                int64_t index = pGroup[j];
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1227,12 +1227,12 @@ public:
         for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
-            int32_t last = start + pCount[i];
+            int64_t last = start + pCount[i];
 
             U currentSum = 0;
 
             // Priming of the summation
-            for (int j = start; j < last && j < (start + windowSize); j++)
+            for (int64_t j = start; j < last && j < (start + windowSize); j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1240,7 +1240,7 @@ public:
                 pDest[index] = currentSum;
             }
 
-            for (int j = start + windowSize; j < last; j++)
+            for (int64_t j = start + windowSize; j < last; j++)
             {
                 int32_t index = pGroup[j];
 
@@ -1267,17 +1267,17 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
-            int32_t last = start + pCount[0];
-            for (int j = start; j < last; j++)
+            int64_t last = start + pCount[0];
+            for (int64_t j = start; j < last; j++)
             {
-                int32_t index = pGroup[j];
+                int64_t index = pGroup[j];
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1294,14 +1294,14 @@ public:
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
-                int32_t last = start + pCount[i];
+                int64_t last = start + pCount[i];
 
                 U currentSum = 0;
 
                 // Priming of the summation
-                for (int j = start; j < last && j < (start + windowSize); j++)
+                for (int64_t j = start; j < last && j < (start + windowSize); j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     U value = (U)pSrc[index];
                     if (value != invalid)
                     {
@@ -1310,9 +1310,9 @@ public:
                     pDest[index] = currentSum;
                 }
 
-                for (int j = start + windowSize; j < last; j++)
+                for (int64_t j = start + windowSize; j < last; j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
                     if (value != invalid)
@@ -1337,12 +1337,12 @@ public:
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 int32_t start = pFirst[i];
-                int32_t last = start + pCount[i];
+                int64_t last = start + pCount[i];
 
                 U currentSum = 0;
 
                 // Priming of the summation
-                for (int j = start; j < last && j < (start + windowSize); j++)
+                for (int64_t j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     U value = (U)pSrc[index];
@@ -1353,7 +1353,7 @@ public:
                     pDest[index] = currentSum;
                 }
 
-                for (int j = start + windowSize; j < last; j++)
+                for (int64_t j = start + windowSize; j < last; j++)
                 {
                     int32_t index = pGroup[j];
 
@@ -1387,7 +1387,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
@@ -1395,10 +1395,10 @@ public:
         {
             // Mark all invalid if invalid bin
             int32_t start = pFirst[0];
-            int32_t last = start + pCount[0];
-            for (int j = start; j < last; j++)
+            int64_t last = start + pCount[0];
+            for (int64_t j = start; j < last; j++)
             {
-                int32_t index = pGroup[j];
+                int64_t index = pGroup[j];
                 pDest[index] = invalid_out;
             }
             binLow++;
@@ -1412,22 +1412,22 @@ public:
         for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
-            int32_t last = start + pCount[i];
+            int64_t last = start + pCount[i];
 
             double currentSum = 0;
 
             // Priming of the summation
-            for (int j = start; j < last && j < (start + windowSize); j++)
+            for (int64_t j = start; j < last && j < (start + windowSize); j++)
             {
-                int32_t index = pGroup[j];
+                int64_t index = pGroup[j];
 
                 currentSum += pSrc[index];
                 pDest[index] = currentSum / (j - start + 1);
             }
 
-            for (int j = start + windowSize; j < last; j++)
+            for (int64_t j = start + windowSize; j < last; j++)
             {
-                int32_t index = pGroup[j];
+                int64_t index = pGroup[j];
 
                 currentSum += pSrc[index];
 
@@ -1452,7 +1452,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID((U)0);
         double invalid_out = GET_INVALID(pDest[0]);
 
@@ -1486,9 +1486,9 @@ public:
                 double count = 0;
 
                 // Priming of the summation
-                for (int j = start; j < last && j < (start + windowSize); j++)
+                for (int64_t j = start; j < last && j < (start + windowSize); j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     U value = (U)pSrc[index];
                     if (value != invalid)
                     {
@@ -1498,9 +1498,9 @@ public:
                     pDest[index] = count > 0 ? currentSum / count : invalid_out;
                 }
 
-                for (int j = start + windowSize; j < last; j++)
+                for (int64_t j = start + windowSize; j < last; j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
                     if (value != invalid)
@@ -1533,9 +1533,9 @@ public:
                 double count = 0;
 
                 // Priming of the summation
-                for (int j = start; j < last && j < (start + windowSize); j++)
+                for (int64_t j = start; j < last && j < (start + windowSize); j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     U value = (U)pSrc[index];
                     if (value == value)
                     {
@@ -1545,9 +1545,9 @@ public:
                     pDest[index] = count > 0 ? currentSum / count : invalid_out;
                 }
 
-                for (int j = start + windowSize; j < last; j++)
+                for (int64_t j = start + windowSize; j < last; j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
 
                     U value = (U)pSrc[index];
                     if (value == value)
@@ -1581,7 +1581,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         LOGGING("in rolling count %lld %lld  sizeofdest %lld\n", binLow, binHigh, sizeof(U));
@@ -1611,18 +1611,18 @@ public:
 
             if (windowSize < 0)
             {
-                for (int j = last - 1; j >= start; j--)
+                for (int64_t j = last - 1; j >= start; j--)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     pDest[index] = currentSum;
                     currentSum += 1;
                 }
             }
             else
             {
-                for (int j = start; j < last; j++)
+                for (int64_t j = start; j < last; j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     pDest[index] = currentSum;
                     currentSum += 1;
                 }
@@ -1642,7 +1642,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh,
@@ -1665,20 +1665,20 @@ public:
         for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t start = pFirst[i];
-            int32_t last = start + pCount[i];
+            int64_t last = start + pCount[i];
 
             if (windowSize >= 0)
             {
                 // invalid for window
-                for (int32_t j = start; j < last && j < (start + windowSize); j++)
+                for (int64_t j = start; j < last && j < (start + windowSize); j++)
                 {
                     int32_t index = pGroup[j];
                     pDest[index] = invalid;
                 }
 
-                for (int32_t j = start + windowSize; j < last; j++)
+                for (int64_t j = start + windowSize; j < last; j++)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     pDest[index] = (U)pSrc[pGroup[j - windowSize]];
                 }
             }
@@ -1691,15 +1691,15 @@ public:
                 // printf("bin[%lld]  start:%d  last:%d  windowSize:%d\n", i, start,
                 // last, windowSize);
 
-                for (int32_t j = last; j > start && j > (last - windowSize); j--)
+                for (int64_t j = last; j > start && j > (last - windowSize); j--)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     pDest[index] = invalid;
                 }
 
-                for (int32_t j = last - windowSize; j > start; j--)
+                for (int64_t j = last - windowSize; j > start; j--)
                 {
-                    int32_t index = pGroup[j];
+                    int64_t index = pGroup[j];
                     pDest[index] = (U)pSrc[pGroup[j + windowSize]];
                 }
                 // put it back to what it was
@@ -1719,7 +1719,7 @@ public:
         // only allow int32_t since comes from group and not ikey
         int32_t * pGroup = (int32_t *)pGroupT;
 
-        int32_t windowSize = funcParam;
+        int64_t windowSize = funcParam;
         U invalid = GET_INVALID(pDest[0]);
 
         if (binLow == 0)
@@ -1773,13 +1773,13 @@ public:
                     // invalid for window
                     U previous = 0;
 
-                    for (int j = start; j < last && j < (start + windowSize); j++)
+                    for (int64_t j = start; j < last && j < (start + windowSize); j++)
                     {
                         int32_t index = pGroup[j];
                         pDest[index] = invalid;
                     }
 
-                    for (int j = start + windowSize; j < last; j++)
+                    for (int64_t j = start + windowSize; j < last; j++)
                     {
                         int32_t index = pGroup[j];
                         U temp = (U)pSrc[index];
@@ -1794,13 +1794,13 @@ public:
                     last--;
                     start--;
 
-                    for (int j = last; j > start && j > (last - windowSize); j--)
+                    for (int64_t j = last; j > start && j > (last - windowSize); j--)
                     {
                         int32_t index = pGroup[j];
                         pDest[index] = invalid;
                     }
 
-                    for (int j = last - windowSize; j > start; j--)
+                    for (int64_t j = last - windowSize; j > start; j--)
                     {
                         int32_t index = pGroup[j];
                         U temp = (U)pSrc[index];
@@ -1914,7 +1914,7 @@ public:
         for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t index = pFirst[i];
-            int32_t nCount = pCount[i];
+            int64_t nCount = pCount[i];
 
             if (nCount == 0)
             {
@@ -1999,7 +1999,7 @@ public:
         for (int64_t i = binLow; i < binHigh; i++)
         {
             int32_t index = pFirst[i];
-            int32_t nCount = pCount[i];
+            int64_t nCount = pCount[i];
 
             if (nCount == 0)
             {
@@ -4014,7 +4014,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             bool hasCounts = false;
 
             int overflow = 0;
-            int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
+            int32_t funcNum = PyLong_AsLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
             pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);
@@ -4076,7 +4076,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         returnTuple = PyTuple_New(tupleSize);
         PyObject * returnCount = NULL;
 
-        // Fill in results 
+        // Fill in results
         for (int i = 0; i < tupleSize; i++)
         {
             PyObject * item = pstGroupBy32->returnObjects[i].returnObject;
@@ -4109,7 +4109,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
 // columns in a dataset) Arg2 =iKey = numpy array  which has the index
-// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 =iGroup: 
+// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 =iGroup:
 // array size is same as multikey, unique keys are grouped together Arg4
 // =iFirst:  array size is number of unique keys, indexes into iGroup
 // Arg5 =nCount:  array size is number of unique keys for the group, is
@@ -4254,7 +4254,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         for (int i = 0; i < tupleSize; i++)
         {
             int overflow = 0;
-            int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
+            int32_t funcNum = PyLong_AsLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
             pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);

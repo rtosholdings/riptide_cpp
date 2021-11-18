@@ -18,7 +18,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
                              int32_t numpy_intype, int32_t numpy_outtype)
 {
     int32_t ndim{};
-    int64_t stride{};
+    int32_t stride{};
 
     int32_t direction{ GetStridesAndContig(in_array, ndim, stride) };
     npy_intp len{ CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(const_cast<PyArrayObject *>(in_array))) };
@@ -83,7 +83,7 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
             char * out_p{ PyArray_BYTES(const_cast<PyArrayObject *>(result_array)) };
 
             int num_dims_out{};
-            int64_t stride_out{};
+            int32_t stride_out{};
             int direction_out = GetStridesAndContig(result_array, num_dims_out, stride_out);
 
             if (direction_out == 0)
@@ -222,16 +222,16 @@ namespace riptable_cpp
         case MATH_OPERATION::CBRT:
             retval.first = cbrt_op{};
             break;
-// BUG:: These are defined, but never called
-//        case MATH_OPERATION::TAN:
-//            retval.first = tan_op{};
-//            break;
-//        case MATH_OPERATION::SIN:
-//            retval.first = sin_op{};
-//            break;
-//        case MATH_OPERATION::COS:
-//            retval.first = cos_op{};
-//            break;
+            // BUG:: These are defined, but never called
+            //        case MATH_OPERATION::TAN:
+            //            retval.first = tan_op{};
+            //            break;
+            //        case MATH_OPERATION::SIN:
+            //            retval.first = sin_op{};
+            //            break;
+            //        case MATH_OPERATION::COS:
+            //            retval.first = cos_op{};
+            //            break;
         case MATH_OPERATION::SIGNBIT:
             retval.first = signbit_op{};
             break;
