@@ -45,8 +45,9 @@
 // TJD added version low = 3 July 2019 for "bandsize"
 // TJD added version low = 4 August 2019 for "section"
 // TJD added version low = 5 March 2020 for timestamps and better section,
+// EST added version low = 6 for 64-bit safe operations
 // boolean bitmasks
-#define SDS_VERSION_LOW 5
+#define SDS_VERSION_LOW 6
 
 #define SDS_VALUE_ERROR 1
 
@@ -265,7 +266,6 @@ enum SDS_TYPES
 // File format layout for one array block header
 struct SDS_ARRAY_BLOCK
 {
-    //----- offset 0 -----
     int16_t HeaderTag;
     int16_t HeaderLength;
 
@@ -274,12 +274,9 @@ struct SDS_ARRAY_BLOCK
     int8_t DType;
     int8_t NDim;
 
-    //----- offset 8 ----- // BUGBUG All these offsets are wrong, this struct has
-    // default member alignments.
     int32_t ItemSize;
     int32_t Flags;
 
-    //----- offset 16 -----
     // no more than 5 dims
     int64_t Dimensions[SDS_MAX_DIMS];
     int64_t Strides[SDS_MAX_DIMS];
@@ -289,9 +286,13 @@ struct SDS_ARRAY_BLOCK
                              // / BandSize => # of bands
     int64_t ArrayCompressedSize;
     int64_t ArrayUncompressedSize;
-    int32_t ArrayBandCount; // 0=no banding
-    int32_t ArrayBandSize;  // 0=no banding
+    int64_t ArrayBandCount; // 0=no banding
+    int64_t ArrayBandSize;  // 0=no banding
 };
+
+static_assert(offsetof(SDS_ARRAY_BLOCK, HeaderTag) == 0);
+static_assert(offsetof(SDS_ARRAY_BLOCK, ItemSize) == 8);
+static_assert(offsetof(SDS_ARRAY_BLOCK, Dimensions) == 16);
 
 //----------------------------------
 // At offset 0 of the file is this header
@@ -305,7 +306,6 @@ struct SDS_FILE_HEADER
     int16_t CompType;
     int16_t CompLevel;
 
-    //----- offset 16 -----
     int64_t NameBlockSize;
     int64_t NameBlockOffset;
     int64_t NameBlockCount;
@@ -314,28 +314,22 @@ struct SDS_FILE_HEADER
     int16_t StackType; // see SDS_STACK_TYPE
     int32_t AuthorId;  // see SDS_AUTHOR_ID
 
-    //----- offset 48 -----
     int64_t MetaBlockSize;
     int64_t MetaBlockOffset;
 
-    //----- offset 64 -----
     int64_t TotalMetaCompressedSize;
     int64_t TotalMetaUncompressedSize;
 
-    //----- offset 80 -----
     int64_t ArrayBlockSize;
     int64_t ArrayBlockOffset;
 
-    //----- offset 96 -----
     int64_t ArraysWritten;
     int64_t ArrayFirstOffset;
 
-    //----- offset 112 -----
     int64_t TotalArrayCompressedSize; // Includes the SDS_PADDING, next relative
                                       // offset to write to
     int64_t TotalArrayUncompressedSize;
 
-    //----- offset 128 -----
     //------------- End of Version 4.1 ---------
     //------------- Version 4.3 starts here ----
     int64_t BandBlockSize;   // 00 if nothing
@@ -343,7 +337,6 @@ struct SDS_FILE_HEADER
     int64_t BandBlockCount;  // Number of names
     int64_t BandSize;        // How many elements before creating another band
 
-    //----- offset 160 -----
     //------------- End of Version 4.3 ---------
     //------------- Version 4.4 starts here ----
     int64_t SectionBlockSize;         // how many bytes valid data
@@ -357,14 +350,11 @@ struct SDS_FILE_HEADER
     int64_t SectionBlockReservedSize; // total size of what we reserved for this
                                       // block (so we can append names)
 
-    //----- offset 192 -----
     int64_t FileOffset;         // this file offset within the file
     uint64_t TimeStampUTCNanos; // time stamp when file was last written (0s
                                 // indicate no time stamp)
 
-    //----- offset 208 -----
-    char Reserved[512 - 208]; // BUGBUG This should be done using align statements,
-                              // not magic number math with incorrect arguments.
+    char Reserved[512 - 208];
 
     //-----------------------------
     // function to multithreaded safe calculate the next array offset to write to
@@ -386,6 +376,16 @@ struct SDS_FILE_HEADER
         return TotalArrayCompressedSize + ArrayFirstOffset;
     }
 };
+
+static_assert(offsetof(SDS_FILE_HEADER, MetaBlockSize) == 48);
+static_assert(offsetof(SDS_FILE_HEADER, TotalMetaCompressedSize) == 64);
+static_assert(offsetof(SDS_FILE_HEADER, ArrayBlockSize) == 80);
+static_assert(offsetof(SDS_FILE_HEADER, ArraysWritten) == 96);
+static_assert(offsetof(SDS_FILE_HEADER, TotalArrayCompressedSize) == 112);
+static_assert(offsetof(SDS_FILE_HEADER, BandBlockSize) == 128);
+static_assert(offsetof(SDS_FILE_HEADER, SectionBlockSize) == 160);
+static_assert(offsetof(SDS_FILE_HEADER, FileOffset) == 192);
+static_assert(offsetof(SDS_FILE_HEADER, Reserved) == 208);
 
 //---------------------------------------
 class SDSSectionName

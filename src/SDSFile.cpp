@@ -515,7 +515,7 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
     OverlappedIO.OffsetHigh = (BufferPos >> 32);
-    OverlappedIO.Offset = static_cast<int32_t>(BufferPos);
+    OverlappedIO.Offset = static_cast<int32_t>(BufferPos & 0x0FFFFFFFFULL);
 
     bool bReadDone;
 
@@ -607,7 +607,7 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
     OverlappedIO.InternalHigh = 0;
     OverlappedIO.Internal = 0;
     OverlappedIO.OffsetHigh = (BufferPos >> 32);
-    OverlappedIO.Offset = static_cast<int32_t>(BufferPos);
+    OverlappedIO.Offset = static_cast<int32_t>(BufferPos & 0x0FFFFFFFFULL);
 
     OVERLAPPED * pos = &OverlappedIO;
     DWORD n;
@@ -1587,7 +1587,7 @@ int64_t ReadAndDecompressBandWithFilter(SDS_ARRAY_BLOCK * pBlockInfo, // may con
         rowOffset, pBlockInfo->ArrayDataOffset, pBlockInfo->ArrayCompressedSize, pBlockInfo->ArrayUncompressedSize, stackIndex,
         bytesPerRow);
 
-    for (int32_t i = 0; i < pBlockInfo->ArrayBandCount; i++)
+    for (int64_t i = 0; i < pBlockInfo->ArrayBandCount; i++)
     {
         int64_t compressedSize = pBands[i] - previousSize;
         previousSize = pBands[i];
@@ -1731,7 +1731,7 @@ static size_t ReadAndDecompressArrayBlockWithFilter(SDS_ARRAY_BLOCK * pBlockInfo
     else
     {
         printf(
-            "out of mem no temp buffer  bandcount:%d  bandsize:%d  uncomp size: "
+            "out of mem no temp buffer  bandcount:%lld  bandsize:%lld  uncomp size: "
             "%lld\n",
             pBlockInfo->ArrayBandCount, pBlockInfo->ArrayBandSize, pBlockInfo->ArrayUncompressedSize);
     }
@@ -1803,7 +1803,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
             {
                 int64_t previousSize = 0;
 
-                for (int32_t i = 0; i < pBlockInfo->ArrayBandCount; i++)
+                for (int64_t i = 0; i < pBlockInfo->ArrayBandCount; i++)
                 {
                     int64_t compressedSize = pBands[i] - previousSize;
                     previousSize = pBands[i];
@@ -1824,7 +1824,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
                         if (result != uncompressedSize)
                         {
                             printf(
-                                "[%d][%lld][%d] MTDecompression (uncompressed) band error "
+                                "[%d][%lld][%lld] MTDecompression (uncompressed) band error "
                                 "size %lld vs %lld\n",
                                 core, arrayIndex, i, uncompressedSize, compressedSize);
                             result = -1;
@@ -1841,7 +1841,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
                         if (dcSize != uncompressedSize)
                         {
                             printf(
-                                "[%d][%lld][%d] MTDecompression band error size %lld vs "
+                                "[%d][%lld][%lld] MTDecompression band error size %lld vs "
                                 "%lld vs %lld\n",
                                 core, arrayIndex, i, dcSize, uncompressedSize, compressedSize);
                             result = -1;
@@ -2737,13 +2737,8 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pArrayBlock->CompressionType = COMPRESSION_TYPE_ZSTD;
 
         // New version 4.3
-        if (bandCount > INT_MAX || bandSize > INT_MAX)
-        {
-            LOGGING("bandCount [%lld] and bandSize [%lld] are only 32-bit values in the file array block", bandCount, bandSize);
-            return false;
-        }
-        pArrayBlock->ArrayBandCount = static_cast<int32_t>(bandCount);
-        pArrayBlock->ArrayBandSize = static_cast<int32_t>(bandSize);
+        pArrayBlock->ArrayBandCount = bandCount;
+        pArrayBlock->ArrayBandSize = bandSize;
 
         // record array dimensions
         int32_t ndim = pArrayInfo->NDim;
