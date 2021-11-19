@@ -1776,6 +1776,11 @@ PyObject * CombineAccum2Filter(PyObject * self, PyObject * args)
         }
         pFilterIn = (int8_t *)PyArray_BYTES((PyArrayObject *)inFilter);
     }
+    else if (inFilter != Py_None)
+    {
+        PyErr_Format(PyExc_ValueError, "CombineAccum2Filter: unsupported filter type, %s", Py_TYPE(inFilter)->tp_name);
+        return NULL;
+    }
 
     if (hashSize < 0)
     {
