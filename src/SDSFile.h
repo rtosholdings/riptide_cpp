@@ -386,6 +386,7 @@ static_assert(offsetof(SDS_FILE_HEADER, BandBlockSize) == 128);
 static_assert(offsetof(SDS_FILE_HEADER, SectionBlockSize) == 160);
 static_assert(offsetof(SDS_FILE_HEADER, FileOffset) == 192);
 static_assert(offsetof(SDS_FILE_HEADER, Reserved) == 208);
+static_assert(sizeof(SDS_FILE_HEADER) == 512);
 
 //---------------------------------------
 class SDSSectionName
