@@ -248,14 +248,12 @@ public:
                               int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
-        float * pOut = (float *)pDataOut;
         V * pIndex = (V *)pIndexT;
         double * pOutAccum = static_cast<double *>(pDataTmp);
 
         if (pass <= 0)
         {
             // Clear out memory for our range
-            memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
@@ -273,6 +271,7 @@ public:
         if (isFinalPass)
         {
             // Downcast from double to single
+            float * pOut = (float *)pDataOut;
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = (float)pOutAccum[i - binLow];
@@ -342,14 +341,12 @@ public:
                                  int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
-        float * pOut = (float *)pDataOut;
         V * pIndex = (V *)pIndexT;
         double * pOutAccum = static_cast<double *>(pDataTmp);
 
         if (pass <= 0)
         {
             // Clear out memory for our range
-            memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
@@ -371,6 +368,7 @@ public:
         if (isFinalPass)
         {
             // Downcast from double to single
+            float * pOut = (float *)pDataOut;
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = (float)pOutAccum[i - binLow];
