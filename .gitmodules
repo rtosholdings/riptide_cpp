@@ -1,3 +1,6 @@
 [submodule "test/ut"]
 	path = test/ut
 	url = https://github.com/boost-ext/ut.git
+[submodule "bench/benchmark"]
+	path = bench/benchmark
+	url = https://github.com/google/benchmark.git
