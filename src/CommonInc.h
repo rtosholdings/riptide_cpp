@@ -362,7 +362,7 @@ typedef void (*ANY_TWO_FUNC)(void * pDataIn, void * pDataIn2, void * pDataOut, i
 
 // Used for Groupby Sum/Mean/Min/Max/etc
 typedef void (*GROUPBY_TWO_FUNC)(void * pDataIn, void * pIndex, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass);
+                                 int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp);
 
 // Used for Groupby Mode/Median/etc
 typedef void (*GROUPBY_X_FUNC32)(void * pColumn, void * pGroup, int32_t * pFirst, int32_t * pCount, void * pAccumBin,
