@@ -1,4 +1,3 @@
 #pragma once
 
-PyObject *
-BasicMathHook(PyObject *self, PyObject *args);
+PyObject * BasicMathHook(PyObject * self, PyObject * args);

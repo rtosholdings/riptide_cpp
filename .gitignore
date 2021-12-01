@@ -12,7 +12,6 @@
 *.cod
 *.iobj
 *.exp
-*.sln
 
 # Precompiled Headers
 *.gch
@@ -70,6 +69,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+x64/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -176,6 +176,7 @@ dmypy.json
 .idea
 .vs
 .vscode/
+*.vcxproj.user
 
 # OS-specific metadata files
 .DS_Store
