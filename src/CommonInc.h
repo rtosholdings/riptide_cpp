@@ -176,11 +176,26 @@ FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
 void * FmAlloc(size_t _Size);
 void FmFree(void * _Block);
 
+namespace internal
+{
+    struct fm_mem_deleter
+    {
+        void operator()(void * const block)
+        {
+            FmFree(block);
+        }
+    };
+}
+
+// Smart pointer managing FmAlloc'ed memory.
+using fm_mem_ptr = std::unique_ptr<void, internal::fm_mem_deleter>;
+
 #define ARRAY_ALLOC malloc
 #define ARRAY_FREE free
 
 #define WORKSPACE_ALLOC FmAlloc
 #define WORKSPACE_FREE FmFree
+using workspace_mem_ptr = fm_mem_ptr;
 
 #define COMPRESS_ALLOC FmAlloc
 #define COMPRESS_FREE FmFree
