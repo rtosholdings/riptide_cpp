@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdio.h>
+#include <vector>
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -3678,6 +3679,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
         if (pWorkItem != NULL)
         {
+            std::vector<workspace_mem_ptr> workspaceMemList;
+
             int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
 
             PyArrayObject * outArray = NULL;
@@ -3696,7 +3699,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             // Allocate room for all the threads to participate, this will be gathered
             // later
-            char * pWorkspace = (char *)WORKSPACE_ALLOC(unique_rows * itemSize * numCores);
+            workspaceMemList.emplace_back(WORKSPACE_ALLOC(unique_rows * itemSize * numCores));
+            char * pWorkspace = (char *)workspaceMemList.back().get();
 
             LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", pWorkspace, unique_rows, itemSize, numCores);
 
@@ -3709,7 +3713,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             {
                 // Zero out for them
                 int64_t allocSize = sizeof(int32_t) * unique_rows * numCores;
-                pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
+                workspaceMemList.emplace_back(WORKSPACE_ALLOC(allocSize));
+                pCountOut = (int32_t *)workspaceMemList.back().get();
                 if (pCountOut == NULL)
                 {
                     return NULL;
@@ -3725,13 +3730,18 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             {
                 tempItemSize = NpyToSize(numpyTmpType);
                 int64_t tempSize = tempItemSize * (binHigh - binLow) * numCores;
-                pTmpWorkspace = WORKSPACE_ALLOC(tempSize);
+                workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempSize));
+                pTmpWorkspace = workspaceMemList.back().get();
+                if (!pTmpWorkspace)
+                {
+                    return NULL;
+                }
             }
 
             // Allocate the struct + ROOM at the end of struct for all the tuple
             // objects being produced
-            stGroupBy32 * pstGroupBy32 =
-                (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn)));
+            workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn))));
+            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)workspaceMemList.back().get();
 
             if (pstGroupBy32 == NULL)
             {
@@ -3789,20 +3799,6 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             else
             {
                 printf("!!!Internal error in GetGroupByGatherFunction\n");
-            }
-
-            WORKSPACE_FREE(pstGroupBy32);
-
-            if (hasCounts)
-            {
-                WORKSPACE_FREE(pCountOut);
-            }
-
-            WORKSPACE_FREE(pWorkspace);
-
-            if (pTmpWorkspace)
-            {
-                WORKSPACE_FREE(pTmpWorkspace);
             }
 
             // New reference
@@ -3929,9 +3925,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     //
     if (returnTuple == NULL)
     {
+        std::vector<workspace_mem_ptr> workspaceMemList;
+
         // Allocate the struct + ROOM at the end of struct for all the tuple objects
         // being produced
-        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (tupleSize * sizeof(stGroupByReturn)));
+        workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (tupleSize * sizeof(stGroupByReturn))));
+        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)workspaceMemList.back().get();
 
         if (pstGroupBy32 == NULL)
         {
@@ -3992,7 +3991,8 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 if (hasCounts)
                 {
                     // Zero out for them
-                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows);
+                    workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows));
+                    pCountOut = (int32_t *)workspaceMemList.back().get();
                     if (pCountOut == NULL)
                     {
                         return NULL;
@@ -4003,7 +4003,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 if (numpyTmpType >= 0)
                 {
                     int32_t tempItemSize = NpyToSize(numpyTmpType);
-                    pTmpArray = WORKSPACE_ALLOC(tempItemSize * (binHigh - binLow));
+                    workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempItemSize * (binHigh - binLow)));
+                    pTmpArray = workspaceMemList.back().get();
+                    if (!pTmpArray)
+                    {
+                        return NULL;
+                    }
                 }
             }
             else
@@ -4040,20 +4045,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             PyTuple_SET_ITEM(returnTuple, i, item);
 
             int32_t * pCountOut = pstGroupBy32->returnObjects[i].pCountOut;
-
-            if (pCountOut)
-            {
-                WORKSPACE_FREE(pCountOut);
-            }
-
-            void * pTmpArray = pstGroupBy32->returnObjects[i].pTmpArray;
-            if (pTmpArray)
-            {
-                WORKSPACE_FREE(pTmpArray);
-            }
         }
-
-        WORKSPACE_FREE(pstGroupBy32);
     }
 
     // LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
