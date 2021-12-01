@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
 
 // TODO: Remove these includes, they don't seem to be used anymore (at least directly within this file).
 #include <cstdio>
