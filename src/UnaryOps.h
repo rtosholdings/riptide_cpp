@@ -22,8 +22,8 @@ struct UNARY_CALLBACK
     char * pDataIn;
     char * pDataOut;
 
-    int32_t itemSizeIn;
-    int32_t itemSizeOut;
+    int64_t itemSizeIn;
+    int64_t itemSizeOut;
 };
 
 #endif

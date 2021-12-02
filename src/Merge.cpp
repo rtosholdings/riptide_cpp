@@ -255,8 +255,8 @@ PyObject * BooleanIndexInternal(PyArrayObject * aValues, PyArrayObject * aIndex)
 
     int ndimValue = 0;
     int ndimBoolean = 0;
-    int32_t strideValue = 0;
-    int32_t strideBoolean = 0;
+    int64_t strideValue = 0;
+    int64_t strideBoolean = 0;
 
     int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
     int result2 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
@@ -741,7 +741,7 @@ PyObject * BooleanSum(PyObject * self, PyObject * args)
     }
 
     int ndimBoolean;
-    int32_t strideBoolean;
+    int64_t strideBoolean;
 
     int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 
@@ -1329,8 +1329,8 @@ PyObject * MBGet(PyObject * self, PyObject * args)
 
     int ndimValue;
     int ndimIndex;
-    int32_t strideValue = 0;
-    int32_t strideIndex = 0;
+    int64_t strideValue = 0;
+    int64_t strideIndex = 0;
 
     int result1 = GetStridesAndContig(aValues, ndimValue, strideValue);
     int result2 = GetStridesAndContig(aIndex, ndimIndex, strideIndex);
@@ -1505,7 +1505,7 @@ PyObject * BooleanToFancy(PyObject * self, PyObject * args, PyObject * kwargs)
     }
 
     int ndimBoolean;
-    int32_t strideBoolean;
+    int64_t strideBoolean;
 
     int result1 = GetStridesAndContig(aIndex, ndimBoolean, strideBoolean);
 

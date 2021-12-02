@@ -2949,7 +2949,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
     fl.FunctionName = "Reduce";
     fl.NumpyOutputType = 0;
     fl.NumpyType = numpyInType;
-    fl.InputItemSize = static_cast<int32_t>(PyArray_ITEMSIZE(inArr1));
+    fl.InputItemSize = PyArray_ITEMSIZE(inArr1);
     fl.Input1Strides = len > 1 ? PyArray_STRIDE(inArr1, 0) : 0;
     fl.OutputItemSize = 0;
     fl.TypeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_SCATTER_GATHER;

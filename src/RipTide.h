@@ -99,7 +99,7 @@ typedef struct
 } PyBoolScalarObject;
 
 extern bool GetUpcastType(int numpyInType1, int numpyInType2, int & convertType1, int & convertType2, int64_t funcNumber);
-extern int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int32_t & stride);
+extern int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int64_t & stride);
 
 /**
  * @brief Calculate the number of elements in an array with the given

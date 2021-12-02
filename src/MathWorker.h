@@ -562,8 +562,8 @@ public:
         bool didSomeWork = false;
         OLD_CALLBACK * OldCallback = &pstWorkerItem->OldCallback;
 
-        int32_t strideSizeIn = OldCallback->FunctionList->InputItemSize;
-        int32_t strideSizeOut = OldCallback->FunctionList->OutputItemSize;
+        int64_t strideSizeIn = OldCallback->FunctionList->InputItemSize;
+        int64_t strideSizeOut = OldCallback->FunctionList->OutputItemSize;
 
         char * pDataInX = (char *)OldCallback->pDataInBase1;
         char * pDataInX2 = (char *)OldCallback->pDataInBase2;

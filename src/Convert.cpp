@@ -1095,11 +1095,11 @@ PyObject * ConvertSafeInternal(PyArrayObject * const inArr1, const int64_t out_d
     void * pBadOutput1 = GetDefaultForType(numpyOutType);
 
     // Check the strides of both the input and output to make sure we can handle
-    int32_t strideIn;
+    int64_t strideIn;
     int directionIn = GetStridesAndContig(inArr1, ndim, strideIn);
 
     int ndimOut;
-    int32_t strideOut;
+    int64_t strideOut;
     int directionOut = GetStridesAndContig(outArray, ndimOut, strideOut);
 
     // If the input is C and/or F-contiguous, the output should have

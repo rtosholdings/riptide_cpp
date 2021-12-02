@@ -2507,8 +2507,6 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             PAR_SORT_TYPE sortType;
 
             int64_t sizeofT;
-            int64_t sizeofUINDEX;
-
         } psort;
 
         psort.funcSingleMerge = single_amergesort<T, UINDEX>;
@@ -2519,7 +2517,6 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
         psort.strlen = strlen;
         psort.sortType = sortType;
 
-        psort.sizeofUINDEX = sizeof(UINDEX);
         if (strlen > 0)
         {
             psort.sizeofT = strlen;
@@ -2553,7 +2550,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             // shift the data pointers to match the partition
             // call a single threaded merge
             callbackArg->funcSingleMerge(callbackArg->pValues + (partStart * callbackArg->sizeofT),
-                                         callbackArg->pToSort + (partStart * callbackArg->sizeofUINDEX), partLength,
+                                         callbackArg->pToSort + (partStart * sizeof(UINDEX)), partLength,
                                          callbackArg->strlen, callbackArg->sortType);
 
             return true;
@@ -3978,7 +3975,6 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             bool * pFilter;
             int64_t base_index;
             int64_t strlen;
-            int64_t sizeofUINDEX;
 
         } pgroup;
 
@@ -3996,9 +3992,6 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
         pgroup.pFilter = pFilter;
         pgroup.base_index = base_index;
         pgroup.strlen = itemSizeValues;
-        const int64_t INDEX_SIZE = (int64_t)sizeof(UINDEX);
-
-        pgroup.sizeofUINDEX = INDEX_SIZE;
 
         // Use threads per partition
         auto lambdaPSCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool
@@ -4026,10 +4019,10 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
                 // call a single threaded merge
                 callbackArg->pUniqueCounts[t] =
                     callbackArg->funcSingleGroup(callbackArg->pValues + (partStart * callbackArg->strlen), partLength,
-                                                 callbackArg->pIndex + (partStart * callbackArg->sizeofUINDEX),
-                                                 callbackArg->pKeyOut + (partStart * callbackArg->sizeofUINDEX),
-                                                 callbackArg->pFirstOut + (partStart * callbackArg->sizeofUINDEX),
-                                                 callbackArg->pCountOut + (partStart * callbackArg->sizeofUINDEX),
+                                                 callbackArg->pIndex + (partStart * sizeof(UINDEX)),
+                                                 callbackArg->pKeyOut + (partStart * sizeof(UINDEX)),
+                                                 callbackArg->pFirstOut + (partStart * sizeof(UINDEX)),
+                                                 callbackArg->pCountOut + (partStart * sizeof(UINDEX)),
                                                  callbackArg->pFilter + partStart,
                                                  0, // callbackArg->base_index, fix for countout
                                                  callbackArg->strlen);
@@ -4052,10 +4045,10 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
 
         // TODO: fix up keys
         // parallel add?
-        PyArrayObject * firstReduced = AllocateNumpyArray(1, (npy_intp *)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
+        PyArrayObject * firstReduced = AllocateNumpyArray(1, (npy_intp *)&totalUniques, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
 
         totalUniques++;
-        PyArrayObject * countReduced = AllocateNumpyArray(1, (npy_intp *)&totalUniques, INDEX_SIZE == 4 ? NPY_INT32 : NPY_INT64);
+        PyArrayObject * countReduced = AllocateNumpyArray(1, (npy_intp *)&totalUniques, sizeof(UINDEX) == 4 ? NPY_INT32 : NPY_INT64);
 
         // ANOTHER PARALEL ROUTINE to copy
         struct stPGROUPADD
@@ -4075,8 +4068,6 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
             bool * pFilter;
 
             int64_t base_index;
-            int64_t sizeofUINDEX;
-
         } pgroupadd;
 
         pgroupadd.pUniqueCounts = pUniqueCounts;
@@ -4094,13 +4085,12 @@ static PyObject * GroupFromLexSortInternal(PyObject * kwargs, UINDEX * pIndex, n
         pgroupadd.pCountReduced = (char *)PyArray_BYTES(countReduced);
 
         // skip first value since reserved for zero bin (and assign it 0)
-        for (int64_t c = 0; c < INDEX_SIZE; c++)
+        for (int64_t c = 0; c < sizeof(UINDEX); c++)
         {
             *pgroupadd.pCountReduced++ = 0;
         }
 
         pgroupadd.base_index = base_index;
-        pgroupadd.sizeofUINDEX = sizeof(UINDEX);
 
         // Use threads per partition
         auto lambdaPGADDCallback = [](void * callbackArgT, int core, int64_t workIndex) -> bool

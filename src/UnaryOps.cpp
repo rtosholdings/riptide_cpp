@@ -659,7 +659,7 @@ static const inline __m256d SQRT_OP_256(__m256d x)
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, const T MATH_OP(T), const U256 MATH_OP256(U256)>
-static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     T * pOut = (T *)pDataOut;
@@ -714,7 +714,7 @@ static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, const T MATH_OP(T), const U256 MATH_OP256(U256)>
-static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     T * pOut = (T *)pDataOut;
@@ -733,7 +733,7 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
         U256 * pIn1_256 = (U256 *)pIn;
         U256 * pOut_256 = (U256 *)pOut;
 
-        int32_t babyStride = strideIn;
+        int32_t babyStride = static_cast< int32_t >(strideIn);
         // add 8 strides everytime we process 8
         __m256i mindex = _mm256_mullo_epi32(_mm256_set1_epi32(babyStride), __vec8_strides.m);
 
@@ -768,8 +768,8 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                     int32_t strideOut)
+static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                     int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -816,8 +816,8 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                      int32_t strideOut)
+static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                      int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -859,8 +859,8 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, v
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                        int32_t strideOut)
+static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                        int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -904,8 +904,8 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                         int32_t strideOut)
+static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                         int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -947,8 +947,8 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                        int32_t strideOut)
+static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                        int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -995,8 +995,8 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                         int32_t strideOut)
+static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                         int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -1041,8 +1041,8 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
 // T = data type as input
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
-static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                                           int32_t strideOut)
+static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                                           int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -1090,7 +1090,7 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pData
 // MathOp operation to perform
 template <typename T, typename U256, typename MathFunctionPtr>
 static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len,
-                                            int32_t strideIn, int32_t strideOut)
+                                            int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -1138,7 +1138,7 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDat
 // Output same as input type
 // MathOp operation to perform
 template <typename T, typename MathFunctionPtr>
-static void UnaryOpSlow(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     T * pOut = (T *)pDataOut;
@@ -1158,8 +1158,8 @@ static void UnaryOpSlow(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut
 // Output always returns a double
 // MathOp operation to perform
 template <typename T, typename MathFunctionPtr>
-static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                              int32_t strideOut)
+static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                              int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     double * pOut = (double *)pDataOut;
@@ -1179,8 +1179,8 @@ static void UnaryOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn, void * pD
 // Output always returns a double
 // MathOp operation to perform
 template <typename T, typename MathFunctionPtr>
-static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int32_t strideIn,
-                            int32_t strideOut)
+static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn,
+                            int64_t strideOut)
 {
     T * pIn = (T *)pDataIn;
     bool * pOut = (bool *)pDataOut;
@@ -1195,7 +1195,7 @@ static void UnaryOpSlowBool(MathFunctionPtr MATH_OP, void * pDataIn, void * pDat
     }
 }
 
-static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     if (strideOut == sizeof(bool))
     {
@@ -1213,7 +1213,7 @@ static void UnaryOpSlow_FillTrue(void * pDataIn1, void * pDataOut, int64_t len, 
     }
 }
 
-static void UnaryOpSlow_FillFalse(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_FillFalse(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     if (strideOut == sizeof(bool))
     {
@@ -1233,59 +1233,59 @@ static void UnaryOpSlow_FillFalse(void * pDataIn1, void * pDataOut, int64_t len,
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_ABS(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ABS(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(ABS_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_FABS(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_FABS(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const double (*)(T)>(FABS_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_SIGN(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_SIGN(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(SIGN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_FLOATSIGN(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_FLOATSIGN(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(FLOATSIGN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_NEG(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_NEG(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(NEG_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_ISNOTNAN(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNOTNAN(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template <typename T>
-static void UnaryOpSlow_ISNAN(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNAN(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNANORZERO(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNANORZERO(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNANORZERO_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISINVALID(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISINVALID(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn1;
     T invalid = *(T *)GetInvalid<T>();
@@ -1309,7 +1309,7 @@ static void UnaryOpSlow_ISINVALID(void * pDataIn1, void * pDataOut, int64_t len,
 }
 
 template <typename T>
-static void UnaryOpSlow_ISINVALIDORZERO(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISINVALIDORZERO(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn1;
     T invalid = *(T *)GetInvalid<T>();
@@ -1333,7 +1333,7 @@ static void UnaryOpSlow_ISINVALIDORZERO(void * pDataIn1, void * pDataOut, int64_
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNOTINVALID(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNOTINVALID(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     T * pIn = (T *)pDataIn1;
     T invalid = *(T *)GetInvalid<T>();
@@ -1357,173 +1357,173 @@ static void UnaryOpSlow_ISNOTINVALID(void * pDataIn1, void * pDataOut, int64_t l
 }
 
 template <typename T>
-static void UnaryOpSlow_ISFINITE(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISFINITE(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNOTFINITE(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNOTFINITE(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISINF(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISINF(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISINF_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNOTINF(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNOTINF(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNOTINF_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNORMAL(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNORMAL(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNORMAL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_ISNOTNORMAL(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ISNOTNORMAL(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(ISNOTNORMAL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T>
-static void UnaryOpSlow_SIGNBIT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_SIGNBIT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(SIGNBIT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_NOT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_NOT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowBool<T, const bool (*)(T)>(NOT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_INVERT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_INVERT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(INVERT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_INVERT_BOOL(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_INVERT_BOOL(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(INVERT_OP_BOOL<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_FLOOR(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_FLOOR(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(FLOOR_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_CEIL(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_CEIL(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(CEIL_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_TRUNC(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_TRUNC(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(TRUNC_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_ROUND(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_ROUND(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(ROUND_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_SQRT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_SQRT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(SQRT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_CBRT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_CBRT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(CBRT_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_LOG(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_LOG(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(LOG_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_LOG2(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_LOG2(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(LOG2_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_LOG10(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_LOG10(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(LOG10_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_EXP(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_EXP(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(EXP_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlow_EXP2(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlow_EXP2(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlow<T, const T (*)(T)>(EXP2_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_SQRT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_SQRT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(SQRT_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_CBRT(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_CBRT(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(CBRT_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_LOG(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_LOG(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(LOG_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_LOG2(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_LOG2(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(LOG2_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_LOG10(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_LOG10(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(LOG10_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_EXP(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_EXP(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(EXP_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 //-------------------------------------------------------------------
 template <typename T>
-static void UnaryOpSlowDouble_EXP2(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static void UnaryOpSlowDouble_EXP2(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryOpSlowDouble<T, const double (*)(double)>(EXP2_OP<double>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
@@ -1536,45 +1536,45 @@ static void UnaryOpSlowDouble_EXP2(void * pDataIn1, void * pDataOut, int64_t len
 // This routines will call the proper templated ABS function based on the type
 // It provides the standard signature
 template <typename T, typename U256>
-static inline void UnaryOpFast_NANF32(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NANF32(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNanFastFloat<T, U256, const bool (*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template <typename T, typename U256>
-static inline void UnaryOpFast_NANF64(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NANF64(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNanFastDouble<T, U256, const bool (*)(T)>(ISNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T, typename U256>
-static inline void UnaryOpFast_NOTNANF32(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NOTNANF32(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNotNanFastFloat<T, U256, const bool (*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template <typename T, typename U256>
-static inline void UnaryOpFast_NOTNANF64(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NOTNANF64(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNotNanFastDouble<T, U256, const bool (*)(T)>(ISNOTNAN_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T, typename U256>
-static inline void UnaryOpFast_FINITEF32(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_FINITEF32(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryFiniteFastFloat<T, U256, const bool (*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template <typename T, typename U256>
-static inline void UnaryOpFast_FINITEF64(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_FINITEF64(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryFiniteFastDouble<T, U256, const bool (*)(T)>(ISFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 
 template <typename T, typename U256>
-static inline void UnaryOpFast_NOTFINITEF32(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NOTFINITEF32(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNotFiniteFastFloat<T, U256, const bool (*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
 template <typename T, typename U256>
-static inline void UnaryOpFast_NOTFINITEF64(void * pDataIn1, void * pDataOut, int64_t len, int32_t strideIn, int32_t strideOut)
+static inline void UnaryOpFast_NOTFINITEF64(void * pDataIn1, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut)
 {
     return UnaryNotFiniteFastDouble<T, U256, const bool (*)(T)>(ISNOTFINITE_OP<T>, pDataIn1, pDataOut, len, strideIn, strideOut);
 }
@@ -2481,7 +2481,7 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
 {
     LOGGING("In process one input %d %d %d\n", funcNumber, numpyInType1, numpyOutType);
     int ndim;
-    int32_t strideIn;
+    int64_t strideIn;
 
     int directionIn = GetStridesAndContig(inArray, ndim, strideIn);
     int64_t len = CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(inArray));
@@ -2600,7 +2600,7 @@ PyObject * ProcessOneInput(PyArrayObject * inArray, PyArrayObject * outObject1, 
         void * pDataOut = PyArray_BYTES(outputArray);
 
         int ndimOut;
-        int32_t strideOut;
+        int64_t strideOut;
         int directionOut = GetStridesAndContig(outputArray, ndimOut, strideOut);
 
         // F contig on 2 dim =>  dim0 * stride0 == stride1

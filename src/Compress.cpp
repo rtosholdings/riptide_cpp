@@ -16,18 +16,18 @@
 // Used when compressing from one numpy array to another numpy array
 //
 void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t ndim, int64_t * dims, int32_t flags,
-                       int32_t itemsize)
+                       int64_t itemsize)
 {
     if (pstNumpyHeader)
     {
         pstNumpyHeader->magic = COMPRESSION_MAGIC;
         pstNumpyHeader->compressiontype = COMPRESSION_TYPE_ZSTD;
 
-        pstNumpyHeader->dtype = (int8_t)(dtype);
-        pstNumpyHeader->ndim = (int8_t)ndim;
+        pstNumpyHeader->dtype = static_cast<int8_t>(dtype);
+        pstNumpyHeader->ndim = static_cast<int8_t>(ndim);
 
         pstNumpyHeader->flags = flags;
-        pstNumpyHeader->itemsize = itemsize;
+        pstNumpyHeader->itemsize = static_cast< int32_t >(itemsize);
 
         if (pstNumpyHeader->ndim > 3)
         {
@@ -46,7 +46,7 @@ void FillInNumpyHeader(NUMPY_HEADERSIZE * pstNumpyHeader, int32_t dtype, int32_t
 // Returns temporary array to compress into
 // Caller is responsible for freeing memory
 NUMPY_HEADERSIZE * AllocCompressedMemory(int64_t arraylength, int32_t dtype, int32_t ndim, int64_t * dims, int32_t flags,
-                                         int32_t itemsize)
+                                         int64_t itemsize)
 {
     int64_t source_size = arraylength * itemsize;
     int64_t dest_size = ZSTD_compressBound(source_size);

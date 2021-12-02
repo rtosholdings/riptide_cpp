@@ -25,13 +25,12 @@ const union
 {
     int32_t i[8];
     __m256i m;
-    //} __vindex8_strides = { 7, 6, 5, 4, 3, 2, 1, 0 };
-} __vindex8_strides = { 0, 1, 2, 3, 4, 5, 6, 7 };
+} vindex8_strides = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
 //-----------------------------------
 //
 void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, stOffsets * pstOffset, int64_t * pOffsets,
-                     int64_t numArrays, int32_t itemSize)
+                     int64_t numArrays, int64_t itemSize)
 {
     // Try to keep everything in L1Cache
     const int64_t L1CACHE = 32768;
@@ -41,7 +40,7 @@ void ConvertRecArray(char * pStartOffset, int64_t startRow, int64_t totalRows, s
         CHUNKROWS = 1;
     }
 
-    __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32(itemSize), _mm256_loadu_si256(&__vindex8_strides.m));
+    __m256i vindex = _mm256_mullo_epi32(_mm256_set1_epi32(static_cast<int32_t>(itemSize)), _mm256_loadu_si256(&vindex8_strides.m));
     __m128i vindex128 = _mm256_extracti128_si256(vindex, 0);
 
     while (startRow < totalRows)
@@ -172,7 +171,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    int32_t itemSize = static_cast<int32_t>(PyArray_ITEMSIZE(inArr));
+    int64_t itemSize = PyArray_ITEMSIZE(inArr);
 
     if (itemSize != PyArray_STRIDE(inArr, 0))
     {
@@ -219,7 +218,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
             stOffsets * pstOffset;
             int64_t * pOffsets;
             int64_t numArrays;
-            int32_t itemSize;
+            int64_t itemSize;
             int64_t lastRow;
         } stConvert;
 
