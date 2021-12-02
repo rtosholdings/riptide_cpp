@@ -76,8 +76,6 @@ else()
      message(FATAL_ERROR "Unexpected proj compiler front-end, ${PROJ_COMPILER_FRONTEND}")
 endif()
 
-set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_subdirectory(src)
 add_subdirectory(external)
+add_subdirectory(src)
 add_subdirectory(tests)

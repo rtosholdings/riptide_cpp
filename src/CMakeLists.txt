@@ -37,8 +37,7 @@ set(HEADERS
     TileRepeat.h
     TimeWindow.h
     #TypeSystem.h
-    UnaryOps.h
-)
+    UnaryOps.h)
 
 set(SOURCES
     #ArenaMemory.cpp
@@ -74,47 +73,20 @@ set(SOURCES
     TileRepeat.cpp
     TimeWindow.cpp
     #TypeSystem.cpp
-    UnaryOps.cpp
-)
-
-set(ZSTD_SOURCES
-    zstd/compress/fse_compress.c
-    zstd/compress/hist.c
-    zstd/compress/huf_compress.c
-    zstd/compress/zstdmt_compress.c
-    zstd/compress/zstd_compress.c
-    zstd/compress/zstd_compress_literals.c
-    zstd/compress/zstd_compress_sequences.c
-    zstd/compress/zstd_compress_superblock.c
-    zstd/compress/zstd_double_fast.c
-    zstd/compress/zstd_fast.c
-    zstd/compress/zstd_lazy.c
-    zstd/compress/zstd_ldm.c
-    zstd/compress/zstd_opt.c
-    zstd/decompress/zstd_decompress.c
-    zstd/decompress/huf_decompress.c
-    zstd/decompress/zstd_ddict.c
-    zstd/decompress/zstd_decompress_block.c
-    zstd/common/fse_decompress.c
-    zstd/common/entropy_common.c
-    zstd/common/zstd_common.c
-    zstd/common/xxhash.c
-    zstd/common/error_private.c
-    zstd/common/pool.c
-)
+    UnaryOps.cpp)
 
 add_library(${TARGET_NAME} SHARED
     ${HEADERS}
-    ${SOURCES}
-    ${ZSTD_SOURCES})
+    ${SOURCES})
 
 target_include_directories(${TARGET_NAME} PRIVATE
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
-    zstd)
+    ${EXTERNAL_ZSTD_INCLUDE_DIR})
 
 target_link_libraries(${TARGET_NAME}
-    Python3::Python)
+    Python3::Python
+    libzstd_static)
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES

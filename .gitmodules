@@ -4,3 +4,6 @@
 [submodule "bench/benchmark"]
 	path = bench/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "external/zstd"]
+	path = external/zstd
+	url = https://github.com/facebook/zstd.git

@@ -9,8 +9,10 @@ add_executable(${TARGET_NAME}
     ${HEADERS}
     ${SOURCES})
 
+get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
+
 target_include_directories(${TARGET_NAME} PRIVATE
-    ${ROOT_SOURCE_DIR}
+    ${RT_SOURCE_DIR}
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS})
 

@@ -1,5 +1,5 @@
 // hack for now - headers should be self-inclusive
-#include "src/RipTide.h"
+#include "RipTide.h"
 #include <gtest/gtest.h>
 
 PyObject* CompareNumpyMemAddress(PyObject *self, PyObject *args);
