@@ -7,6 +7,8 @@
 #include "Reduce.h"
 
 #include <algorithm>
+#include <exception>
+#include <string>
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -2087,8 +2089,9 @@ int64_t Combine1Filter(void * pInputIndex,
         {
             if (i > std::numeric_limits<INDEX>::max())
             {
-                PyErr_Format(PyExc_ValueError, "Combine1Filter has attempted to exceed the size of the index value [%lld]", i);
-                return 0;
+                std::string errmsg{"Combine1Filter has attempted to exceed the size of the index value "};
+                errmsg += std::to_string(i);
+                throw std::overflow_error(errmsg);
             }
             if (pFilter[i])
             {
@@ -2139,8 +2142,9 @@ int64_t Combine1Filter(void * pInputIndex,
         {
             if (i > std::numeric_limits<INDEX>::max())
             {
-                PyErr_Format(PyExc_ValueError, "Combine1Filter has attempted to exceed the size of the index value [%lld]", i);
-                return 0;
+                std::string errmsg{"Combine1Filter has attempted to exceed the size of the index value, no filter provided "};
+                errmsg += std::to_string(i);
+                throw std::overflow_error(errmsg);
             }
             INDEX index = pInput[i];
             // printf("[%lld] got index\n", (int64_t)index);
@@ -2268,7 +2272,17 @@ PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
         {
             int32_t * pFirst = (int32_t *)PyArray_BYTES(firstArray);
 
-            int64_t uniqueCount = pFunction(pDataIn1, PyArray_BYTES(outArray), pFirst, pFilterIn, arraySize1, hashSize);
+            int64_t uniqueCount{};
+
+            try
+            {
+                uniqueCount = pFunction(pDataIn1, PyArray_BYTES(outArray), pFirst, pFilterIn, arraySize1, hashSize);
+            }
+            catch ( std::exception &e )
+            {
+                PyErr_Format(PyExc_ValueError, e.what());
+                return nullptr;
+            }
 
             if (uniqueCount < arraySize1)
             {
