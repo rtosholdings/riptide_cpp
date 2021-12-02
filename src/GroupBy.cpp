@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdio.h>
+#include <vector>
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -219,7 +220,7 @@ public:
     // void* pDataOut, int64_t len);
 
     static void AccumSum(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass)
+                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -245,39 +246,16 @@ public:
     // This routine is only for float32.  It will upcast to float64, add up all
     // the numbers, then convert back to float32
     static void AccumSumFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                              int64_t binHigh, int64_t pass)
+                              int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
-        float * pOut = (float *)pDataOut;
         V * pIndex = (V *)pIndexT;
-        double * pOutAccum = NULL;
-
-        const int64_t maxStackAlloc = (1024 * 1024); // 1 MB
-
-        int64_t allocSize = (binHigh - binLow) * sizeof(double);
-
-        if (allocSize > maxStackAlloc)
-        {
-            pOutAccum = (double *)WORKSPACE_ALLOC(allocSize);
-        }
-        else
-        {
-            pOutAccum = (double *)alloca(allocSize);
-        }
+        double * pOutAccum = static_cast<double *>(pDataTmp);
 
         if (pass <= 0)
         {
             // Clear out memory for our range
-            memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
-            memset(pOutAccum, 0, allocSize);
-        }
-        else
-        {
-            // Upcast from single to double
-            for (int64_t i = binLow; i < binHigh; i++)
-            {
-                pOutAccum[i - binLow] = pOut[i];
-            }
+            memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
         // Main loop
@@ -291,20 +269,20 @@ public:
             }
         }
 
-        // Downcast from double to single
-        for (int64_t i = binLow; i < binHigh; i++)
+        if (isFinalPass)
         {
-            pOut[i] = (float)pOutAccum[i - binLow];
-        }
-        if (allocSize > maxStackAlloc)
-        {
-            WORKSPACE_FREE(pOutAccum);
+            // Downcast from double to single
+            float * pOut = (float *)pDataOut;
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                pOut[i] = (float)pOutAccum[i - binLow];
+            }
         }
     }
 
     //-------------------------------------------------------------------------------
     static void AccumNanSum(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass)
+                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -361,39 +339,16 @@ public:
     // $TODO: Adapted from AccumSumFloat: should refactor this common behavior and
     // potentially cache the working buffer in between invocations.
     static void AccumNanSumFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass)
+                                 int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
-        float * pOut = (float *)pDataOut;
         V * pIndex = (V *)pIndexT;
-        double * pOutAccum = NULL;
-
-        const int64_t maxStackAlloc = (1024 * 1024); // 1 MB
-
-        int64_t allocSize = (binHigh - binLow) * sizeof(double);
-
-        if (allocSize > maxStackAlloc)
-        {
-            pOutAccum = (double *)WORKSPACE_ALLOC(allocSize);
-        }
-        else
-        {
-            pOutAccum = (double *)alloca(allocSize);
-        }
+        double * pOutAccum = static_cast<double *>(pDataTmp);
 
         if (pass <= 0)
         {
             // Clear out memory for our range
-            memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
-            memset(pOutAccum, 0, allocSize);
-        }
-        else
-        {
-            // Upcast from single to double
-            for (int64_t i = binLow; i < binHigh; i++)
-            {
-                pOutAccum[i - binLow] = pOut[i];
-            }
+            memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
         for (int64_t i = 0; i < len; i++)
@@ -411,20 +366,20 @@ public:
             }
         }
 
-        // Downcast from double to single
-        for (int64_t i = binLow; i < binHigh; i++)
+        if (isFinalPass)
         {
-            pOut[i] = (float)pOutAccum[i - binLow];
-        }
-        if (allocSize > maxStackAlloc)
-        {
-            WORKSPACE_FREE(pOutAccum);
+            // Downcast from double to single
+            float * pOut = (float *)pDataOut;
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                pOut[i] = (float)pOutAccum[i - binLow];
+            }
         }
     }
 
     //-------------------------------------------------------------------------------
     static void AccumMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass)
+                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -465,7 +420,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass)
+                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -538,7 +493,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass)
+                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -578,7 +533,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass)
+                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -650,7 +605,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumMean(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                          int64_t binHigh, int64_t pass)
+                          int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -694,7 +649,7 @@ public:
     // Just for float32 since we can upcast
     //-------------------------------------------------------------------------------
     static void AccumMeanFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                               int64_t binHigh, int64_t pass)
+                               int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOriginalOut = (U *)pDataOut;
@@ -757,7 +712,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMean(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                             int64_t binHigh, int64_t pass)
+                             int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOriginalOut = (U *)pDataOut;
@@ -821,7 +776,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMeanFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len,
-                                  int64_t binLow, int64_t binHigh, int64_t pass)
+                                  int64_t binLow, int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -867,7 +822,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumVar(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass)
+                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -930,7 +885,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanVar(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass)
+                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -998,10 +953,10 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumStd(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass)
+                         int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
-        AccumVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass);
+        AccumVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, isFinalPass, pDataTmp);
         for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
@@ -1010,11 +965,11 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanStd(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass)
+                            int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
 
-        AccumNanVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass);
+        AccumNanVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, isFinalPass, pDataTmp);
         for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
@@ -2516,9 +2471,10 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
 // U is the output type
 // V is the index type, like int32_t or int8_t
 template <typename V>
-static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOutputType, int inputType, GB_FUNCTIONS func)
+static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOutputType, int32_t * wantedTempType, int inputType, GB_FUNCTIONS func)
 {
     *hasCounts = false;
+    *wantedTempType = -1;
     switch (func)
     {
     case GB_SUM:
@@ -2529,6 +2485,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, int64_t, V>::AccumSum;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V>::AccumSumFloat;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -2546,7 +2503,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int32_t, int64_t, V>::AccumSum;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumSum;
         case NPY_UINT8:
@@ -2559,7 +2515,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint32_t, uint64_t, V>::AccumSum;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumSum;
         default:
@@ -2571,6 +2526,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
         {
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V>::AccumNanSumFloat;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -2592,7 +2548,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int32_t, int64_t, V>::AccumNanSum;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumNanSum;
         case NPY_UINT8:
@@ -2605,7 +2560,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint32_t, uint64_t, V>::AccumNanSum;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumNanSum;
         default:
@@ -2638,7 +2592,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT32;
             return GroupByBase<int32_t, int32_t, V>::AccumMin;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumMin;
         case NPY_UINT8:
@@ -2651,7 +2604,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT32;
             return GroupByBase<uint32_t, uint32_t, V>::AccumMin;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumMin;
         default:
@@ -2687,7 +2639,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT32;
             return GroupByBase<int32_t, int32_t, V>::AccumNanMin;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumNanMin;
         case NPY_UINT8:
@@ -2700,7 +2651,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT32;
             return GroupByBase<uint32_t, uint32_t, V>::AccumNanMin;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumNanMin;
         default:
@@ -2733,7 +2683,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT32;
             return GroupByBase<int32_t, int32_t, V>::AccumMax;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumMax;
         case NPY_UINT8:
@@ -2746,7 +2695,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT32;
             return GroupByBase<uint32_t, uint32_t, V>::AccumMax;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumMax;
         default:
@@ -2779,7 +2727,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_INT32;
             return GroupByBase<int32_t, int32_t, V>::AccumNanMax;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int64_t, int64_t, V>::AccumNanMax;
         case NPY_UINT8:
@@ -2792,7 +2739,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_UINT32;
             return GroupByBase<uint32_t, uint32_t, V>::AccumNanMax;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_UINT64;
             return GroupByBase<uint64_t, uint64_t, V>::AccumNanMax;
         default:
@@ -2825,7 +2771,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumMean;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumMean;
         case NPY_UINT8:
@@ -2838,7 +2783,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumMean;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumMean;
         default:
@@ -2871,7 +2815,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumNanMean;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumNanMean;
         case NPY_UINT8:
@@ -2884,7 +2827,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumNanMean;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumNanMean;
         default:
@@ -2917,7 +2859,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumVar;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumVar;
         case NPY_UINT8:
@@ -2930,7 +2871,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumVar;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumVar;
         default:
@@ -2963,7 +2903,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumNanVar;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumNanVar;
         case NPY_UINT8:
@@ -2976,7 +2915,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumNanVar;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumNanVar;
         default:
@@ -3009,7 +2947,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumStd;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumStd;
         case NPY_UINT8:
@@ -3022,7 +2959,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumStd;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumStd;
         default:
@@ -3055,7 +2991,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int32_t, double, V>::AccumNanStd;
         CASE_NPY_INT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<int64_t, double, V>::AccumNanStd;
         case NPY_UINT8:
@@ -3068,7 +3003,6 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint32_t, double, V>::AccumNanStd;
         CASE_NPY_UINT64:
-
             *wantedOutputType = NPY_DOUBLE;
             return GroupByBase<uint64_t, double, V>::AccumNanStd;
         default:
@@ -3124,7 +3058,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_INT32:
             return GroupByBase<int32_t, double, V>::AccumTrimMeanBR;
         CASE_NPY_INT64:
-
             return GroupByBase<int64_t, double, V>::AccumTrimMeanBR;
         case NPY_UINT8:
             return GroupByBase<uint8_t, double, V>::AccumTrimMeanBR;
@@ -3133,7 +3066,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_UINT32:
             return GroupByBase<uint32_t, double, V>::AccumTrimMeanBR;
         CASE_NPY_UINT64:
-
             return GroupByBase<uint64_t, double, V>::AccumTrimMeanBR;
         }
         return NULL;
@@ -3149,7 +3081,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_INT32:
             return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
         CASE_NPY_INT64:
-
             return GroupByBase<int64_t, int32_t, V>::GetXFunc2(func);
         }
         return NULL;
@@ -3174,7 +3105,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_INT32:
             return GroupByBase<int32_t, int32_t, V>::GetXFunc2(func);
         CASE_NPY_INT64:
-
             return GroupByBase<int64_t, int64_t, V>::GetXFunc2(func);
         case NPY_UINT8:
             return GroupByBase<uint8_t, uint8_t, V>::GetXFunc2(func);
@@ -3183,7 +3113,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_UINT32:
             return GroupByBase<uint32_t, uint32_t, V>::GetXFunc2(func);
         CASE_NPY_UINT64:
-
             return GroupByBase<uint64_t, uint64_t, V>::GetXFunc2(func);
         }
         return NULL;
@@ -3209,7 +3138,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
             CASE_NPY_INT32:
                 return GroupByBase<int32_t, double, V>::GetXFunc2(func);
             CASE_NPY_INT64:
-
                 return GroupByBase<int64_t, double, V>::GetXFunc2(func);
             case NPY_UINT8:
                 return GroupByBase<uint8_t, double, V>::GetXFunc2(func);
@@ -3218,7 +3146,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
             CASE_NPY_UINT32:
                 return GroupByBase<uint32_t, double, V>::GetXFunc2(func);
             CASE_NPY_UINT64:
-
                 return GroupByBase<uint64_t, double, V>::GetXFunc2(func);
             }
             return NULL;
@@ -3245,7 +3172,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
             CASE_NPY_INT32:
                 return GroupByBase<int32_t, int64_t, V>::GetXFunc2(func);
             CASE_NPY_INT64:
-
                 return GroupByBase<int64_t, int64_t, V>::GetXFunc2(func);
             case NPY_UINT8:
                 return GroupByBase<uint8_t, int64_t, V>::GetXFunc2(func);
@@ -3254,7 +3180,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
             CASE_NPY_UINT32:
                 return GroupByBase<uint32_t, int64_t, V>::GetXFunc2(func);
             CASE_NPY_UINT64:
-
                 return GroupByBase<uint64_t, int64_t, V>::GetXFunc2(func);
             }
         }
@@ -3279,7 +3204,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_INT32:
             return GroupByBase<int32_t, int32_t, V>::GetXFunc(func);
         CASE_NPY_INT64:
-
             return GroupByBase<int64_t, int64_t, V>::GetXFunc(func);
         case NPY_UINT8:
             return GroupByBase<uint8_t, uint8_t, V>::GetXFunc(func);
@@ -3288,7 +3212,6 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_UINT32:
             return GroupByBase<uint32_t, uint32_t, V>::GetXFunc(func);
         CASE_NPY_UINT64:
-
             return GroupByBase<uint64_t, uint64_t, V>::GetXFunc(func);
         case NPY_STRING:
             return GroupByBase<char, char, V>::GetXFuncString(func);
@@ -3371,6 +3294,7 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
     int32_t * pCountOut = pGroupBy32->returnObjects[core].pCountOut;
     GROUPBY_TWO_FUNC pFunction = pGroupBy32->returnObjects[core].pFunction;
     void * pDataOut = pGroupBy32->returnObjects[core].pOutArray;
+    void * pDataTmp = pGroupBy32->returnObjects[core].pTmpArray;
 
     int64_t lenX;
     int64_t workBlock;
@@ -3383,6 +3307,8 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
     // As long as there is work to do
     while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
+        bool const isFinalPass{(workBlock + 1) == pstWorkerItem->BlockLast};
+
         // printf("|%d %d %lld %p %p %p %p", core, (int)workBlock, lenX, pDataIn,
         // pDataIn2, pCountOut, pDataOut);
 
@@ -3391,7 +3317,7 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
 
         // shift pDataIn by T
         // shift pDataIn2 by U
-        pFunction(pDataIn + inputAdj1, pDataIn2 + inputAdj2, pCountOut, pDataOut, lenX, binLow, binHigh, pass++);
+        pFunction(pDataIn + inputAdj1, pDataIn2 + inputAdj2, pCountOut, pDataOut, lenX, binLow, binHigh, pass++, isFinalPass, pDataTmp);
         pGroupBy32->returnObjects[core].didWork = 1;
 
         // Indicate we completed a block
@@ -3439,6 +3365,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
             gNumpyTypeToSize[numpyOutType]);
 
         void * pDataOut = PyArray_BYTES(outArray);
+        void * pDataTmp = pGroupBy32->returnObjects[i].pTmpArray;
 
         LOGGING("%llu  typeCall %d  numpyOutType %d\n", i, (int)typeCall, numpyOutType);
 
@@ -3447,7 +3374,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
             // Accum the calculation
             // Sum/NanSum
             // Make the range from 1 to uniqueRows to skip over bin 0
-            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1);
+            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1, true, pDataTmp);
         }
         else
 
@@ -3520,7 +3447,7 @@ PyObject * GroupByAll64(PyObject * self, PyObject * args)
 }
 
 //---------------------------------------------------------------
-GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int32_t * numpyOutType, int32_t numpyInType,
+GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int32_t * numpyOutType, int32_t * numpyTmpType, int32_t numpyInType,
                                          GB_FUNCTIONS funcNum)
 {
     GROUPBY_TWO_FUNC pFunction = NULL;
@@ -3528,17 +3455,16 @@ GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int
     switch (iKeyType)
     {
     case NPY_INT8:
-        pFunction = GetGroupByFunction<int8_t>(hasCounts, numpyOutType, numpyInType, funcNum);
+        pFunction = GetGroupByFunction<int8_t>(hasCounts, numpyOutType, numpyTmpType, numpyInType, funcNum);
         break;
     case NPY_INT16:
-        pFunction = GetGroupByFunction<int16_t>(hasCounts, numpyOutType, numpyInType, funcNum);
+        pFunction = GetGroupByFunction<int16_t>(hasCounts, numpyOutType, numpyTmpType, numpyInType, funcNum);
         break;
     CASE_NPY_INT32:
-        pFunction = GetGroupByFunction<int32_t>(hasCounts, numpyOutType, numpyInType, funcNum);
+        pFunction = GetGroupByFunction<int32_t>(hasCounts, numpyOutType, numpyTmpType, numpyInType, funcNum);
         break;
     CASE_NPY_INT64:
-
-        pFunction = GetGroupByFunction<int64_t>(hasCounts, numpyOutType, numpyInType, funcNum);
+        pFunction = GetGroupByFunction<int64_t>(hasCounts, numpyOutType, numpyTmpType, numpyInType, funcNum);
         break;
     }
 
@@ -3575,7 +3501,6 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         pFunction = GetGroupByXFunction32<int32_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
         break;
     CASE_NPY_INT64:
-
         pFunction = GetGroupByXFunction32<int64_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
         break;
     }
@@ -3737,10 +3662,11 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
     int32_t iKeyType = PyArray_TYPE(iKey);
 
     int32_t numpyOutType = -1;
+    int32_t numpyTmpType = -1;
     bool hasCounts = false;
 
     GROUPBY_TWO_FUNC pFunction =
-        GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, aInfo[0].NumpyDType, (GB_FUNCTIONS)firstFuncNum);
+        GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[0].NumpyDType, (GB_FUNCTIONS)firstFuncNum);
 
     // printf("Taking the divide path  %lld \n", unique_rows);
 
@@ -3753,6 +3679,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
         if (pWorkItem != NULL)
         {
+            std::vector<workspace_mem_ptr> workspaceMemList;
+
             int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
 
             PyArrayObject * outArray = NULL;
@@ -3771,7 +3699,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             // Allocate room for all the threads to participate, this will be gathered
             // later
-            char * pWorkspace = (char *)WORKSPACE_ALLOC(unique_rows * itemSize * numCores);
+            workspaceMemList.emplace_back(WORKSPACE_ALLOC(unique_rows * itemSize * numCores));
+            char * pWorkspace = (char *)workspaceMemList.back().get();
 
             LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", pWorkspace, unique_rows, itemSize, numCores);
 
@@ -3784,7 +3713,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             {
                 // Zero out for them
                 int64_t allocSize = sizeof(int32_t) * unique_rows * numCores;
-                pCountOut = (int32_t *)WORKSPACE_ALLOC(allocSize);
+                workspaceMemList.emplace_back(WORKSPACE_ALLOC(allocSize));
+                pCountOut = (int32_t *)workspaceMemList.back().get();
                 if (pCountOut == NULL)
                 {
                     return NULL;
@@ -3793,10 +3723,25 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                 LOGGING("***pCountOut %p   unique:%lld  allocsize:%lld   cores:%d\n", pCountOut, unique_rows, allocSize, numCores);
             }
 
+            void * pTmpWorkspace{nullptr};
+            int32_t tempItemSize{0};
+
+            if (numpyTmpType >= 0)
+            {
+                tempItemSize = NpyToSize(numpyTmpType);
+                int64_t tempSize = tempItemSize * (binHigh - binLow) * numCores;
+                workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempSize));
+                pTmpWorkspace = workspaceMemList.back().get();
+                if (!pTmpWorkspace)
+                {
+                    return NULL;
+                }
+            }
+
             // Allocate the struct + ROOM at the end of struct for all the tuple
             // objects being produced
-            stGroupBy32 * pstGroupBy32 =
-                (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn)));
+            workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn))));
+            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)workspaceMemList.back().get();
 
             if (pstGroupBy32 == NULL)
             {
@@ -3824,6 +3769,9 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
                 // Assign working memory per call
                 pstGroupBy32->returnObjects[i].pOutArray = &pWorkspace[unique_rows * i * itemSize];
+                pstGroupBy32->returnObjects[i].pTmpArray = pTmpWorkspace
+                    ? &(static_cast<char *>(pTmpWorkspace)[(binHigh - binLow) * i * tempItemSize])
+                    : nullptr;
                 pstGroupBy32->returnObjects[i].pCountOut = &pCountOut[unique_rows * i];
                 pstGroupBy32->returnObjects[i].pFunction = pFunction;
                 pstGroupBy32->returnObjects[i].returnObject = Py_None;
@@ -3852,15 +3800,6 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             {
                 printf("!!!Internal error in GetGroupByGatherFunction\n");
             }
-
-            WORKSPACE_FREE(pstGroupBy32);
-
-            if (hasCounts)
-            {
-                WORKSPACE_FREE(pCountOut);
-            }
-
-            WORKSPACE_FREE(pWorkspace);
 
             // New reference
             returnTuple = PyTuple_New(tupleSize);
@@ -3986,9 +3925,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     //
     if (returnTuple == NULL)
     {
+        std::vector<workspace_mem_ptr> workspaceMemList;
+
         // Allocate the struct + ROOM at the end of struct for all the tuple objects
         // being produced
-        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (tupleSize * sizeof(stGroupByReturn)));
+        workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (tupleSize * sizeof(stGroupByReturn))));
+        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)workspaceMemList.back().get();
 
         if (pstGroupBy32 == NULL)
         {
@@ -4011,6 +3953,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         {
             // TODO: determine based on function
             int32_t numpyOutType = -1;
+            int32_t numpyTmpType = -1;
             bool hasCounts = false;
 
             int overflow = 0;
@@ -4024,11 +3967,12 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             pstGroupBy32->returnObjects[i].binHigh = binHigh;
 
             GROUPBY_TWO_FUNC pFunction =
-                GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
+                GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
 
             PyArrayObject * outArray = NULL;
             int32_t * pCountOut = NULL;
             void * pOutArray = NULL;
+            void * pTmpArray = nullptr;
 
             if (pFunction && numpyOutType != -1)
             {
@@ -4047,12 +3991,24 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                 if (hasCounts)
                 {
                     // Zero out for them
-                    pCountOut = (int32_t *)WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows);
+                    workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(int32_t) * unique_rows));
+                    pCountOut = (int32_t *)workspaceMemList.back().get();
                     if (pCountOut == NULL)
                     {
                         return NULL;
                     }
                     memset(pCountOut, 0, sizeof(int32_t) * unique_rows);
+                }
+
+                if (numpyTmpType >= 0)
+                {
+                    int32_t tempItemSize = NpyToSize(numpyTmpType);
+                    workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempItemSize * (binHigh - binLow)));
+                    pTmpArray = workspaceMemList.back().get();
+                    if (!pTmpArray)
+                    {
+                        return NULL;
+                    }
                 }
             }
             else
@@ -4062,6 +4018,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
             pstGroupBy32->returnObjects[i].outArray = outArray;
             pstGroupBy32->returnObjects[i].pOutArray = pOutArray;
+            pstGroupBy32->returnObjects[i].pTmpArray = pTmpArray;
             pstGroupBy32->returnObjects[i].pCountOut = pCountOut;
             pstGroupBy32->returnObjects[i].pFunction = pFunction;
             pstGroupBy32->returnObjects[i].returnObject = Py_None;
@@ -4088,14 +4045,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             PyTuple_SET_ITEM(returnTuple, i, item);
 
             int32_t * pCountOut = pstGroupBy32->returnObjects[i].pCountOut;
-
-            if (pCountOut)
-            {
-                WORKSPACE_FREE(pCountOut);
-            }
         }
-
-        WORKSPACE_FREE(pstGroupBy32);
     }
 
     // LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
