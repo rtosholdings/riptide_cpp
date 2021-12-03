@@ -725,7 +725,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = (int32_t)windowSize1;
+    int64_t windowSize = llround(windowSize1);
 
     LOGGING("cumsum %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
 
@@ -848,7 +848,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
 
     U Invalid = GET_INVALID(pDest[0]);
 
-    int32_t windowSize = (int32_t)windowSize1;
+    int64_t windowSize = llround(windowSize1);
 
     LOGGING("cumprod %lld  %lld  %p  %p\n", numUnique, totalInputRows, pIncludeMask, pResetMask);
 
@@ -967,7 +967,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
 template <typename U, typename K>
 static void FindNth(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUnique, int64_t totalInputRows,
                     void * pTime1, // not used
-                    int8_t * pIncludeMask, int8_t * pResetMask, double windowSize1)
+                    int8_t * pIncludeMask, int8_t * pResetMask, double )
 {
     U * pDest = (U *)pAccumBin;
     K * pKey = (K *)pKeyT;
