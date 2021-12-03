@@ -741,7 +741,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
         if (pResetMask != NULL)
         {
             // filter + reset loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
                 // Bin 0 is bad
@@ -764,7 +764,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
         else
         {
             // filter loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
                 // Bin 0 is bad
@@ -790,7 +790,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
         if (pResetMask != NULL)
         {
             // reset loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
 
@@ -811,7 +811,7 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
 
         else
         {
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
 
@@ -857,7 +857,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
     U * pWorkSpace = (U *)WORKSPACE_ALLOC(size);
 
     // Default every bin to 1, including floats
-    for (int i = 0; i < (numUnique + GB_BASE_INDEX); i++)
+    for (ptrdiff_t i = 0; i < (numUnique + GB_BASE_INDEX); i++)
     {
         pWorkSpace[i] = 1;
     }
@@ -867,7 +867,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
         if (pResetMask != NULL)
         {
             // filter + reset loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
                 // Bin 0 is bad
@@ -890,7 +890,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
         else
         {
             // filter loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
                 // Bin 0 is bad
@@ -914,7 +914,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
         if (pResetMask != NULL)
         {
             // reset loop
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
 
@@ -935,7 +935,7 @@ static void CumProd(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
         else
         {
             // plain
-            for (int i = 0; i < totalInputRows; i++)
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
             {
                 K location = pKey[i];
 
@@ -983,7 +983,7 @@ static void FindNth(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
     if (pIncludeMask != NULL)
     {
         // filter loop
-        for (int i = 0; i < totalInputRows; i++)
+        for (ptrdiff_t i = 0; i < totalInputRows; i++)
         {
             K location = pKey[i];
             // Bin 0 is bad
@@ -1001,7 +1001,7 @@ static void FindNth(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numU
     else
     {
         // plain
-        for (int i = 0; i < totalInputRows; i++)
+        for (ptrdiff_t i = 0; i < totalInputRows; i++)
         {
             K location = pKey[i];
 
@@ -1090,7 +1090,7 @@ public:
             if (pResetMask != NULL)
             {
                 // filter + reset
-                for (int i = 0; i < totalInputRows; i++)
+                for (ptrdiff_t i = 0; i < totalInputRows; i++)
                 {
                     K location = pKey[i];
                     // Bin 0 is bad
@@ -1123,7 +1123,7 @@ public:
             else
             {
                 // filter only
-                for (int i = 0; i < totalInputRows; i++)
+                for (ptrdiff_t i = 0; i < totalInputRows; i++)
                 {
                     K location = pKey[i];
 
@@ -1160,7 +1160,7 @@ public:
             if (pResetMask != NULL)
             {
                 // reset loop
-                for (int i = 0; i < totalInputRows; i++)
+                for (ptrdiff_t i = 0; i < totalInputRows; i++)
                 {
                     K location = pKey[i];
 
@@ -1185,7 +1185,7 @@ public:
             else
             {
                 // plain loop (no reset / no filter)
-                for (int i = 0; i < totalInputRows; i++)
+                for (ptrdiff_t i = 0; i < totalInputRows; i++)
                 {
                     K location = pKey[i];
 
