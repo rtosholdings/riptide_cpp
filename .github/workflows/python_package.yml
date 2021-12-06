@@ -69,13 +69,19 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install numpy
       working-directory: ${{ env.working-directory }}
-    - name: Build with CMake
+    - name: Setup CMake configuration
       run: |
         cmake -E make_directory "build"
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ../
-        cmake --build "build" --config Release
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug ../
+      working-directory: ./
+    - name: Build via CMake
+      run: |
+        cmake --build "build" --config Release
         cmake --build "build" --config Debug
+      working-directory: ./
+    - name: Run the tests and benchmarks
+      run: |
         ./build/bench/riptide_bench/riptide_bench/Release/riptide_bench.exe
         ./build/test/riptide_test/Relase/riptide_test.exe
         ./build/tests/Release/riptide_cpp_tests.exe
