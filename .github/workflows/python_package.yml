@@ -77,8 +77,8 @@ jobs:
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug ../
         cmake --build "build" --config Debug
         ./build/bench/riptide_bench/riptide_bench/Release/riptide_bench.exe
-		./build/test/riptide_test/Relase/riptide_test.exe
-		./build/tests/Release/riptide_cpp_tests.exe
+        ./build/test/riptide_test/Relase/riptide_test.exe
+        ./build/tests/Release/riptide_cpp_tests.exe
       working-directory: ${{ env.working-directory }}
         
   deploy:
