@@ -47,7 +47,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     env:
-      working-directory: ./src
+      working-directory: ./
     strategy:
       matrix:
         os: [windows-latest]
@@ -69,23 +69,31 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install numpy
       working-directory: ${{ env.working-directory }}
-    - name: Setup CMake configuration
+    - name: Create Cmake build directory
       run: |
         cmake -E make_directory "build"
+      working-directory: ${{ env.working-directory }}
+    - name: Setup CMake Relase configuration
+      run: |
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ../
+      working-directory: ${{ env.working-directory }}
+    - name: Setup CMake Debug configuration
+      run: |
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug ../
-      working-directory: ./
-    - name: Build via CMake
+    - name: Build Release via CMake
       run: |
         cmake --build "build" --config Release
+      working-directory: ${{ env.working-directory }}
+    - name: Build Debug via CMake
+      run: |
         cmake --build "build" --config Debug
-      working-directory: ./
+      working-directory: ${{ env.working-directory }}
     - name: Run the tests and benchmarks
       run: |
         ./build/bench/riptide_bench/riptide_bench/Release/riptide_bench.exe
         ./build/test/riptide_test/Relase/riptide_test.exe
         ./build/tests/Release/riptide_cpp_tests.exe
-      working-directory: ./
+      working-directory: ${{ env.working-directory }}
         
   deploy:
     # deploys binary builds for windows and mac versions of python and os
