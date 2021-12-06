@@ -1,6 +1,6 @@
 // hack for now - headers should be self-inclusive
-#include "src/RipTide.h"
-#include "src/SDSFile.h"
+#include "RipTide.h"
+#include "SDSFile.h"
 #include <gtest/gtest.h>
 
 TEST(sds_tests, test_SDSGetLastError)
