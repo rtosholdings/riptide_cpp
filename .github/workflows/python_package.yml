@@ -71,17 +71,14 @@ jobs:
       working-directory: ${{ env.working-directory }}
     - name: Build with CMake
       run: |
-	    cmake -E make_directory "build"
+        cmake -E make_directory "build"
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ../
-		cmake --build "build" --config Release
+        cmake --build "build" --config Release
         cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug ../
-		cmake --build "build" --config Debug
-	  working-directory: ${{ env.working-directory }}
-    - name: Run unit tests and benchmarks
-      run: |
-        build/bench/riptide_bench/riptide_bench/Release/riptide_bench.exe
-		build/test/riptide_test/Relase/riptide_test.exe
-		build/tests/Release/riptide_cpp_tests.exe
+        cmake --build "build" --config Debug
+        ./build/bench/riptide_bench/riptide_bench/Release/riptide_bench.exe
+		./build/test/riptide_test/Relase/riptide_test.exe
+		./build/tests/Release/riptide_cpp_tests.exe
       working-directory: ${{ env.working-directory }}
         
   deploy:
