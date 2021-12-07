@@ -220,7 +220,7 @@ public:
     // void* pDataOut, int64_t len);
 
     static void AccumSum(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -246,7 +246,7 @@ public:
     // This routine is only for float32.  It will upcast to float64, add up all
     // the numbers, then convert back to float32
     static void AccumSumFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                              int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
+                              int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
         V * pIndex = (V *)pIndexT;
@@ -269,20 +269,17 @@ public:
             }
         }
 
-        if (isFinalPass)
+        // Downcast from double to single
+        float * pOut = (float *)pDataOut;
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            // Downcast from double to single
-            float * pOut = (float *)pDataOut;
-            for (int64_t i = binLow; i < binHigh; i++)
-            {
-                pOut[i] = (float)pOutAccum[i - binLow];
-            }
+            pOut[i] = (float)pOutAccum[i - binLow];
         }
     }
 
     //-------------------------------------------------------------------------------
     static void AccumNanSum(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -339,7 +336,7 @@ public:
     // $TODO: Adapted from AccumSumFloat: should refactor this common behavior and
     // potentially cache the working buffer in between invocations.
     static void AccumNanSumFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
+                                 int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         float * pIn = (float *)pDataIn;
         V * pIndex = (V *)pIndexT;
@@ -366,20 +363,17 @@ public:
             }
         }
 
-        if (isFinalPass)
+        // Downcast from double to single
+        float * pOut = (float *)pDataOut;
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            // Downcast from double to single
-            float * pOut = (float *)pDataOut;
-            for (int64_t i = binLow; i < binHigh; i++)
-            {
-                pOut[i] = (float)pOutAccum[i - binLow];
-            }
+            pOut[i] = (float)pOutAccum[i - binLow];
         }
     }
 
     //-------------------------------------------------------------------------------
     static void AccumMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -420,7 +414,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -493,7 +487,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -533,7 +527,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -605,7 +599,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumMean(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                          int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                          int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -649,7 +643,7 @@ public:
     // Just for float32 since we can upcast
     //-------------------------------------------------------------------------------
     static void AccumMeanFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                               int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                               int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOriginalOut = (U *)pDataOut;
@@ -712,7 +706,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMean(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                             int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                             int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOriginalOut = (U *)pDataOut;
@@ -776,7 +770,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMeanFloat(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len,
-                                  int64_t binLow, int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                                  int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -822,7 +816,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumVar(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -885,7 +879,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanVar(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, bool /*isFinalPass*/, void * /*pDataTmp*/)
+                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T * pIn = (T *)pDataIn;
         U * pOut = (U *)pDataOut;
@@ -953,10 +947,10 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumStd(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
+                         int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
-        AccumVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, isFinalPass, pDataTmp);
+        AccumVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, pDataTmp);
         for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
@@ -965,11 +959,11 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanStd(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, bool isFinalPass, void * pDataTmp)
+                            int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
 
-        AccumNanVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, isFinalPass, pDataTmp);
+        AccumNanVar(pDataIn, pIndexT, pCountOut, pDataOut, len, binLow, binHigh, pass, pDataTmp);
         for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = sqrt(pOut[i]);
@@ -3307,10 +3301,6 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
     // As long as there is work to do
     while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
-        // $TODO: Fix this properly:
-        // It can be an optimization to avoid doing work unless the final pass, but must be detected per worker, not at end of blocks!
-        bool const isFinalPass{true/*(workBlock + 1) == pstWorkerItem->BlockLast*/};
-
         // printf("|%d %d %lld %p %p %p %p", core, (int)workBlock, lenX, pDataIn,
         // pDataIn2, pCountOut, pDataOut);
 
@@ -3319,7 +3309,7 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
 
         // shift pDataIn by T
         // shift pDataIn2 by U
-        pFunction(pDataIn + inputAdj1, pDataIn2 + inputAdj2, pCountOut, pDataOut, lenX, binLow, binHigh, pass++, isFinalPass, pDataTmp);
+        pFunction(pDataIn + inputAdj1, pDataIn2 + inputAdj2, pCountOut, pDataOut, lenX, binLow, binHigh, pass++, pDataTmp);
         pGroupBy32->returnObjects[core].didWork = 1;
 
         // Indicate we completed a block
@@ -3376,7 +3366,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
             // Accum the calculation
             // Sum/NanSum
             // Make the range from 1 to uniqueRows to skip over bin 0
-            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1, true, pDataTmp);
+            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1, pDataTmp);
         }
         else
 
