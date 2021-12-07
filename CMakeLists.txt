@@ -5,7 +5,7 @@ project(riptide_cpp)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(CheckIPOSupported)
 include(AddPythonSupport)
-include(FindNumPy)
+#include(FindNumPy)
 enable_testing()
 set(CMAKE_VERBOSE_MAKEFILE on)
 
