@@ -3307,7 +3307,9 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
     // As long as there is work to do
     while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
-        bool const isFinalPass{(workBlock + 1) == pstWorkerItem->BlockLast};
+        // $TODO: Fix this properly:
+        // It can be an optimization to avoid doing work unless the final pass, but must be detected per worker, not at end of blocks!
+        bool const isFinalPass{true/*(workBlock + 1) == pstWorkerItem->BlockLast*/};
 
         // printf("|%d %d %lld %p %p %p %p", core, (int)workBlock, lenX, pDataIn,
         // pDataIn2, pCountOut, pDataOut);
