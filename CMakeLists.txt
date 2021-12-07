@@ -7,6 +7,7 @@ include(CheckIPOSupported)
 include(AddPythonSupport)
 include(FindNumPy)
 enable_testing()
+set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

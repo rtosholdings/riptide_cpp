@@ -79,7 +79,10 @@ add_library(${TARGET_NAME} SHARED
     ${HEADERS}
     ${SOURCES})
 
+get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
+
 target_include_directories(${TARGET_NAME} PRIVATE
+    ${RT_SOURCE_DIR}/../external/zstd/lib
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
     ${EXTERNAL_ZSTD_INCLUDE_DIR})
