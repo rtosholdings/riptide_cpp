@@ -178,9 +178,14 @@ int64_t NANOS_PER_DAY = NANOS_PER_HOUR * 24;
 // return -1 for error
 int64_t YearToEpochNano(int64_t year, int64_t month, int64_t day)
 {
-    if (year >= 1970 && year <= 2040 && month >= 1 && month <= 12 && day >= 1 && day <= 31)
+    if (year >= 1970 && year <= 2099 && month >= 1 && month <= 12 && day >= 1 && day <= 31)
     {
-        // check for leap
+        // check for leap.
+        // NOTE: This is simplified logic. Per Wikipedia:
+        // "Every year that is exactly divisible by four is a leap year,
+        //  except for years that are exactly divisible by 100,
+        //  but these centurial years are leap years if they are exactly divisible by 400.
+        // For example, the years 1700, 1800, and 1900 are not leap years, but the years 1600 and 2000 are."
         if ((year % 4) == 0)
         {
             day = MONTH_SPLITS_LEAP[month - 1] + day - 1;
