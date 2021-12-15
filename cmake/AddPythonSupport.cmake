@@ -1,3 +1,4 @@
+set(Python_FIND_STRATEGY, "LOCATION")
 find_package(Python3 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
