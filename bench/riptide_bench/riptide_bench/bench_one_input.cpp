@@ -3,6 +3,7 @@
 #include "../../benchmark/include/benchmark/benchmark.h"
 
 #include <array>
+#include <cfloat>
 
 namespace
 {
@@ -64,7 +65,7 @@ namespace
         }
     }
 
-    BENCHMARK(bench_calculate_abs_int);
+    BENCHMARK(bench_calculate_abs_float);
 
     void bench_walk_fabs_float(benchmark::State & state)
     {
