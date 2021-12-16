@@ -4,6 +4,7 @@
 #include "../ut/include/boost/ut.hpp"
 
 #include <type_traits>
+#include <cfloat>
 
 using namespace boost::ut;
 using boost::ut::suite;
