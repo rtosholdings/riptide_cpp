@@ -50,8 +50,8 @@ jobs:
       working-directory: ./
     strategy:
       matrix:
-        os: [windows-latest]
-        python-version: [3.7.6, 3.8.10]
+        os: [windows-latest, ubuntu-latest]
+        python-version: [3.7.6, 3.8.10, 3.9.7]
 
     steps:
     - uses: actions/checkout@v2
