@@ -43,7 +43,7 @@ jobs:
         python setup.py install
       working-directory: ${{ env.working-directory }}
         
-  build-cmake-windows:
+  build-cmake:
 
     runs-on: ${{ matrix.os }}
     env:
