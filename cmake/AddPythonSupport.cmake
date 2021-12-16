@@ -1,4 +1,6 @@
 set(Python_FIND_STRATEGY, "LOCATION")
+find_package(Python3 3.8 COMPONENTS Interpreter Development REQUIRED)
+set(Python3_NumPy_INCLUDE_DIR, "${Python3_SITELIB}/numpy/core/include" )
 find_package(Python3 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
