@@ -1,5 +1,25 @@
 set(TARGET_NAME riptide_cpp)
 
+if(PROJ_COMPILER_FRONTEND STREQUAL "MSVC")
+    add_compile_options(-FC -Zc:__cplusplus)
+    add_compile_options("$<$<CONFIG:Debug>:-Od;-Z7>")
+    add_compile_options("$<$<CONFIG:Release>:-Ox;-Ob2;-Oi;-Ot>")
+    add_compile_options(/W3 /WX)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        add_compile_options(-permissive- -d2FH4- -Zc:strictStrings-)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        add_compile_options(-Wno-unused-variable -Wno-unused-function)
+    endif()
+elseif(PROJ_COMPILER_FRONTEND STREQUAL "GNU")
+    add_compile_options(-x c++ -mavx2 -mbmi2 -fpermissive -pthread)
+    add_compile_options(-falign-functions=32 -fno-strict-aliasing)
+    #add_compile_options(-falign-loops=32)
+    add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes)
+    add_compile_options(-Wno-format) # TODO: Remove this and fix all the printf format mismatches
+else()
+     message(FATAL_ERROR "Unexpected proj compiler front-end, ${PROJ_COMPILER_FRONTEND}")
+endif()
+
 set(HEADERS
     #ArenaMemory.h
     Array.h
