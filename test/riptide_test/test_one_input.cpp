@@ -52,17 +52,7 @@ namespace
             abs_op op{};
             int32_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_int32 + 5), &op, &data_type, vec256<int32_t>{});
-#if 0
-            expect(x.m256i_i32[0] == 3_i);
-            expect(x.m256i_i32[1] == 2_i);
-            expect(x.m256i_i32[2] == 1_i);
-            expect(x.m256i_i32[3] == 0_i);
-            expect(x.m256i_i32[4] == 1_i);
-            expect(x.m256i_i32[5] == 2_i);
-            expect(x.m256i_i32[6] == 3_i);
-            expect(x.m256i_i32[7] == 4_i);
-#else
-            int32_t * res_ptr{ reinterpret_cast<int32_t *>(&x) };
+            int32_t const * res_ptr{ reinterpret_cast<int32_t const *>(&x) };
             expect(res_ptr[0] == 3_i);
             expect(res_ptr[1] == 2_i);
             expect(res_ptr[2] == 1_i);
@@ -71,7 +61,6 @@ namespace
             expect(res_ptr[5] == 2_i);
             expect(res_ptr[6] == 3_i);
             expect(res_ptr[7] == 4_i);
-#endif
             expect(sizeof(decltype(x)) == 8 * sizeof(int32_t));
         };
 
@@ -80,14 +69,15 @@ namespace
             abs_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_float + 5), &op, &data_type, vec256<float>{});
-            expect(x.m256_f32[0] == 1.5_f);
-            expect(x.m256_f32[1] == 1.0_f);
-            expect(x.m256_f32[2] == 0.5_f);
-            expect(x.m256_f32[3] == 0.0_f);
-            expect(x.m256_f32[4] == 0.5_f);
-            expect(x.m256_f32[5] == 1.0_f);
-            expect(x.m256_f32[6] == 1.5_f);
-            expect(x.m256_f32[7] == 2.0_f);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(res_ptr[0] == 1.5_f);
+            expect(res_ptr[1] == 1.0_f);
+            expect(res_ptr[2] == 0.5_f);
+            expect(res_ptr[3] == 0.0_f);
+            expect(res_ptr[4] == 0.5_f);
+            expect(res_ptr[5] == 1.0_f);
+            expect(res_ptr[6] == 1.5_f);
+            expect(res_ptr[7] == 2.0_f);
             expect(sizeof(decltype(x)) == 8 * sizeof(float));
         };
 
@@ -305,16 +295,17 @@ namespace
             round_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_float + 5), &op, &data_type, vec256<float>{});
-            expect(x.m256_f32[0] == -2.0_f);
-            expect(x.m256_f32[1] == -1.0_f);
-            expect(x.m256_f32[2] == 0.0_f);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(res_ptr[0] == -2.0_f);
+            expect(res_ptr[1] == -1.0_f);
+            expect(res_ptr[2] == 0.0_f);
             expect(std::round(-0.5) == -1.0_f);
-            expect(x.m256_f32[3] == 0.0_f);
+            expect(res_ptr[3] == 0.0_f);
             expect(std::round(0.5) == 1.0_f);
-            expect(x.m256_f32[4] == 0.0_f);
-            expect(x.m256_f32[5] == 1.0_f);
-            expect(x.m256_f32[6] == 2.0_f);
-            expect(x.m256_f32[7] == 2.0_f);
+            expect(res_ptr[4] == 0.0_f);
+            expect(res_ptr[5] == 1.0_f);
+            expect(res_ptr[6] == 2.0_f);
+            expect(res_ptr[7] == 2.0_f);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -363,14 +354,15 @@ namespace
             floor_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_float + 5), &op, &data_type, vec256<float>{});
-            expect(x.m256_f32[0] == -2.0_f);
-            expect(x.m256_f32[1] == -1.0_f);
-            expect(x.m256_f32[2] == -1.0_f);
-            expect(x.m256_f32[3] == 0.0_f);
-            expect(x.m256_f32[4] == 0.0_f);
-            expect(x.m256_f32[5] == 1.0_f);
-            expect(x.m256_f32[6] == 1.0_f);
-            expect(x.m256_f32[7] == 2.0_f);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(res_ptr[0] == -2.0_f);
+            expect(res_ptr[1] == -1.0_f);
+            expect(res_ptr[2] == -1.0_f);
+            expect(res_ptr[3] == 0.0_f);
+            expect(res_ptr[4] == 0.0_f);
+            expect(res_ptr[5] == 1.0_f);
+            expect(res_ptr[6] == 1.0_f);
+            expect(res_ptr[7] == 2.0_f);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -419,14 +411,15 @@ namespace
             trunc_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_float + 5), &op, &data_type, vec256<float>{});
-            expect(x.m256_f32[0] == -1.0_f);
-            expect(x.m256_f32[1] == -1.0_f);
-            expect(x.m256_f32[2] == 0.0_f);
-            expect(x.m256_f32[3] == 0.0_f);
-            expect(x.m256_f32[4] == 0.0_f);
-            expect(x.m256_f32[5] == 1.0_f);
-            expect(x.m256_f32[6] == 1.0_f);
-            expect(x.m256_f32[7] == 2.0_f);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(res_ptr[0] == -1.0_f);
+            expect(res_ptr[1] == -1.0_f);
+            expect(res_ptr[2] == 0.0_f);
+            expect(res_ptr[3] == 0.0_f);
+            expect(res_ptr[4] == 0.0_f);
+            expect(res_ptr[5] == 1.0_f);
+            expect(res_ptr[6] == 1.0_f);
+            expect(res_ptr[7] == 2.0_f);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -475,14 +468,15 @@ namespace
             ceil_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_float + 5), &op, &data_type, vec256<float>{});
-            expect(x.m256_f32[0] == -1.0_f);
-            expect(x.m256_f32[1] == -1.0_f);
-            expect(x.m256_f32[2] == 0.0_f);
-            expect(x.m256_f32[3] == 0.0_f);
-            expect(x.m256_f32[4] == 1.0_f);
-            expect(x.m256_f32[5] == 1.0_f);
-            expect(x.m256_f32[6] == 2.0_f);
-            expect(x.m256_f32[7] == 2.0_f);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(res_ptr[0] == -1.0_f);
+            expect(res_ptr[1] == -1.0_f);
+            expect(res_ptr[2] == 0.0_f);
+            expect(res_ptr[3] == 0.0_f);
+            expect(res_ptr[4] == 1.0_f);
+            expect(res_ptr[5] == 1.0_f);
+            expect(res_ptr[6] == 2.0_f);
+            expect(res_ptr[7] == 2.0_f);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -777,21 +771,22 @@ namespace
             isnotnan_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_nans + 5), &op, &data_type, vec256<float>{});
-            expect(static_cast<int32_t>(x.m256_f32[0]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[0]);
-            expect(static_cast<int32_t>(x.m256_f32[1]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[1]);
-            expect(static_cast<int32_t>(x.m256_f32[2]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[2]);
-            expect(static_cast<int32_t>(x.m256_f32[3]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[3]);
-            expect(static_cast<uint32_t>(x.m256_f32[4]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[5]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[5]);
-            expect(static_cast<int32_t>(x.m256_f32[6]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[6]);
-            expect(static_cast<int32_t>(x.m256_f32[7]) == 0x80000000)
-                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(x.m256_f32[7]);
+            float const * res_ptr{ reinterpret_cast< float const * >(&x) };
+            expect(static_cast<int32_t const>(res_ptr[0]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[0]);
+            expect(static_cast<int32_t const>(res_ptr[1]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[1]);
+            expect(static_cast<int32_t const>(res_ptr[2]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[2]);
+            expect(static_cast<int32_t const>(res_ptr[3]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[3]);
+            expect(static_cast<uint32_t const>(res_ptr[4]) == 0_u);
+            expect(static_cast<int32_t const>(res_ptr[5]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[5]);
+            expect(static_cast<int32_t const>(res_ptr[6]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[6]);
+            expect(static_cast<int32_t const>(res_ptr[7]) == 0x80000000)
+                << "Should be 0x80000000 but was " << std::hex << static_cast<int32_t>(res_ptr[7]);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -840,15 +835,16 @@ namespace
             isnan_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_nans + 5), &op, &data_type, vec256<float>{});
-            expect(static_cast<int32_t>(x.m256_f32[0]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[1]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[2]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[3]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[4]) == 0x80000000)
-                << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast<int32_t>(x.m256_f32[4]);
-            expect(static_cast<int32_t>(x.m256_f32[5]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[6]) == 0_u);
-            expect(static_cast<int32_t>(x.m256_f32[7]) == 0_u);
+            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
+            expect(static_cast<int32_t>(res_ptr[0]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[1]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[2]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[3]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[4]) == 0x80000000)
+                << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast<int32_t>(res_ptr[4]);
+            expect(static_cast<int32_t>(res_ptr[5]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[6]) == 0_u);
+            expect(static_cast<int32_t>(res_ptr[7]) == 0_u);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
