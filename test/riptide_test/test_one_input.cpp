@@ -1,4 +1,5 @@
 #include "../../src/one_input_impl.h"
+#include "../../src/platform_detect.h"
 
 #define BOOST_UT_DISABLE_MODULE
 #include "../ut/include/boost/ut.hpp"
@@ -50,7 +51,8 @@ namespace
         {
             abs_op op{};
             int32_traits data_type{};
-            auto x = calculate(reinterpret_cast<char const *>(p_int32 + 5), &op, &data_type, vec256<int32_t>{});
+            auto x = calculate (reinterpret_cast<char const *>(p_int32 + 5), &op, &data_type, vec256<int32_t>{});
+#ifdef RT_COMPILER_MSVC
             expect(x.m256i_i32[0] == 3_i);
             expect(x.m256i_i32[1] == 2_i);
             expect(x.m256i_i32[2] == 1_i);
@@ -59,6 +61,16 @@ namespace
             expect(x.m256i_i32[5] == 2_i);
             expect(x.m256i_i32[6] == 3_i);
             expect(x.m256i_i32[7] == 4_i);
+#else
+            expect(x[0] == 3_i);
+            expect(x[1] == 2_i);
+            expect(x[2] == 1_i);
+            expect(x[3] == 0_i);
+            expect(x[4] == 1_i);
+            expect(x[5] == 2_i);
+            expect(x[6] == 3_i);
+            expect(x[7] == 4_i);
+#endif
             expect(sizeof(decltype(x)) == 8 * sizeof(int32_t));
         };
 
