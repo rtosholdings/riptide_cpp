@@ -59,8 +59,6 @@ jobs:
     - name: Run the tests and benchmarks
       run: |
         cmake -E chdir "build/bench/riptide_bench/riptide_bench/Release" riptide_bench
-#        ./build/bench/riptide_bench/riptide_bench/Release/riptide_bench
         cmake -E chdir "build/test/riptide_test/Release" riptide_test
-#        ./build/tests/Release/riptide_cpp_tests #Lacks filesystem encoding module on my dev box
       working-directory: ${{ env.working-directory }}
         
