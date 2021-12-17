@@ -11,14 +11,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-cmake:
+  build-cmake-windows:
 
     runs-on: ${{ matrix.os }}
     env:
       working-directory: ./
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest]
         python-version: [3.7.6, 3.8.10, 3.9.7]
 
     steps:
@@ -58,7 +58,7 @@ jobs:
       working-directory: ${{ env.working-directory }}
     - name: Run the tests and benchmarks
       run: |
-#        cmake -E chdir "build/bench/riptide_bench/riptide_bench/Release" riptide_bench
+        cmake -E chdir "build/bench/riptide_bench/riptide_bench/Release" riptide_bench
         cmake -E chdir "build/test/riptide_test/Release" riptide_test
       working-directory: ${{ env.working-directory }}
         
