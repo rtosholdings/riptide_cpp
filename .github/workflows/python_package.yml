@@ -50,7 +50,7 @@ jobs:
       working-directory: ./
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest]
         python-version: [3.7.6, 3.8.10, 3.9.7]
 
     steps:
