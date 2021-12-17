@@ -45,7 +45,7 @@ namespace
     suite one_input = []
     {
         size_t len{ sizeof(input_data_simple_f) };
-        "expected_array_len_f"_test = [len] { expect(31_i == len / sizeof(float)); };
+        "expected_array_len_f"_test = [len] { expect(31_u == len / sizeof(float)); };
 
         "calculate_abs_int"_test = [&]
         {
@@ -840,7 +840,7 @@ namespace
             expect(static_cast<int32_t>(res_ptr[1]) == 0_u);
             expect(static_cast<int32_t>(res_ptr[2]) == 0_u);
             expect(static_cast<int32_t>(res_ptr[3]) == 0_u);
-            expect(static_cast<int32_t>(res_ptr[4]) == 0x80000000)
+            expect(static_cast<int32_t>(res_ptr[4]) == 0x80000000L)
                 << "Should be 0x80000000 but was" << std::showbase << std::hex << static_cast<int32_t>(res_ptr[4]);
             expect(static_cast<int32_t>(res_ptr[5]) == 0_u);
             expect(static_cast<int32_t>(res_ptr[6]) == 0_u);
