@@ -345,7 +345,7 @@ namespace
             uint32_traits data_type{};
             uint32_t data{ 42 };
             auto x = calculate(reinterpret_cast<char const *>(&data), &op, &data_type, vec256<uint32_t>{});
-            expect(x == 42_i);
+            expect(x == 42_u);
             expect(std::is_same_v<decltype(x), uint32_t>) << "Should return an uint32_t";
         };
 
