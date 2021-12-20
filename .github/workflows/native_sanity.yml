@@ -107,9 +107,9 @@ jobs:
       run: |
         cmake --build "build" --config Debug
       working-directory: ${{ env.working-directory }}
-    - name: Run the tests and benchmarks
-      run: |
-        cmake -E chdir "build/bench/riptide_bench/riptide_bench" riptide_bench
-        cmake -E chdir "build/test/riptide_test" riptide_test
-      working-directory: ${{ env.working-directory }}
+#    - name: Run the tests and benchmarks
+#      run: |
+#        cmake -E chdir "build/bench/riptide_bench/riptide_bench" riptide_bench
+#        cmake -E chdir "build/test/riptide_test" riptide_test
+#      working-directory: ${{ env.working-directory }}
         
