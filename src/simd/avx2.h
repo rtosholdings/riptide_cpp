@@ -2037,6 +2037,7 @@ namespace riptide
                     return _mm256_abs_epi32(x);
                 }
 
+#if 0
                 /**
                  * @brief Compute the absolute value of a vector.
                  *
@@ -2048,6 +2049,7 @@ namespace riptide
                 {
                     return _mm256_abs_epi32(*src);
                 }
+#endif
 
                 /**
                  * @brief Pairwise addition of packed 32-bit signed integers.
@@ -2061,7 +2063,7 @@ namespace riptide
                 {
                     return _mm256_add_epi32(x, y);
                 }
-
+#if 0
                 /**
                  * @brief Pairwise addition of packed 32-bit signed integers.
                  *
@@ -2074,7 +2076,7 @@ namespace riptide
                 {
                     return _mm256_add_epi32(x, *y);
                 }
-
+#endif
                 /**
                  * @brief Compute the pairwise bitwise-AND values of two vectors.
                  *
@@ -3807,7 +3809,7 @@ namespace riptide
                     const reg_type mask = bitmask::abs();
                     return _mm256_and_ps(mask, x);
                 }
-
+#if 0
                 /**
                  * @brief Compute the absolute value of a vector.
                  *
@@ -3820,7 +3822,7 @@ namespace riptide
                     const reg_type mask = bitmask::abs();
                     return _mm256_and_ps(mask, *src);
                 }
-
+#endif
                 /**
                  * @brief Pairwise addition of packed single-precision floating-point values.
                  *
