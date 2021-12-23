@@ -110,7 +110,7 @@ jobs:
     - name: Run the tests and benchmarks
       run: |
         pwd
-        ls -a
+        ls -a build/bench/riptide_bench
 #        cmake -E chdir "build/bench/riptide_bench/riptide_bench" riptide_bench
 #        cmake -E chdir "build/test/riptide_test" riptide_test
       working-directory: ${{ env.working-directory }}
