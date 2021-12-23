@@ -576,7 +576,6 @@ namespace riptable_cpp
                 if constexpr ( sizeof( x ) > sizeof( size_t ) )
                              {
                                  using vector_t = decltype( vectorization_object );
-                                 vector_t temp_wide{};
                                  vectorization_object.store_unaligned( reinterpret_cast< typename vector_t::reg_type * >(out_p), x);
                              }
                 else

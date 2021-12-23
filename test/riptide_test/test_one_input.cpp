@@ -771,22 +771,15 @@ namespace
             isnotnan_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_nans + 5), &op, &data_type, vec256<float>{});
-            float const * res_ptr{ reinterpret_cast< float const * >(&x) };
-            expect(static_cast<int32_t const>(res_ptr[0]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[0]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[1]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[1]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[2]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[2]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[3]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[3]) << std::dec;
-            expect(static_cast<uint32_t const>(res_ptr[4]) == 0_u);
-            expect(static_cast<int32_t const>(res_ptr[5]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[5]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[6]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[6]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[7]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::hex << static_cast<int32_t>(res_ptr[7]) << std::dec;
+            int32_t const * res_ptr{ reinterpret_cast< int32_t const * >(&x) };
+            expect(res_ptr[0] == -1_i);
+            expect(res_ptr[1] == -1_i);
+            expect(res_ptr[2] == -1_i);
+            expect(res_ptr[3] == -1_i);
+            expect(res_ptr[4] == 0_i);
+            expect(res_ptr[5] == -1_i);
+            expect(res_ptr[6] == -1_i);
+            expect(res_ptr[7] == -1_i);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
@@ -835,16 +828,15 @@ namespace
             isnan_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_nans + 5), &op, &data_type, vec256<float>{});
-            float const * res_ptr{ reinterpret_cast<float const *>(&x) };
-            expect(static_cast<int32_t const>(res_ptr[0]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[1]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[2]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[3]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[4]) == 0x80000000L)
-            << "Should be 0x80000000 but was 0x" << std::showbase << std::hex << static_cast<int32_t>(res_ptr[4]) << std::dec;
-            expect(static_cast<int32_t const>(res_ptr[5]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[6]) == 0_i);
-            expect(static_cast<int32_t const>(res_ptr[7]) == 0_i);
+            int32_t const * res_ptr{ reinterpret_cast<int32_t const *>(&x) };
+            expect(res_ptr[0] == 0_i);
+            expect(res_ptr[1] == 0_i);
+            expect(res_ptr[2] == 0_i);
+            expect(res_ptr[3] == 0_i);
+            expect(res_ptr[4] == -1_i);
+            expect(res_ptr[5] == 0_i);
+            expect(res_ptr[6] == 0_i);
+            expect(res_ptr[7] == 0_i);
             expect(std::is_same_v<__m256, decltype(x)>) << "Should return a __m256";
         };
 
