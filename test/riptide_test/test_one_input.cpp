@@ -771,7 +771,7 @@ namespace
             isnotnan_op op{};
             float_traits data_type{};
             auto x = calculate(reinterpret_cast<char const *>(p_nans + 5), &op, &data_type, vec256<float>{});
-            int32_t const * res_ptr{ reinterpret_cast< int32_t const * >(&x) };
+            int32_t const * res_ptr{ reinterpret_cast<int32_t const *>(&x) };
             expect(res_ptr[0] == -1_i);
             expect(res_ptr[1] == -1_i);
             expect(res_ptr[2] == -1_i);

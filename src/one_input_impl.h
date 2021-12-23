@@ -39,8 +39,8 @@ namespace riptable_cpp
             {
                 if constexpr (wide_ops.simd_implemented_v)
                 {
-                    wide_t temp_wide{ wide_ops.load_unaligned(wide_value_p)};
-                    
+                    wide_t temp_wide{ wide_ops.load_unaligned(wide_value_p) };
+
                     return wide_ops.abs(temp_wide);
                 }
                 else
@@ -573,11 +573,11 @@ namespace riptable_cpp
             {
                 auto x = calculate(in_p, op_p, data_type_p, vectorization_object);
 
-                if constexpr ( sizeof( x ) > sizeof( size_t ) )
-                             {
-                                 using vector_t = decltype( vectorization_object );
-                                 vectorization_object.store_unaligned( reinterpret_cast< typename vector_t::reg_type * >(out_p), x);
-                             }
+                if constexpr (sizeof(x) > sizeof(size_t))
+                {
+                    using vector_t = decltype(vectorization_object);
+                    vectorization_object.store_unaligned(reinterpret_cast<typename vector_t::reg_type *>(out_p), x);
+                }
                 else
                 {
                     *reinterpret_cast<decltype(x) *>(out_p) = x;
