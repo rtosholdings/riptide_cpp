@@ -106,15 +106,4 @@ jobs:
         ls -a build/bench/riptide_bench/riptide_bench/
         build/bench/riptide_bench/riptide_bench/riptide_bench
         build/test/riptide_test/riptide_test
-#        cmake -E chdir "build/bench/riptide_bench/riptide_bench" riptide_bench
-#        cmake -E chdir "build/test/riptide_test" riptide_test
       working-directory: ${{ env.working-directory }}
-    - name: Setup CMake Debug configuration
-      run: |
-        cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Debug "-DRIPTIDE_PYTHON_VER=${{ matrix.python-version }}" ../
-    - name: Build Debug via CMake
-      run: |
-        cmake --build "build" --config Debug
-      working-directory: ${{ env.working-directory }}
-        
- 
