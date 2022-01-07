@@ -3,7 +3,11 @@
 
 #include "RipTide.h"
 
+#if defined (_WIN32) && ! defined(__GNUC__)
+__declspec(dllexport)
+#endif
 PyObject * BasicMathOneInput(PyObject * self, PyObject * args);
+
 
 PyObject * BasicMathOneInputFromNumber(PyArrayObject * inObject1, int64_t funcNumber, bool inplace);
 

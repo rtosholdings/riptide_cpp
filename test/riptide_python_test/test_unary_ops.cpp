@@ -1,6 +1,7 @@
-#define BOOST_UT_DISABLE_MODULE
+#include "../../src/RipTide.h"
 #include "../../src/UnaryOps.h"
 
+#define BOOST_UT_DISABLE_MODULE
 #include "../ut/include/boost/ut.hpp"
 
 #include <type_traits>
