@@ -20,36 +20,36 @@ sources_cpp=['one_input.cpp','UnaryOps.cpp','RipTide.cpp','Recycler.cpp','BasicM
             'Merge.cpp','CRC32.cpp','Convert.cpp', 'SDSFile.cpp', 'SDSFilePython.cpp', 'TimeWindow.cpp', 'Compress.cpp', 'SharedMemory.cpp',
             'Bins.cpp', 'DateTime.cpp', 'strptime5.cpp', 'Hook.cpp', 'Array.cpp', 'TileRepeat.cpp']
 
-sources_zstd=['zstd/compress/fse_compress.c',
-            'zstd/compress/hist.c',
-            'zstd/compress/huf_compress.c',
-            'zstd/compress/zstdmt_compress.c',
-            'zstd/compress/zstd_compress.c',
-            'zstd/compress/zstd_compress_literals.c',
-            'zstd/compress/zstd_compress_sequences.c',
-            'zstd/compress/zstd_compress_superblock.c',
-            'zstd/compress/zstd_double_fast.c',
-            'zstd/compress/zstd_fast.c',
-            'zstd/compress/zstd_lazy.c',
-            'zstd/compress/zstd_ldm.c',
-            'zstd/compress/zstd_opt.c',
-            'zstd/decompress/zstd_decompress.c',
-            'zstd/decompress/huf_decompress.c',
-            'zstd/decompress/zstd_ddict.c',
-            'zstd/decompress/zstd_decompress_block.c',
-            'zstd/common/fse_decompress.c',
-            'zstd/common/entropy_common.c',
-            'zstd/common/zstd_common.c',
-            'zstd/common/xxhash.c',
-            'zstd/common/error_private.c',
-            'zstd/common/pool.c']
+sources_zstd=['../external/zstd/lib/compress/fse_compress.c',
+            '../external/zstd/lib/compress/hist.c',
+            '../external/zstd/lib/compress/huf_compress.c',
+            '../external/zstd/lib/compress/zstdmt_compress.c',
+            '../external/zstd/lib/compress/zstd_compress.c',
+            '../external/zstd/lib/compress/zstd_compress_literals.c',
+            '../external/zstd/lib/compress/zstd_compress_sequences.c',
+            '../external/zstd/lib/compress/zstd_compress_superblock.c',
+            '../external/zstd/lib/compress/zstd_double_fast.c',
+            '../external/zstd/lib/compress/zstd_fast.c',
+            '../external/zstd/lib/compress/zstd_lazy.c',
+            '../external/zstd/lib/compress/zstd_ldm.c',
+            '../external/zstd/lib/compress/zstd_opt.c',
+            '../external/zstd/lib/decompress/zstd_decompress.c',
+            '../external/zstd/lib/decompress/huf_decompress.c',
+            '../external/zstd/lib/decompress/zstd_ddict.c',
+            '../external/zstd/lib/decompress/zstd_decompress_block.c',
+            '../external/zstd/lib/common/fse_decompress.c',
+            '../external/zstd/lib/common/entropy_common.c',
+            '../external/zstd/lib/common/zstd_common.c',
+            '../external/zstd/lib/common/xxhash.c',
+            '../external/zstd/lib/common/error_private.c',
+            '../external/zstd/lib/common/pool.c']
 
 if sys.platform == 'linux':
     rc_module = setuptools.Extension(
         package_name,
         sources = sources_cpp + sources_zstd,
 
-        include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
+        include_dirs = ['../external/zstd/lib', '../external/zstd/lib/common', '../external/zstd/lib/compress', '../external/zstd/lib/decompress',],
         extra_compile_args = ['-mavx2', '-mbmi2', '-fpermissive','-Wno-unused-variable','-Wno-ignored-attributes','-Wno-format','-std=c++17','-pthread','-falign-functions=32','-falign-loops=32','-fno-strict-aliasing'],
         extra_link_args = ['-lrt'],
         #libraries = [''],
@@ -59,7 +59,7 @@ if sys.platform == 'darwin':
     rc_module = setuptools.Extension(
         package_name,
         sources = sources_cpp,
-        include_dirs = ['zstd'],
+        include_dirs = ['../external/zstd/lib'],
         extra_link_args = ['lib/libzstd.a'],
         #libraries = ['libzstd.a'],
         #library_dirs = ['lib'],
@@ -71,7 +71,7 @@ if sys.platform == 'win32':
     rc_module = setuptools.Extension(
         package_name,
         sources = sources_cpp + sources_zstd,
-        include_dirs = ['zstd', 'zstd/common', 'zstd/compress', 'zstd/decompress',],
+        include_dirs = ['../external/zstd/lib', '../external/zstd/lib/common', '../external/zstd/lib/compress', '../external/zstd/lib/decompress',],
         #extra_compile_args = ['/MT /Ox /Ob2 /Oi /Ot'],
         # For MSVC windows compiler 2019 it has the new __CxxFrameHandler4 which is found in vcrntime140_1.dll which is not on all systems
         # We use /dsFH4- to disable this frame handler

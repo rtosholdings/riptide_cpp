@@ -760,8 +760,8 @@ UtilSharedMemoryBegin(const char * pMappingName, int64_t size, PMAPPED_VIEW_STRU
     int visibility = MAP_SHARED; // | MAP_ANONYMOUS;
 
     // Needed when non MAP_ANONYMOUS
-    ftruncate(fd, size);
-    if (errno < 0)
+    int result = ftruncate(fd, size);
+    if (result && errno < 0)
     {
         printf("Error UtilSharedMemoryCopy ftruncate: %s\n", strerror(errno));
         return -1;
