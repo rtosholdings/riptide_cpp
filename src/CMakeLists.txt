@@ -104,7 +104,7 @@ add_library(${TARGET_NAME} SHARED
 get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 
 target_include_directories(${TARGET_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../external/zstd/lib
+    ${EXTERNAL_ZSTD_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS} )
 

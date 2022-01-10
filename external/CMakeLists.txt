@@ -13,6 +13,4 @@ set(ZSTD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 set(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "" FORCE)
 add_subdirectory(zstd/build/cmake)
 
-# In order to retain current source using "include zstd/zstd.h" point include dir at shim dir which supports that.
-# TODO: consider switching to "include zstd.h" and using proper public include variables.
-set(EXTERNAL_ZSTD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rt-shims PARENT_SCOPE)
+set(EXTERNAL_ZSTD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zstd/lib PARENT_SCOPE)
