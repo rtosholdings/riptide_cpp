@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
 
 // TODO: Remove these includes, they don't seem to be used anymore (at least directly within this file).
 #include <cstdio>
@@ -176,11 +177,26 @@ FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
 void * FmAlloc(size_t _Size);
 void FmFree(void * _Block);
 
+namespace internal
+{
+    struct fm_mem_deleter
+    {
+        void operator()(void * const block)
+        {
+            FmFree(block);
+        }
+    };
+}
+
+// Smart pointer managing FmAlloc'ed memory.
+using fm_mem_ptr = std::unique_ptr<void, internal::fm_mem_deleter>;
+
 #define ARRAY_ALLOC malloc
 #define ARRAY_FREE free
 
 #define WORKSPACE_ALLOC FmAlloc
 #define WORKSPACE_FREE FmFree
+using workspace_mem_ptr = fm_mem_ptr;
 
 #define COMPRESS_ALLOC FmAlloc
 #define COMPRESS_FREE FmFree
@@ -362,7 +378,7 @@ typedef void (*ANY_TWO_FUNC)(void * pDataIn, void * pDataIn2, void * pDataOut, i
 
 // Used for Groupby Sum/Mean/Min/Max/etc
 typedef void (*GROUPBY_TWO_FUNC)(void * pDataIn, void * pIndex, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass);
+                                 int64_t binHigh, int64_t pass, void * pDataTmp);
 
 // Used for Groupby Mode/Median/etc
 typedef void (*GROUPBY_X_FUNC32)(void * pColumn, void * pGroup, int32_t * pFirst, int32_t * pCount, void * pAccumBin,

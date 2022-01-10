@@ -24,6 +24,7 @@ struct stGroupByReturn
 
     // for multithreaded sum this is set
     void * pOutArray;
+    void * pTmpArray;
 
     int32_t * pCountOut;
 
