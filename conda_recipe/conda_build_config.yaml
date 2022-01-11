@@ -10,5 +10,8 @@ numpy:
 
 c_compiler:
   - vs2019 # [win]
+  - gcc
+
 cxx_compiler:
   - vs2019 # [win]
+  - gxx
