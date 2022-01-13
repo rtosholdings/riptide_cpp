@@ -141,7 +141,7 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm -y
+          conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm cmake -y
           conda activate conda_build
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
           mkdir conda_pkgs_output

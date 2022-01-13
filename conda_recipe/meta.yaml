@@ -14,7 +14,7 @@ requirements:
     - cmake
   host:
     - python {{ python }}
-    - numpy {{ numpy }}
+    - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
     - setuptools_scm
   run:
     - python
