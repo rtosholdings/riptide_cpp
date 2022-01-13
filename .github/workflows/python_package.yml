@@ -120,7 +120,7 @@ jobs:
       matrix:
         # TJD removed macos-latest because conda cannot setup C++ include environment properly
         # the python package and pip package does build correctly, perhaps pull from that
-        os: ['ubuntu-latest', 'windows-latest']
+        os: ['ubuntu-latest']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
