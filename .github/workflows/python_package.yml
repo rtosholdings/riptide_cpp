@@ -144,15 +144,15 @@ jobs:
           conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm cmake numpy=1.21 -y
           conda activate conda_build
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
-          mkdir conda_pkgs_output
-          conda build conda_recipe --output-folder ./build
+          mkdir conda_environment
+          conda build conda_recipe --output-folder ./conda_environment
       - name: Publish artifacts
         env:
          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true' 
         uses: actions/upload-artifact@v2
         with:
           name: packages
-          path: build/*/riptide_cpp-*.tar.bz2
+          path: conda_environment/*/riptide_cpp-*.tar.bz2
           if-no-files-found: "error"
       - name: Upload to Anaconda
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
@@ -160,4 +160,4 @@ jobs:
         run: |
           set -ex
           conda activate conda_build
-          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./build/*/riptide_cpp-*.tar.bz2
+          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_environment/*/riptide_cpp-*.tar.bz2
