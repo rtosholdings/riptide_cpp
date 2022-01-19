@@ -12,6 +12,7 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - cmake
+    - setuptools_scm
     - scikit-build
   host:
     - python {{ python }}
