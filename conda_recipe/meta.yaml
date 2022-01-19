@@ -12,10 +12,12 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - cmake
+    - scikit-build
   host:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
     - setuptools_scm
+    - scikit-build
   run:
     - python
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
