@@ -2,8 +2,10 @@ import sys
 
 from skbuild import setup
 
+package_name = 'riptide_cpp'
+
 setup(
-    name = 'riptide_cpp',
+    name = package_name,
     use_scm_version = {
         'root': '.',
         'version_scheme': 'post-release',
@@ -16,9 +18,9 @@ setup(
     long_description= 'Python Package with fast math util functions',
     long_description_content_type= 'text/markdown',
     url="https://github.com/rtosholdings/riptide_cpp",
-    packages=['riptide_cpp'],
+    packages=[package_name],
     install_requires=['numpy'],
-    package_dir={'riptide_cpp' : '.'},
+    package_dir={package_name : '.'},
     classifiers=[
          "Development Status :: 4 - Beta",
          "Programming Language :: Python :: 3",
