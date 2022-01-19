@@ -141,6 +141,8 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
+		  python -m pip install --upgrade pip
+		  python -m pip install setuptools wheel twine scikit-build
           conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm scikit-build cmake numpy=1.21 -y
           conda activate conda_build
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
