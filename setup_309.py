@@ -10,7 +10,7 @@ setup(
         'root': '.',
         'version_scheme': 'post-release',
     },
-    cmake_args = ['-DBENCHMARK_ENABLE_GTEST_TESTS=off','-DRIPTIDE_PYTHON_VER=3.9.9'],
+    cmake_args = ['-DBENCHMARK_ENABLE_GTEST_TESTS=off','-DRIPTIDE_PYTHON_VER=3.9.7'],
     setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
@@ -20,7 +20,7 @@ setup(
     url="https://github.com/rtosholdings/riptide_cpp",
     packages=[package_name],
     install_requires=['numpy'],
-    package_dir={package_name : '.'},
+    package_dir={'riptide_cpp' : 'src'},
     classifiers=[
          "Development Status :: 4 - Beta",
          "Programming Language :: Python :: 3",
