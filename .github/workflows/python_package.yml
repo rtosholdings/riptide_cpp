@@ -141,7 +141,7 @@ jobs:
       - name: Build Package
         shell: bash -l {0}
         run: |
-          set -ex
+          set -exv
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel twine scikit-build
           conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm scikit-build cmake numpy=1.21 -y
