@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     env:
-      working-directory: ./src
+      working-directory: .
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -35,12 +35,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install numpy
+        python -m pip install numpy scikit-build
       working-directory: ${{ env.working-directory }}
     - name: Build with python setup.py
       run: |
-        python setup.py build --force
-        python setup.py install
+        python setup_309.py build --force
+        python setup_309.py install
       working-directory: ${{ env.working-directory }}        
 
   deploy:
@@ -48,7 +48,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ${{ matrix.os }}
     env:
-      working-directory: ./src
+      working-directory: .
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
@@ -68,14 +68,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install setuptools wheel twine
+        python -m pip install setuptools wheel twine scikit-build
       working-directory: ${{ env.working-directory }}
     - name: Build and publish binary
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py bdist_wheel
+        python setup_309.py bdist_wheel
         twine upload dist/* --verbose
       working-directory: ${{ env.working-directory }}
       
@@ -84,7 +84,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     env:
-      working-directory: ./src
+      working-directory: .
 
     steps:
     - uses: actions/checkout@v2
@@ -100,14 +100,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install setuptools wheel twine
+        python -m pip install setuptools wheel twine scikit-build
       working-directory: ${{ env.working-directory }}
     - name: Build and publish source
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        python setup.py sdist
+        python setup_309.py sdist
         twine upload dist/* --verbose      
       working-directory: ${{ env.working-directory }}
 
