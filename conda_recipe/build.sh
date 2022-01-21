@@ -1,2 +1,2 @@
-python setup_309.py install
+$PYTHON setup_309.py install
 

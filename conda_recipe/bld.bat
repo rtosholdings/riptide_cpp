@@ -1,1 +1,1 @@
-python build_309.py install
+%PYTHON% build_309.py install
