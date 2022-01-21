@@ -7,7 +7,7 @@ on:
   push:
     branches: [ master, add-cmake ]
   pull_request:
-    branches: [ master, add-cmake ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
