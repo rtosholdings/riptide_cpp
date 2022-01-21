@@ -5,9 +5,9 @@ name: Native Sanity Checks
 
 on:
   push:
-    branches: [ add-cmake-for-ut-bench, master, add-cmake ]
+    branches: [ master, add-cmake ]
   pull_request:
-    branches: [ add-cmake-for-ut-bench, master, add-cmake ]
+    branches: [ master, add-cmake ]
   workflow_dispatch:
 
 jobs:
