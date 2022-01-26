@@ -1,1 +1,2 @@
-%PYTHON% build_309.py install
+echo on
+python setup_309.py install
