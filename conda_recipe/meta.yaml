@@ -11,7 +11,7 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
-    - cmake
+    - cmake {{ 3.22 }}
     - setuptools_scm
     - scikit-build
     - numpy {{ numpy }}
