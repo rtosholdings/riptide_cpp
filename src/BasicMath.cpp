@@ -2192,18 +2192,24 @@ public:
                 {
                     // if we have overflow then only ulonglong can handle, else float64
                     LOGGING("overflow dtype %d\n", dtype);
-                    if (dtype != NPY_ULONGLONG)
+                    switch (dtype)
                     {
-                        return NPY_FLOAT64;
+                        CASE_NPY_UINT64:
+                            break;
+                        default:
+                            return NPY_FLOAT64;
                     }
                 }
             }
         }
         else if (PyFloat_Check(scalarObject))
         {
-            if (dtype <= NPY_ULONGLONG)
+            switch (dtype)
             {
-                return NPY_FLOAT64;
+                CASE_NPY_UINT64:
+                    break;
+                default:
+                    return NPY_FLOAT64;
             }
         }
         else if (PyUnicode_Check(scalarObject))
