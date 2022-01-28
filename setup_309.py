@@ -10,7 +10,7 @@ setup(
         'root': '.',
         'version_scheme': 'post-release',
     },
-    cmake_args = ['-DBENCHMARK_ENABLE_GTEST_TESTS=off','-DRIPTIDE_PYTHON_VER=3.9.9'],
+    cmake_args = ['-DBENCHMARK_ENABLE_GTEST_TESTS=off','-DRIPTIDE_PYTHON_VER=3.9'],
     cmake_install_dir='src',
     setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',
