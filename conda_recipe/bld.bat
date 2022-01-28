@@ -1,2 +1,3 @@
 echo on
-python setup_30910.py install
+echo %PYTHON%
+%PYTHON% setup_309.py install

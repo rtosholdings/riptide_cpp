@@ -1,5 +1,5 @@
 set(Python_FIND_STRATEGY "LOCATION")
-set(Python3_FIND_VIRTUALENV "FIRST")
+set(Python3_FIND_VIRTUALENV "ONLY")
 find_package(Python3 "${RIPTIDE_PYTHON_VER}" EXACT COMPONENTS Interpreter Development REQUIRED)
 set(Python3_NumPy_INCLUDE_DIR "${Python3_SITELIB}/numpy/core/include" )
 
