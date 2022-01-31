@@ -10,6 +10,7 @@ build:
 
 requirements:
   build:
+    - python {{ python }}
     - {{ compiler('cxx') }}
     - cmake {{ 3.22 }}
     - setuptools_scm
