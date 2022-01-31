@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     env:
-      working-directory: ./src
+      working-directory: ./
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -39,8 +39,9 @@ jobs:
       working-directory: ${{ env.working-directory }}
     - name: Build with python setup.py
       run: |
-        python setup.py build --force
-        python setup.py install
+        python -V
+        python setup_309.py build --force
+        python setup_309.py install
       working-directory: ${{ env.working-directory }}        
 
   deploy:
