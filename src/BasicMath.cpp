@@ -2204,12 +2204,9 @@ public:
         }
         else if (PyFloat_Check(scalarObject))
         {
-            switch (dtype)
+            if (dtype <= NPY_ULONGLONG)
             {
-                CASE_NPY_UINT64:
-                    break;
-                default:
-                    return NPY_FLOAT64;
+                return NPY_FLOAT64;
             }
         }
         else if (PyUnicode_Check(scalarObject))
