@@ -37,7 +37,7 @@ message(NOTICE "Python3_NumPy_INCLUDE_DIRS = ${Python3_NumPy_INCLUDE_DIRS}")
 # will have this appended to the name so it's recognized as a CPython extension.
 ################################################################################
 execute_process(
-  COMMAND "python" -c "import importlib.machinery; print(importlib.machinery.EXTENSION_SUFFIXES[0], end='')"
+  COMMAND "${Python3_EXECUTABLE}" -c "import importlib.machinery; print(importlib.machinery.EXTENSION_SUFFIXES[0], end='')"
     RESULT_VARIABLE _PYTHON_EXTENSION_SUFFIX_RESULT
     OUTPUT_VARIABLE _PYTHON_EXTENSION_SUFFIX
     ERROR_QUIET)
