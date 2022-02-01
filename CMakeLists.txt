@@ -60,6 +60,8 @@ if(PROJ_COMPILER_ID STREQUAL "MSVC")
     endif()
 elseif(PROJ_COMPILER_ID STREQUAL "GNU")
     # No toolset variants
+elseif(PROJ_COMPILER_ID STREQUAL "LLVM")
+    # No toolset variants
 else()
     message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
 endif()
