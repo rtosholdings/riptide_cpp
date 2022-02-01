@@ -25,7 +25,7 @@ elseif(PROJ_COMPILER_FRONTEND STREQUAL "LLVM")
     add_compile_options(-x c++ -mavx2 -mbmi2 -fpermissive -pthread)
     add_compile_options(-falign-functions=32 -fno-strict-aliasing)
     #add_compile_options(-falign-loops=32)
-    add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes)
+    add_compile_options(-Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes)
     add_compile_options(-Wno-format) # TODO: Remove this and fix all the printf format mismatches
 else()
      message(FATAL_ERROR "Unexpected proj compiler front-end, ${PROJ_COMPILER_FRONTEND}")
