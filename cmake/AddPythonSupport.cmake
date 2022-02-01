@@ -1,7 +1,11 @@
 set(Python_FIND_STRATEGY "LOCATION")
 set(Python3_FIND_VIRTUALENV "ONLY")
 find_package(Python3 "${RIPTIDE_PYTHON_VER}" COMPONENTS Interpreter Development REQUIRED)
-set(Python3_NumPy_INCLUDE_DIR "${Python3_SITELIB}/numpy/core/include" )
+if(PROJ_COMPILER_ID STREQUAL "LLVM")
+  # do not set the hint, it's wrong
+else()
+  set(Python3_NumPy_INCLUDE_DIR "${Python3_SITELIB}/numpy/core/include" )
+endif()
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
 message(NOTICE "Python3_VERSION_MAJOR = ${Python3_VERSION_MAJOR}")
