@@ -9,8 +9,6 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
-    tags:
-      description: 'Tags for this run'
 
 jobs:
   build:
