@@ -2,9 +2,10 @@ set(Python_FIND_STRATEGY "LOCATION")
 set(Python3_FIND_VIRTUALENV "ONLY")
 find_package(Python3 "${RIPTIDE_PYTHON_VER}" COMPONENTS Interpreter Development REQUIRED)
 if(PROJ_COMPILER_ID STREQUAL "LLVM")
-  # do not set the hint, it's wrong
+  message(NOTICE "Running on MacOS, do not set numpy hint")
 else()
   set(Python3_NumPy_INCLUDE_DIR "${Python3_SITELIB}/numpy/core/include" )
+  message(NOTICE "Setting Python3_NumPy_INCLUDE_DIR hint = ${Python3_NumPy_INCLUDE_DIR}")
 endif()
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
