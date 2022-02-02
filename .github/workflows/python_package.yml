@@ -16,10 +16,10 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ${{ matrix.os }}
     env:
-      working-directory: ./src
+      working-directory: .
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         python-version: [3.8, 3.9, '3.10']
 
     steps:
