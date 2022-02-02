@@ -40,8 +40,8 @@ jobs:
     - name: Build with python setup.py
       run: |
         python -V
-        python setup_309.py build --force
-        python setup_309.py install
+        python setup.py build --force
+        python setup.py install
       working-directory: ${{ env.working-directory }}        
 
   build-macos:
@@ -73,6 +73,6 @@ jobs:
     - name: Build with python setup.py
       run: |
         python -V
-        python setup_309.py build --force
-        python setup_309.py install
+        python setup.py build --force
+        python setup.py install
       working-directory: ${{ env.working-directory }}        

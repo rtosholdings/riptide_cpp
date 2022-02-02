@@ -1,2 +1,2 @@
 set -xv
-$PYTHON setup_309.py install
+$PYTHON setup.py install
