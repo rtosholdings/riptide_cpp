@@ -1,9 +1,23 @@
 python:
-  - 3.7
+  - 3.8
   - 3.8
   - 3.9
+  - 3.9
+  - 3.10
 
 numpy:
-  - 1.19
   - 1.20
   - 1.21
+  - 1.20
+  - 1.21
+  - 1.21
+
+zip_keys:
+  - python
+  - numpy
+
+c_compiler:
+  - vs2019 # [win]
+
+cxx_compiler:
+  - vs2019 # [win]

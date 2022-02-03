@@ -1,2 +1,2 @@
-cd src
-${PYTHON} setup.py install
+set -xv
+$PYTHON setup.py install

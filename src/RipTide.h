@@ -33,11 +33,7 @@
     #define NO_IMPORT_ARRAY
 #endif
 
-#if defined(_WIN32) && ! defined(__GNUC__)
-    #include <../Lib/site-packages/numpy/core/include/numpy/arrayobject.h>
-#else
-    #include <numpy/arrayobject.h>
-#endif
+#include <numpy/arrayobject.h>
 
 #include "numpy_traits.h"
 

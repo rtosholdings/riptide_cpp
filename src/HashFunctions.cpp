@@ -300,9 +300,9 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
 //
 // final result 6 0 6 2 0 4 6 4 0
 template <typename T>
-[[nodiscard]] char const *
-FindFirstOccurence(T const * pArray2, int32_t const * pUnique1, int32_t * pReIndex, int32_t * pReverseMap, int64_t array2Length,
-                        int32_t unique1Length, int32_t unique2Length, int32_t baseOffset2T)
+[[nodiscard]] char const * FindFirstOccurence(T const * pArray2, int32_t const * pUnique1, int32_t * pReIndex,
+                                              int32_t * pReverseMap, int64_t array2Length, int32_t unique1Length,
+                                              int32_t unique2Length, int32_t baseOffset2T)
 {
     T baseOffset2 = (T)baseOffset2T;
 
@@ -402,7 +402,8 @@ FindFirstOccurence(T const * pArray2, int32_t const * pUnique1, int32_t * pReInd
 // Returns: pOutput and pBoolOutput
 // TODO: this routine needs to output INT8/16/32/64 instead of just INT32
 template <typename T>
-void FinalMatch(T const * pArray1, int32_t * pOutput, int8_t * pBoolOutput, int32_t const * pReIndex, int64_t array1Length, int32_t baseoffset)
+void FinalMatch(T const * pArray1, int32_t * pOutput, int8_t * pBoolOutput, int32_t const * pReIndex, int64_t array1Length,
+                int32_t baseoffset)
 {
     const int32_t invalid = *(int32_t *)GetDefaultForType(NPY_INT32);
 
@@ -501,24 +502,24 @@ PyObject * IsMemberCategoricalFixup(PyObject * self, PyObject * args)
         int32_t * pUnique = (int32_t *)PyArray_BYTES(isMemberUnique);
         void * pArray2 = PyArray_BYTES(inArr2);
 
-        char const * err{nullptr};
+        char const * err{ nullptr };
         switch (array2Type)
         {
         case NPY_INT8:
-            err = FindFirstOccurence<int8_t>((int8_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
-                                       unique2Length, baseoffset2);
+            err = FindFirstOccurence<int8_t>((int8_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2,
+                                             arraySizeUnique, unique2Length, baseoffset2);
             break;
         case NPY_INT16:
-            err = FindFirstOccurence<int16_t>((int16_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
-                                        unique2Length, baseoffset2);
+            err = FindFirstOccurence<int16_t>((int16_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2,
+                                              arraySizeUnique, unique2Length, baseoffset2);
             break;
         CASE_NPY_INT32:
-            err = FindFirstOccurence<int32_t>((int32_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
-                                        unique2Length, baseoffset2);
+            err = FindFirstOccurence<int32_t>((int32_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2,
+                                              arraySizeUnique, unique2Length, baseoffset2);
             break;
         CASE_NPY_INT64:
-            err = FindFirstOccurence<int64_t>((int64_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2, arraySizeUnique,
-                                        unique2Length, baseoffset2);
+            err = FindFirstOccurence<int64_t>((int64_t *)pArray2, pUnique, reIndexArray, reverseMapArray, arraySize2,
+                                              arraySizeUnique, unique2Length, baseoffset2);
             break;
         default:
             PyErr_Format(PyExc_ValueError, "IsMemberCategoricalFixup second argument is not INT8/16/32/64");

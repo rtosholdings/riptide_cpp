@@ -3,7 +3,7 @@
 #include "CommonInc.h"
 #include <stdlib.h>
 
-#include "zstd/zstd.h"
+#include "zstd.h"
 //#include "Compress.h"
 #include "FileReadWrite.h"
 #include "SDSFile.h"

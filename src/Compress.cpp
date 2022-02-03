@@ -2,7 +2,7 @@
 #include "FileReadWrite.h"
 #include "SharedMemory.h"
 #include "bytesobject.h"
-#include "zstd/zstd.h"
+#include "zstd.h"
 #include <Python.h>
 #include <stdlib.h>
 
