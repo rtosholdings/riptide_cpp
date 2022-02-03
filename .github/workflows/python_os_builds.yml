@@ -5,7 +5,7 @@ name: Python OS build
 
 on:
   push:
-    branches: [ master, add-cmake ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
