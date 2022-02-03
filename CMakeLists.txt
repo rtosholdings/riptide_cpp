@@ -62,11 +62,7 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
 
-if(RIPTIDE_BUILD_VIA_CONDA STREQUAL "TRUE")
 include(AddPythonSupport)
-else()
-include(AddPythonSupportExact)
-endif()
 
 add_subdirectory(external)
 add_subdirectory(src)
