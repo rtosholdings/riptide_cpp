@@ -140,7 +140,7 @@ jobs:
       working-directory: ${{ env.working-directory }}
     - name: Setup CMake Relase configuration
       run: |
-        cmake -E chdir "build" cmake -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -DCMAKE_BUILD_TYPE=Release "-DRIPTIDE_PYTHON_VER=${{ matrix.python-version }}" ../
+        cmake -E chdir "build" cmake -DCMAKE_BUILD_TYPE=Release "-DRIPTIDE_PYTHON_VER=${{ matrix.python-version }}" ../
       working-directory: ${{ env.working-directory }}
     - name: Build Release via CMake
       run: |
