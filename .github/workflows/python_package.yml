@@ -15,8 +15,6 @@ jobs:
     # deploys binary builds for windows and mac versions of python and os
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     runs-on: ${{ matrix.os }}
-    env:
-      working-directory: .
     strategy:
       matrix:
         os: [windows-latest]
