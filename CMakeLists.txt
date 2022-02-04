@@ -62,11 +62,10 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
 
-if(RIPTIDE_BUILD_VIA_CONDA STREQUAL "TRUE")
 include(AddPythonSupport)
-else()
-include(AddPythonSupportExact)
-endif()
+
+# For now, disable benchmark gtests. Can re-enable if we can point them at our gtest sources.
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 
 add_subdirectory(external)
 add_subdirectory(src)
