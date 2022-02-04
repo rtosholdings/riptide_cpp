@@ -1,5 +1,10 @@
 set(TARGET_NAME riptide_cpp)
 
+# Find external packages.
+find_package(TBB CONFIG REQUIRED)
+
+
+
 if(PROJ_COMPILER_FRONTEND STREQUAL "MSVC")
     add_compile_options(-FC -Zc:__cplusplus)
     add_compile_options("$<$<CONFIG:Debug>:-Od;-Z7>")
@@ -114,12 +119,15 @@ get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 target_include_directories(${TARGET_NAME} PRIVATE
     ${EXTERNAL_ZSTD_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
-    ${Python3_NumPy_INCLUDE_DIRS} )
+    ${Python3_NumPy_INCLUDE_DIRS}
+)
 
 target_link_libraries(${TARGET_NAME}
     Python3::Python
     libzstd_static
+    TBB::tbb
     $<$<PLATFORM_ID:Linux>:rt>)
+)
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES

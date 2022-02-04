@@ -26,6 +26,8 @@
 #include "Hook.h"
 #include "Array.h"
 
+#include <tbb/tbb.h>
+
 #undef LOGGING
 //#define LOGGING printf
 #define LOGGING(...)
