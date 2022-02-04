@@ -1,9 +1,6 @@
 unset(REQUESTED_VERSION)
 if(DEFINED RIPTIDE_PYTHON_VER)
   set(REQUESTED_VERSION ${RIPTIDE_PYTHON_VER})
-endif()
-unset(EXACT_VERSION_NEEDED)
-if(RIPTIDE_BUILD_VIA_CONDA)
   set(EXACT_VERSION_NEEDED EXACT)
 endif()
 
@@ -32,7 +29,7 @@ message(NOTICE "Python3_RUNTIME_LIBRARY_DIRS = ${Python3_RUNTIME_LIBRARY_DIRS}")
 message(NOTICE "Python3_NumPy_INCLUDE_DIR hint = ${Python3_NumPy_INCLUDE_DIR}")
 message(NOTICE "Python_FIND_STRATEGY = ${Python_FIND_STRATEGY}")
 
-find_package(Python3 "${Python3_VERSION}" COMPONENTS Interpreter Development NumPy)
+find_package(Python3 "${Python3_VERSION}" COMPONENTS Interpreter Development NumPy REQUIRED)
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
 message(NOTICE "Python3_VERSION_MAJOR = ${Python3_VERSION_MAJOR}")
