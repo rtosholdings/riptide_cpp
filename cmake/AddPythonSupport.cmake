@@ -29,7 +29,7 @@ message(NOTICE "Python3_RUNTIME_LIBRARY_DIRS = ${Python3_RUNTIME_LIBRARY_DIRS}")
 message(NOTICE "Python3_NumPy_INCLUDE_DIR hint = ${Python3_NumPy_INCLUDE_DIR}")
 message(NOTICE "Python_FIND_STRATEGY = ${Python_FIND_STRATEGY}")
 
-find_package(Python3 "${Python3_VERSION}" COMPONENTS Interpreter Development NumPy REQUIRED)
+find_package(Python3 "${Python3_VERSION}" EXACT COMPONENTS Interpreter Development NumPy REQUIRED)
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
 message(NOTICE "Python3_VERSION_MAJOR = ${Python3_VERSION_MAJOR}")
