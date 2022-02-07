@@ -44,7 +44,7 @@ if(PROJ_COMPILER_ID STREQUAL "MSVC")
     if(MSVC_VERSION)
         if(MSVC_VERSION GREATER_EQUAL "1910" AND MSVC_VERSION LESS "1920")
             set(PROJ_COMPILER_TOOLSET "v141")
-        elseif((MSVC_VERSION GREATER_EQUAL "1920" AND MSVC_VERSION LESS "1930"))
+        elseif((MSVC_VERSION GREATER_EQUAL "1920"))
             set(PROJ_COMPILER_TOOLSET "v142")
         else()
             message(FATAL_ERROR "Unknown MSVC_VERSION, ${MSVC_VERSION}")
@@ -62,6 +62,7 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
 
+include(AddCpm)
 include(AddPythonSupport)
 
 add_subdirectory(external)
