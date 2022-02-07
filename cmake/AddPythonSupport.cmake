@@ -1,6 +1,13 @@
+unset(REQUESTED_VERSION)
+if(DEFINED RIPTIDE_PYTHON_VER)
+  set(REQUESTED_VERSION ${RIPTIDE_PYTHON_VER})
+  set(EXACT_VERSION_NEEDED EXACT)
+endif()
+
 set(Python_FIND_STRATEGY "LOCATION")
 set(Python3_FIND_VIRTUALENV "ONLY")
-find_package(Python3 "${RIPTIDE_PYTHON_VER}" COMPONENTS Interpreter Development REQUIRED)
+find_package(Python3 ${REQUESTED_VERSION} ${EXACT_VERSION_NEEDED} COMPONENTS Interpreter Development REQUIRED)
+
 if(PROJ_COMPILER_ID STREQUAL "LLVM")
   message(NOTICE "Running on MacOS, do not set numpy hint")
 else()
@@ -22,7 +29,7 @@ message(NOTICE "Python3_RUNTIME_LIBRARY_DIRS = ${Python3_RUNTIME_LIBRARY_DIRS}")
 message(NOTICE "Python3_NumPy_INCLUDE_DIR hint = ${Python3_NumPy_INCLUDE_DIR}")
 message(NOTICE "Python_FIND_STRATEGY = ${Python_FIND_STRATEGY}")
 
-find_package(Python3 "${RIPTIDE_PYTHON_VER}" COMPONENTS Interpreter Development NumPy)
+find_package(Python3 "${Python3_VERSION}" EXACT COMPONENTS Interpreter Development NumPy REQUIRED)
 
 message(NOTICE "Python3_VERSION = ${Python3_VERSION}")
 message(NOTICE "Python3_VERSION_MAJOR = ${Python3_VERSION_MAJOR}")
