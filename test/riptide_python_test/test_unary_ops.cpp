@@ -1,5 +1,5 @@
-#include "../../src/RipTide.h"
-#include "../../src/UnaryOps.h"
+#include "RipTide.h"
+#include "UnaryOps.h"
 
 #define BOOST_UT_DISABLE_MODULE
 #include "../ut/include/boost/ut.hpp"

@@ -1,5 +1,5 @@
 #define SHAREDATA_MAIN_C_FILE
-#include "../../src/RipTide.h"
+#include "RipTide.h"
 
 #ifdef WIN32
 #include <Windows.h>
