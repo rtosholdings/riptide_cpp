@@ -29,6 +29,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
     main.cpp
+	test_convert.cpp
     test_unary_ops.cpp)
 
 add_executable(${TARGET_NAME}
