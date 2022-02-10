@@ -70,6 +70,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 x64/
+_skbuild/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
