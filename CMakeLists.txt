@@ -64,7 +64,6 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
 
-include(AddCpm)
 include(AddPythonSupport)
 
 add_subdirectory(external)
