@@ -66,9 +66,9 @@ message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLS
 
 include(AddPythonSupport)
 
-add_subdirectory(external)
+add_subdirectory(external EXCLUDE_FROM_ALL)
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-add_subdirectory(bench)
-add_subdirectory(test)
+add_subdirectory(bench EXCLUDE_FROM_ALL)
+add_subdirectory(test EXCLUDE_FROM_ALL)
