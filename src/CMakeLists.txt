@@ -124,3 +124,5 @@ target_link_libraries(${TARGET_NAME}
 set_target_properties(${TARGET_NAME} PROPERTIES
     PREFIX ""
     SUFFIX ${PYTHON_EXT_LIB_SUFFIX})
+
+install(TARGETS riptide_cpp DESTINATION .)
