@@ -126,4 +126,4 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     PREFIX ""
     SUFFIX ${PYTHON_EXT_LIB_SUFFIX})
 
-install(TARGETS riptide_cpp DESTINATION .)
+install(TARGETS riptide_cpp RUNTIME DESTINATION .)
