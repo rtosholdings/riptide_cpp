@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-artifacts
-          path: src/dist/
+          path: dist/
           if-no-files-found: error
 
   deploy:
