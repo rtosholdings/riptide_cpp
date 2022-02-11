@@ -14,7 +14,7 @@ cmake_args = [
 if platform.system() == 'Windows':
     cmake_args += [
         '-GVisual Studio 16 2019',
-        '-Tv142,version=14.29,host=x64'
+        '-Tv142'
         ]
 elif platform.system() == 'Linux':
     cmake_args += [
