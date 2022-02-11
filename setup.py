@@ -16,6 +16,11 @@ if platform.system() == 'Windows':
         '-GVisual Studio 16 2019',
         '-Tv142,version=14.29,host=x64'
         ]
+elif platform.system() == 'Linux':
+    cmake_args += [
+        '-DCMAKE_C_COMPILER=gcc',
+        '-DCMAKE_CXX_COMPILER=g++'
+        ]
 
 setup(
     name = package_name,
