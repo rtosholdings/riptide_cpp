@@ -118,7 +118,8 @@ target_include_directories(${TARGET_NAME} PRIVATE
 
 target_link_libraries(${TARGET_NAME}
     Python3::Python
-    libzstd_static)
+    libzstd_static
+    $<$<PLATFORM_ID:Linux>:rt>)
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES
