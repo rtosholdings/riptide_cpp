@@ -118,11 +118,20 @@ target_include_directories(${TARGET_NAME} PRIVATE
 
 target_link_libraries(${TARGET_NAME}
     Python3::Python
-    libzstd_static)
+    libzstd_static
+    $<$<PLATFORM_ID:Linux>:rt>)
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES
     PREFIX ""
     SUFFIX ${PYTHON_EXT_LIB_SUFFIX})
 
-install(TARGETS riptide_cpp DESTINATION .)
+if(WIN32)
+    set(RUNTIME_SPECIFIER RUNTIME)
+elseif(UNIX)
+    set(RUNTIME_SPECIFIER LIBRARY)
+else()
+    message(FATAL_ERROR "Cannot specify runtime component")
+endif()
+
+install(TARGETS riptide_cpp ${RUNTIME_SPECIFIER} DESTINATION .)

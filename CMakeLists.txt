@@ -64,12 +64,18 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
 
-include(AddCpm)
 include(AddPythonSupport)
 
-add_subdirectory(external)
+# Under scikit-build, exclude all dependencies from install target to avoid polluting distribution.
+if(SKBUILD)
+    set(EXLUSION_SPECIFIER EXCLUDE_FROM_ALL)
+else()
+    unset(EXCLUSION_SPECIFIER)
+endif()
+
+add_subdirectory(external ${EXLUSION_SPECIFIER})
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(tests ${EXLUSION_SPECIFIER})
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-add_subdirectory(bench)
-add_subdirectory(test)
+add_subdirectory(bench ${EXLUSION_SPECIFIER})
+add_subdirectory(test ${EXLUSION_SPECIFIER})
