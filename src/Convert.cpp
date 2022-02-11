@@ -3840,7 +3840,7 @@ PyObject * SetItem(PyObject * self, PyObject * args)
         LOGGING("SetItem Could not convert value to array %d  %lld  %d  %lld\n", PyArray_NDIM(arr), PyArray_ITEMSIZE(arr),
                 PyArray_NDIM((PyArrayObject *)value), PyArray_ITEMSIZE((PyArrayObject *)value));
         
-        Py_DecRef(value);
+        Py_DECREF(value);
     }
     else
     {
