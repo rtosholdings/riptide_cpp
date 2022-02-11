@@ -29,7 +29,6 @@ setup(
         'version_scheme': 'post-release',
     },
     cmake_args = cmake_args,
-    cmake_install_dir='src',
     setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
