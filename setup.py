@@ -7,14 +7,12 @@ riptide_python_ver_pieces = [ "-DRIPTIDE_PYTHON_VER=", platform.python_version()
 riptide_python_ver = "".join(riptide_python_ver_pieces)
 
 cmake_args = [
-    '-DBENCHMARK_ENABLE_GTEST_TESTS=off',
      riptide_python_ver
      ]
 
 if platform.system() == 'Windows':
     cmake_args += [
-        '-GVisual Studio 16 2019',
-        '-Tv142'
+        '-GVisual Studio 16 2019'
         ]
 elif platform.system() == 'Linux':
     cmake_args += [
