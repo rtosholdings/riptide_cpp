@@ -66,9 +66,16 @@ message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLS
 
 include(AddPythonSupport)
 
-add_subdirectory(external EXCLUDE_FROM_ALL)
+# Under scikit-build, exclude all dependencies from install target to avoid polluting distribution.
+if(SKBUILD)
+    set(EXLUSION_SPECIFIER EXCLUDE_FROM_ALL)
+else()
+    unset(EXCLUSION_SPECIFIER)
+endif()
+
+add_subdirectory(external ${EXLUSION_SPECIFIER})
 add_subdirectory(src)
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests ${EXLUSION_SPECIFIER})
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-add_subdirectory(bench EXCLUDE_FROM_ALL)
-add_subdirectory(test EXCLUDE_FROM_ALL)
+add_subdirectory(bench ${EXLUSION_SPECIFIER})
+add_subdirectory(test ${EXLUSION_SPECIFIER})
