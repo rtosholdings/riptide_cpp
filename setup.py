@@ -3,11 +3,8 @@ import platform
 
 package_name = 'riptide_cpp'
 
-riptide_python_ver_pieces = [ "-DRIPTIDE_PYTHON_VER=", platform.python_version()]
-riptide_python_ver = "".join(riptide_python_ver_pieces)
-
 cmake_args = [
-     riptide_python_ver
+     "-DRIPTIDE_PYTHON_VER=" + platform.python_version()
      ]
 
 if platform.system() == 'Windows':
