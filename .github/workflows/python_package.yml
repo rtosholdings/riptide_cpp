@@ -11,83 +11,91 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    # deploys binary builds for windows and mac versions of python and os
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+  build:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: [3.8, 3.9, '3.10']
-
+        numpy-version: [1.21]
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
-        # which we use for setting the package version (via setuptools-scm).
-        fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install setuptools wheel twine scikit-build
-      working-directory: ${{ env.working-directory }}
-    - name: Build and publish binary
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python setup.py bdist_wheel
-        twine upload dist/* --verbose
-      working-directory: ${{ env.working-directory }}
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
+          # which we use for setting the package version (via setuptools-scm).
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install scikit-build setuptools-scm wheel
+          python -m pip install numpy==${{ matrix.numpy-version }}
+      - name: Build with python setup.py
+        run: |
+          python setup.py build --force
+      - name: Package wheel
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          python setup.py bdist_wheel
+      - name: Package sources
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          python setup.py sdist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: dist/
+          if-no-files-found: error
 
-  deploy_source:
-    # the linux version just does source 
+  deploy:
+    # deploys build artifacts to PyPI
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+    needs: build
     runs-on: ubuntu-latest
-    env:
-      working-directory: ./
-
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
-        # which we use for setting the package version (via setuptools-scm).
-        fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install setuptools wheel twine scikit-build
-      working-directory: ${{ env.working-directory }}
-    - name: Build and publish source
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python setup.py sdist
-        twine upload dist/* --verbose      
-      working-directory: ${{ env.working-directory }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools wheel twine
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build-artifacts
+          path: dist/
+      - name: Publish artifacts to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          set -ex
+          twine upload dist/* --verbose
 
   conda_build:
     runs-on: ${{ matrix.os }}
-    env:
-      ANACONDA_USER: rtosholdings
-      ANACONDA_TOKEN: ${{ secrets.anaconda_token }}
-      working-directory: .
     strategy:
       matrix:
-        # TJD removed macos-latest because conda cannot setup C++ include environment properly
-        # the python package and pip package does build correctly, perhaps pull from that
-        os: ['ubuntu-latest','windows-latest']
+        os: ['ubuntu-latest', 'windows-latest']
+        # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
+        zips: [
+          { python: '3.8', numpy: '1.20' },
+          { python: '3.8', numpy: '1.21' },
+          { python: '3.9', numpy: '1.20' },
+          { python: '3.9', numpy: '1.21' },
+          { python: '3.10', numpy: '1.21' } ]
+    env:
+      python_version: 3.9
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -99,35 +107,58 @@ jobs:
          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: ""
+          activate-environment: "conda_build"
+          python-version: ${{ env.python_version }}
           auto-update-conda: true
           channels: conda-forge
           channel-priority: flexible
           show-channel-urls: true
-      - name: Build Package
+      - name: Create env
         shell: bash -l {0}
         run: |
-          set -exv
-          python -m pip install --upgrade pip
-          python -m pip install setuptools wheel twine scikit-build
-          conda create -n conda_build python=3.9 conda-build anaconda-client setuptools_scm scikit-build cmake numpy=1.21 conda-verify -y
-          conda activate conda_build
-          export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
-          mkdir conda_environment
-          export RIPTIDE_BUILD_VIA_CONDA="TRUE"
-          conda build conda_recipe --output-folder ./conda_environment
-      - name: Publish artifacts
-        env:
-         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true' 
-        uses: actions/upload-artifact@v2
-        with:
-          name: packages
-          path: conda_environment/*/riptide_cpp-*.tar.bz2
-          if-no-files-found: "error"
-      - name: Upload to Anaconda
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+          conda install conda-build scikit-build setuptools_scm -q -y
+      - name: Build package
         shell: bash -l {0}
         run: |
           set -ex
-          conda activate conda_build
-          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_environment/*/riptide_cpp-*.tar.bz2
+          export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
+          export RIPTIDE_BUILD_VIA_CONDA="TRUE"
+          mkdir conda_pkgs_output
+          echo "python: " ${{ matrix.zips.python }} > ./conda_zips.yaml
+          echo "numpy: " ${{ matrix.zips.numpy }} >> ./conda_zips.yaml
+          conda build conda_recipe --output-folder ./conda_pkgs_output --variant-config-files ./conda_zips.yaml
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: conda-build-artifacts
+          path: conda_pkgs_output/*/riptide_cpp-*.tar.bz2
+          if-no-files-found: "error"
+
+  conda_deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+    needs: conda_build
+    runs-on: ubuntu-latest
+    env:
+      ANACONDA_USER: rtosholdings
+      ANACONDA_TOKEN: ${{ secrets.anaconda_token }}
+    steps:
+      - name: Setup Miniconda
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: "conda_deploy"
+          auto-update-conda: true
+          channels: conda-forge
+          channel-priority: flexible
+          show-channel-urls: true
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: conda-build-artifacts
+          path: conda_pkgs_output/
+      - name: Upload to Anaconda
+        shell: bash -l {0}
+        run: |
+          set -ex
+          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.tar.bz2
