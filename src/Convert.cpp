@@ -3820,6 +3820,7 @@ PyObject * SetItem(PyObject * self, PyObject * args)
 
                 if (arrType == NPY_BOOL)
                 {
+                    Py_DECREF(value);
                     int64_t arrayLength = ArrayLength(arr);
 
                     if (arrayLength == ArrayLength(mask))
