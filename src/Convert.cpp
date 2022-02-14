@@ -3797,9 +3797,11 @@ PyObject * SetItem(PyObject * self, PyObject * args)
 
     // Try to convert value if we have to
     PyObject * value = PyTuple_GetItem(args, 2);
+    bool new_value{false};
     if (! PyArray_Check(value))
     {
         value = PyArray_FromAny(value, NULL, 0, 0, NPY_ARRAY_ENSUREARRAY, NULL);
+        new_value = true;
     }
 
     // Make sure from any worked
@@ -3820,7 +3822,10 @@ PyObject * SetItem(PyObject * self, PyObject * args)
 
                 if (arrType == NPY_BOOL)
                 {
-                    Py_DECREF(value);
+                    if (new_value)
+                    {
+                        Py_DECREF(value);
+                    }
                     int64_t arrayLength = ArrayLength(arr);
 
                     if (arrayLength == ArrayLength(mask))
@@ -3841,7 +3846,10 @@ PyObject * SetItem(PyObject * self, PyObject * args)
         LOGGING("SetItem Could not convert value to array %d  %lld  %d  %lld\n", PyArray_NDIM(arr), PyArray_ITEMSIZE(arr),
                 PyArray_NDIM((PyArrayObject *)value), PyArray_ITEMSIZE((PyArrayObject *)value));
         
-        Py_DECREF(value);
+        if (new_value)
+        {
+            Py_DECREF(value);
+        }
     }
     else
     {
