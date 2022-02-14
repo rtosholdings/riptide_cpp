@@ -3820,6 +3820,7 @@ PyObject * SetItem(PyObject * self, PyObject * args)
 
                 if (arrType == NPY_BOOL)
                 {
+                    Py_DECREF(value);
                     int64_t arrayLength = ArrayLength(arr);
 
                     if (arrayLength == ArrayLength(mask))
@@ -3835,26 +3836,12 @@ PyObject * SetItem(PyObject * self, PyObject * args)
                         }
                     }
                 }
-                else if (arrType <= NPY_LONGLONG)
-                {
-                    // Assume int even if uint
-                    // Fancy index
-                    switch (PyArray_ITEMSIZE(arr))
-                    {
-                    case 1:
-                        break;
-                    case 2:
-                        break;
-                    case 4:
-                        break;
-                    case 8:
-                        break;
-                    }
-                }
             }
         }
         LOGGING("SetItem Could not convert value to array %d  %lld  %d  %lld\n", PyArray_NDIM(arr), PyArray_ITEMSIZE(arr),
                 PyArray_NDIM((PyArrayObject *)value), PyArray_ITEMSIZE((PyArrayObject *)value));
+        
+        Py_DECREF(value);
     }
     else
     {
