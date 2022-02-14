@@ -3826,6 +3826,7 @@ PyObject * SetItem(PyObject * self, PyObject * args)
                     {
                         Py_DECREF(value);
                     }
+
                     int64_t arrayLength = ArrayLength(arr);
 
                     if (arrayLength == ArrayLength(mask))
