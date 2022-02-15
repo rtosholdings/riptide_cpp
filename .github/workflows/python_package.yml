@@ -58,7 +58,7 @@ jobs:
   deploy:
     # deploys build artifacts to PyPI
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
-    needs: build
+    needs: [build, conda_build]
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
@@ -136,7 +136,7 @@ jobs:
 
   conda_deploy:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
-    needs: conda_build
+    needs: [build, conda_build]
     runs-on: ubuntu-latest
     env:
       ANACONDA_USER: rtosholdings
