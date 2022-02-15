@@ -53,7 +53,7 @@ add_test(NAME test_riptide_cpp_python
     COMMAND ${TARGET_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-set_tests_properties(test_riptide_cpp PROPERTIES
+set_tests_properties(test_riptide_cpp_python PROPERTIES
     ENVIRONMENT "PYTHONHOME=${Python3_RUNTIME_LIBRARY_DIRS};PYTHONPATH=${Python3_STDLIB}")
 
 if(WIN32)
