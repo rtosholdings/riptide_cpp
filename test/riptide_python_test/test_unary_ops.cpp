@@ -47,7 +47,7 @@ namespace
             PyObject * input_array{PyArray_SimpleNewFromData( 1, &array_len, NPY_FLOAT, const_cast< float * >(input_data_simple_f.data() ))};
             PyObject * input_arg{ PyTuple_New(1)};
             expect( PyTuple_SetItem( input_arg, 0, input_array ));
-            expect( BasicMathOneInput( nullptr, input_arg ) != nullptr );
+//            expect( BasicMathOneInput( nullptr, input_arg ) != nullptr );
 
 
 #if 0
