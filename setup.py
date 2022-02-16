@@ -13,8 +13,7 @@ if platform.system() == 'Windows':
         ]
 elif platform.system() == 'Linux':
     cmake_args += [
-        '-DCMAKE_C_COMPILER=gcc',
-        '-DCMAKE_CXX_COMPILER=g++'
+        # Use defaults from environment
         ]
 
 setup(
