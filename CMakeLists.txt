@@ -62,7 +62,7 @@ else()
     message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
 endif()
 
-message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}")
+message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}, path=${CMAKE_CXX_COMPILER}")
 
 include(AddPythonSupport)
 
