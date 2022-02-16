@@ -21,3 +21,9 @@ c_compiler:
 
 cxx_compiler:
   - vs2019 # [win]
+
+c_compiler_version:
+  - 9.4 # [linux]
+
+cxx_compiler_version:
+  - 9.4 # [linux]
