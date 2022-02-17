@@ -7,7 +7,7 @@
 #else
 #include "Python.h"
 #endif
-#define NPY_NO_DEPRECATED_API 0x00000008
+//#define NPY_NO_DEPRECATED_API 0x00000008
 
 #define PY_ARRAY_UNIQUE_SYMBOL riptide_python_test_global
 #ifndef PYTHON_TEST_MAIN
