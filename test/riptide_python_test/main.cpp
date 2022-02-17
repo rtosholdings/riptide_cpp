@@ -1,4 +1,4 @@
-#define PYTHON_TEST_MAIN
+#define PYTHON_TEST_MAIN (1)
 #include "riptide_python_test.h"
 
 #ifdef WIN32

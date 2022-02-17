@@ -11,7 +11,10 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL riptide_python_test_global
 #ifndef PYTHON_TEST_MAIN
-#define NO_IMPORT_ARRAY
+#define NO_IMPORT_ARRAY (1)
+#else
+#undef NO_IMPORT
+#undef NO_IMPORT_ARRAY
 #endif
 
 #include "numpy/arrayobject.h"
