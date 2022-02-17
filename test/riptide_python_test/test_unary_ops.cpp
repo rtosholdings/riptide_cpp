@@ -43,12 +43,15 @@ namespace
         {
             expect(true);
 
-            npy_intp array_len{input_data_simple_f.size()};
-            PyObject * input_array{PyArray_SimpleNewFromData( 1, &array_len, NPY_FLOAT, const_cast< float * >(input_data_simple_f.data() ))};
-            PyObject * input_arg{ PyTuple_New(1)};
-            expect( PyTuple_SetItem( input_arg, 0, input_array ));
-//            expect( BasicMathOneInput( nullptr, input_arg ) != nullptr );
+            npy_intp array_len{ input_data_simple_f.size() };
+            PyObject * input_array{ PyArray_SimpleNewFromData(1, &array_len, NPY_FLOAT,
+                                                              const_cast<float *>(input_data_simple_f.data())) };
+            PyObject * input_arg{ PyTuple_New(1) };
 
+            expect(input_array != nullptr);
+            expect(input_arg != nullptr);
+            //            expect( PyTuple_SetItem( input_arg, 0, input_array ));
+            //            expect( BasicMathOneInput( nullptr, input_arg ) != nullptr );
 
 #if 0
             operation_t op{ abs_op{} };
@@ -64,7 +67,7 @@ namespace
             expect(x[5] == 1.0_f);
             expect(x[6] == 1.5_f);
             expect(x[7] == 2.0_f);
-#endif       
+#endif
         };
     };
 }
