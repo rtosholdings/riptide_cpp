@@ -12,6 +12,18 @@ extern "C"
 
 PyObject * riptide_module_p{nullptr};
 
+namespace riptide_python_test::internal
+{
+    PyObject * get_named_function( PyObject * module_p, char const * name_p )
+    {
+        PyObject * dictionary{ PyModule_GetDict( module_p ) };
+        PyObject * function_name{ Py_BuildValue("s", "TestNumpy") };
+        PyObject * function_object{ PyDict_GetItem(dictionary, function_name) };
+
+        return function_object;
+    }
+}
+
 int main(int argc, char const ** argv)
 {
     wchar_t *program = Py_DecodeLocale(argv[0], NULL);
