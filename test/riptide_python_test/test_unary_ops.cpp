@@ -9,6 +9,8 @@
 using namespace boost::ut;
 using boost::ut::suite;
 
+extern PyObject * riptide_module_p;
+
 namespace
 {
     std::array<float const, 31> const input_data_simple_f = { -4,  -3.5, -3,  -2.5, -2,  -1.5, -1,   -0.5, 0,   0.5, 1.0,
@@ -47,9 +49,18 @@ namespace
             PyObject * input_array{ PyArray_SimpleNewFromData(1, &array_len, NPY_FLOAT,
                                                               const_cast<float *>(input_data_simple_f.data())) };
             PyObject * input_arg{ PyTuple_New(1) };
+            int res = PyTuple_SetItem(input_arg, 0, input_array);
+            PyObject * dictionary{ PyModule_GetDict( riptide_module_p ) };
+            PyObject * function_name{ Py_BuildValue("s", "TestNumpy") };
+            PyObject * function_object{ PyDict_GetItem(dictionary, function_name) };
+            PyObject_CallFunction(function_object, "d", 3.142);
 
             expect(input_array != nullptr);
             expect(input_arg != nullptr);
+            expect(res == 0);
+            expect(dictionary != nullptr);
+            expect(function_name != nullptr);
+            expect(function_object != nullptr);
             //            expect( PyTuple_SetItem( input_arg, 0, input_array ));
             //            expect( BasicMathOneInput( nullptr, input_arg ) != nullptr );
 
