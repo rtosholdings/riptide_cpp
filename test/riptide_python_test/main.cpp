@@ -1,5 +1,5 @@
-#define SHAREDATA_MAIN_C_FILE
-#include "RipTide.h"
+#define PYTHON_TEST_MAIN
+#include "riptide_python_test.h"
 
 #ifdef WIN32
 #include <Windows.h>

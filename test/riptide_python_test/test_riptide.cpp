@@ -1,4 +1,4 @@
-#include "RipTide.h"
+#include "riptide_python_test.h"
 
 #define BOOST_UT_DISABLE_MODULE
 #include "../ut/include/boost/ut.hpp"
