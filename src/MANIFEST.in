@@ -1,5 +1,0 @@
-include *.h 
-include zstd/*
-include zstd/common/*
-include zstd/compress/*
-include zstd/decompress/*
