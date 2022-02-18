@@ -105,7 +105,7 @@ jobs:
       run: |
         build/bench/riptide_bench/riptide_bench/riptide_bench
         build/test/riptide_test/riptide_test
-        cmake -E chdir "build/test/riptide_python_test/Release" riptide_python_test
+        cmake -E chdir "build/test/riptide_python_test" riptide_python_test
       working-directory: ${{ env.working-directory }}
 
   build-cmake-ubuntu-121:
@@ -152,5 +152,5 @@ jobs:
         ls -a build/bench/riptide_bench/riptide_bench/
         build/bench/riptide_bench/riptide_bench/riptide_bench
         build/test/riptide_test/riptide_test
-        cmake -E chdir "build/test/riptide_python_test/Release" riptide_python_test
+        cmake -E chdir "build/test/riptide_python_test" riptide_python_test
       working-directory: ${{ env.working-directory }}
