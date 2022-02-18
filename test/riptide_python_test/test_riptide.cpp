@@ -6,13 +6,6 @@
 using namespace boost::ut;
 using boost::ut::suite;
 
-namespace riptide_python_test::internal
-{
-    extern PyObject * get_named_function( PyObject * module_p, char const * name_p );
-}
-
-extern PyObject * riptide_module_p;
-
 namespace
 {
     suite riptide_ops = []
