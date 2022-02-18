@@ -14,13 +14,11 @@ requirements:
     - {{ compiler('cxx') }}
     - cmake {{ 3.22 }}
     - setuptools_scm
-    - scikit-build
     - numpy {{ numpy }}
   host:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
     - setuptools_scm
-    - scikit-build
   run:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
