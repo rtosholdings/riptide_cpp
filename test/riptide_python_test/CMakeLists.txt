@@ -29,8 +29,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
     main.cpp
-	test_reduce.cpp
-    test_riptide.cpp)
+	tests)
 
 add_executable(${TARGET_NAME}
                ${HEADERS}
