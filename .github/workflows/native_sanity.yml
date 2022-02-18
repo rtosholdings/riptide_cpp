@@ -149,7 +149,7 @@ jobs:
     - name: Run the Release tests and benchmarks
       run: |
         pwd
-        ls -a build/bench/riptide_bench/riptide_bench/
+        find . -executable -name riptide_python_test	  
         build/bench/riptide_bench/riptide_bench/riptide_bench
         build/test/riptide_test/riptide_test
         cmake -E chdir "build/test/riptide_python_test" riptide_python_test
