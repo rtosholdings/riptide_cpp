@@ -5,7 +5,7 @@ name: Python package
 
 on:
   push:
-    branches: [ master, fix-pypi-builds ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
