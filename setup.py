@@ -52,7 +52,7 @@ class CMakeBuild(build_ext):
                     #'-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE',
                 ]
 
-            print("Running cmake on " + ext.cmake_lists_dir + " into " + extdir + " in " + self.build_temp);
+            print("Running cmake on " + ext.cmake_lists_dir + " into " + extdir + " from " + self.build_temp);
             pprint(cmake_args)
 
             if not os.path.exists(self.build_temp):
