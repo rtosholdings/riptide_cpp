@@ -5,6 +5,7 @@ from pprint import pprint
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.command.sdist import sdist
+from distutils.spawn import find_executable
 
 package_name = 'riptide_cpp'
 
@@ -30,9 +31,10 @@ class CMakeBuild(build_ext):
                 '-GVisual Studio 16 2019'
                 ]
         elif platform.system() == 'Linux':
-            cmake_args += [
-                '-GNinja'
-                ]
+            if find_executable('ninja'):
+                cmake_args += [
+                    '-GNinja'
+                    ]
 
         for ext in self.extensions:
 
