@@ -18,7 +18,7 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-2019]
         python-version: [3.8, 3.9, '3.10']
         numpy-version: [1.21]
     steps:
@@ -41,7 +41,7 @@ jobs:
         run: |
           python setup.py build --force
       - name: Package wheel
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
           python setup.py bdist_wheel
       - name: Package sources
@@ -86,7 +86,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-latest']
+        os: ['ubuntu-latest', 'windows-2019']
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips: [
           { python: '3.8', numpy: '1.20' },
