@@ -60,7 +60,7 @@ class CMakeBuild(build_ext):
 
             # Config and build the extension
             subprocess.check_call(['cmake', ext.cmake_lists_dir,
-                                    '--install-prefix', extdir,
+                                    '-DCMAKE_INSTALL_PREFIX=%s' % extdir,
                                     ] + cmake_args,
                                   cwd=self.build_temp)
             subprocess.check_call(['cmake',
