@@ -1445,7 +1445,7 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 
         // meta information
         SDSWriteInfo.metaData = metaData;
-        SDSWriteInfo.metaDataSize = metaDataSize;
+        SDSWriteInfo.metaDataSize = static_cast<uint32_t>(metaDataSize);
 
         // names of arrays information
         SDSWriteInfo.pListNames = pListNames;
