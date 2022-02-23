@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+import sys
 from pprint import pprint
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -39,7 +40,7 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
 
             extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-            cfg = 'Release'
+            cfg = 'Debug' if '--debug' in sys.argv else 'Release'
 
             cmake_args += [
                 '-DSETUPBUILD=ON',
