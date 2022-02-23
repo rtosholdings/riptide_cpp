@@ -333,7 +333,7 @@ PyObject * CompressString(PyObject * self, PyObject * args)
 {
     PyObject * result;
     const char * source;
-    uint32_t source_size32;
+    Py_ssize_t source_size32;
     char * dest;
     size_t source_size;
     size_t dest_size;
@@ -389,7 +389,7 @@ PyObject * DecompressString(PyObject * self, PyObject * args)
 {
     PyObject * result;
     const char * source;
-    uint32_t source_size32;
+    Py_ssize_t source_size32;
     size_t source_size;
     uint64_t dest_size;
     char error = 0;
