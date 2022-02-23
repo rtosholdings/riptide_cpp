@@ -1303,13 +1303,13 @@ PyObject * CompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
     PyListObject * inListNames = NULL;
 
     const char * fileName;
-    uint32_t fileNameSize;
+    Py_ssize_t fileNameSize;
 
     const char * metaData;
-    uint32_t metaDataSize;
+    Py_ssize_t metaDataSize;
 
     const char * shareName = NULL;
-    uint32_t shareNameSize = 0;
+    Py_ssize_t shareNameSize = 0;
 
     int32_t mode = COMPRESSION_MODE_COMPRESS_FILE;
     int32_t compType = COMPRESSION_TYPE_ZSTD;
@@ -1655,13 +1655,13 @@ void GetFilters(PyObject * kwargs, SDS_READ_CALLBACKS * pRCB)
 PyObject * DecompressFile(PyObject * self, PyObject * args, PyObject * kwargs)
 {
     const char * fileName;
-    uint32_t fileNameSize;
+    Py_ssize_t fileNameSize;
 
     const char * shareName = NULL;
     SDS_STRING_LIST * folderName = NULL;
     SDS_STRING_LIST * sectionsName = NULL;
 
-    uint32_t shareNameSize = 0;
+    Py_ssize_t shareNameSize = 0;
 
     int32_t mode = COMPRESSION_MODE_DECOMPRESS_FILE;
 
@@ -1957,7 +1957,7 @@ PyObject * MultiConcatFiles(PyObject * self, PyObject * args, PyObject * kwargs)
 PyObject * SetLustreGateway(PyObject * self, PyObject * args)
 {
     const char * fileName;
-    uint32_t fileNameSize;
+    Py_ssize_t fileNameSize;
 
     PyObject * tuple;
 

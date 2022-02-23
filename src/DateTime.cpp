@@ -557,7 +557,7 @@ PyObject * StrptimeToNanos(PyObject * self, PyObject * args)
 {
     PyArrayObject * inArr = NULL;
     const char * strTimeFormat;
-    uint32_t strTimeFormatSize;
+    Py_ssize_t strTimeFormatSize;
 
     if (! PyArg_ParseTuple(args, "O!y#", &PyArray_Type, &inArr, &strTimeFormat, &strTimeFormatSize))
     {
