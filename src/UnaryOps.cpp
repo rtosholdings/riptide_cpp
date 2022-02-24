@@ -655,15 +655,6 @@ static const inline __m256d SQRT_OP_256(__m256d x)
 
 //_mm256_xor_si256
 
-// Indicates whether ptr is aligned to the alignment of T.
-template <typename T>
-bool is_ptr_aligned_as(void const * ptr)
-{
-    auto const alignment{std::alignment_of_v<T>};
-    auto const uptr{reinterpret_cast<std::uintptr_t>(ptr)};
-    bool const is_aligned{(uptr % alignment) == 0};
-    return is_aligned;
-}
 
 //-------------------------------------------------------------------
 // T = data type as input
