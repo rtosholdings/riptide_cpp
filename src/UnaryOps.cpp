@@ -655,6 +655,7 @@ static const inline __m256d SQRT_OP_256(__m256d x)
 
 //_mm256_xor_si256
 
+
 //-------------------------------------------------------------------
 // T = data type as input
 // MathOp operation to perform
@@ -667,7 +668,8 @@ static inline void UnaryOpFast(void * pDataIn, void * pDataOut, int64_t len, int
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
     LOGGING("unary op fast strides %lld %lld   sizeof: %lld\n", strideIn, strideOut, sizeof(T));
-    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn) && is_ptr_aligned_as<U256>(pDataOut))
     {
         // possible to align 32 bit boundary?
         // if (((int64_t)pDataOut & 31) != 0) {
@@ -724,7 +726,8 @@ static inline void UnaryOpFastStrided(void * pDataIn, void * pDataOut, int64_t l
 
     // TOOD: ensure stride*len < 2billion
     // assumes output not strided
-    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(T) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn) && is_ptr_aligned_as<U256>(pDataOut))
     {
         const int64_t innerloopLen = chunkSize * (len / chunkSize);
         T * pEnd = &pOut[innerloopLen];
@@ -777,7 +780,8 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -792,7 +796,7 @@ static inline void UnaryNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn, vo
             U256 m0 = LOADU(pIn1_256);
             pIn1_256++;
 
-            // nans will NOT equal eachother
+            // nans will NOT equal each other
             // NOTE: on my intel chip CMP_NEQ_OQ does not work for nans
             // +/-inf will equal eachother
             *pOut_i64++ = gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_cmp_ps(m0, m0, _CMP_EQ_OQ)) & 255];
@@ -824,7 +828,8 @@ static inline void UnaryNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn, v
     bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -868,7 +873,8 @@ static inline void UnaryNotNanFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -913,7 +919,8 @@ static inline void UnaryNotNanFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -956,7 +963,8 @@ static inline void UnaryFiniteFastFloat(MathFunctionPtr MATH_OP, void * pDataIn,
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -1003,7 +1011,8 @@ static inline void UnaryFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDataIn
     bool * pLastOut = (bool *)((char *)pOut + (strideOut * len));
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;
@@ -1050,7 +1059,8 @@ static inline void UnaryNotFiniteFastFloat(MathFunctionPtr MATH_OP, void * pData
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int64_t * pEnd_i64 = (int64_t *)pEnd;
@@ -1098,7 +1108,8 @@ static inline void UnaryNotFiniteFastDouble(MathFunctionPtr MATH_OP, void * pDat
 
     int64_t chunkSize = sizeof(U256) / sizeof(T);
 
-    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize)
+    if (sizeof(bool) == strideOut && sizeof(T) == strideIn && len >= chunkSize
+        && is_ptr_aligned_as<U256>(pDataIn))
     {
         bool * pEnd = &pOut[chunkSize * (len / chunkSize)];
         int32_t * pEnd_i32 = (int32_t *)pEnd;

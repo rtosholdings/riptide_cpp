@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+import sys
 from pprint import pprint
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -39,7 +40,7 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
 
             extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-            cfg = 'Release'
+            cfg = 'Debug' if '--debug' in sys.argv else 'Release'
 
             cmake_args += [
                 '-DSETUPBUILD=ON',
@@ -47,7 +48,6 @@ class CMakeBuild(build_ext):
             ]
 
             if platform.system() == 'Windows':
-                plat = ('x64' if platform.architecture()[0] == '64bit' else 'Win32')
                 cmake_args += [
                     #'-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE',
                 ]
@@ -60,7 +60,7 @@ class CMakeBuild(build_ext):
 
             # Config and build the extension
             subprocess.check_call(['cmake', ext.cmake_lists_dir,
-                                    '--install-prefix', extdir,
+                                    '-DCMAKE_INSTALL_PREFIX=%s' % extdir,
                                     ] + cmake_args,
                                   cwd=self.build_temp)
             subprocess.check_call(['cmake',

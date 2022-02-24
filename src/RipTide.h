@@ -69,6 +69,13 @@ struct _m256all
     };
 };
 
+// Indicates whether ptr is aligned to the alignment of T.
+template <typename T>
+constexpr bool is_ptr_aligned_as(void const * ptr)
+{
+    return (reinterpret_cast<std::uintptr_t>(ptr) % std::alignment_of_v<T>) == 0;
+}
+
 static const int NUMPY_LAST_TYPE = 24;
 static const int MAX_NUMPY_TYPE = 24;
 
