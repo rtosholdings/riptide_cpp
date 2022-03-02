@@ -3090,6 +3090,8 @@ PyObject * Reduce(PyObject * self, PyObject * args)
     int64_t tupleSize = Py_SIZE(args);
     int64_t ddof = 1;
 
+    std::cout << "Reduce() called with tupleSize " << tupleSize << "\n";
+
     if (tupleSize == 3)
     {
         PyObject * ddofItem = (PyObject *)PyTuple_GET_ITEM(args, 2);

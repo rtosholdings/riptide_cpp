@@ -17,7 +17,7 @@ namespace riptide_python_test::internal
     PyObject * get_named_function( PyObject * module_p, char const * name_p )
     {
         PyObject * dictionary{ PyModule_GetDict( module_p ) };
-        PyObject * function_name{ Py_BuildValue("s", "TestNumpy") };
+        PyObject * function_name{ Py_BuildValue("s", name_p) };
         PyObject * function_object{ PyDict_GetItem(dictionary, function_name) };
 
         return function_object;

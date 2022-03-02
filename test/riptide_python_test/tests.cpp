@@ -31,13 +31,11 @@ namespace
             PyObject * array{ PyArray_SimpleNew(1, &dim_len, NPY_BYTE ) };
             PyObject * function_object = riptide_python_test::internal::get_named_function( riptide_module_p, "Reduce" );
             PyObject * reduce_fn_num{ Py_BuildValue( "i", 103 ) };
-            PyObject * arg_tuple{ PyTuple_Pack( 2, array, reduce_fn_num ) };
-            PyObject * retval = PyObject_CallObject(function_object, arg_tuple);
+            PyObject * retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_num, NULL);
 
             expect(array != nullptr);
             expect(function_object != nullptr);
             expect(reduce_fn_num != nullptr);
-            expect(arg_tuple != nullptr);
             expect(retval != nullptr);
         };
     };
