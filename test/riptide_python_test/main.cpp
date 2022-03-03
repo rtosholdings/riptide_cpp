@@ -44,7 +44,6 @@ int main(int argc, char const ** argv)
 
     /* Start the interpreter, load numpy */
     Py_Initialize();
-    import_array();
 
     /* Load our module */
     riptide_module_p = PyImport_ImportModule("riptide_cpp");
@@ -53,4 +52,10 @@ int main(int argc, char const ** argv)
         PyErr_Print();
         fprintf(stderr, "Error: Could not import module 'riptide_cpp'\n");
     }
+
+    if (PY_ARRAY_UNIQUE_SYMBOL == nullptr)
+    {
+        import_array();
+    }
+
 }
