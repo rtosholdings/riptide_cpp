@@ -2899,7 +2899,7 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
     LOGGING("Reduce: numpy types %d --> %d   %d %d\n", numpyInType, numpyOutType, gNumpyTypeToSize[numpyInType],
             gNumpyTypeToSize[numpyOutType]);
 
-    void * pDataIn = PyArray_BYTES(inArr1);
+    void * pDataIn = PyArray_DATA(inArr1);
     int ndim = PyArray_NDIM(inArr1);
     npy_intp * dims = PyArray_DIMS(inArr1);
     int64_t len = CalcArrayLength(ndim, dims);
