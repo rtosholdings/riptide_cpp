@@ -29,7 +29,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
     main.cpp
-	tests)
+	tests.cpp)
 
 add_executable(${TARGET_NAME}
                ${HEADERS}
