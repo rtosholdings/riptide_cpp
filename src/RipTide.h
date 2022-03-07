@@ -1,5 +1,7 @@
 #pragma once
 
+#include <corecrt.h>
+
 #define PY_SSIZE_T_CLEAN // needed to py310, before python.h
 // Hack because debug builds force python36_d.lib
 #ifdef _DEBUG
