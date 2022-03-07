@@ -1101,7 +1101,7 @@ class ReduceMin final
                 // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize,
                 // pstScatterGatherFunc->resultOut, (double)result,
                 // pstScatterGatherFunc->resultOutInt64);
-                for (int i = 1; i < (perReg / 4); i++)
+                for (int i = 0; i < (perReg / 4); i++)
                 {
                     result = MINF(result, tempT[i]);
                 }
