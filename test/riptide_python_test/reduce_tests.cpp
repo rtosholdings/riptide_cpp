@@ -4,12 +4,18 @@
 #include "../ut/include/boost/ut.hpp"
 
 #include <array>
+#include <vector>
+#include <numeric>
+#include <algorithm>
+#include <random>
 
 using namespace boost::ut;
 using boost::ut::suite;
 
 namespace
 {
+    std::random_device dev{};
+    
     suite reduce_ops = []
     {
         "reduce_nanmean_char"_test = [&]
@@ -196,6 +202,48 @@ namespace
             expect(retval != nullptr);
             expect(ret_val == 50.5_f);
             expect(is_float_type == 1_i);
+        };
+
+        "reduce_sum_float_long"_test = [&]
+        {
+            std::vector<float> test_data(65536);
+            std::iota(std::begin(test_data), std::end(test_data), -10000.0f);
+            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
+            npy_intp const dim_len{65536};
+            PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_FLOAT, test_data.data()) };
+            PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");
+            PyObject * reduce_fn_num{ Py_BuildValue("i", 0) };
+            PyObject * retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_num, NULL);
+            double ret_val = PyFloat_AsDouble(retval);
+            int is_float_type = PyFloat_Check(retval);
+
+            expect(array != nullptr);
+            expect(function_object != nullptr);
+            expect(reduce_fn_num != nullptr);
+            expect(retval != nullptr);
+            expect(ret_val == std::accumulate(std::begin(test_data), std::end(test_data), 0.0f));
+            expect(is_float_type == 1_i);
+        };
+
+        "reduce_sum_int32_long"_test = [&]
+        {
+            std::vector<int32_t> test_data(65535);
+            std::iota(std::begin(test_data), std::end(test_data), -10000);
+            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
+            npy_intp const dim_len{65535};
+            PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_INT32, test_data.data()) };
+            PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");
+            PyObject * reduce_fn_num{ Py_BuildValue("i", 0) };
+            PyObject * retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_num, NULL);
+            int32_t ret_val = PyLong_AsLong(retval);
+            int is_float_type = PyFloat_Check(retval);
+
+            expect(array != nullptr);
+            expect(function_object != nullptr);
+            expect(reduce_fn_num != nullptr);
+            expect(retval != nullptr);
+            expect(ret_val == std::accumulate(std::begin(test_data), std::end(test_data), 0));
+            expect(is_float_type == 0_i);
         };
     };
 }
