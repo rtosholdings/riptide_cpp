@@ -1112,7 +1112,7 @@ public:
                             pLastTime[location] = pTime[i];
                         }
 
-                        pDest[i] = pLastEma[location];
+                        pDest[i] = 0;
                     }
                     else
                     {
@@ -1141,7 +1141,7 @@ public:
                         {
                             // Acts like fill forward
                             LOGGING("fill forward location: %lld\n", (long long)location);
-                            value = pLastValue[location];
+                            value = 0;
                         }
                         pLastEma[location] = value + pLastEma[location] * exp(-decayRate * (pTime[i] - pLastTime[location]));
                         pLastTime[location] = pTime[i];
