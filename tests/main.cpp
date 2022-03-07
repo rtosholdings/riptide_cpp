@@ -1,4 +1,5 @@
 // Hack because debug builds force python36_d.lib
+#include <corecrt.h>
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python.h>

@@ -1,6 +1,8 @@
 #ifndef RIPTIDE_PYTHON_TEST_H
 #define RIPTIDE_PYTHON_TEST_H
 
+#include <corecrt.h>
+
 #ifdef _DEBUG
 #undef _DEBUG
 #include "Python.h"
