@@ -1,7 +1,10 @@
 #ifndef RIPTIDE_PYTHON_TEST_H
 #define RIPTIDE_PYTHON_TEST_H
 
+// Undo the damage we're about to do by undefining a reserved macro name
+#if defined(_MSC_VER) && defined(_DEBUG) && _MSC_VER >= 1930
 #include <corecrt.h>
+#endif
 
 #ifdef _DEBUG
 #undef _DEBUG

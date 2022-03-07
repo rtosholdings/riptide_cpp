@@ -1,8 +1,12 @@
 #pragma once
 
-#include <corecrt.h>
-
 #define PY_SSIZE_T_CLEAN // needed to py310, before python.h
+
+// Undo the damage we're going to cause by undefining a reserved macro name
+#if defined(_MSC_VER) && defined(_DEBUG) && _MSC_VER >= 1930
+#include <corecrt.h>
+#endif
+
 // Hack because debug builds force python36_d.lib
 #ifdef _DEBUG
     #undef _DEBUG
