@@ -8,6 +8,7 @@
 #include <numeric>
 #include <algorithm>
 #include <random>
+#include <iomanip>
 
 using namespace boost::ut;
 using boost::ut::suite;
@@ -204,11 +205,11 @@ namespace
             expect(is_float_type == 1_i);
         };
 
-        "reduce_sum_float_long"_test = [&]
+        "reduce_float_long"_test = [&]
         {
             std::vector<float> test_data(65536);
             std::iota(std::begin(test_data), std::end(test_data), -10000.0f);
-//            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
+            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
             npy_intp const dim_len{65536};
             PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_FLOAT, test_data.data()) };
             PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");
@@ -227,12 +228,35 @@ namespace
 
             PyObject * reduce_fn_mean{ Py_BuildValue("i", 102) };
             retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_mean, NULL);
-            ret_val = PyFloat_AsDouble(retval);
+            double calc_avg = PyFloat_AsDouble(retval);
+            double actual_avg = x / test_data.size();
             is_float_type = PyFloat_Check(retval);
 
             expect(reduce_fn_mean != nullptr);
             expect(retval != nullptr);
-            expect(ret_val == x / test_data.size());
+            expect(calc_avg == actual_avg);
+            expect(is_float_type == 1_i);
+
+            PyObject * reduce_fn_var{ Py_BuildValue("i", 106) };
+            retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_var, NULL);
+            ret_val = PyFloat_AsDouble(retval);
+            is_float_type = PyFloat_Check(retval);
+
+            expect(reduce_fn_var != nullptr);
+            expect(retval != nullptr);
+            double y = 357919402.0 + 2.0/3.0;
+            expect(ret_val == y) << "Calculated variance [" << std::setprecision(21) << ret_val << "] expected was [" << y << "]\n";;
+            expect(is_float_type == 1_i);
+
+            PyObject * reduce_fn_std{ Py_BuildValue("i", 108) };
+            retval = PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_std, NULL);
+            ret_val = PyFloat_AsDouble(retval);
+            is_float_type = PyFloat_Check(retval);
+
+            expect(reduce_fn_var != nullptr);
+            expect(retval != nullptr);
+            y = std::sqrt(y);
+            expect(ret_val == y) << "Calculated population standard deviation [" << std::setprecision(21) << ret_val << "] expected was [" << y << "]\n";;
             expect(is_float_type == 1_i);
         };
 

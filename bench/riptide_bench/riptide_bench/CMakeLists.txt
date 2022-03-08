@@ -32,7 +32,9 @@ endif()
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-set(SOURCES main.cpp bench_one_input.cpp)
+set(SOURCES main.cpp
+			bench_one_input.cpp
+			memcmp_bench.cpp)
 
 add_executable(${TARGET_NAME} ${HEADERS} ${SOURCES})
 
