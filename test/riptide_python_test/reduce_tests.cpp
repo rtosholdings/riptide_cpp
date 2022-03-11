@@ -37,6 +37,7 @@ namespace
         "reduce_mean_float"_test = [&]
         {
             std::array<float, 5> test_values{ 1.0f, 2.0f, 0.0f, 3.0f, 4.0f };
+
             npy_intp const dim_len{ 5 };
             PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_FLOAT, test_values.data()) };
             PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");

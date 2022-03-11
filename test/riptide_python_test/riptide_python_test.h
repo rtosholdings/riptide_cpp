@@ -34,5 +34,6 @@ namespace riptide_python_test::internal
 }
 
 extern PyObject * riptide_module_p;
+extern PyObject * riptable_module_p;
 
 #endif

@@ -14,6 +14,7 @@ extern "C"
 }
 
 PyObject * riptide_module_p{ nullptr };
+PyObject * riptable_module_p{ nullptr };
 
 namespace riptide_python_test::internal
 {
