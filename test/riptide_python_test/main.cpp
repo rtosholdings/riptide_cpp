@@ -26,6 +26,13 @@ namespace riptide_python_test::internal
 
         return function_object;
     }
+
+    void pyobject_printer(PyObject * object_p)
+    {
+        PyObject * globals{ Py_BuildValue("{sO}", "printable", object_p) };
+        PyObject * locals{ Py_BuildValue("{}") };
+        PyRun_String("print(printable)", Py_single_input, globals, locals);
+    }
 }
 
 namespace
