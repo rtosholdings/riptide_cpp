@@ -1,7 +1,3 @@
-# googletest
-#
-add_subdirectory(googletest)
-
 # zstd
 #
 set(ZSTD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
