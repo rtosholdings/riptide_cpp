@@ -49,8 +49,10 @@ namespace
             PyObject * cat_name{ Py_BuildValue("s", "cat") };
             PyObject * cat{ PyObject_CallMethodObjArgs( test, cat_name, arg_c, NULL ) };
             PyObject * ema_decay_name{ Py_BuildValue("s", "ema_decay") };
-
+            vectorcallfunc has_vectorcall{ PyVectorcall_Function(cat) };
+            
             expect(cat != nullptr);
+            expect(has_vectorcall == nullptr);  // Somewhat of an issue as this stops us generating the kwarg call on the object method
         };
     };
 }
