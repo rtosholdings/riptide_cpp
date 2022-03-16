@@ -13,77 +13,21 @@ extern "C"
     extern PyObject * PyInit_riptide_cpp();
 }
 
-PyObject * riptide_module_p{ nullptr };
-PyObject * riptable_module_p{ nullptr };
-
-namespace riptide_python_test::internal
-{
-    PyObject * get_named_function(PyObject * module_p, char const * name_p)
-    {
-        PyObject * dictionary{ PyModule_GetDict(module_p) };
-        PyObject * function_name{ Py_BuildValue("s", name_p) };
-        PyObject * function_object{ PyDict_GetItem(dictionary, function_name) };
-
-        return function_object;
-    }
-
-    void pyobject_printer(PyObject * object_p)
-    {
-        PyObject * globals{ Py_BuildValue("{sO}", "printable", object_p) };
-        PyObject * locals{ Py_BuildValue("{}") };
-        PyRun_String("print(printable)", Py_single_input, globals, locals);
-    }
-}
-
 namespace
 {
     struct options
     {
-        bool list_tests{false};
+        bool list_tests{ false };
         std::string test_filter{};
     };
 
-    options parse_options(int argc, char const ** argv);
-
-    int start_python(int argc, char const ** argv);
-}
-
-int main(int argc, char const ** argv)
-{
-    auto const options{parse_options(argc, argv)};
-
-    auto & runner{boost::ut::cfg<>};
-
-    boost::ut::options ut_options;
-    if (options.list_tests)
-    {
-        ut_options.dry_run = true;
-    }
-    if (!options.test_filter.empty())
-    {
-        ut_options.filter = options.test_filter;
-    }
-    runner = ut_options;
-
-    if (start_python(argc, argv) != 0)
-    {
-        exit(1);
-    }
-
-    auto result{runner.run()};
-
-    return result;
-}
-
-namespace
-{
     options parse_options(int const argc, char const ** const argv)
     {
         options options;
 
-        for (int ac{1}; ac < argc; ++ac)
+        for (int ac{ 1 }; ac < argc; ++ac)
         {
-            std::string_view const arg{argv[ac]};
+            std::string_view const arg{ argv[ac] };
 
             if (arg == "--ut_list_tests")
             {
@@ -146,6 +90,40 @@ namespace
             import_array1(-1);
         }
 
+        riptable_module_p = PyImport_ImportModule("riptable");
+        if (riptable_module_p == nullptr)
+        {
+            PyErr_Print();
+            fprintf(stderr, "Error: Could not import module 'riptable'\n");
+        }
+
         return 0;
     }
+}
+
+int main(int argc, char const ** argv)
+{
+    auto const options{ parse_options(argc, argv) };
+
+    auto & runner{ boost::ut::cfg<> };
+
+    boost::ut::options ut_options;
+    if (options.list_tests)
+    {
+        ut_options.dry_run = true;
+    }
+    if (! options.test_filter.empty())
+    {
+        ut_options.filter = options.test_filter;
+    }
+    runner = ut_options;
+
+    if (start_python(argc, argv) != 0)
+    {
+        exit(1);
+    }
+
+    auto result{ runner.run() };
+
+    return result;
 }

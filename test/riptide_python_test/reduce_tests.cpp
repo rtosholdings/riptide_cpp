@@ -16,7 +16,7 @@ using boost::ut::suite;
 namespace
 {
     std::random_device dev{};
-    
+
     suite reduce_ops = []
     {
         "reduce_nanmean_char"_test = [&]
@@ -166,7 +166,7 @@ namespace
             expect(retval != nullptr);
             expect(ret_val == 52_i);
             expect(is_float_type == 0_i);
-            };
+        };
 
         "reduce_sum_float"_test = [&]
         {
@@ -210,8 +210,8 @@ namespace
         {
             std::vector<float> test_data(65536);
             std::iota(std::begin(test_data), std::end(test_data), -10000.0f);
-            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
-            npy_intp const dim_len{65536};
+            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{ dev() });
+            npy_intp const dim_len{ 65536 };
             PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_FLOAT, test_data.data()) };
             PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");
             PyObject * reduce_fn_sum{ Py_BuildValue("i", 0) };
@@ -245,8 +245,10 @@ namespace
 
             expect(reduce_fn_var != nullptr);
             expect(retval != nullptr);
-            double y = 357919402.0 + 2.0/3.0;
-            expect(ret_val == y) << "Calculated variance [" << std::setprecision(21) << ret_val << "] expected was [" << y << "]\n";;
+            double y = 357919402.0 + 2.0 / 3.0;
+            expect(ret_val == y) << "Calculated variance [" << std::setprecision(21) << ret_val << "] expected was [" << y
+                                 << "]\n";
+            ;
             expect(is_float_type == 1_i);
 
             PyObject * reduce_fn_std{ Py_BuildValue("i", 108) };
@@ -257,7 +259,9 @@ namespace
             expect(reduce_fn_var != nullptr);
             expect(retval != nullptr);
             y = std::sqrt(y);
-            expect(ret_val == y) << "Calculated population standard deviation [" << std::setprecision(21) << ret_val << "] expected was [" << y << "]\n";;
+            expect(ret_val == y) << "Calculated population standard deviation [" << std::setprecision(21) << ret_val
+                                 << "] expected was [" << y << "]\n";
+            ;
             expect(is_float_type == 1_i);
         };
 
@@ -265,8 +269,8 @@ namespace
         {
             std::vector<int32_t> test_data(65535);
             std::iota(std::begin(test_data), std::end(test_data), -10000);
-            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{dev()});
-            npy_intp const dim_len{65535};
+            std::shuffle(std::begin(test_data), std::end(test_data), std::mt19937{ dev() });
+            npy_intp const dim_len{ 65535 };
             PyObject * array{ PyArray_SimpleNewFromData(1, &dim_len, NPY_INT32, test_data.data()) };
             PyObject * function_object = riptide_python_test::internal::get_named_function(riptide_module_p, "Reduce");
             PyObject * reduce_fn_num{ Py_BuildValue("i", 0) };

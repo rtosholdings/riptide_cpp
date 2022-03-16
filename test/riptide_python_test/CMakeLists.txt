@@ -31,7 +31,8 @@ set(SOURCES
 	ema_test.cpp
     main.cpp
 	tests.cpp
-	reduce_tests.cpp)
+	reduce_tests.cpp
+	utility_functions.cpp)
 
 add_executable(${TARGET_NAME}
                ${HEADERS}
