@@ -36,7 +36,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install numpy==1.21
-		python -m pip install riptable
+        python -m pip install riptable
       working-directory: ${{ env.working-directory }}
     - name: Create Cmake build directory
       run: |
@@ -89,7 +89,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install numpy==1.21
-		python -m pip install riptable
+        python -m pip install riptable
       working-directory: ${{ env.working-directory }}
     - name: Create Cmake build directory
       run: |
@@ -142,7 +142,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install numpy==1.20
-		python -m pip install riptable
+        python -m pip install riptable
       working-directory: ${{ env.working-directory }}
     - name: Create Cmake build directory
       run: |
@@ -188,7 +188,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install numpy==1.21
-		python -m pip install riptable
+        python -m pip install riptable
       working-directory: ${{ env.working-directory }}
     - name: Create Cmake build directory
       run: |
