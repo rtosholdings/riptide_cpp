@@ -37,7 +37,7 @@ namespace
             PyObject * tile{ riptide_python_test::internal::get_named_function(riptable_module_p, "tile") };
             PyObject * reps{ Py_BuildValue("i", 2) };
             PyObject * t{ PyObject_CallFunctionObjArgs(tile, t0, reps, NULL) };
-            PyObject * bool_objs{ Py_BuildValue("NNNNNNNNNNNNNNNNNNNN", Py_True, Py_True, Py_True, Py_True, Py_True, Py_False, Py_True, Py_True, Py_True, Py_True, Py_True, Py_True, Py_True, Py_True, Py_True, Py_False, Py_True, Py_True, Py_True, Py_True) };
+            PyObject * bool_objs{ Py_BuildValue("NNNNNNNNNNNNNNNNNNNN", Py_True, Py_True, Py_True, Py_True, Py_True, Py_False, Py_False, Py_False, Py_False, Py_True, Py_True, Py_True, Py_True, Py_True, Py_True, Py_False, Py_False, Py_False, Py_False, Py_True) };
             PyObject * fa{ riptide_python_test::internal::get_named_function(riptable_module_p, "FA") };
             PyObject * f{ PyObject_CallFunctionObjArgs(fa, bool_objs, NULL) };
             PyObject * categories{ Py_BuildValue("CCCCCCCCCCCCCCCCCCCC", 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B') };
@@ -45,14 +45,20 @@ namespace
             PyObject * test_dict{ Py_BuildValue("{COCOCOCO}", 'x', x, 't', t, 'f', f, 'c', c) };
             PyObject * dataset{ riptide_python_test::internal::get_named_function(riptable_module_p, "Dataset") };
             PyObject * test{ PyObject_CallFunctionObjArgs(dataset, test_dict, NULL ) };
-            PyObject * arg_c{ Py_BuildValue("C", 'c') };
-            PyObject * cat_name{ Py_BuildValue("s", "cat") };
-            PyObject * cat{ PyObject_CallMethodObjArgs( test, cat_name, arg_c, NULL ) };
-            PyObject * ema_decay_name{ Py_BuildValue("s", "ema_decay") };
-            vectorcallfunc has_vectorcall{ PyVectorcall_Function(cat) };
-            
-            expect(cat != nullptr);
-            expect(has_vectorcall == nullptr);  // Somewhat of an issue as this stops us generating the kwarg call on the object method
+            PyObject * return1{ Py_BuildValue("d", 1.0) };
+            PyObject * return2{ Py_BuildValue("d", 2.0) };
+            PyObject * global_vars{ Py_BuildValue("{sO}", "test", test) };
+            PyObject * local_vars{ Py_BuildValue("{sOsO}", "return1", return1, "return2", return2) };
+
+            PyRun_String("test['result']=test.cat('c').ema_decay(test.x, time=test.t, decay_rate=0.693, filter=test.f);return1=test['result'][4];return2=test['result'][5];print(return1);", Py_file_input, global_vars, local_vars);
+
+            PyObject * return_val1{ PyDict_GetItemString(local_vars, "return1") };
+            PyObject * return_val2{ PyDict_GetItemString(local_vars, "return2") };
+
+            expect(return_val2 < return_val1);
+            expect(global_vars != nullptr);
+
+            expect(local_vars != nullptr);
         };
     };
 }
