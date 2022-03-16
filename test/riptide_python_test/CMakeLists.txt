@@ -28,9 +28,11 @@ set(TARGET_NAME riptide_python_test)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
+	ema_test.cpp
     main.cpp
 	tests.cpp
-	reduce_tests.cpp)
+	reduce_tests.cpp
+	utility_functions.cpp)
 
 add_executable(${TARGET_NAME}
                ${HEADERS}
