@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RIPTABLE_CPP_SIMD_AVX2_H
+#define RIPTABLE_CPP_SIMD_AVX2_H
 #include <algorithm>
 #include <cstdint>
 #include <immintrin.h>
@@ -64,20 +65,20 @@ namespace riptide
          * @return T const& The result of the operation.
          */
         template <typename T>
-        T const & min_with_nan_passthru(T const & x, T const & y)
+        static T const & min_with_nan_passthru(T const & x, T const & y)
         {
             return (std::min)(x, y);
         }
 
         template <>
-        float const & min_with_nan_passthru(float const & x, float const & y)
+        static RT_FORCEINLINE float const & min_with_nan_passthru(float const & x, float const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x < blended ? x : blended;
         }
 
         template <>
-        double const & min_with_nan_passthru(double const & x, double const & y)
+        static RT_FORCEINLINE double const & min_with_nan_passthru(double const & x, double const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x < blended ? x : blended;
@@ -93,20 +94,20 @@ namespace riptide
          * @return T const& The result of the operation.
          */
         template <typename T>
-        T const & max_with_nan_passthru(T const & x, T const & y)
+        static T const & max_with_nan_passthru(T const & x, T const & y)
         {
             return (std::max)(x, y);
         }
 
         template <>
-        float const & max_with_nan_passthru(float const & x, float const & y)
+        static RT_FORCEINLINE float const & max_with_nan_passthru(float const & x, float const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x > blended ? x : blended;
         }
 
         template <>
-        double const & max_with_nan_passthru(double const & x, double const & y)
+        static RT_FORCEINLINE double const & max_with_nan_passthru(double const & x, double const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x > blended ? x : blended;
@@ -5473,3 +5474,5 @@ namespace riptide
         } // namespace avx2
     }     // namespace simd
 } // namespace riptide
+
+#endif // RIPTABLE_CPP_SIMD_AVX2_H
