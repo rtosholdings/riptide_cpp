@@ -981,7 +981,7 @@ class ReduceMax final
             "Recognition of integer invalids not yet supported in vectorized (AVX2) mode."
             );
 
-        typedef riptide::simd::avx2::vec256<T>::reg_type U256;
+        typedef typename riptide::simd::avx2::vec256<T>::reg_type U256;
 
         T * pIn = (T *)pDataIn;
         T * pEnd;
@@ -1195,7 +1195,7 @@ class ReduceMin final
             "Recognition of integer invalids not yet supported in vectorized (AVX2) mode."
             );
 
-        typedef riptide::simd::avx2::vec256<T>::reg_type U256;
+        typedef typename riptide::simd::avx2::vec256<T>::reg_type U256;
 
         T * pIn = (T *)pDataIn;
         T * pEnd;
@@ -1445,7 +1445,7 @@ class ReduceNanMin final
             "Integers not yet supported in vectorized (AVX2) mode."
             );
 
-        typedef riptide::simd::avx2::vec256<T>::reg_type U256;
+        typedef typename riptide::simd::avx2::vec256<T>::reg_type U256;
 
         T * pIn = (T *)pDataIn;
         T * pEnd;
@@ -1728,7 +1728,7 @@ class ReduceNanMax final
             "Integers not yet supported in vectorized (AVX2) mode."
             );
 
-        typedef riptide::simd::avx2::vec256<T>::reg_type U256;
+        typedef typename riptide::simd::avx2::vec256<T>::reg_type U256;
 
         T * pIn = (T *)pDataIn;
         T * pEnd;
