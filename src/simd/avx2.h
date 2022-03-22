@@ -65,20 +65,20 @@ namespace riptide
          * @return T const& The result of the operation.
          */
         template <typename T>
-        static T const & min_with_nan_passthru(T const & x, T const & y)
+        static RT_FORCEINLINE T const & min_with_nan_passthru(T const & x, T const & y)
         {
             return (std::min)(x, y);
         }
 
         template <>
-        static RT_FORCEINLINE float const & min_with_nan_passthru(float const & x, float const & y)
+        RT_FORCEINLINE float const & min_with_nan_passthru(float const & x, float const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x < blended ? x : blended;
         }
 
         template <>
-        static RT_FORCEINLINE double const & min_with_nan_passthru(double const & x, double const & y)
+        RT_FORCEINLINE double const & min_with_nan_passthru(double const & x, double const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x < blended ? x : blended;
@@ -94,20 +94,20 @@ namespace riptide
          * @return T const& The result of the operation.
          */
         template <typename T>
-        static T const & max_with_nan_passthru(T const & x, T const & y)
+        static RT_FORCEINLINE T const & max_with_nan_passthru(T const & x, T const & y)
         {
             return (std::max)(x, y);
         }
 
         template <>
-        static RT_FORCEINLINE float const & max_with_nan_passthru(float const & x, float const & y)
+        RT_FORCEINLINE float const & max_with_nan_passthru(float const & x, float const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x > blended ? x : blended;
         }
 
         template <>
-        static RT_FORCEINLINE double const & max_with_nan_passthru(double const & x, double const & y)
+        RT_FORCEINLINE double const & max_with_nan_passthru(double const & x, double const & y)
         {
             const auto & blended = (x != x) ? x : y;
             return x > blended ? x : blended;
