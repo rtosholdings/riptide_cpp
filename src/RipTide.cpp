@@ -25,7 +25,9 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
-#include "_version.d"
+#if __has_include("_version.d")
+# include "_version.d"
+#endif
 
 #undef LOGGING
 //#define LOGGING printf
