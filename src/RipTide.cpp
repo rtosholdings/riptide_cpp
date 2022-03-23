@@ -25,6 +25,7 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
+#include "_version.d"
 
 #undef LOGGING
 //#define LOGGING printf
@@ -1828,6 +1829,9 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
         return m;
 
     g_FastArrayModule = m;
+
+    // Set the version
+    PyObject_SetAttrString(m, "__version__", Py_BuildValue("s", __version__));
 
     // Load numpy
     import_array();
