@@ -105,7 +105,7 @@ setup(
         'root': '.',
         'version_scheme': 'post-release',
         'write_to': 'src/_version.d',
-        'write_to_template': 'char const * const __version__ = "{version}";',
+        'write_to_template': '"{version}"',
     },
     setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',

@@ -25,9 +25,16 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
+
+namespace {
+char const * const __version__{
 #if __has_include("_version.d")
 # include "_version.d"
+#else
+  "DEV"
 #endif
+};
+}
 
 #undef LOGGING
 //#define LOGGING printf
