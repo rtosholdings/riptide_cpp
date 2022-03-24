@@ -26,6 +26,16 @@
 #include "Hook.h"
 #include "Array.h"
 
+namespace {
+char const * const __version__{
+#if __has_include("_version.d")
+# include "_version.d"
+#else
+  "DEV"
+#endif
+};
+}
+
 #undef LOGGING
 //#define LOGGING printf
 #define LOGGING(...)
@@ -1828,6 +1838,9 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
         return m;
 
     g_FastArrayModule = m;
+
+    // Set the version
+    PyObject_SetAttrString(m, "__version__", Py_BuildValue("s", __version__));
 
     // Load numpy
     import_array();
