@@ -6175,4 +6175,6 @@ PyObject * MergeBinnedAndSorted(PyObject * self, PyObject * args)
     return (PyObject *)indexArray;
 }
 
+#ifdef RT_COMPILER_MSVC
 template CHashLinear<uint64_t, int64_t>;
+#endif
