@@ -387,12 +387,12 @@ int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
     else
     {
         // Power of 2 search
-        int64_t i = 0;
+        int32_t i = 0;
         while ((1LL << i) < numberOfEntries)
             i++;
 
         int64_t result = (1LL << i);
-        int64_t maxhashsize = (1LL << 63);
+        int64_t maxhashsize = (1LL << 31);
 
         // TODO: really need to change strategies if high unique count and high row
         // count
