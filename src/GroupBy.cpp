@@ -2465,7 +2465,8 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
 // U is the output type
 // V is the index type, like int32_t or int8_t
 template <typename V>
-static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOutputType, int32_t * wantedTempType, int inputType, GB_FUNCTIONS func)
+static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOutputType, int32_t * wantedTempType, int inputType,
+                                           GB_FUNCTIONS func)
 {
     *hasCounts = false;
     *wantedTempType = -1;
@@ -3366,7 +3367,8 @@ void GroupByCall(void * pGroupBy, int64_t i)
             // Accum the calculation
             // Sum/NanSum
             // Make the range from 1 to uniqueRows to skip over bin 0
-            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1, pDataTmp);
+            pFunction(pDataIn, pDataIn2 /* USE IKEY which can be int8/16/32/64*/, pCountOut, pDataOut, len, binLow, binHigh, -1,
+                      pDataTmp);
         }
         else
 
@@ -3439,8 +3441,8 @@ PyObject * GroupByAll64(PyObject * self, PyObject * args)
 }
 
 //---------------------------------------------------------------
-GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int32_t * numpyOutType, int32_t * numpyTmpType, int32_t numpyInType,
-                                         GB_FUNCTIONS funcNum)
+GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int32_t * numpyOutType, int32_t * numpyTmpType,
+                                         int32_t numpyInType, GB_FUNCTIONS funcNum)
 {
     GROUPBY_TWO_FUNC pFunction = NULL;
 
@@ -3657,8 +3659,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
     int32_t numpyTmpType = -1;
     bool hasCounts = false;
 
-    GROUPBY_TWO_FUNC pFunction =
-        GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[0].NumpyDType, (GB_FUNCTIONS)firstFuncNum);
+    GROUPBY_TWO_FUNC pFunction = GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[0].NumpyDType,
+                                                         (GB_FUNCTIONS)firstFuncNum);
 
     // printf("Taking the divide path  %lld \n", unique_rows);
 
@@ -3715,8 +3717,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                 LOGGING("***pCountOut %p   unique:%lld  allocsize:%lld   cores:%d\n", pCountOut, unique_rows, allocSize, numCores);
             }
 
-            void * pTmpWorkspace{nullptr};
-            int32_t tempItemSize{0};
+            void * pTmpWorkspace{ nullptr };
+            int32_t tempItemSize{ 0 };
 
             if (numpyTmpType >= 0)
             {
@@ -3724,7 +3726,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                 int64_t tempSize = tempItemSize * (binHigh - binLow) * numCores;
                 workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempSize));
                 pTmpWorkspace = workspaceMemList.back().get();
-                if (!pTmpWorkspace)
+                if (! pTmpWorkspace)
                 {
                     return NULL;
                 }
@@ -3761,9 +3763,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
                 // Assign working memory per call
                 pstGroupBy32->returnObjects[i].pOutArray = &pWorkspace[unique_rows * i * itemSize];
-                pstGroupBy32->returnObjects[i].pTmpArray = pTmpWorkspace
-                    ? &(static_cast<char *>(pTmpWorkspace)[(binHigh - binLow) * i * tempItemSize])
-                    : nullptr;
+                pstGroupBy32->returnObjects[i].pTmpArray =
+                    pTmpWorkspace ? &(static_cast<char *>(pTmpWorkspace)[(binHigh - binLow) * i * tempItemSize]) : nullptr;
                 pstGroupBy32->returnObjects[i].pCountOut = &pCountOut[unique_rows * i];
                 pstGroupBy32->returnObjects[i].pFunction = pFunction;
                 pstGroupBy32->returnObjects[i].returnObject = Py_None;
@@ -3958,8 +3959,8 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             int64_t binHigh = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinHigh, i), &overflow);
             pstGroupBy32->returnObjects[i].binHigh = binHigh;
 
-            GROUPBY_TWO_FUNC pFunction =
-                GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
+            GROUPBY_TWO_FUNC pFunction = GetGroupByFunctionStep1(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType,
+                                                                 aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
 
             PyArrayObject * outArray = NULL;
             int32_t * pCountOut = NULL;
@@ -3997,7 +3998,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
                     int32_t tempItemSize = NpyToSize(numpyTmpType);
                     workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempItemSize * (binHigh - binLow)));
                     pTmpArray = workspaceMemList.back().get();
-                    if (!pTmpArray)
+                    if (! pTmpArray)
                     {
                         return NULL;
                     }

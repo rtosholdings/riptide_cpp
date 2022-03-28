@@ -4,7 +4,7 @@
 
 // Undo the damage we're going to cause by undefining a reserved macro name
 #if defined(_MSC_VER) && defined(_DEBUG) && _MSC_VER >= 1930
-#include <corecrt.h>
+    #include <corecrt.h>
 #endif
 
 // Hack because debug builds force python36_d.lib

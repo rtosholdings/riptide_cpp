@@ -5,6 +5,12 @@ PyObject * IsMember32(PyObject * self, PyObject * args);
 PyObject * IsMember64(PyObject * self, PyObject * args);
 PyObject * IsMemberCategorical(PyObject * self, PyObject * args);
 
+#if defined(_WIN32) && ! defined(__GNUC__)
+    #define dll_export __declspec(dllexport)
+#else
+    #define dll_export
+#endif
+
 enum HASH_MODE
 {
     HASH_MODE_PRIME = 1,
@@ -30,8 +36,8 @@ template <typename U>
 void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, U * pOutput, int8_t * pBooleanOutput,
                       int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput, int8_t * pBooleanOutput,
-                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+dll_export void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
+                                 int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
 int64_t IsMemberCategoricalHashStringPre(PyArrayObject ** indexArray, PyArrayObject * inArr1, int64_t size1, int64_t strWidth1,
                                          const char * pInput1, int64_t size2, int64_t strWidth2, const char * pInput2,
@@ -247,26 +253,9 @@ public:
 public:
     // Parallel hashing does not want memory deallocated so it will set deallocate
     // to false
-    CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true)
-    {
-        pHashTableAny = NULL;
-        pBitFields = NULL;
+    dll_export CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true);
 
-        NumEntries = 0;
-        NumUnique = 0;
-        NumCollisions = 0;
-        HashSize = 0;
-        HashMode = hashMode;
-        Deallocate = deallocate;
-
-        // Can set bad index to 0?
-        // BAD_INDEX = (U)(1LL << (sizeof(U)*8-1));
-    }
-
-    ~CHashLinear()
-    {
-        FreeMemory(false);
-    }
+    dll_export ~CHashLinear();
 
     void FreeMemory(bool forceDeallocate);
 
@@ -274,8 +263,6 @@ public:
     char * AllocHashTable(size_t allocSize);
 
     void * AllocMemory(int64_t numberOfEntries, int64_t sizeofStruct, int64_t sizeofExtraArray, bool isFloat);
-
-    void MakeHash(int64_t numberOfEntries, T * pHashList);
 
     //-----------------------------------------------
     //----------------------------------------------
@@ -363,7 +350,7 @@ public:
     //-----------------------------------------------
     void MakeHashLocationMK(int64_t arraySize, T * pInput, int64_t totalItemSize, int64_t hintSize);
 
-    void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
+    dll_export void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
 
     void InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash);
 
@@ -387,25 +374,6 @@ public:
     template <typename V>
     void FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, T * pKey1, T * pKey2, V * pVal1, V * pVal2, U * pLocationOutput,
                          int64_t totalItemSize, bool allowExact);
-    //-----------------------------------------------
-    //-----------------------------------------------
-
-    void MakeHashFindNth(int64_t arraySize, T * pHashList,
-
-                         // optional FOR boolEAN OR INDEX MASK
-                         int64_t size2, U * pInput2,
-
-                         int8_t * pBooleanOutput, int64_t n);
-
-    void MakeHashFindNthFloat(int64_t arraySize, T * pHashList,
-
-                              // optional FOR boolEAN OR INDEX MASK
-                              int64_t size2, U * pInput2,
-
-                              int8_t * pBooleanOutput, int64_t n);
-
-    void InternalSetFindNth(U i, FindNthEntry * pLocation, int8_t * pBooleanOutput, int64_t n, T item, uint64_t hash);
-
     //-----------------------------------------------
     //-----------------------------------------------
 
