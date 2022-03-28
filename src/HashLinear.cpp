@@ -1403,7 +1403,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                                 hash = 0;
                             }
 
-                            if (hash == h)
+                            if (hash == static_cast<uint64_t>(h))
                             {
                                 throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
                             }
@@ -1483,12 +1483,10 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                                 /* Duplicate */
                                 break;
                             }
-                            /* This entry is not us so we must ha;
-                            }
-
-                            if (hash == h)
+                            /* This entry is not us so we must have collided */
+                            if (++hash >= HashSize)
                             {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                                hash = 0;
                             }
 
                             if (hash == h)
@@ -1733,7 +1731,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                             {
                                 hash = 0;
                             }
-                            if (hash == h)
+                            if (hash == static_cast<uint64_t>(h))
                             {
                                 throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
                             }
@@ -1819,7 +1817,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                             {
                                 hash = 0;
                             }
-                            if (hash == h)
+                            if (hash == static_cast<uint64_t>(h))
                             {
                                 throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
                             }
