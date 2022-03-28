@@ -58,7 +58,6 @@ void * FmAlloc(size_t _Size)
         // Skip past guard
         return &pageGuard[2];
     }
-    std::cerr << _HEAP_MAXREQ << ", " << errno << "\n";
     return NULL;
 }
 

@@ -2194,10 +2194,10 @@ public:
                     LOGGING("overflow dtype %d\n", dtype);
                     switch (dtype)
                     {
-                        CASE_NPY_UINT64:
-                            break;
-                        default:
-                            return NPY_FLOAT64;
+                    CASE_NPY_UINT64:
+                        break;
+                    default:
+                        return NPY_FLOAT64;
                     }
                 }
             }

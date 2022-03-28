@@ -370,15 +370,6 @@ bool STRING_MATCH2(const char * str1, const char * str2, int64_t strWidth1, int6
 template <typename T, typename U>
 int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
 {
-    // Check for perfect hashes first when type size is small
-    // if (sizeof(T) == 1) {
-    //   return 256;
-    //}
-
-    // if (sizeof(T) == 2) {
-    //   return 65536;
-    //}
-
     if (HashMode == HASH_MODE_PRIME)
     {
         int i = 0;
@@ -386,14 +377,7 @@ int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
         {
             if (PRIME_NUMBERS[i] > numberOfEntries)
             {
-                if (i == 0)
-                {
-                    return PRIME_NUMBERS[i];
-                }
-                else
-                {
-                    return PRIME_NUMBERS[i];
-                }
+                return PRIME_NUMBERS[i];
             }
             i++;
         }
@@ -403,12 +387,12 @@ int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
     else
     {
         // Power of 2 search
-        int i = 0;
+        int64_t i = 0;
         while ((1LL << i) < numberOfEntries)
             i++;
 
         int64_t result = (1LL << i);
-        int64_t maxhashsize = (1LL << 31);
+        int64_t maxhashsize = (1LL << 63);
 
         // TODO: really need to change strategies if high unique count and high row
         // count
@@ -669,8 +653,6 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLo
     pLocation[hash].Location = i;
     pLocation[hash].value = item;
 }
-
-#define INTERNAL_SET_LOCATION
 
 //-----------------------------------------------
 // stores the index of the first location
@@ -1670,8 +1652,6 @@ int64_t CHashLinear<T, U>::IsMemberCategorical(int64_t arraySize, T * pHashList,
         pLocationOutput[i] = BAD_INDEX; \
         pBoolOutput[i] = 0; \
     }
-
-#define INNER_GET_LOCATION
 
 //-----------------------------------------------
 // T is the input type byte/float32/float64/int8/uint8/int16/uint16/int32/...

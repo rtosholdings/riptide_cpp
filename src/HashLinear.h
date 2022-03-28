@@ -36,8 +36,8 @@ template <typename U>
 void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, U * pOutput, int8_t * pBooleanOutput,
                       int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-dll_export void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput, int8_t * pBooleanOutput,
-                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+dll_export void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
+                                 int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
 int64_t IsMemberCategoricalHashStringPre(PyArrayObject ** indexArray, PyArrayObject * inArr1, int64_t size1, int64_t strWidth1,
                                          const char * pInput1, int64_t size2, int64_t strWidth2, const char * pInput2,
@@ -264,10 +264,6 @@ public:
 
     void * AllocMemory(int64_t numberOfEntries, int64_t sizeofStruct, int64_t sizeofExtraArray, bool isFloat);
 
-#if 0
-    void MakeHash(int64_t numberOfEntries, T * pHashList);
-#endif
-
     //-----------------------------------------------
     //----------------------------------------------
     //-----------------------------------------------
@@ -378,27 +374,6 @@ public:
     template <typename V>
     void FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, T * pKey1, T * pKey2, V * pVal1, V * pVal2, U * pLocationOutput,
                          int64_t totalItemSize, bool allowExact);
-    //-----------------------------------------------
-    //-----------------------------------------------
-
-#if 0
-    void MakeHashFindNth(int64_t arraySize, T * pHashList,
-
-                         // optional FOR boolEAN OR INDEX MASK
-                         int64_t size2, U * pInput2,
-
-                         int8_t * pBooleanOutput, int64_t n);
-
-    void MakeHashFindNthFloat(int64_t arraySize, T * pHashList,
-
-                              // optional FOR boolEAN OR INDEX MASK
-                              int64_t size2, U * pInput2,
-
-                              int8_t * pBooleanOutput, int64_t n);
-
-    void InternalSetFindNth(U i, FindNthEntry * pLocation, int8_t * pBooleanOutput, int64_t n, T item, uint64_t hash);
-#endif
-
     //-----------------------------------------------
     //-----------------------------------------------
 
