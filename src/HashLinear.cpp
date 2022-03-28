@@ -1489,7 +1489,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                                 hash = 0;
                             }
 
-                            if (hash == h)
+                            if (hash == static_cast<uint64_t>(h))
                             {
                                 throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
                             }
