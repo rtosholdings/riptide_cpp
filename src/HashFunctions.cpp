@@ -92,40 +92,40 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     {
         try
         {
-        void * pDataIn1 = PyArray_BYTES(inArr1);
-        void * pDataIn2 = PyArray_BYTES(inArr2);
-        int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
-        int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
+            void * pDataIn1 = PyArray_BYTES(inArr1);
+            void * pDataIn2 = PyArray_BYTES(inArr2);
+            int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
+            int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
 
-        // printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
+            // printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
 
-        if (arrayType1 >= NPY_STRING)
-        {
-            LOGGING("Calling string!\n");
-            IsMemberHashString64(arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2, (const char *)pDataIn2,
-                                 pDataOut2, pDataOut1, HASH_MODE(hashMode), hintSize, arrayType1 == NPY_UNICODE);
-        }
-        else
-        {
-            if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+            if (arrayType1 >= NPY_STRING)
             {
-                IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
-                               HASH_MODE(hashMode), hintSize);
+                LOGGING("Calling string!\n");
+                IsMemberHashString64(arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2, (const char *)pDataIn2,
+                                     pDataOut2, pDataOut1, HASH_MODE(hashMode), hintSize, arrayType1 == NPY_UNICODE);
             }
             else
             {
-                IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1, HASH_MODE(hashMode),
-                               hintSize);
+                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                {
+                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
+                                   HASH_MODE(hashMode), hintSize);
+                }
+                else
+                {
+                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1,
+                                   HASH_MODE(hashMode), hintSize);
+                }
+
+                PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
+                Py_DECREF((PyObject *)boolArray);
+                Py_DECREF((PyObject *)indexArray);
+
+                return (PyObject *)retObject;
             }
-
-            PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
-            Py_DECREF((PyObject *)boolArray);
-            Py_DECREF((PyObject *)indexArray);
-
-            return (PyObject *)retObject;
         }
-        }
-        catch ( std::runtime_error const & e )
+        catch (std::runtime_error const & e)
         {
             PyErr_Format(PyExc_RuntimeError, e.what());
         }
@@ -244,53 +244,53 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
 
     try
     {
-    if (arrayType1 >= NPY_STRING)
-    {
-        LOGGING("Calling string/uni/void!\n");
-        missed = IsMemberCategoricalHashStringPre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2,
-                                                  sizeType2, (const char *)pDataIn2, HASH_MODE(hashMode), hintSize,
-                                                  arrayType1 == NPY_UNICODE);
-    }
-    else if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64 || arrayType1 == NPY_LONGDOUBLE)
-    {
-        LOGGING("Calling float!\n");
-        if (arraySize1 < 2100000000)
+        if (arrayType1 >= NPY_STRING)
         {
-            indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
-            int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
-            missed = IsMemberHashCategorical(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1 + 100,
-                                             HASH_MODE(hashMode), hintSize);
+            LOGGING("Calling string/uni/void!\n");
+            missed = IsMemberCategoricalHashStringPre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1,
+                                                      arraySize2, sizeType2, (const char *)pDataIn2, HASH_MODE(hashMode), hintSize,
+                                                      arrayType1 == NPY_UNICODE);
+        }
+        else if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64 || arrayType1 == NPY_LONGDOUBLE)
+        {
+            LOGGING("Calling float!\n");
+            if (arraySize1 < 2100000000)
+            {
+                indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
+                int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
+                missed = IsMemberHashCategorical(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1 + 100,
+                                                 HASH_MODE(hashMode), hintSize);
+            }
+            else
+            {
+                indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
+                int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
+                missed = IsMemberHashCategorical64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1 + 100,
+                                                   HASH_MODE(hashMode), hintSize);
+            }
         }
         else
         {
-            indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
-            int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
-            missed = IsMemberHashCategorical64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1 + 100,
-                                               HASH_MODE(hashMode), hintSize);
+            LOGGING("Calling hash!\n");
+            if (arraySize1 < 2100000000)
+            {
+                indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
+                int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
+                missed = IsMemberHashCategorical(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1,
+                                                 HASH_MODE(hashMode), hintSize);
+            }
+            else
+            {
+                indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
+                int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
+                missed = IsMemberHashCategorical64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1,
+                                                   HASH_MODE(hashMode), hintSize);
+            }
         }
     }
-    else
+    catch (std::runtime_error const & e)
     {
-        LOGGING("Calling hash!\n");
-        if (arraySize1 < 2100000000)
-        {
-            indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT32);
-            int32_t * pDataOut2 = (int32_t *)PyArray_BYTES(indexArray);
-            missed = IsMemberHashCategorical(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1, HASH_MODE(hashMode),
-                                             hintSize);
-        }
-        else
-        {
-            indexArray = AllocateLikeNumpyArray(inArr1, NPY_INT64);
-            int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
-            missed = IsMemberHashCategorical64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1,
-                                               HASH_MODE(hashMode), hintSize);
-        }
-    }
-    }
-    catch( std::runtime_error const & e )
-    {
-        PyErr_Format(PyExc_RuntimeError, e.what() );
+        PyErr_Format(PyExc_RuntimeError, e.what());
         return NULL;
     }
 
