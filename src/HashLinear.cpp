@@ -552,7 +552,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLo
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
     uint64_t const h{ hash };
-    
+
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -570,10 +570,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLo
             hash = 0;
         }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+        if (hash == h)
+        {
+            throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+        }
     }
     // Not found
     pLocationOutput[i] = BAD_INDEX;
@@ -589,8 +589,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLocation * pLocation, U * pLocationOutput, T item,
                                                                     uint64_t hash, int64_t * missed)
 {
-    uint64_t const h{hash};
-    
+    uint64_t const h{ hash };
+
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -607,10 +607,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLoc
             hash = 0;
         }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+        if (hash == h)
+        {
+            throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+        }
     }
     // Not found
     pLocationOutput[i] = 0;
@@ -623,8 +623,8 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLoc
 template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash)
 {
-    uint64_t const h{hash};
-    
+    uint64_t const h{ hash };
+
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -642,10 +642,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLo
         {
             hash = 0;
         }
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+        if (hash == h)
+        {
+            throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+        }
     }
     // Failed to find hash
     SetBit(hash);
@@ -688,7 +688,7 @@ void CHashLinear<T, U>::MakeHashLocationMK(int64_t arraySize, T * pInput, int64_
         const char * pMatch = reinterpret_cast<char const *>(pInput) + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
         hash = hash & (HashSize - 1);
-        uint64_t const h{hash};
+        uint64_t const h{ hash };
 
         while (1)
         {
@@ -752,10 +752,10 @@ void CHashLinear<T, U>::MakeHashLocationMK(int64_t arraySize, T * pInput, int64_
                     hash = 0;
                 }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                }
                 continue;
             }
 
@@ -867,7 +867,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
-            uint64_t const h{hash};
+            uint64_t const h{ hash };
 
             // TODO: should maybe put begin .. end into function implementing lookup
             // for hashmap begin
@@ -892,10 +892,10 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                         hash = 0;
                     }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                    }
                     continue;
                 }
                 // Not found
@@ -910,7 +910,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey2 + (totalItemSize * j);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
-            uint64_t const h{hash};
+            uint64_t const h{ hash };
 
             // TODO: should maybe start .. end into a function implementing insertion
             // for hashmap begin
@@ -935,10 +935,10 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                         hash = 0;
                     }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                    }
                     continue;
                 }
                 // Failed to find hash
@@ -956,7 +956,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
         const char * pMatch1 = pKey1 + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
         hash = hash & (HashSize - 1);
-        uint64_t const h{hash};
+        uint64_t const h{ hash };
 
         // TODO: should maybe put begin .. end into function implementing lookup for
         // hashmap begin
@@ -982,10 +982,10 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     hash = 0;
                 }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                }
                 continue;
             }
             // Not found
@@ -1025,7 +1025,7 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
-            uint64_t const h{hash};
+            uint64_t const h{ hash };
 
             // TODO: should maybe put begin .. end into function implementing lookup
             // for hashmap begin
@@ -1050,10 +1050,10 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                         hash = 0;
                     }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                    }
                     continue;
                 }
                 // Not found
@@ -1071,8 +1071,8 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
 
             // TODO: should maybe start .. end into a function implementing insertion
             // for hashmap begin
-            uint64_t const h{hash};
-            
+            uint64_t const h{ hash };
+
             while (1)
             {
                 if (IsBitSet(hash))
@@ -1094,10 +1094,10 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                         hash = 0;
                     }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                    }
                     continue;
                 }
                 // Failed to find hash
@@ -1118,8 +1118,8 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
 
         // TODO: should maybe put begin .. end into function implementing lookup for
         // hashmap begin
-        uint64_t const h{hash};
-        
+        uint64_t const h{ hash };
+
         while (1)
         {
             if (IsBitSet(hash))
@@ -1142,10 +1142,10 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     hash = 0;
                 }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                }
                 continue;
             }
             // Not found
@@ -1197,7 +1197,7 @@ static void IsMemberMK(void * pHashLinearVoid, int64_t arraySize, void * pInputT
         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
         hash = hash & (HashSize - 1);
 
-        uint64_t const h{hash};
+        uint64_t const h{ hash };
 
         while (1)
         {
@@ -1223,10 +1223,10 @@ static void IsMemberMK(void * pHashLinearVoid, int64_t arraySize, void * pInputT
                     hash = 0;
                 }
 
-                            if (hash == h)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                }
                 // printf("[%d] continue\n", (int)i);
                 continue;
             }
@@ -1357,10 +1357,10 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                         hash = 0;
                     }
 
-                            if (hash == item)
-                            {
-                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
-                            }
+                    if (hash == item)
+                    {
+                        throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                    }
                 }
                 else
                 {
@@ -1770,7 +1770,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                                 pBoolOutput[i] = 1;
                                 break;
                             }
-                               
+
                             if (hash >= HashSize)
                             {
                                 hash = 0;
@@ -2294,7 +2294,7 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                                 pBoolOutput[i] = 1;
                                 break;
                             }
-                            
+
                             if (hash >= HashSize)
                             {
                                 hash = 0;
@@ -2355,9 +2355,9 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                             {
                                 hash = 0;
                             }
-                            if ( hash == h)
+                            if (hash == h)
                             {
-                                                                throw(std::runtime_error(
+                                throw(std::runtime_error(
                                     "We are about to enter an infinite loop, we need a smaller set of uniques"));
                             }
                         }
@@ -2948,7 +2948,7 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            uint64_t const h{hash};
+            uint64_t const h{ hash };
             while (1)
             {
                 if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -3004,7 +3004,7 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
                 uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-                uint64_t h{hash};
+                uint64_t h{ hash };
                 while (1)
                 {
                     if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -3115,7 +3115,7 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
             // printf("%d", hash);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            uint64_t const h{hash};
+            uint64_t const h{ hash };
             while (1)
             {
                 if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -3195,7 +3195,7 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
                 // printf("%d", hash);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-                uint64_t const h{hash};
+                uint64_t const h{ hash };
                 while (1)
                 {
                     if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -3223,7 +3223,7 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
                             pUniqueCountArray[pLocation[hash].UniqueKey]++;
                             break;
                         }
-                        
+
                         // Linear goes to next position
                         ++hash;
                         if (hash >= HashSize)
@@ -3332,7 +3332,7 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
                 uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-                uint64_t const h{hash};
+                uint64_t const h{ hash };
                 while (1)
                 {
                     if (IsBitSet(hash))
@@ -3389,7 +3389,7 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
             uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
-            uint64_t h{hash};
+            uint64_t h{ hash };
             while (1)
             {
                 if (IsBitSet(hash))
@@ -3485,7 +3485,7 @@ void CHashLinear<T, U>::MultiKeyRolling(int64_t totalRows, int64_t totalItemSize
 
         // Use and mask to strip off high bits
         hash = hash & (HashSize - 1);
-        uint64_t const h{hash};
+        uint64_t const h{ hash };
         while (1)
         {
             if (IsBitSet(hash))
@@ -3570,7 +3570,7 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(int64_t totalRows, int64_t tota
         // printf("%d", hash);
         // Use and mask to strip off high bits
         hash = hash & (HashSize - 1);
-        uint64_t h{hash};
+        uint64_t h{ hash };
         while (1)
         {
             if (IsBitSet(hash))
@@ -3681,8 +3681,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation * pLocation, const char * strValue,
                                                                int64_t strWidth, uint64_t hash)
 {
-    uint64_t const h{hash};
-    
+    uint64_t const h{ hash };
+
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3700,7 +3700,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Failed to find hash
@@ -3717,8 +3717,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocation * pLocation, const char * strValue,
                                                                 int64_t strWidth, uint64_t hash)
 {
-    uint64_t const h{hash};
-    
+    uint64_t const h{ hash };
+
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3739,7 +3739,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocatio
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Failed to find hash
@@ -3761,7 +3761,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLo
                                                                uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
 
     while (IsBitSet(hash))
     {
@@ -3782,7 +3782,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLo
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3802,7 +3802,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashL
                                                                 uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
 
     while (IsBitSet(hash))
     {
@@ -3821,9 +3821,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashL
         {
             hash = 0;
         }
-        if( hash == h)
+        if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3843,7 +3843,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashL
                                                                 int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
 
     while (IsBitSet(hash))
     {
@@ -3868,7 +3868,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashL
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3888,7 +3888,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, Hash
                                                                  int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
 
     while (IsBitSet(hash))
     {
@@ -3913,7 +3913,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, Hash
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3932,7 +3932,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_
                                                                           const char * strValue, int64_t strWidth, uint64_t hash,
                                                                           int64_t * missed)
 {
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3949,9 +3949,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_
         {
             hash = 0;
         }
-        if(hash == h)
+        if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3971,7 +3971,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64
                                                                            int64_t strWidth, int64_t strWidth2, uint64_t hash,
                                                                            int64_t * missed)
 {
-    uint64_t const h{hash};
+    uint64_t const h{ hash };
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3994,7 +3994,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64
         }
         if (hash == h)
         {
-                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -4042,8 +4042,8 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-                uint64_t const h{hash};
-                
+                uint64_t const h{ hash };
+
                 while (1)
                 {
                     uint64_t index = hash >> 6;
@@ -4087,7 +4087,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-                uint64_t const h{hash};
+                uint64_t const h{ hash };
                 while (1)
                 {
                     uint64_t index = hash >> 6;
@@ -4135,7 +4135,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (pHashLinear->HashSize - 1);
-                uint64_t const h{hash};
+                uint64_t const h{ hash };
 
                 while (1)
                 {
@@ -4156,7 +4156,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         {
                             hash = 0;
                         }
-                        if ( hash == h )
+                        if (hash == h)
                         {
                             throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
@@ -4180,7 +4180,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (pHashLinear->HashSize - 1);
-                uint64_t const h{hash};
+                uint64_t const h{ hash };
 
                 while (1)
                 {
@@ -4200,7 +4200,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         {
                             hash = 0;
                         }
-                        if ( hash == h )
+                        if (hash == h)
                         {
                             throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
@@ -5748,86 +5748,95 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
 
     if (boolArray)
     {
-        void * pDataIn1 = PyArray_BYTES(inArr1);
-        void * pDataIn2 = PyArray_BYTES(inArr2);
-
-        int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
-
-        PyArrayObject * indexArray = NULL;
-
-        LOGGING("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
-
-        if (arrayType1 >= NPY_STRING)
+        try
         {
-            LOGGING("Calling string!\n");
+            void * pDataIn1 = PyArray_BYTES(inArr1);
+            void * pDataIn2 = PyArray_BYTES(inArr2);
 
-            // Performance gain: if STRING and itemsize matches and itemsize is 1 or 2
-            // --> Send to IsMemberHash32
-            IsMemberHashString32Pre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2,
-                                    (const char *)pDataIn2, pDataOut1, HASH_MODE(hashMode), hintSize, arrayType1 == NPY_UNICODE);
-        }
-        else
-        {
-            if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
-            {
-                LOGGING("Calling float!\n");
-                sizeType1 += 100;
-            }
+            int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
 
-            int dtype = NPY_INT8;
+            PyArrayObject * indexArray = NULL;
 
-            if (arraySize2 < 100)
+            LOGGING("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
+
+            if (arrayType1 >= NPY_STRING)
             {
-                dtype = NPY_INT8;
-            }
-            else if (arraySize2 < 30000)
-            {
-                dtype = NPY_INT16;
-            }
-            else if (arraySize2 < 2000000000)
-            {
-                dtype = NPY_INT32;
+                LOGGING("Calling string!\n");
+
+                // Performance gain: if STRING and itemsize matches and itemsize is 1 or 2
+                // --> Send to IsMemberHash32
+                IsMemberHashString32Pre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2,
+                                        (const char *)pDataIn2, pDataOut1, HASH_MODE(hashMode), hintSize,
+                                        arrayType1 == NPY_UNICODE);
             }
             else
             {
-                dtype = NPY_INT64;
-            }
-
-            indexArray = AllocateLikeNumpyArray(inArr1, dtype);
-
-            // make sure allocation succeeded
-            if (indexArray)
-            {
-                void * pDataOut2 = PyArray_BYTES(indexArray);
-                switch (dtype)
+                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
                 {
-                case NPY_INT8:
-                    IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1, sizeType1,
-                                           HASH_MODE(hashMode), hintSize);
-                    break;
-                case NPY_INT16:
-                    IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1, sizeType1,
-                                            HASH_MODE(hashMode), hintSize);
-                    break;
-                CASE_NPY_INT32:
-                    IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1, sizeType1,
-                                            HASH_MODE(hashMode), hintSize);
-                    break;
-                CASE_NPY_INT64:
-                    IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1, sizeType1,
-                                            HASH_MODE(hashMode), hintSize);
-                    break;
+                    LOGGING("Calling float!\n");
+                    sizeType1 += 100;
+                }
+
+                int dtype = NPY_INT8;
+
+                if (arraySize2 < 100)
+                {
+                    dtype = NPY_INT8;
+                }
+                else if (arraySize2 < 30000)
+                {
+                    dtype = NPY_INT16;
+                }
+                else if (arraySize2 < 2000000000)
+                {
+                    dtype = NPY_INT32;
+                }
+                else
+                {
+                    dtype = NPY_INT64;
+                }
+
+                indexArray = AllocateLikeNumpyArray(inArr1, dtype);
+
+                // make sure allocation succeeded
+                if (indexArray)
+                {
+                    void * pDataOut2 = PyArray_BYTES(indexArray);
+                    switch (dtype)
+                    {
+                    case NPY_INT8:
+                        IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1,
+                                               sizeType1, HASH_MODE(hashMode), hintSize);
+                        break;
+                    case NPY_INT16:
+                        IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1,
+                                                sizeType1, HASH_MODE(hashMode), hintSize);
+                        break;
+                    CASE_NPY_INT32:
+                        IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1,
+                                                sizeType1, HASH_MODE(hashMode), hintSize);
+                        break;
+                    CASE_NPY_INT64:
+                        IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1,
+                                                sizeType1, HASH_MODE(hashMode), hintSize);
+                        break;
+                    }
                 }
             }
+
+            if (indexArray)
+            {
+                PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
+                Py_DECREF((PyObject *)boolArray);
+                Py_DECREF((PyObject *)indexArray);
+
+                return (PyObject *)retObject;
+            }
         }
-
-        if (indexArray)
+        catch (std::runtime_error const & e)
         {
-            PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
-            Py_DECREF((PyObject *)boolArray);
-            Py_DECREF((PyObject *)indexArray);
-
-            return (PyObject *)retObject;
+            PyErr_Format(PyExc_RuntimeError, e.what());
+            return NULL;
         }
     }
     // out of memory

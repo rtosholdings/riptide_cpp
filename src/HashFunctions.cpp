@@ -90,6 +90,8 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
 
     if (boolArray && indexArray)
     {
+        try
+        {
         void * pDataIn1 = PyArray_BYTES(inArr1);
         void * pDataIn2 = PyArray_BYTES(inArr2);
         int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
@@ -121,6 +123,11 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
             Py_DECREF((PyObject *)indexArray);
 
             return (PyObject *)retObject;
+        }
+        }
+        catch ( std::runtime_error const & e )
+        {
+            PyErr_Format(PyExc_RuntimeError, e.what());
         }
     }
     // out of memory
@@ -235,6 +242,8 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
 
     int64_t missed = 0;
 
+    try
+    {
     if (arrayType1 >= NPY_STRING)
     {
         LOGGING("Calling string/uni/void!\n");
@@ -277,6 +286,12 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
             missed = IsMemberHashCategorical64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, sizeType1,
                                                HASH_MODE(hashMode), hintSize);
         }
+    }
+    }
+    catch( std::runtime_error const & e )
+    {
+        PyErr_Format(PyExc_RuntimeError, e.what() );
+        return NULL;
     }
 
     PyObject * retObject = Py_BuildValue("(LO)", missed, indexArray);
