@@ -10,6 +10,7 @@
 
 namespace
 {
+#if 0
     std::vector<uint64_t> test_data(1024ULL * 1024ULL * 1024ULL);
     std::random_device dev{};
     CHashLinear<uint64_t, int64_t> hasher{};
@@ -26,5 +27,6 @@ namespace
         }
     }
 
-//    BENCHMARK(bench_MakeHashLocation);
+    BENCHMARK(bench_MakeHashLocation);
+#endif
 }
