@@ -29,6 +29,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
 	ema_test.cpp
+	hash_linear_tests.cpp
     main.cpp
 	tests.cpp
 	reduce_tests.cpp

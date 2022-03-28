@@ -34,6 +34,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES main.cpp
 			bench_one_input.cpp
+			hash_linear_bench.cpp
 			memcmp_bench.cpp)
 
 add_executable(${TARGET_NAME} ${HEADERS} ${SOURCES})
@@ -45,3 +46,14 @@ target_include_directories(${TARGET_NAME} PRIVATE ${RT_SOURCE_DIR} ${Python3_INC
 target_link_directories(${TARGET_NAME} PRIVATE ${Python3_LIBRARY_DIRS})
 
 target_link_libraries(${TARGET_NAME} PRIVATE riptide_cpp ${Python3_Libraries} benchmark::benchmark $<$<PLATFORM_ID:Linux>:pthread> $<$<PLATFORM_ID:Linux>:rt>)
+
+if(WIN32)
+    set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
+
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMENT "Copying runtime dependencies from riptide_cpp to ${_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR}
+
+        COMMENT "Copying Python dependencies to ${_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR})
+endif()

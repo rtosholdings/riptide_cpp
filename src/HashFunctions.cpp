@@ -47,12 +47,12 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     int sizeType1 = (int)NpyItemSize((PyObject *)inArr1);
     int sizeType2 = (int)NpyItemSize((PyObject *)inArr2);
 
-    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
+    LOGGING("IsMember64 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
     if (arrayType1 != arrayType2)
     {
         // Arguments do not match
-        PyErr_Format(PyExc_ValueError, "IsMember32 needs first arg to match %s vs %s", NpyToString(arrayType1),
+        PyErr_Format(PyExc_ValueError, "IsMember64 needs first arg to match %s vs %s", NpyToString(arrayType1),
                      NpyToString(arrayType2));
         return NULL;
     }
@@ -60,7 +60,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     if (sizeType1 == 0)
     {
         // Weird type
-        PyErr_Format(PyExc_ValueError, "IsMember32 needs a type it understands %s vs %s", NpyToString(arrayType1),
+        PyErr_Format(PyExc_ValueError, "IsMember64 needs a type it understands %s vs %s", NpyToString(arrayType1),
                      NpyToString(arrayType2));
         return NULL;
     }
@@ -68,7 +68,7 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
     if (arrayType1 == NPY_OBJECT)
     {
         PyErr_Format(PyExc_ValueError,
-                     "IsMember32 cannot handle unicode strings, "
+                     "IsMember64 cannot handle unicode strings, "
                      "please convert to np.chararray");
         return NULL;
     }

@@ -6,6 +6,8 @@
 #include "MathWorker.h"
 #include "Recycler.h"
 
+#include <exception>
+
 #ifndef LogError
     #define LogError(...)
 #endif
@@ -384,7 +386,14 @@ int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
         {
             if (PRIME_NUMBERS[i] > numberOfEntries)
             {
-                return PRIME_NUMBERS[i];
+                if (i == 0)
+                {
+                    return PRIME_NUMBERS[i];
+                }
+                else
+                {
+                    return PRIME_NUMBERS[i];
+                }
             }
             i++;
         }
@@ -504,7 +513,7 @@ void * CHashLinear<T, U>::AllocMemory(int64_t numberOfEntries, int64_t sizeofStr
     }
     else
     {
-        HashSize = GetHashSize(NumEntries * 2);
+        HashSize = GetHashSize(NumEntries);
     }
 
     size_t allocSize = HashSize * sizeofStruct;
@@ -558,6 +567,8 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLo
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
+    uint64_t const h{ hash };
+    
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -574,6 +585,11 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLo
         {
             hash = 0;
         }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
     }
     // Not found
     pLocationOutput[i] = BAD_INDEX;
@@ -589,6 +605,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLocation * pLocation, U * pLocationOutput, T item,
                                                                     uint64_t hash, int64_t * missed)
 {
+    uint64_t const h{hash};
+    
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -604,6 +622,11 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLoc
         {
             hash = 0;
         }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
     }
     // Not found
     pLocationOutput[i] = 0;
@@ -616,6 +639,8 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLoc
 template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash)
 {
+    uint64_t const h{hash};
+    
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -632,13 +657,11 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLo
         if (++hash >= HashSize)
         {
             hash = 0;
-
-            // if (NumCollisions > (HashSize * 2)) {
-            //   LogError("hash collision error %d %llu\n", i, NumCollisions);
-            //   LogError("Bad hash function, too many collisions");
-            //   return;
-            //}
         }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
     }
     // Failed to find hash
     SetBit(hash);
@@ -647,34 +670,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLo
     pLocation[hash].value = item;
 }
 
-#define INTERNAL_SET_LOCATION \
-    while (1) \
-    { \
-        if (pBitFields[hash >> 6] & (1LL << (hash & 63))) \
-        { \
-            /* Check if we have a match from before */ \
-            if (pLocation[hash].value == item) \
-            { \
-                /* Duplicate */ \
-                break; \
-            } \
-            /* This entry is not us so we must have collided */ \
-            /* Linear goes to next position */ \
-            if (++hash >= HashSize) \
-            { \
-                hash = 0; \
-            } \
-        } \
-        else \
-        { \
-            /* Failed to find hash */ \
-            /* Set the visit bit */ \
-            pBitFields[hash >> 6] |= (1LL << (hash & 63)); \
-            pLocation[hash].Location = i; \
-            pLocation[hash].value = item; \
-            break; \
-        } \
-    }
+#define INTERNAL_SET_LOCATION
 
 //-----------------------------------------------
 // stores the index of the first location
@@ -707,11 +703,10 @@ void CHashLinear<T, U>::MakeHashLocationMK(int64_t arraySize, T * pInput, int64_
 
     for (U i = 0; i < arraySize; i++)
     {
-        const char * pMatch = pInput + (totalItemSize * i);
+        const char * pMatch = reinterpret_cast<char const *>(pInput) + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
         hash = hash & (HashSize - 1);
-
-        // printf("[%d] \n", (int)i);
+        uint64_t const h{hash};
 
         while (1)
         {
@@ -720,7 +715,7 @@ void CHashLinear<T, U>::MakeHashLocationMK(int64_t arraySize, T * pInput, int64_
             {
                 // Check if we have a match from before
                 U Last = pLocation[hash].Location;
-                const char * pMatch2 = pInput + (totalItemSize * Last);
+                const char * pMatch2 = reinterpret_cast<char const *>(pInput) + (totalItemSize * Last);
 
                 // TJD: August 2018 --unrolled MEMCMP and got 10-15% speedup
                 const char * pSrc1 = pMatch;
@@ -774,6 +769,11 @@ void CHashLinear<T, U>::MakeHashLocationMK(int64_t arraySize, T * pInput, int64_
                 {
                     hash = 0;
                 }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                 continue;
             }
 
@@ -885,6 +885,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
+            uint64_t const h{hash};
 
             // TODO: should maybe put begin .. end into function implementing lookup
             // for hashmap begin
@@ -908,6 +909,11 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     {
                         hash = 0;
                     }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                     continue;
                 }
                 // Not found
@@ -922,6 +928,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey2 + (totalItemSize * j);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
+            uint64_t const h{hash};
 
             // TODO: should maybe start .. end into a function implementing insertion
             // for hashmap begin
@@ -945,6 +952,11 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     {
                         hash = 0;
                     }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                     continue;
                 }
                 // Failed to find hash
@@ -962,6 +974,7 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
         const char * pMatch1 = pKey1 + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
         hash = hash & (HashSize - 1);
+        uint64_t const h{hash};
 
         // TODO: should maybe put begin .. end into function implementing lookup for
         // hashmap begin
@@ -986,6 +999,11 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
                 {
                     hash = 0;
                 }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                 continue;
             }
             // Not found
@@ -1025,6 +1043,7 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
             hash = hash & (HashSize - 1);
+            uint64_t const h{hash};
 
             // TODO: should maybe put begin .. end into function implementing lookup
             // for hashmap begin
@@ -1048,6 +1067,11 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     {
                         hash = 0;
                     }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                     continue;
                 }
                 // Not found
@@ -1065,6 +1089,8 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
 
             // TODO: should maybe start .. end into a function implementing insertion
             // for hashmap begin
+            uint64_t const h{hash};
+            
             while (1)
             {
                 if (IsBitSet(hash))
@@ -1085,6 +1111,11 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                     {
                         hash = 0;
                     }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                     continue;
                 }
                 // Failed to find hash
@@ -1105,6 +1136,8 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
 
         // TODO: should maybe put begin .. end into function implementing lookup for
         // hashmap begin
+        uint64_t const h{hash};
+        
         while (1)
         {
             if (IsBitSet(hash))
@@ -1126,6 +1159,11 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
                 {
                     hash = 0;
                 }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                 continue;
             }
             // Not found
@@ -1177,7 +1215,7 @@ static void IsMemberMK(void * pHashLinearVoid, int64_t arraySize, void * pInputT
         uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
         hash = hash & (HashSize - 1);
 
-        // printf("[%d] %llu\n", (int)i, hash);
+        uint64_t const h{hash};
 
         while (1)
         {
@@ -1202,6 +1240,11 @@ static void IsMemberMK(void * pHashLinearVoid, int64_t arraySize, void * pInputT
                 {
                     hash = 0;
                 }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
                 // printf("[%d] continue\n", (int)i);
                 continue;
             }
@@ -1315,7 +1358,38 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
             // perfect hash
             T item = pHashList[i];
             uint64_t hash = item;
-            INTERNAL_SET_LOCATION;
+            while (1)
+            {
+                if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                {
+                    /* Check if we have a match from before */
+                    if (pLocation[hash].value == item)
+                    {
+                        /* Duplicate */
+                        break;
+                    }
+                    /* This entry is not us so we must have collided */
+                    /* Linear goes to next position */
+                    if (++hash >= HashSize)
+                    {
+                        hash = 0;
+                    }
+
+                            if (hash == item)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                }
+                else
+                {
+                    /* Failed to find hash */
+                    /* Set the visit bit */
+                    pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                    pLocation[hash].Location = i;
+                    pLocation[hash].value = item;
+                    break;
+                }
+            };
             // InternalSetLocation(i, pLocation, item, item);
         }
     }
@@ -1330,7 +1404,38 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                     T item = pHashList[i];
                     HASH_INT1;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1341,7 +1446,38 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                     T item = pHashList[i];
                     HASH_int32_t;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1355,7 +1491,39 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                     T item = pHashList[i];
                     HASH_INT1;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must ha;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1366,7 +1534,38 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
                     T item = pHashList[i];
                     HASH_int64_t;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1472,34 +1671,7 @@ int64_t CHashLinear<T, U>::IsMemberCategorical(int64_t arraySize, T * pHashList,
         pBoolOutput[i] = 0; \
     }
 
-#define INNER_GET_LOCATION \
-    while (1) \
-    { \
-        if (pBitFields[hash >> 6] & (1LL << (hash & 63))) \
-        { \
-            /* Check if we have a match from before*/ \
-            if (pLocation[hash].value == item) \
-            { \
-                /* return the first location */ \
-                pLocationOutput[i] = pLocation[hash].Location; \
-                pBoolOutput[i] = 1; \
-                break; \
-            } \
-            /* Linear goes to next position */ \
-            if (++hash >= HashSize) \
-            { \
-                hash = 0; \
-            } \
-            continue; \
-        } \
-        else \
-        { \
-            /* Not found */ \
-            pLocationOutput[i] = BAD_INDEX; \
-            pBoolOutput[i] = 0; \
-            break; \
-        } \
-    }
+#define INNER_GET_LOCATION
 
 //-----------------------------------------------
 // T is the input type byte/float32/float64/int8/uint8/int16/uint16/int32/...
@@ -1564,7 +1736,37 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                     T item = pHashList[i];
                     HASH_INT1;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1576,7 +1778,37 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                     T item = pHashList[i];
                     HASH_int32_t;
                     uint64_t hash = h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                               
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1591,7 +1823,36 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                     T item = pHashList[i];
                     HASH_INT1;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1603,7 +1864,36 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                     T item = pHashList[i];
                     HASH_int64_t;
                     uint64_t hash = h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                 }
             }
         }
@@ -1662,6 +1952,29 @@ void CalculateHashBits32(int64_t arraySize, uint32_t * pHashList)
     }
 }
 
+template <typename T, typename U>
+CHashLinear<T, U>::CHashLinear(HASH_MODE hashMode, bool deallocate)
+{
+    pHashTableAny = NULL;
+    pBitFields = NULL;
+
+    NumEntries = 0;
+    NumUnique = 0;
+    NumCollisions = 0;
+    HashSize = 0;
+    HashMode = hashMode;
+    Deallocate = deallocate;
+
+    // Can set bad index to 0?
+    // BAD_INDEX = (U)(1LL << (sizeof(U)*8-1));
+}
+
+template <typename T, typename U>
+CHashLinear<T, U>::~CHashLinear()
+{
+    FreeMemory(false);
+}
+
 //-----------------------------------------------
 // stores the index of the first location
 //
@@ -1703,7 +2016,38 @@ void CHashLinear<T, U>::MakeHashLocationFloat(int64_t arraySize, T * pHashList, 
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT3;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1720,7 +2064,38 @@ void CHashLinear<T, U>::MakeHashLocationFloat(int64_t arraySize, T * pHashList, 
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT4;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1743,7 +2118,38 @@ void CHashLinear<T, U>::MakeHashLocationFloat(int64_t arraySize, T * pHashList, 
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT1;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1760,7 +2166,38 @@ void CHashLinear<T, U>::MakeHashLocationFloat(int64_t arraySize, T * pHashList, 
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT2;
                     uint64_t hash = h;
-                    INTERNAL_SET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before */
+                            if (pLocation[hash].value == item)
+                            {
+                                /* Duplicate */
+                                break;
+                            }
+                            /* This entry is not us so we must have collided */
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                        }
+                        else
+                        {
+                            /* Failed to find hash */
+                            /* Set the visit bit */
+                            pBitFields[hash >> 6] |= (1LL << (hash & 63));
+                            pLocation[hash].Location = i;
+                            pLocation[hash].value = item;
+                            break;
+                        }
+                    };
                     // InternalSetLocation(i, pLocation, item, h);
                 }
             }
@@ -1812,7 +2249,37 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT3;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1835,7 +2302,37 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT4;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                            
+                            if (hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error("About to go into infinite loop, need a smaller dataset"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1861,7 +2358,37 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT1;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if ( hash == h)
+                            {
+                                                                throw(std::runtime_error(
+                                    "We are about to enter an infinite loop, we need a smaller set of uniques"));
+                            }
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -1884,7 +2411,38 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                     uint64_t h = pHashList2[i];
                     HASH_FLOAT2;
                     uint64_t hash = (uint64_t)h;
-                    INNER_GET_LOCATION;
+                    while (1)
+                    {
+                        if (pBitFields[hash >> 6] & (1LL << (hash & 63)))
+                        {
+                            /* Check if we have a match from before*/
+                            if (pLocation[hash].value == item)
+                            {
+                                /* return the first location */
+                                pLocationOutput[i] = pLocation[hash].Location;
+                                pBoolOutput[i] = 1;
+                                break;
+                            }
+                            /* Linear goes to next position */
+                            if (++hash >= HashSize)
+                            {
+                                hash = 0;
+                            }
+                            if (hash == h)
+                            {
+                                throw(std::runtime_error(
+                                    "We are about to enter an infinite loop, we need a smaller set of uniques"));
+                            }
+                            continue;
+                        }
+                        else
+                        {
+                            /* Not found */
+                            pLocationOutput[i] = BAD_INDEX;
+                            pBoolOutput[i] = 0;
+                            break;
+                        }
+                    };
                     // InternalGetLocation(i, pLocation, pBoolOutput, pLocationOutput,
                     // item, h);
                 }
@@ -2037,6 +2595,10 @@ int64_t CHashLinear<T, U>::IsMemberFloatCategorical(int64_t arraySize, T * pHash
             if (hash >= HashSize) \
             { \
                 hash = 0; \
+            } \
+            if (hash == h) \
+            { \
+                throw(std::runtime_error("We are about to enter an infinite loop, we need a smaller set of uniques")); \
             } \
         } \
         else \
@@ -2406,6 +2968,7 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
 
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
+            uint64_t const h{hash};
             while (1)
             {
                 if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -2428,6 +2991,10 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
                     if (hash >= HashSize)
                     {
                         hash = 0;
+                    }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("We are about to enter an infinite loop, we need a smaller set of uniques"));
                     }
                 }
                 else
@@ -2457,6 +3024,7 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
                 uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
+                uint64_t h{hash};
                 while (1)
                 {
                     if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -2479,6 +3047,10 @@ uint64_t CHashLinear<T, U>::GroupBy(int64_t totalRows, int64_t totalItemSize, co
                         if (hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if (hash == h)
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                     }
                     else
@@ -2563,6 +3135,7 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
             // printf("%d", hash);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
+            uint64_t const h{hash};
             while (1)
             {
                 if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -2591,30 +3164,15 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
                         break;
                     }
 
-                    // This entry is not us so we must have collided
-                    ++numCollisions;
-
-                    if (numCollisions < 0)
-                    {
-                        NumCollisions = numCollisions;
-                        NumUnique = numUnique;
-
-                        printf(
-                            "!!! error in groupby collisions too high -- trying to "
-                            "match size %lld\n",
-                            totalItemSize);
-                        printf(
-                            "%llu entries   hashSize %llu  had %llu collisions   %llu "
-                            "unique\n",
-                            totalRows, HashSize, NumCollisions, NumUnique);
-                        return NumUnique;
-                    }
-
                     // Linear goes to next position
                     ++hash;
                     if (hash >= HashSize)
                     {
                         hash = 0;
+                    }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("We are heading into an infinite loop. Need a smaller set of uniques"));
                     }
                 }
                 else
@@ -2657,6 +3215,7 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
                 // printf("%d", hash);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
+                uint64_t const h{hash};
                 while (1)
                 {
                     if (pBitFieldsX[hash >> 6] & (1LL << (hash & 63)))
@@ -2684,31 +3243,16 @@ uint64_t CHashLinear<T, U>::GroupBySuper(int64_t totalRows, int64_t totalItemSiz
                             pUniqueCountArray[pLocation[hash].UniqueKey]++;
                             break;
                         }
-
-                        // This entry is not us so we must have collided
-                        ++numCollisions;
-
-                        if (numCollisions < 0)
-                        {
-                            NumCollisions = numCollisions;
-                            NumUnique = numUnique;
-
-                            printf(
-                                "!!! error in groupby collisions too high -- trying to "
-                                "match size %lld\n",
-                                totalItemSize);
-                            printf(
-                                "%llu entries   hashSize %llu  had %llu collisions   %llu "
-                                "unique\n",
-                                totalRows, HashSize, NumCollisions, NumUnique);
-                            return NumUnique;
-                        }
-
+                        
                         // Linear goes to next position
                         ++hash;
                         if (hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if (hash == h)
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                     }
                     else
@@ -2808,6 +3352,7 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
                 uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
+                uint64_t const h{hash};
                 while (1)
                 {
                     if (IsBitSet(hash))
@@ -2831,6 +3376,10 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
                         if (++hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if (hash == h)
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniqaues"));
                         }
                     }
                     else
@@ -2860,6 +3409,7 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
             uint64_t hash = DEFAULT_HASH64(pMatch, totalItemSize);
             // Use and mask to strip off high bits
             hash = hash & (HashSize - 1);
+            uint64_t h{hash};
             while (1)
             {
                 if (IsBitSet(hash))
@@ -2883,6 +3433,10 @@ uint64_t CHashLinear<T, U>::Unique(int64_t totalRows, int64_t totalItemSize, con
                     if (++hash >= HashSize)
                     {
                         hash = 0;
+                    }
+                    if (hash == h)
+                    {
+                        throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                     }
                 }
                 else
@@ -2951,6 +3505,7 @@ void CHashLinear<T, U>::MultiKeyRolling(int64_t totalRows, int64_t totalItemSize
 
         // Use and mask to strip off high bits
         hash = hash & (HashSize - 1);
+        uint64_t const h{hash};
         while (1)
         {
             if (IsBitSet(hash))
@@ -2967,17 +3522,14 @@ void CHashLinear<T, U>::MultiKeyRolling(int64_t totalRows, int64_t totalItemSize
                     break;
                 }
 
-                // This entry is not us so we must have collided
-                ++NumCollisions;
-
-                // Bail on too many collisions (could return false)
-                if ((int64_t)NumCollisions > hintSize)
-                    break;
-
                 // Linear goes to next position
                 if (++hash >= HashSize)
                 {
                     hash = 0;
+                }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                 }
             }
             else
@@ -3038,6 +3590,7 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(int64_t totalRows, int64_t tota
         // printf("%d", hash);
         // Use and mask to strip off high bits
         hash = hash & (HashSize - 1);
+        uint64_t h{hash};
         while (1)
         {
             if (IsBitSet(hash))
@@ -3067,6 +3620,10 @@ void CHashLinear<T, U>::MakeHashLocationMultiKey(int64_t totalRows, int64_t tota
                 if (++hash >= HashSize)
                 {
                     hash = 0;
+                }
+                if (hash == h)
+                {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                 }
             }
             else
@@ -3144,8 +3701,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation * pLocation, const char * strValue,
                                                                int64_t strWidth, uint64_t hash)
 {
-    // printf("**set %llu  width: %d  string: %s\n", hash, strWidth, strValue);
-
+    uint64_t const h{hash};
+    
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3156,20 +3713,14 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation
 
         // printf("Collide \n");
 
-        // This entry is not us so we must have collided
-        ++NumCollisions;
-
         // Linear goes to next position
         if (++hash >= HashSize)
         {
             hash = 0;
-
-            if (NumCollisions > (HashSize * 2))
-            {
-                // LogError("hash collision error %d %llu\n", i, NumCollisions);
-                LogError("Bad hash function, too many collisions");
-                return;
-            }
+        }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Failed to find hash
@@ -3186,8 +3737,8 @@ template <typename T, typename U>
 FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocation * pLocation, const char * strValue,
                                                                 int64_t strWidth, uint64_t hash)
 {
-    // printf("**set %llu  width: %d  string: %s\n", hash, strWidth, strValue);
-
+    uint64_t const h{hash};
+    
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3205,13 +3756,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocatio
         if (++hash >= HashSize)
         {
             hash = 0;
-
-            if (NumCollisions > (HashSize * 2))
-            {
-                // LogError("hash collision error %d %llu\n", i, NumCollisions);
-                LogError("Bad hash function, too many collisions");
-                return;
-            }
+        }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Failed to find hash
@@ -3233,6 +3781,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLo
                                                                uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
+    uint64_t const h{hash};
 
     while (IsBitSet(hash))
     {
@@ -3250,6 +3799,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLo
         if (++hash >= HashSize)
         {
             hash = 0;
+        }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3269,6 +3822,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashL
                                                                 uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
+    uint64_t const h{hash};
 
     while (IsBitSet(hash))
     {
@@ -3286,6 +3840,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashL
         if (++hash >= HashSize)
         {
             hash = 0;
+        }
+        if( hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3305,6 +3863,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashL
                                                                 int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
+    uint64_t const h{hash};
 
     while (IsBitSet(hash))
     {
@@ -3327,6 +3886,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashL
         {
             hash = 0;
         }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+        }
     }
     // Not found
     pLocationOutput[i] = BAD_INDEX;
@@ -3345,6 +3908,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, Hash
                                                                  int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
+    uint64_t const h{hash};
 
     while (IsBitSet(hash))
     {
@@ -3367,6 +3931,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, Hash
         {
             hash = 0;
         }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
+        }
     }
     // Not found
     pLocationOutput[i] = BAD_INDEX;
@@ -3384,6 +3952,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_
                                                                           const char * strValue, int64_t strWidth, uint64_t hash,
                                                                           int64_t * missed)
 {
+    uint64_t const h{hash};
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3399,6 +3968,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_
         if (++hash >= HashSize)
         {
             hash = 0;
+        }
+        if(hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3418,6 +3991,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64
                                                                            int64_t strWidth, int64_t strWidth2, uint64_t hash,
                                                                            int64_t * missed)
 {
+    uint64_t const h{hash};
     while (IsBitSet(hash))
     {
         // Check if we have a match from before
@@ -3437,6 +4011,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64
         if (++hash >= HashSize)
         {
             hash = 0;
+        }
+        if (hash == h)
+        {
+                    throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
         }
     }
     // Not found
@@ -3484,7 +4062,8 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
-
+                uint64_t const h{hash};
+                
                 while (1)
                 {
                     uint64_t index = hash >> 6;
@@ -3503,6 +4082,10 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         if (++hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if (hash == h)
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                         continue;
                     }
@@ -3524,6 +4107,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (HashSize - 1);
+                uint64_t const h{hash};
                 while (1)
                 {
                     uint64_t index = hash >> 6;
@@ -3541,6 +4125,10 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         if (++hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if (hash == h)
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                         continue;
                     }
@@ -3567,6 +4155,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (pHashLinear->HashSize - 1);
+                uint64_t const h{hash};
 
                 while (1)
                 {
@@ -3586,6 +4175,10 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         if (++hash >= HashSize)
                         {
                             hash = 0;
+                        }
+                        if ( hash == h )
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                         continue;
                     }
@@ -3607,6 +4200,7 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
 
                 // Use and mask to strip off high bits
                 hash = hash & (pHashLinear->HashSize - 1);
+                uint64_t const h{hash};
 
                 while (1)
                 {
@@ -3625,6 +4219,10 @@ static int64_t IsMemberStringCategorical(void * pHashLinearVoid, int64_t arraySi
                         if (++hash >= pHashLinear->HashSize)
                         {
                             hash = 0;
+                        }
+                        if ( hash == h )
+                        {
+                            throw(std::runtime_error("We are about to enter an infinite loop. We need a smaller set of uniques"));
                         }
                         continue;
                     }
@@ -5589,3 +6187,5 @@ PyObject * MergeBinnedAndSorted(PyObject * self, PyObject * args)
     }
     return (PyObject *)indexArray;
 }
+
+template CHashLinear<uint64_t, int64_t>;
