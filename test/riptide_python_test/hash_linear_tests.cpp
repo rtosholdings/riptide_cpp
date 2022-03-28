@@ -42,5 +42,25 @@ namespace
                        }
                        ));
         };
+
+        "ismember64_type_coercion_effects_rip-254"_test = [&]
+        {
+            std::vector<uint64_t> haystack{ 3ULL, 0x7F'FF'FF'FF'FF'FF'FF'FEULL };
+            std::vector<int64_t> needles{ 0x7F'FF'FF'FF'FF'FF'FF'FEULL };
+    
+            expect(not throws<std::runtime_error>(
+                       [&]
+                       {
+                           IsMemberHash64(needles.size(), needles.data(), haystack.size(), haystack.data(), output.data(), bools.data(), 8, HASH_MODE(0), 0);
+                       }
+                       ));
+
+            expect(not throws<std::runtime_error>(
+                       [&]
+                       {
+                           IsMemberHash64(needles.size(), needles.data(), haystack.size(), haystack.data(), output.data(), bools.data(), 8, HASH_MODE(1), 0);
+                       }
+                       ));
+        };
     };
 }
