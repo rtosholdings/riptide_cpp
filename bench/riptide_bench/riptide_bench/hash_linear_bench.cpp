@@ -26,5 +26,5 @@ namespace
         }
     }
 
-    BENCHMARK(bench_MakeHashLocation);
+//    BENCHMARK(bench_MakeHashLocation);
 }
