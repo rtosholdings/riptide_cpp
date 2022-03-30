@@ -86,6 +86,7 @@ set(SOURCES
     DateTime.cpp
     Ema.cpp
     #FileReadWrite.cpp
+	flat_hash_map.cpp
     GroupBy.cpp
     HashFunctions.cpp
     HashLinear.cpp
@@ -118,11 +119,14 @@ get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 target_include_directories(${TARGET_NAME} PRIVATE
     ${EXTERNAL_ZSTD_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
-    ${Python3_NumPy_INCLUDE_DIRS} )
+    ${Python3_NumPy_INCLUDE_DIRS}
+	${ABSL_COMMON_INCLUDE_DIRS})
 
 target_link_libraries(${TARGET_NAME}
     Python3::Python
     libzstd_static
+	absl::base
+	absl::flat_hash_map
     $<$<PLATFORM_ID:Linux>:rt>)
 
 # Configure the library name to identify it as a Python extension module.

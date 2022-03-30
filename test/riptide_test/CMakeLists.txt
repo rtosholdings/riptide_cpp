@@ -36,6 +36,7 @@ set(TARGET_NAME riptide_test)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
+	flat_hash_map_tests.cpp
     main.cpp
     test_one_input.cpp)
 
@@ -48,7 +49,17 @@ get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 target_include_directories(${TARGET_NAME} PRIVATE
                              ${RT_SOURCE_DIR}
 							 ${Python3_INCLUDE_DIRS}
-							 ${Python3_NumPy_INCLUDE_DIRS})
+							 ${Python3_NumPy_INCLUDE_DIRS}
+							 ${ABSL_COMMON_INCLUDE_DIRS})
 
 target_link_libraries(${TARGET_NAME}
-                      riptide_cpp)
+                      riptide_cpp
+					  ut)
+
+if(WIN32)
+    set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
+
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMENT "Copying runtime dependencies from riptide_cpp to ${_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR})
+endif()

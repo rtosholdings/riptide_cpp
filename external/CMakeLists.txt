@@ -10,3 +10,8 @@ set(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "" FORCE)
 add_subdirectory(zstd/build/cmake)
 
 set(EXTERNAL_ZSTD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zstd/lib PARENT_SCOPE)
+
+# abseil-cpp
+set(ABSL_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(ABSL_PROPAGATE_CXX_STD ON CACHE BOOL "" FORCE)
+add_subdirectory(abseil-cpp)

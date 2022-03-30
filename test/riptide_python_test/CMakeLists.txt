@@ -73,4 +73,5 @@ endif()
 
 target_link_libraries(${TARGET_NAME}
                       Python3::Python
-                      riptide_cpp)
+                      riptide_cpp
+					  ut)
