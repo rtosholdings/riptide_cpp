@@ -68,8 +68,8 @@ struct is_member_check
 
     int operator()(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p, int64_t * output_p, int8_t * bool_out_p)
     {
-        memset( output_p, -1, sizeof( KeyT ) * needles_size );
-        memset( bool_out_p, 0, needles_size );
+//        memset( output_p, -1, sizeof( KeyT ) * needles_size );
+//        memset( bool_out_p, 0, needles_size );
         
         KeyT const * typed_needles_p{ reinterpret_cast< KeyT const *>(needles_p) };
         
@@ -82,6 +82,11 @@ struct is_member_check
             {
                 *(output_p + elem) = found_at;
                 *(bool_out_p + elem) = 1;
+            }
+            else
+            {
+                *(output_p + elem) = -1;
+                *(bool_out_p + elem) = 0;
             }
         }
         return 0;

@@ -85,7 +85,7 @@ namespace
 
         "is_member_many_uniques"_test = [&]
         {
-            std::vector<uint64_t> haystack(2 * 128 * 1024ULL * 1024ULL);
+            std::vector<uint64_t> haystack(128 * 1024ULL * 1024ULL);
             std::vector<uint64_t> needles(1024ULL * 1024ULL);
             std::uniform_int_distribution<uint64_t> dist(3002950000, haystack.size() + 3002950000);
 
