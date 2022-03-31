@@ -6,13 +6,13 @@
 
 #include "absl/container/flat_hash_map.h"
 
-int is_member(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p, int64_t * output_p,
-              int8_t * bool_out_p, int32_t size_type)
-{
-    return 0;
-}
-
-template <typename Key>
-fhm_hasher<Key>::fhm_hasher(HASH_MODE, bool)
-{
-}
+template struct fhm_hasher<uint64_t>;
+template struct fhm_hasher<int64_t>;
+template struct fhm_hasher<uint32_t>;
+template struct fhm_hasher<int32_t>;
+template struct fhm_hasher<uint16_t>;
+template struct fhm_hasher<int16_t>;
+template struct fhm_hasher<uint8_t>;
+template struct fhm_hasher<int8_t>;
+template struct fhm_hasher<float>;
+template struct fhm_hasher<double>;
