@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <variant>
 #include <type_traits>
+#include <utility>
 
 #if defined(_WIN32) && ! defined(__GNUC__)
 #define dll_export __declspec(dllexport)
@@ -49,15 +50,15 @@ struct fhm_hasher
         
         for( size_t i{0}; i != hint_size; ++i )
         {
-            hasher.try_emplace( hash_list_p[ i ], i );
+            hasher.emplace(hash_list_p[i], i);
         }
     }
 
     int64_t find( KeyT const * key  ) const noexcept
     {
-        auto ret_iter = hasher.find(*key);
+        bool found = hasher.contains(*key);
         
-        return ret_iter != hasher.end() ? ret_iter->second : -1ll;        
+        return found ? hasher.at( *key ): -1ll;        
     }
 };
 
@@ -78,7 +79,7 @@ struct is_member_check
         for( ptrdiff_t elem{0}; elem != needles_size; ++elem )
         {
             int64_t found_at = hash.find(typed_needles_p + elem);
-            if ( found_at > 0 )
+            if ( found_at >= 0 )
             {
                 *(output_p + elem) = found_at;
                 *(bool_out_p + elem) = 1;

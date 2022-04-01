@@ -64,23 +64,25 @@ namespace
         "is_member_uint64"_test = [&]
         {
             std::vector<uint64_t> haystack(10);
-            std::uniform_int_distribution<uint64_t> dist(0, ULLONG_MAX);
+            std::uniform_int_distribution<uint64_t> dist(0, ULLONG_MAX - 2);
 
             std::generate(std::begin(haystack), std::end(haystack), [&] { return dist(engine); });
-            std::vector<uint64_t> needles{ haystack[3], haystack[9], haystack[0], haystack[5] };
+            std::vector<uint64_t> needles{ haystack[3], haystack[9], haystack[0], haystack[5], ULLONG_MAX - 1 };
 
             expect(is_member(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
                              reinterpret_cast<char const *>(haystack.data()), output.data(), bools.data(), needles[0]) == 0_i);
 
             expect( output[ 0 ] == 3_i );
             expect( output[ 1 ] == 9_i );
-            expect( output[ 2 ] == -1_i );
+            expect( output[ 2 ] == 0_i );
             expect( output[ 3 ] == 5_i );
+            expect( output[ 4 ] == -1_i );
 
             expect( bools[ 0 ] == 1_i );
             expect( bools[ 1 ] == 1_i );
-            expect( bools[ 2 ] == 0_i );
+            expect( bools[ 2 ] == 1_i );
             expect( bools[ 3 ] == 1_i );
+            expect( bools[ 4 ] == 0_i );
         };
 
         "is_member_many_uniques"_test = [&]
