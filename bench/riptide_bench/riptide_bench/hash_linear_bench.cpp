@@ -17,8 +17,8 @@ namespace
     CHashLinear<uint64_t, int64_t> hasher{};
     fhm_hasher<uint64_t> new_hasher{};
     std::vector<uint64_t> needles(1024ULL * 1024ULL);
-    std::array<int64_t, 1024ULL * 1024ULL> output;
-    std::array<int8_t, 1024ULL * 1024ULL> bools;
+    std::array<int64_t, 1024ULL * 1024ULL> output{};
+    std::array<int8_t, 1024ULL * 1024ULL> bools{};
 
     void bench_IsMemberHash64(benchmark::State & state)
     {
@@ -39,7 +39,7 @@ namespace
 
     }
 
-    BENCHMARK(bench_IsMemberHash64)->Unit(benchmark::kMillisecond);
+    BENCHMARK(bench_IsMemberHash64)->Unit(benchmark::kMillisecond)->UseRealTime();
 
     void bench_MakeHashLocation(benchmark::State & state)
     {
@@ -53,7 +53,7 @@ namespace
         }
     }
 
-    BENCHMARK(bench_MakeHashLocation)->Unit(benchmark::kMillisecond);
+    BENCHMARK(bench_MakeHashLocation)->Unit(benchmark::kMillisecond)->UseRealTime();
 
     void bench_is_member(benchmark::State & state)
     {
@@ -73,7 +73,7 @@ namespace
         }
     }
     
-    BENCHMARK(bench_is_member)->Unit(benchmark::kMillisecond);
+//    BENCHMARK(bench_is_member)->Unit(benchmark::kMillisecond)->UseRealTime();
 
     void bench_make_hash(benchmark::State & state)
     {
@@ -87,5 +87,5 @@ namespace
         }
     }
 
-    BENCHMARK(bench_make_hash)->Unit(benchmark::kMillisecond);
+    BENCHMARK(bench_make_hash)->Unit(benchmark::kMillisecond)->UseRealTime();
 }

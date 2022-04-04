@@ -118,6 +118,7 @@ get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 
 target_include_directories(${TARGET_NAME} PRIVATE
     ${EXTERNAL_ZSTD_INCLUDE_DIR}
+	../external/oneTBB/include
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
 	${ABSL_COMMON_INCLUDE_DIRS})
@@ -127,6 +128,7 @@ target_link_libraries(${TARGET_NAME}
     libzstd_static
 	absl::base
 	absl::flat_hash_map
+	TBB::tbb
     $<$<PLATFORM_ID:Linux>:rt>)
 
 # Configure the library name to identify it as a Python extension module.
