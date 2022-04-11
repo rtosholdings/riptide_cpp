@@ -108,6 +108,7 @@ using LPVOID = void *;
     // consider sync_add_and_fetch
     #define InterlockedAdd64(val, len) (__sync_fetch_and_add(val, len) + len)
     #define InterlockedIncrement64(val) (__sync_fetch_and_add(val, 1) + 1)
+    #define InterlockedDecrement64(val) (__sync_fetch_and_add(val, -1) - 1)
     #define YieldProcessor _mm_pause
     #define InterlockedIncrement(val) (__sync_fetch_and_add(val, 1) + 1)
     #define FMInterlockedOr(val, bitpos) (__sync_fetch_and_or(val, bitpos))
