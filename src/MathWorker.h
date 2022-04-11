@@ -798,4 +798,4 @@ public:
 
 //------------------------------------------------------------
 // declare the global math worker
-extern CMathWorker * g_cMathWorker;
+extern DllExport CMathWorker * g_cMathWorker;
