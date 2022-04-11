@@ -6,6 +6,7 @@
 #include "../ut/include/boost/ut.hpp"
 
 #include <mutex>
+#include <condition_variable>
 
 using namespace boost::ut;
 using boost::ut::suite;
