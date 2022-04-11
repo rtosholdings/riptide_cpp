@@ -485,14 +485,12 @@ public:
             }
         }
 
-#if 1
-        // Join all active threads.
+        // Join all awoken threads.
         while (pWorkItem->ThreadWoken != 0)
         {
             MATHLOGGING("Joining %llu\n", pWorkItem->ThreadWoken);
             YieldProcessor();
         }
-#endif
 
         // Mark this as completed
         pWorkerRing->CompleteWorkItem();
