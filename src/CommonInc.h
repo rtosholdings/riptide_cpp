@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "Defs.h"
+
 #if defined(_WIN32) && ! defined(__GNUC__)
     #define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
     #define NOMINMAX
@@ -19,17 +21,6 @@
     #include <winnt.h>
 #else
 
-#endif
-
-// Export DLL section
-#if defined(_WIN32) && ! defined(__GNUC__)
-# ifdef BUILDING_RIPTIDE_CPP
-#  define DllExport __declspec(dllexport)
-# else
-#  define DllExport __declspec(dllimport)
-# endif
-#else
-# define DllExport
 #endif
 
 using HANDLE = void *;

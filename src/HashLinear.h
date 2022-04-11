@@ -1,15 +1,11 @@
 #pragma once
 #include <assert.h>
 
+#include "Defs.h"
+
 PyObject * IsMember32(PyObject * self, PyObject * args);
 PyObject * IsMember64(PyObject * self, PyObject * args);
 PyObject * IsMemberCategorical(PyObject * self, PyObject * args);
-
-#if defined(_WIN32) && ! defined(__GNUC__)
-    #define dll_export __declspec(dllexport)
-#else
-    #define dll_export
-#endif
 
 enum HASH_MODE
 {
@@ -36,7 +32,7 @@ template <typename U>
 void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, U * pOutput, int8_t * pBooleanOutput,
                       int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-dll_export void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
+DllExport void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
                                  int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
 int64_t IsMemberCategoricalHashStringPre(PyArrayObject ** indexArray, PyArrayObject * inArr1, int64_t size1, int64_t strWidth1,
@@ -253,9 +249,9 @@ public:
 public:
     // Parallel hashing does not want memory deallocated so it will set deallocate
     // to false
-    dll_export CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true);
+    DllExport CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true);
 
-    dll_export ~CHashLinear();
+    DllExport ~CHashLinear();
 
     void FreeMemory(bool forceDeallocate);
 
@@ -350,7 +346,7 @@ public:
     //-----------------------------------------------
     void MakeHashLocationMK(int64_t arraySize, T * pInput, int64_t totalItemSize, int64_t hintSize);
 
-    dll_export void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
+    DllExport void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
 
     void InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash);
 
