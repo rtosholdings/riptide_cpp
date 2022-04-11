@@ -436,6 +436,7 @@ public:
 
         // only windows uses this for now
         pWorkItem->ThreadWakeup = threadWakeup;
+        pWorkItem->ThreadCompleted = 0;
 
         if (bGenericMode)
         {
@@ -483,6 +484,15 @@ public:
                 // Sleep(0);
             }
         }
+
+#if 1
+        // Join all active threads.
+        while (pWorkItem->ThreadCompleted != threadWakeup)
+        {
+            MATHLOGGING("Joining %llu\n", pWorkItem->ThreadCompleted);
+            YieldProcessor();
+        }
+#endif
 
         // Mark this as completed
         pWorkerRing->CompleteWorkItem();

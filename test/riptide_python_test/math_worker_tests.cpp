@@ -60,25 +60,42 @@ namespace
                 pstWorkerItem->CompleteWorkBlock();
             }
 
+            // Notify worker thread we're completed.
+            lock.lock();
+            callbackInfo.mainState_ = JoinTestCallbackInfo::MainState::DONE;
+            lock.unlock();
+            callbackInfo.mainSignal_.notify_all();
+
             return didSomeWork;
         }
 
         else // worker thread(s)
         {
             std::unique_lock lock{callbackInfo.mutex_};
+            // Immediately complete all worker threads but the first.
             if (callbackInfo.workerState_ != JoinTestCallbackInfo::WorkerState::INITIAL)
             {
                 return false;
             }
+
+            // Notify the main thread we're ready.
             callbackInfo.workerState_ = JoinTestCallbackInfo::WorkerState::READY;
             lock.unlock();
             callbackInfo.workerSignal_.notify_all();
 
+            // Wait for main thread to complete.
             lock.lock();
             callbackInfo.mainSignal_.wait(lock, [&]
             {
                 return callbackInfo.mainState_ == JoinTestCallbackInfo::MainState::DONE;
             });
+
+            // Give main thread opportunity to exit (in buggy case)
+            lock.unlock();
+            std::this_thread::yield();
+
+            // Notify main thread we're done.
+            lock.lock();
             callbackInfo.workerState_ = JoinTestCallbackInfo::WorkerState::DONE;
             lock.unlock();
             callbackInfo.workerSignal_.notify_all();
@@ -103,11 +120,11 @@ namespace
             int64_t const len{1};
             g_cMathWorker->WorkMain(workItem, len, threadWakeup);
 
-            // Ensure the worker thread is not running.
+            // Verify that the worker thread is not running.
             std::unique_lock lock{callbackInfo.mutex_};
             expect(callbackInfo.workerState_ == JoinTestCallbackInfo::WorkerState::DONE);
 
-            // Unblock worker if it's still running.
+            // Unblock worker if it's still running (in buggy case).
             callbackInfo.mainState_ = JoinTestCallbackInfo::MainState::DONE;
             lock.unlock();
             callbackInfo.mainSignal_.notify_all();

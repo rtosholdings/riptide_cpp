@@ -124,6 +124,7 @@ void * WorkerThreadFunction(void * lpParam)
             if (wakeup >= 0)
             {
                 didSomeWork = pWorkItem->DoWork(core, workIndex);
+                InterlockedIncrement64(&pWorkItem->ThreadCompleted);
             }
             else
             {
@@ -131,8 +132,9 @@ void * WorkerThreadFunction(void * lpParam)
                 // workIndex, workIndexCompleted); workIndex++;
             }
 #else
+            // On Linux futex guarantees at most requested waiters are awakened (TODO: trust but verify?)
             didSomeWork = pWorkItem->DoWork(core, workIndex);
-
+            InterlockedIncrement64(&pWorkItem->ThreadCompleted);
 #endif
         }
 
