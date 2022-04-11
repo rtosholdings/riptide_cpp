@@ -7,6 +7,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 using namespace boost::ut;
 using boost::ut::suite;
