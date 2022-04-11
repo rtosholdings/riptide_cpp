@@ -12,7 +12,7 @@ using boost::ut::suite;
 
 namespace
 {
-    struct CALLBACK_INFO
+    struct JoinTestCallbackInfo
     {
         std::mutex mutex_;
 
@@ -32,20 +32,19 @@ namespace
         std::condition_variable mainSignal_;
     };
 
-    static bool Callback(struct stMATH_WORKER_ITEM * pstWorkerItem, int core, int64_t workIndex)
+    static bool JoinTestCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, int core, int64_t workIndex)
     {
-        auto & callbackInfo{*static_cast<CALLBACK_INFO *>(pstWorkerItem->WorkCallbackArg)};
+        auto & callbackInfo{*static_cast<JoinTestCallbackInfo *>(pstWorkerItem->WorkCallbackArg)};
 
         if (workIndex == 0) // main thread
         {
+            std::unique_lock lock{callbackInfo.mutex_};
             // Wait for worker to be ready.
+            callbackInfo.workerSignal_.wait(lock, [&]
             {
-                std::unique_lock lock{callbackInfo.mutex_};
-                callbackInfo.workerSignal_.wait(lock, [&]
-                {
-                    return callbackInfo.workerState_ == CALLBACK_INFO::WorkerState::READY;
-                });
-            }
+                return callbackInfo.workerState_ == JoinTestCallbackInfo::WorkerState::READY;
+            });
+            lock.unlock();
 
             bool didSomeWork{false};
             int64_t lenX;
@@ -66,28 +65,22 @@ namespace
 
         else // worker thread(s)
         {
+            std::unique_lock lock{callbackInfo.mutex_};
+            if (callbackInfo.workerState_ != JoinTestCallbackInfo::WorkerState::INITIAL)
             {
-                std::lock_guard _{callbackInfo.mutex_};
-                if (callbackInfo.workerState_ != CALLBACK_INFO::WorkerState::INITIAL)
-                {
-                    return false;
-                }
-                callbackInfo.workerState_ = CALLBACK_INFO::WorkerState::READY;
+                return false;
             }
+            callbackInfo.workerState_ = JoinTestCallbackInfo::WorkerState::READY;
+            lock.unlock();
             callbackInfo.workerSignal_.notify_all();
 
+            lock.lock();
+            callbackInfo.mainSignal_.wait(lock, [&]
             {
-                std::unique_lock lock{callbackInfo.mutex_};
-                callbackInfo.mainSignal_.wait(lock, [&]
-                {
-                    return callbackInfo.mainState_ == CALLBACK_INFO::MainState::DONE;
-                });
-            }
-
-            {
-                std::lock_guard _{callbackInfo.mutex_};
-                callbackInfo.workerState_ = CALLBACK_INFO::WorkerState::DONE;
-            }
+                return callbackInfo.mainState_ == JoinTestCallbackInfo::MainState::DONE;
+            });
+            callbackInfo.workerState_ = JoinTestCallbackInfo::WorkerState::DONE;
+            lock.unlock();
             callbackInfo.workerSignal_.notify_all();
 
             return false;
@@ -96,14 +89,14 @@ namespace
 
     suite math_worker_ops = []
     {
-        "work_main_waits"_test = [&]
+        "work_main_joins_workers"_test = [&]
         {
             expect(g_cMathWorker != nullptr);
 
-            CALLBACK_INFO callbackInfo{};
+            JoinTestCallbackInfo callbackInfo{};
 
             auto * workItem{g_cMathWorker->GetWorkItem(CMathWorker::WORK_ITEM_BIG)};
-            workItem->DoWorkCallback = Callback;
+            workItem->DoWorkCallback = JoinTestCallback;
             workItem->WorkCallbackArg = &callbackInfo;
 
             int32_t const threadWakeup{0};
@@ -111,24 +104,21 @@ namespace
             g_cMathWorker->WorkMain(workItem, len, threadWakeup);
 
             // Ensure the worker thread is not running.
+            std::unique_lock lock{callbackInfo.mutex_};
+            expect(callbackInfo.workerState_ == JoinTestCallbackInfo::WorkerState::DONE);
 
             // Unblock worker if it's still running.
-            {
-                std::lock_guard _{callbackInfo.mutex_};
-                callbackInfo.mainState_ = CALLBACK_INFO::MainState::DONE;
-            }
+            callbackInfo.mainState_ = JoinTestCallbackInfo::MainState::DONE;
+            lock.unlock();
             callbackInfo.mainSignal_.notify_all();
 
+            lock.lock();
+            callbackInfo.workerSignal_.wait(lock, [&]
             {
-                std::unique_lock lock{callbackInfo.mutex_};
-                callbackInfo.workerSignal_.wait(lock, [&]
-                {
-                    return callbackInfo.workerState_ == CALLBACK_INFO::WorkerState::DONE;
-                });
-            }
+                return callbackInfo.workerState_ == JoinTestCallbackInfo::WorkerState::DONE;
+            });
 
-            int i{};
-            ++i;
+            lock.unlock();
         };
     };
 }
