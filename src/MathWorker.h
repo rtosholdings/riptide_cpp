@@ -436,7 +436,7 @@ public:
 
         // only windows uses this for now
         pWorkItem->ThreadWakeup = threadWakeup;
-        pWorkItem->ThreadWoken = 0;
+        pWorkItem->ThreadAwakened = 0;
 
         if (bGenericMode)
         {
@@ -485,10 +485,10 @@ public:
             }
         }
 
-        // Join all awoken threads.
-        while (pWorkItem->ThreadWoken != 0)
+        // Join all awakened threads.
+        while (pWorkItem->ThreadAwakened != 0)
         {
-            MATHLOGGING("Joining %llu\n", pWorkItem->ThreadWoken);
+            MATHLOGGING("Joining %llu\n", pWorkItem->ThreadAwakened);
             YieldProcessor();
         }
 

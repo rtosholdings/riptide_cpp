@@ -189,7 +189,9 @@ struct stMATH_WORKER_ITEM
 
     // How many threads to wake up (atomic decrement)
     int64_t ThreadWakeup;
-    int64_t ThreadWoken; // How many threads have awoken
+
+    // How many threads have been awakened (possibly executing callbacks).
+    int64_t ThreadAwakened;
 
     // Used when calling MultiThreadedWork
     union
