@@ -86,23 +86,23 @@ jobs:
       - name: Install build riptide_cpp
         run: |
           'pip install riptide_cpp --no-index --find-links file://dist'
-#      - name: Install riptable dependencies
-#        run: |
-#          pip install riptable
-#      - name: Install other dependencies
-#        run: |
-#          pip install ansi2html ipython ipykernel python-dateutil
-#          pip install flake8 pytest hypothesis nose bottleneck pandas
-#      - name: Test with pytest
-#        run: |
-#          python -m riptable.tests.run
-#      #- name: Tooling integration tests
-#      #  run: |
-#      #    ipython -m pytest riptable/test_tooling_integration
-#      # disable hypothesis tests until they run faster, are more consistent, and are easier to investigate
-#      #- name: Property based hypothesis tests
-#      #  run: |
-#      #    pytest --hypothesis-show-statistics -k test_ -m 'not xfail' riptable/hypothesis_tests
+      - name: Install riptable dependencies
+        run: |
+          pip install riptable
+      - name: Install other dependencies
+        run: |
+          pip install ansi2html ipython ipykernel python-dateutil
+          pip install flake8 pytest hypothesis nose bottleneck pandas
+      - name: Test with pytest
+        run: |
+          python -m riptable.tests.run
+      #- name: Tooling integration tests
+      #  run: |
+      #    ipython -m pytest riptable/test_tooling_integration
+      # disable hypothesis tests until they run faster, are more consistent, and are easier to investigate
+      #- name: Property based hypothesis tests
+      #  run: |
+      #    pytest --hypothesis-show-statistics -k test_ -m 'not xfail' riptable/hypothesis_tests
 
   deploy:
     # deploys build artifacts to PyPI
