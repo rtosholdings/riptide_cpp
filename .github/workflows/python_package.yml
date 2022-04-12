@@ -19,7 +19,8 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019]
+        #os: [ubuntu-latest, windows-2019]
+        os: [ubuntu-latest]
         #python-version: [3.8, 3.9, '3.10']
         python-version: [3.9]
         numpy-version: [1.21]
@@ -59,7 +60,8 @@ jobs:
 
   deploy:
     # deploys build artifacts to PyPI
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+    if: ${{ false }}
+    #if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     needs: [build, conda_build]
     runs-on: ubuntu-latest
     steps:
@@ -85,6 +87,7 @@ jobs:
           twine upload dist/* --verbose
 
   conda_build:
+    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -138,7 +141,8 @@ jobs:
           if-no-files-found: "error"
 
   conda_deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
+    if: ${{ false }}
+    #if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' }}
     needs: [build, conda_build]
     runs-on: ubuntu-latest
     env:
