@@ -87,6 +87,7 @@ jobs:
           path: dist/
       - name: Install build riptide_cpp
         run: |
+          pip install setuptools
           pip install riptide_cpp --no-index --find-links ./dist
       - name: Install riptable dependencies
         run: |
