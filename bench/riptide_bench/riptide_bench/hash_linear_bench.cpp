@@ -73,7 +73,7 @@ namespace
         }
     }
     
-//    BENCHMARK(bench_is_member)->Unit(benchmark::kMillisecond)->UseRealTime();
+    BENCHMARK(bench_is_member)->Unit(benchmark::kMillisecond)->UseRealTime();
 
     void bench_make_hash(benchmark::State & state)
     {

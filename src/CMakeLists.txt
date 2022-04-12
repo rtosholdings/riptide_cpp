@@ -47,6 +47,7 @@ set(HEADERS
     DateTime.h
     Ema.h
     #FileReadWrite.h
+	flat_hash_map.h
     GroupBy.h
     HashFunctions.h
     HashLinear.h

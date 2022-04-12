@@ -62,17 +62,17 @@ struct type_deducer;
 template <typename KeyT>
 struct fhm_hasher
 {
-    std::pmr::monotonic_buffer_resource mono{ backing.data(), backing.capacity() };
-    std::pmr::unsynchronized_pool_resource pool{ &mono };
-    std::pmr::memory_resource * resource{&pool};
+//    std::pmr::monotonic_buffer_resource mono{ backing.data(), backing.capacity() };
+//    std::pmr::unsynchronized_pool_resource pool{ &mono };
+//    std::pmr::memory_resource * resource{&mono};
     
-//    oneapi::tbb::concurrent_hash_map<KeyT, int64_t> hasher;
+    oneapi::tbb::concurrent_hash_map<KeyT, int64_t> hasher;
 //    absl::flat_hash_map<KeyT, int64_t> hasher{};
 //    absl::flat_hash_map<KeyT, int64_t,
 //                        absl::container_internal::hash_default_hash<KeyT>,
 //                        absl::container_internal::hash_default_eq<KeyT>,
 //                        std::pmr::polymorphic_allocator<std::pair<KeyT, int64_t>>> hasher{resource};
-    std::pmr::unordered_map<KeyT, int64_t, hash_function<KeyT>> hasher{resource};
+//    std::pmr::unordered_map<KeyT, int64_t, hash_function<KeyT>> hasher{resource};
 //    std::unordered_map<KeyT, int64_t> hasher{};
     KeyT const * data_series_p{};
 
@@ -90,35 +90,35 @@ struct fhm_hasher
             hint_size = array_size;
         }
 
-        hasher.reserve(hint_size);
+//        hasher.reserve(hint_size);
 
         data_series_p = hash_list_p;
 
         for (size_t i{ 0 }; i != hint_size; ++i)
         {
-            hasher.emplace(hash_list_p[i], i);
-//            typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::accessor a;
-//            hasher.insert(a, hash_list_p[i]);
-//            a->second = i;
+//            hasher.emplace(hash_list_p[i], i);
+            typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::accessor a;
+            hasher.insert(a, hash_list_p[i]);
+            a->second = i;
         }
     }
 
     int64_t find(KeyT const * key) const noexcept
     {
-//        typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::accessor a;
-//        a->first = *key;
-//        bool found = hasher.find(a);
-//        bool found = hasher.contains(*key);
-        bool found = hasher.find(*key) != hasher.end();
+        typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::const_accessor finder;
+        bool found = hasher.find(finder, *key);
+        //        bool found = hasher.contains(*key);
+        //        bool found = hasher.find(*key) != hasher.end();
 
-        return found ? hasher.at(*key) : -1ll;
+        //return found ? hasher.at(*key) : -1ll;
+        return found ? finder->second : -1ll;
     }
 };
 
 template <typename KeyT>
 struct is_member_check
 {
-    fhm_hasher<KeyT> hash{};
+    fhm_hasher<KeyT> mutable hash{};
 
     int operator()(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p, int64_t * output_p,
                    int8_t * bool_out_p)
