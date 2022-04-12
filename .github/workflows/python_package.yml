@@ -13,6 +13,8 @@ on:
 
 jobs:
   build:
+    #DEL
+    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -57,13 +59,15 @@ jobs:
           path: dist/
           if-no-files-found: error
         #
-        # Test with riptable (reusing existing env for better performance)
+        # Test with riptable (using existing env for better performance)
         #
       - name: Install built riptide_cpp
         # This depends on the riptide_cpp in dist being "newer" than on PyPI (which should be true),
         # but also allows finding all the dependencies using regular lookup.
         # The alternative would be to use "pip install --find-links --no-deps", then install all dependencies,
         # as there doesn't appear to be a "pip install --only-deps" option.
+        # Could also use the "pip install -e" (editable installs) method to link to pre-build tree, but
+        # that doesn't exercise the ability to install.
         run: |
           pip install riptide_cpp --upgrade --find-links ./dist
       - name: Install riptable
@@ -116,11 +120,11 @@ jobs:
           twine upload dist/* --verbose
 
   conda_build:
-    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-2019']
+        #os: ['ubuntu-latest', 'windows-2019']
+        os: ['ubuntu-latest']
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips: [
           #{ python: '3.8', numpy: '1.20' },
