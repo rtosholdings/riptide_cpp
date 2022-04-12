@@ -19,8 +19,7 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        #os: [ubuntu-latest, windows-2019]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-2019]
         #python-version: [3.8, 3.9, '3.10']
         python-version: [3.9]
         numpy-version: [1.21]
@@ -60,31 +59,31 @@ jobs:
         #
         # Test with riptable (reusing existing env for better performance)
         #
-      - name: Install build riptide_cpp
+      - name: Install built riptide_cpp
         # This depends on the riptide_cpp in dist being "newer" than on PyPI (which should be true),
         # but also allows finding all the dependencies using regular lookup.
         # The alternative would be to use "pip install --find-links --no-deps", then install all dependencies,
         # as there doesn't appear to be a "pip install --only-deps" option.
         run: |
           pip install riptide_cpp --upgrade --find-links ./dist
-      - name: Install riptable dependencies
+      - name: Install riptable
         run: |
           pip install riptable
       - name: Install other dependencies
         run: |
           pip install ansi2html ipython ipykernel python-dateutil
           pip install flake8 pytest hypothesis nose bottleneck pandas
-      - name: Test with pytest
+      - name: Riptable test with pytest
         #this doesn't exit with error failure: TODO: fix riptable.tests.run() to do so!
         #run: |
         #  python -m riptable.tests.run
         run: |
-          python -c "import os,sys,pytest,riptable.tests;os.chdir(os.path.dirname(riptable.tests.__file__));sys.exit(pytest.main([]))"
-      #- name: Tooling integration tests
+          python -c "import os,sys,pytest,riptable.tests;sys.exit(pytest.main(['-k','test_',os.path.dirname(riptable.tests.__file__)]))"
+      #- name: Riptable tooling integration tests
       #  run: |
       #    ipython -m pytest riptable/test_tooling_integration
       # disable hypothesis tests until they run faster, are more consistent, and are easier to investigate
-      #- name: Property based hypothesis tests
+      #- name: Riptable property based hypothesis tests
       #  run: |
       #    pytest --hypothesis-show-statistics -k test_ -m 'not xfail' riptable/hypothesis_tests
 
