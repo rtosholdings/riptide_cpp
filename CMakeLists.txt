@@ -66,7 +66,7 @@ message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLS
 
 include(AddPythonSupport)
 
-# Under scikit-build, exclude all dependencies from install target to avoid polluting distribution.
+# Under setupbuild, exclude all dependencies from install target to avoid polluting distribution.
 if(SETUPBUILD)
     set(EXLUSION_SPECIFIER EXCLUDE_FROM_ALL)
 else()
