@@ -5,7 +5,8 @@ name: Python package
 
 on:
   push:
-    branches: [ master ]
+    #branches: [ master ]
+    branches: [ add-riptable-tests ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -19,7 +20,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2019]
-        python-version: [3.8, 3.9, '3.10']
+        #python-version: [3.8, 3.9, '3.10']
+        python-version: [3.9]
         numpy-version: [1.21]
     steps:
       - uses: actions/checkout@v2
@@ -89,11 +91,11 @@ jobs:
         os: ['ubuntu-latest', 'windows-2019']
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips: [
-          { python: '3.8', numpy: '1.20' },
-          { python: '3.8', numpy: '1.21' },
-          { python: '3.9', numpy: '1.20' },
+          #{ python: '3.8', numpy: '1.20' },
+          #{ python: '3.8', numpy: '1.21' },
+          #{ python: '3.9', numpy: '1.20' },
           { python: '3.9', numpy: '1.21' },
-          { python: '3.10', numpy: '1.21' }
+          #{ python: '3.10', numpy: '1.21' }
           ]
     env:
       python_version: 3.9
