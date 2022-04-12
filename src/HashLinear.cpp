@@ -1727,7 +1727,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                                 break;
                             }
 
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
@@ -1769,7 +1769,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                                 break;
                             }
 
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
@@ -1813,7 +1813,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                                 pBoolOutput[i] = 1;
                                 break;
                             }
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
@@ -1854,7 +1854,7 @@ void IsMember(void * pHashLinearVoid, int64_t arraySize, void * pHashListT, int8
                                 pBoolOutput[i] = 1;
                                 break;
                             }
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
@@ -2240,7 +2240,7 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                                 break;
                             }
 
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
@@ -2293,7 +2293,7 @@ void IsMemberFloat(void * pHashLinearVoid, int64_t arraySize, void * pHashListT,
                                 break;
                             }
 
-                            if (hash >= HashSize)
+                            if (++hash >= HashSize)
                             {
                                 hash = 0;
                             }
