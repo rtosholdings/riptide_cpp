@@ -19,7 +19,8 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019]
+        #os: [ubuntu-latest, windows-2019]
+        os: [ubuntu-latest]
         #python-version: [3.8, 3.9, '3.10']
         python-version: [3.9]
         numpy-version: [1.21]
@@ -66,7 +67,8 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019]
+        #os: [ubuntu-latest, windows-2019]
+        os: [ubuntu-latest]
         python-version: [3.9]
         numpy-version: [1.21]
     steps:
@@ -85,7 +87,7 @@ jobs:
           path: dist/
       - name: Install build riptide_cpp
         run: |
-          'pip install riptide_cpp --no-index --find-links file://dist'
+          pip install riptide_cpp --no-index --find-links ./dist
       - name: Install riptable dependencies
         run: |
           pip install riptable
