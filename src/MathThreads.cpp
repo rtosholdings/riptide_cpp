@@ -117,6 +117,7 @@ void * WorkerThreadFunction(void * lpParam)
         if (workIndex > workIndexCompleted)
         {
             stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetExistingWorkItem();
+            InterlockedIncrement64(&pWorkItem->ThreadAwakened);
 
 #if defined(RT_OS_WINDOWS)
             // Windows we check if the work was for our thread
@@ -132,8 +133,8 @@ void * WorkerThreadFunction(void * lpParam)
             }
 #else
             didSomeWork = pWorkItem->DoWork(core, workIndex);
-
 #endif
+            InterlockedDecrement64(&pWorkItem->ThreadAwakened);
         }
 
         if (! didSomeWork)

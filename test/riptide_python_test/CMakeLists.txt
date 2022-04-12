@@ -31,6 +31,7 @@ set(SOURCES
 	ema_test.cpp
 	hash_linear_tests.cpp
     main.cpp
+    math_worker_tests.cpp
 	tests.cpp
 	reduce_tests.cpp
 	utility_functions.cpp)

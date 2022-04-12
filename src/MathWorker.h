@@ -436,6 +436,7 @@ public:
 
         // only windows uses this for now
         pWorkItem->ThreadWakeup = threadWakeup;
+        pWorkItem->ThreadAwakened = 0;
 
         if (bGenericMode)
         {
@@ -482,6 +483,13 @@ public:
                 YieldProcessor();
                 // Sleep(0);
             }
+        }
+
+        // Join all awakened threads.
+        while (pWorkItem->ThreadAwakened != 0)
+        {
+            MATHLOGGING("Joining %llu\n", pWorkItem->ThreadAwakened);
+            YieldProcessor();
         }
 
         // Mark this as completed
@@ -798,4 +806,4 @@ public:
 
 //------------------------------------------------------------
 // declare the global math worker
-extern CMathWorker * g_cMathWorker;
+extern DllExport CMathWorker * g_cMathWorker;

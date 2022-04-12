@@ -63,8 +63,8 @@ typedef void(WINAPI * WakeSingleAddress)(void *);
 typedef void(WINAPI * WakeAllAddress)(void *);
 typedef bool(WINAPI * WaitAddress)(volatile void *, void *, size_t, uint32_t);
 
-extern WakeSingleAddress g_WakeSingleAddress;
-extern WakeAllAddress g_WakeAllAddress;
+extern DllExport WakeSingleAddress g_WakeSingleAddress;
+extern DllExport WakeAllAddress g_WakeAllAddress;
 extern WaitAddress g_WaitAddress;
 
 // Forward declaration
@@ -189,6 +189,9 @@ struct stMATH_WORKER_ITEM
 
     // How many threads to wake up (atomic decrement)
     int64_t ThreadWakeup;
+
+    // How many threads have been awakened (possibly executing callbacks).
+    int64_t ThreadAwakened;
 
     // Used when calling MultiThreadedWork
     union

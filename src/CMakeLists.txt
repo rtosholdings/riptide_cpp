@@ -113,6 +113,8 @@ add_library(${TARGET_NAME} SHARED
     ${HEADERS}
     ${SOURCES})
 
+target_compile_definitions(${TARGET_NAME} PRIVATE BUILDING_RIPTIDE_CPP)
+
 get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 
 target_include_directories(${TARGET_NAME} PRIVATE
