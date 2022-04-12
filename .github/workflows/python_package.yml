@@ -86,8 +86,12 @@ jobs:
           name: build-artifacts
           path: dist/
       - name: Install build riptide_cpp
+        # This depends on the riptide_cpp in dist being "newer" than on PyPI (which should be true),
+        # but also allows finding all the dependencies using regular lookup.
+        # The alternative would be to use "pip install --find-links --no-deps", then install all dependencies,
+        # as there doesn't appear to be a "pip install --only-deps" option.
         run: |
-          pip -v -v -v install riptide_cpp --upgrade --find-links ./dist
+          pip install riptide_cpp --upgrade --find-links ./dist
       - name: Install riptable dependencies
         run: |
           pip install riptable
@@ -96,8 +100,11 @@ jobs:
           pip install ansi2html ipython ipykernel python-dateutil
           pip install flake8 pytest hypothesis nose bottleneck pandas
       - name: Test with pytest
+        #this doesn't exit with error failure: TODO: fix riptable.tests.run() to do so!
+        #run: |
+        #  python -m riptable.tests.run
         run: |
-          python -m riptable.tests.run
+          python -c "import os,sys,pytest,riptable.tests;os.chdir(os.path.dirname(riptable.tests.__file__));sys.exit(pytest.main([]))"
       #- name: Tooling integration tests
       #  run: |
       #    ipython -m pytest riptable/test_tooling_integration
