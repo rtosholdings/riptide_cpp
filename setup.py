@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import sys
+import shutil
 from pprint import pprint
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -9,6 +10,21 @@ from setuptools.command.sdist import sdist
 from distutils.spawn import find_executable
 
 package_name = 'riptide_cpp'
+
+version_scm_path = 'src/_version.scm.d'
+version_path = 'src/_version.d'
+
+def copy_if_different(src_path, dst_path):
+    with open(src_path) as file:
+        src_contents = file.read()
+    try:
+        with open(dst_path) as file:
+            dst_contents = file.read()
+        do_copy = dst_contents != src_contents
+    except OSError:
+        do_copy = True
+    if do_copy:
+        shutil.copyfile(src_path, dst_path)
 
 # CMake-driven setuptools build extension inspired by https://martinopilia.com/posts/2018/09/15/building-python-extension.html
 class CMakeExtension(Extension):
@@ -36,6 +52,8 @@ class CMakeBuild(build_ext):
                 cmake_args += [
                     '-GNinja'
                     ]
+
+        copy_if_different(version_scm_path, version_path)
 
         for ext in self.extensions:
 
@@ -104,7 +122,7 @@ setup(
     use_scm_version = {
         'root': '.',
         'version_scheme': 'post-release',
-        'write_to': 'src/_version.d',
+        'write_to': version_scm_path,
         'write_to_template': '"{version}"',
     },
     setup_requires=['setuptools_scm'],
