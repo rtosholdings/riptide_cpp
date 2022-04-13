@@ -23,7 +23,7 @@ namespace
 
     suite hash_linear_ops = []
     {
-        "ismember64_uint64_too_many_uniques"_test = [&]
+        skip / "ismember64_uint64_too_many_uniques"_test = [&]
         {
             std::vector<uint64_t> haystack(2 * 128 * 1024ULL * 1024ULL);
             std::vector<uint64_t> needles(1024ULL * 1024ULL);
