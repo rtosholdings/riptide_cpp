@@ -24,23 +24,8 @@ requirements:
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
 
 test:
-  requires:
-    - riptable
-    - ansi2html
-    - ipython
-    - ipykernel
-    - python-dateutil
-    - flake8
-    - pytest
-    - hypothesis
-    - nose
-    - bottleneck
-    - pandas
   imports:
     riptide_cpp
-  commands:
-    - python -c 'import riptide_cpp; print(riptide_cpp.__version__)'
-    - python -c "import os,sys,pytest,riptable.tests;sys.exit(pytest.main(['-k','test_',os.path.dirname(riptable.tests.__file__)]))"
 
 about:
   home: https://github.com/rtosholdings/riptide_cpp
