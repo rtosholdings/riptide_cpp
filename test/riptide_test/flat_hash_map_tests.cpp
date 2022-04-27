@@ -121,7 +121,7 @@ namespace
             expect( output[ 1 ] == 9_i );
             expect( output[ 2 ] == 0_i );
             expect( output[ 3 ] == 5_i );
-            expect( output[ 4 ] == -1_i );
+            expect( output[ 4 ] < -9'223'372'036'854'775'807_ll );
 
             expect( bools[ 0 ] == 1_i );
             expect( bools[ 1 ] == 1_i );
