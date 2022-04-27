@@ -41,11 +41,11 @@ add_executable(${TARGET_NAME} ${HEADERS} ${SOURCES})
 
 get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 
-target_include_directories(${TARGET_NAME} PRIVATE ${RT_SOURCE_DIR} ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+target_include_directories(${TARGET_NAME} PRIVATE ${RT_SOURCE_DIR} external/oneTBB/include ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 
 target_link_directories(${TARGET_NAME} PRIVATE ${Python3_LIBRARY_DIRS})
 
-target_link_libraries(${TARGET_NAME} PRIVATE riptide_cpp ${Python3_Libraries} benchmark::benchmark $<$<PLATFORM_ID:Linux>:pthread> $<$<PLATFORM_ID:Linux>:rt>)
+target_link_libraries(${TARGET_NAME} PRIVATE riptide_cpp TBB::tbb ${Python3_Libraries} benchmark::benchmark $<$<PLATFORM_ID:Linux>:pthread> $<$<PLATFORM_ID:Linux>:rt>)
 
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)

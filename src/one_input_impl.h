@@ -564,6 +564,14 @@ namespace riptable_cpp
             }
         }
 
+        template <typename calculation_t, typename wide_ops_t>
+        decltype(auto) calculate(char const * in_p, none_op const * requested_op, calculation_t const * in_type,
+                                 wide_ops_t wide_ops)
+        {
+            using T = typename calculation_t::data_type const;
+            return T{};
+        }
+
         // numpy standard is to treat stride as bytes
         template <typename operation_t, typename data_t>
         void perform_operation(char const * in_p, char * out_p, ptrdiff_t & starting_element, int64_t const in_array_stride,

@@ -74,6 +74,7 @@ else()
 endif()
 
 add_subdirectory(external ${EXLUSION_SPECIFIER})
+
 add_subdirectory(src)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(bench ${EXLUSION_SPECIFIER})
