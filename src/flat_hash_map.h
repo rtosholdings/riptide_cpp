@@ -137,7 +137,7 @@ struct is_member_check
             }
             else
             {
-                *(output_p + elem) = -1;
+                *(output_p + elem) = std::numeric_limits<IndexT>::min();
                 *(bool_out_p + elem) = 0;
             }
         }
