@@ -197,6 +197,9 @@ namespace riptable_cpp
         case MATH_OPERATION::SQRT:
             retval.first = sqrt_op{};
             break;
+        default:
+            retval.first = none_op{};
+            break;
         }
 
         return retval;

@@ -1,7 +1,11 @@
 #include "RipTide.h"
+#include "flat_hash_map.h"
 #include "HashFunctions.h"
 #include "HashLinear.h"
 #include "ndarray.h"
+#include "one_input.h"
+
+#include <cstdlib>
 
 // struct ndbuf;
 // typedef struct ndbuf {
@@ -107,15 +111,27 @@ PyObject * IsMember64(PyObject * self, PyObject * args)
             }
             else
             {
-                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                if (std::getenv("RT_NEW_HASH"))
                 {
-                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
-                                   HASH_MODE(hashMode), hintSize);
+                    throw std::runtime_error("We're executing the new code path");
+                    auto [opt_op_trait, opt_type_trait] = riptable_cpp::set_traits(0, arrayType1);
+                    riptable_cpp::data_type_t variant = *opt_type_trait;
+                    [[maybe_unused]] int retval = is_member_for_type(
+                        arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2, reinterpret_cast<char const *>(pDataIn2),
+                        pDataOut2, pDataOut1, variant, std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
                 }
                 else
                 {
-                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1,
-                                   HASH_MODE(hashMode), hintSize);
+                    if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                    {
+                        IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
+                                       HASH_MODE(hashMode), hintSize);
+                    }
+                    else
+                    {
+                        IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1,
+                                       HASH_MODE(hashMode), hintSize);
+                    }
                 }
 
                 PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
@@ -168,7 +184,8 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
     int sizeType1 = (int)NpyItemSize((PyObject *)inArr1);
     int sizeType2 = (int)NpyItemSize((PyObject *)inArr2);
 
-    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
+    LOGGING("IsMemberCategorical %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1,
+            sizeType2);
 
     switch (arrayType1)
     {

@@ -15,7 +15,7 @@ namespace
     std::vector<uint64_t> test_data(2ULL * 1024ULL * 1024ULL);
     std::random_device dev{};
     CHashLinear<uint64_t, int64_t> hasher{};
-    fhm_hasher<uint64_t> new_hasher{};
+    fhm_hasher<uint64_t, int64_t> new_hasher{};
     std::vector<uint64_t> needles(1024ULL * 1024ULL);
     std::array<int64_t, 1024ULL * 1024ULL> output{};
     std::array<int8_t, 1024ULL * 1024ULL> bools{};

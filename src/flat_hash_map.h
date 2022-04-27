@@ -59,21 +59,21 @@ template <typename T>
 struct type_deducer;
 
 
-template <typename KeyT>
+template <typename KeyT, typename IndexT>
 struct fhm_hasher
 {
 //    std::pmr::monotonic_buffer_resource mono{ backing.data(), backing.capacity() };
 //    std::pmr::unsynchronized_pool_resource pool{ &mono };
 //    std::pmr::memory_resource * resource{&mono};
     
-    oneapi::tbb::concurrent_hash_map<KeyT, int64_t> hasher;
-//    absl::flat_hash_map<KeyT, int64_t> hasher{};
-//    absl::flat_hash_map<KeyT, int64_t,
+    oneapi::tbb::concurrent_hash_map<KeyT, IndexT> hasher;
+//    absl::flat_hash_map<KeyT, IndexT> hasher{};
+//    absl::flat_hash_map<KeyT, IndexT,
 //                        absl::container_internal::hash_default_hash<KeyT>,
 //                        absl::container_internal::hash_default_eq<KeyT>,
-//                        std::pmr::polymorphic_allocator<std::pair<KeyT, int64_t>>> hasher{resource};
-//    std::pmr::unordered_map<KeyT, int64_t, hash_function<KeyT>> hasher{resource};
-//    std::unordered_map<KeyT, int64_t> hasher{};
+//                        std::pmr::polymorphic_allocator<std::pair<KeyT, IndexT>>> hasher{resource};
+//    std::pmr::unordered_map<KeyT, IndexT, hash_function<KeyT>> hasher{resource};
+//    std::unordered_map<KeyT, IndexT> hasher{};
     KeyT const * data_series_p{};
 
     dll_export fhm_hasher() {}
@@ -94,10 +94,10 @@ struct fhm_hasher
 
         data_series_p = hash_list_p;
 
-        for (size_t i{ 0 }; i != hint_size; ++i)
+        for (IndexT i{ 0 }; i != hint_size; ++i)
         {
 //            hasher.emplace(hash_list_p[i], i);
-            typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::accessor a;
+            typename oneapi::tbb::concurrent_hash_map<KeyT, IndexT>::accessor a;
             hasher.insert(a, hash_list_p[i]);
             a->second = i;
         }
@@ -105,7 +105,7 @@ struct fhm_hasher
 
     int64_t find(KeyT const * key) const noexcept
     {
-        typename oneapi::tbb::concurrent_hash_map<KeyT, int64_t>::const_accessor finder;
+        typename oneapi::tbb::concurrent_hash_map<KeyT, IndexT>::const_accessor finder;
         bool found = hasher.find(finder, *key);
         //        bool found = hasher.contains(*key);
         //        bool found = hasher.find(*key) != hasher.end();
@@ -115,12 +115,12 @@ struct fhm_hasher
     }
 };
 
-template <typename KeyT>
+template <typename KeyT, typename IndexT>
 struct is_member_check
 {
-    fhm_hasher<KeyT> mutable hash{};
+    fhm_hasher<KeyT, IndexT> mutable hash{};
 
-    int operator()(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p, int64_t * output_p,
+    int operator()(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p, IndexT * output_p,
                    int8_t * bool_out_p)
     {
         KeyT const * typed_needles_p{ reinterpret_cast<KeyT const *>(needles_p) };
@@ -129,7 +129,7 @@ struct is_member_check
 
         for (ptrdiff_t elem{ 0 }; elem != needles_size; ++elem)
         {
-            int64_t found_at = hash.find(typed_needles_p + elem);
+            IndexT found_at = static_cast<IndexT>(hash.find(typed_needles_p + elem));
             if (found_at >= 0)
             {
                 *(output_p + elem) = found_at;
@@ -145,33 +145,56 @@ struct is_member_check
     }
 };
 
-dll_export int is_member(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p,
-                         int64_t * output_p, int8_t * bool_out_p, is_member_allowed_types_t sample_value)
+template<typename out_t>
+dll_export inline int is_member(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p,
+                         out_t * output_p, int8_t * bool_out_p, is_member_allowed_types_t sample_value)
 {
     auto hasher_calls = overload{
         [=](uint8_t) -> int
-        { return is_member_check<uint8_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<uint8_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](uint16_t) -> int
-        { return is_member_check<uint16_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<uint16_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](uint32_t) -> int
-        { return is_member_check<uint32_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<uint32_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](uint64_t) -> int
-        { return is_member_check<uint64_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<uint64_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](int8_t) -> int
-        { return is_member_check<int8_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<int8_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](int16_t) -> int
-        { return is_member_check<int16_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<int16_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](int32_t) -> int
-        { return is_member_check<int32_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<int32_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](int64_t) -> int
-        { return is_member_check<int64_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<int64_t, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](float) -> int
-        { return is_member_check<float>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<float, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
         [=](double) -> int
-        { return is_member_check<double>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
+        { return is_member_check<double, out_t>{}(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p); },
     };
 
     return std::visit(hasher_calls, sample_value);
 }
 
+template <typename data_trait_t, typename out_t>
+inline int is_member_shim(size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p,
+                          out_t * output_p, int8_t * bool_out_p, data_trait_t const * data_p)
+{
+    if ( data_p )
+    {
+        using T = typename data_trait_t::data_type;
+        T const sample_value{};
+        return is_member<out_t>( needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p, sample_value );
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+template< typename variant_t, typename out_t, size_t... Is>
+dll_export inline int is_member_for_type( size_t needles_size, char const * needles_p, size_t haystack_size, char const * haystack_p,
+                                   out_t * output_p, int8_t * bool_out_p, variant_t data_type_traits, std::index_sequence<Is...>)
+{
+    return (is_member_shim(needles_size, needles_p, haystack_size, haystack_p, output_p, bool_out_p, std::get_if<Is>(&data_type_traits)) + ...);
+}
 #endif
