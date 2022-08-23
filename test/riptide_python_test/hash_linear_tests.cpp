@@ -3,7 +3,7 @@
 #include "HashLinear.h"
 
 #define BOOST_UT_DISABLE_MODULE
-#include "../ut/include/boost/ut.hpp"
+#include "boost/ut.hpp"
 
 #include <array>
 #include <vector>
@@ -25,7 +25,7 @@ namespace
     {
         skip / "ismember64_uint64_too_many_uniques"_test = [&]
         {
-            std::vector<uint64_t> haystack(2 * 128 * 1024ULL * 1024ULL);
+            std::vector<uint64_t> haystack(128ULL * 1024ULL * 1024ULL);
             std::vector<uint64_t> needles(1024ULL * 1024ULL);
             std::random_device dev{};
             std::mt19937 engine(dev());

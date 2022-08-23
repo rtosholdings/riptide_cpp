@@ -1,4 +1,7 @@
 #pragma once
+
+#include "Defs.h"
+
 #include <vector>
 
 /*-=====  Pre-defined compression levels  =====-*/
@@ -756,17 +759,6 @@ struct SDS_MULTI_READ
     int64_t Index;
     SDS_FINAL_CALLBACK FinalCallback;
 };
-
-// Export DLL section
-#if defined(_WIN32) && ! defined(__GNUC__)
-
-    #define DllExport __declspec(dllexport)
-
-#else
-
-    #define DllExport
-
-#endif
 
 extern "C"
 {

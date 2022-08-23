@@ -76,6 +76,29 @@ namespace
         /* Start the interpreter, load numpy */
         Py_Initialize();
 
+#ifdef WIN32
+        // Workaround for NumPy loading failure in Python 3.8+.
+        // Need to explicitly set the DLL search directory in order to find the MKL DLLs
+        // located in $PYTHONHOME/Library/bin.
+        // See https://docs.python.org/3/whatsnew/3.8.html#bpo-36085-whatsnew for details.
+
+        wchar_t dll_directory[_MAX_PATH + 1]{0};
+        GetEnvironmentVariableW(L"PYTHONHOME", dll_directory, sizeof(dll_directory));
+        if (!dll_directory[0])
+        {
+            fprintf(stderr, "Cannot obtain the environment variable PYTHONHOME\n");
+            return -1;
+        }
+        wcscat_s(dll_directory, L"\\Library\\bin");
+
+        if (!SetDllDirectoryW(dll_directory))
+        {
+            auto const error{GetLastError()};
+            fprintf(stderr, "Cannot set DLL search directory to \"%ws\": error=%d\n", dll_directory, error);
+            return -1;
+        }
+#endif
+
         /* Load our module */
         riptide_module_p = PyImport_ImportModule("riptide_cpp");
         if (riptide_module_p == nullptr)
@@ -98,6 +121,11 @@ namespace
         }
 
         return 0;
+    }
+
+    void stop_python()
+    {
+        Py_Finalize();
     }
 }
 
@@ -124,6 +152,8 @@ int main(int argc, char const ** argv)
     }
 
     auto result{ runner.run() };
+
+    stop_python();
 
     return result;
 }

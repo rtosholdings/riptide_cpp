@@ -8,6 +8,8 @@
 using namespace boost::ut;
 using boost::ut::suite;
 
+using riptide_python_test::internal::get_named_function;
+
 namespace
 {
     suite riptide_ops = []
@@ -20,6 +22,17 @@ namespace
             expect(function_object != nullptr);
             expect(retval != nullptr);
             expect(retval == Py_None);
+        };
+
+        "test_recycling"_test = [&]
+        {
+            PyObject * empty_fn{ get_named_function(riptide_module_p, "Empty") };
+
+            PyObject * array_ob{ PyObject_CallFunction(empty_fn, "[i]iiO", 1, 0, 0, Py_False) };
+            Py_DECREF(array_ob);
+
+            PyObject * recycled_array_ob{ PyObject_CallFunction(empty_fn, "[i]iiO", 1, 0, 0, Py_False) };
+            expect(recycled_array_ob == array_ob);
         };
     };
 }

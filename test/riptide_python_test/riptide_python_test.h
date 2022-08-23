@@ -6,13 +6,13 @@
     #include <corecrt.h>
 #endif
 
-#ifdef _DEBUG
-    #undef _DEBUG
-    #include "Python.h"
-    #define _DEBUG
-#else
-    #include "Python.h"
-#endif
+// Hack because debug builds force python36_d.lib
+#define MS_NO_COREDLL       // don't add import libs by default
+#define Py_ENABLE_SHARED    // but do enable shared libs
+#include <pyconfig.h>
+#undef Py_DEBUG             // don't use debug Python APIs
+
+#include <Python.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 

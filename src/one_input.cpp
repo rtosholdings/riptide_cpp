@@ -197,6 +197,8 @@ namespace riptable_cpp
         case MATH_OPERATION::SQRT:
             retval.first = sqrt_op{};
             break;
+        default:
+            throw(std::runtime_error("Invalid unary operation requested"));
         }
 
         return retval;

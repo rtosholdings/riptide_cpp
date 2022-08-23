@@ -17,7 +17,7 @@ elseif(PROJ_COMPILER_FRONTEND STREQUAL "GNU")
     add_compile_options(-falign-functions=32 -fno-strict-aliasing)
     #add_compile_options(-falign-loops=32)
     add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes)
-    add_compile_options(-Wno-format) # TODO: Remove this and fix all the printf format mismatches
+    add_compile_options(-Wno-format -Wno-error=cast-qual -Wno-error=useless-cast) # TODO: Remove this and fix all the printf format mismatches
 elseif(PROJ_COMPILER_FRONTEND STREQUAL "LLVM")
     add_compile_options("$<$<CONFIG:Debug>:-O0>")
     add_compile_options("$<$<CONFIG:Release>:-O2>")
@@ -45,7 +45,7 @@ target_include_directories(${TARGET_NAME} PRIVATE ${RT_SOURCE_DIR} ${Python3_INC
 
 target_link_directories(${TARGET_NAME} PRIVATE ${Python3_LIBRARY_DIRS})
 
-target_link_libraries(${TARGET_NAME} PRIVATE riptide_cpp ${Python3_Libraries} benchmark::benchmark $<$<PLATFORM_ID:Linux>:pthread> $<$<PLATFORM_ID:Linux>:rt>)
+target_link_libraries(${TARGET_NAME} PRIVATE riptide_cpp TBB::tbb ${Python3_Libraries} benchmark::benchmark $<$<PLATFORM_ID:Linux>:pthread> $<$<PLATFORM_ID:Linux>:rt>)
 
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
@@ -55,5 +55,9 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR}
 
         COMMENT "Copying Python dependencies to ${_TARGET_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR})
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR}
+
+        COMMENT "Copying TBB dependencies to ${_TARGET_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
+		)
 endif()

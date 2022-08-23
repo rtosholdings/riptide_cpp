@@ -379,7 +379,7 @@ struct stWorkerRing
 
 #elif defined(__linux__)
         // Linux thread wakeup
-        int s = futex((int *)&WorkIndex, FUTEX_WAKE, maxThreadsToWake, NULL, NULL, 0);
+        int s = futex((int *)&WorkIndex, FUTEX_WAKE, maxThreadsToWake, nullptr, nullptr, 0);
         if (s == -1)
             printf("***error futex-FUTEX_WAKE\n"); // TODO: Change to use
                                                    // fprintf(stderr, msg) instead

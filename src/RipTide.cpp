@@ -25,15 +25,18 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
+#include "flat_hash_map.h"
 
-namespace {
-char const * const __version__{
+namespace
+{
+    char const * const __version__
+    {
 #if __has_include("_version.d")
-# include "_version.d"
+    #include "_version.d"
 #else
-  "DEV"
+        "DEV"
 #endif
-};
+    };
 }
 
 #undef LOGGING
@@ -54,14 +57,6 @@ char const * const __version__{
 CMathWorker * g_cMathWorker = new CMathWorker();
 PyTypeObject * g_FastArrayType = NULL;
 PyObject * g_FastArrayModule = NULL;
-
-PyObject * g_FastArrayCall = NULL;
-
-// original tp_dealloc for FastArray class
-destructor g_FastArrayDeallocate = NULL;
-
-// original tp_dealloc for FastArray instance
-destructor g_FastArrayInstanceDeallocate = NULL;
 
 PyArray_Descr * g_pDescrLongLong = NULL;
 PyArray_Descr * g_pDescrULongLong = NULL;
@@ -356,18 +351,22 @@ extern "C"
 {
     // NOTE: Could keep an array counter here to determine how many outstanding
     // arrays there are Called on PyDecRef when refcnt goes to zero
-    void FastArrayDestructor(PyObject * object)
+    void FastArrayFinalizer(PyObject * object)
     {
         LOG_ALLOC("called %lld %ld\n", object->ob_refcnt, object->ob_type->tp_flags);
         // If we are the base then nothing else is attached to this array object
         // Attempt to recycle, if succeeds, the refnct will be incremented so we can
         // hold on
-        if (! RecycleNumpyInternal((PyArrayObject *)object))
+        PyArrayObject * pArray = (PyArrayObject *)object;
+        if (RecycleNumpyInternal(pArray))
         {
-            PyArrayObject * pArray = (PyArrayObject *)object;
+            LOG_ALLOC("resurrecting %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
+        }
+        else
+        {
+            // else continue to delete it
             LOG_ALLOC("freeing %p %s  len:%lld\n", object, object->ob_type->tp_name, ArrayLength(pArray));
-            g_FastArrayInstanceDeallocate(object);
-        } // else we are keeping it around
+        }
     }
 }
 
@@ -377,8 +376,8 @@ extern "C"
 // when Py_DECREF decrement object ref counter to 0.
 PyObject * SetFastArrayType(PyObject * self, PyObject * args)
 {
-    PyObject * arg1 = NULL;
-    PyObject * arg2 = NULL;
+    PyObject * arg1 = NULL; // FastArray instance (for access to type)
+    PyObject * arg2 = NULL; // unused (was callable returning FastArray view of ndarray, now done natively)
 
     if (! PyArg_ParseTuple(args, "OO", &arg1, &arg2))
         return NULL;
@@ -386,25 +385,22 @@ PyObject * SetFastArrayType(PyObject * self, PyObject * args)
     // take over deallocation
     if (g_FastArrayType == NULL)
     {
-        g_FastArrayCall = arg2;
+        PyTypeObject * fastArrayType{Py_TYPE(arg1)};
 
-        npy_intp length = 1;
-        // Now allocate a small array to get the type
-        PyArrayObject * arr = AllocateNumpyArray(1, &length, NPY_BOOL);
+        // Take over finalize so we can recycle
+        LOGGING("SetFastArrayType finalize %p %p\n", fastArrayType->tp_finalize, FastArrayFinalizer);
 
-        g_FastArrayType = arg1->ob_type;
-        Py_IncRef((PyObject *)g_FastArrayType);
-
-        // Take over dealloc so we can recycle
-        LOGGING("SetFastArrayType dealloc %p %p\n", g_FastArrayType->tp_dealloc, FastArrayDestructor);
-        g_FastArrayDeallocate = g_FastArrayType->tp_dealloc;
-        g_FastArrayInstanceDeallocate = arr->ob_base.ob_type->tp_dealloc;
-
-        LOGGING("dealloc  %p %p %p %p\n", g_FastArrayDeallocate, g_FastArrayInstanceDeallocate, FastArrayDestructor,
-                g_FastArrayType->tp_dealloc);
+        if (fastArrayType->tp_finalize)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Unexpected finalizer detected");
+            return NULL;
+        }
 
         // Swap ourselves in
-        g_FastArrayType->tp_dealloc = FastArrayDestructor;
+        fastArrayType->tp_finalize = FastArrayFinalizer;
+
+        g_FastArrayType = fastArrayType;
+        Py_IncRef((PyObject *)g_FastArrayType);
     }
 
     Py_INCREF(Py_None);
@@ -1800,14 +1796,8 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
     int32_t count = 0;
 
     // Count up the
-    for (int i = 0; i < 1000; i++)
+    while (CSigMathUtilMethods[count++].ml_name)
     {
-        if (CSigMathUtilMethods[i].ml_name == NULL)
-        {
-            break;
-        }
-
-        count++;
     }
 
     LOGGING("FASTMATH: Found %d methods\n", count);
@@ -2051,7 +2041,27 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
         return NULL;
     }
 
-    // start up the worker threads now in case we use them
+    char const * hash_choice_p = getenv("RT_NEW_HASH");
+    if (hash_choice_p)
+    {
+        switch(*hash_choice_p)
+        {
+        case '1':
+            runtime_hash_choice = hash_choice_t::tbb;
+            break;
+        case '2':
+            runtime_hash_choice = hash_choice_t::absl;
+            break;
+        case '3':
+            runtime_hash_choice = hash_choice_t::stl;
+            break;
+        default:
+            PyErr_Format(PyExc_ValueError, "Invalid value for RT_NEW_HASH");
+            return NULL;
+        }
+    }
+
+// start up the worker threads now in case we use them
     g_cMathWorker->StartWorkerThreads(0);
 
     LOGGING("riptide_cpp loaded\n");
