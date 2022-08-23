@@ -2,11 +2,15 @@
 #include <memory>
 #include "CommonInc.h"
 #include "RipTide.h"
+#include "flat_hash_map.h"
 #include "HashLinear.h"
 #include "MathWorker.h"
+#include "one_input.h"
 #include "Recycler.h"
+#include "numpy_traits.h"
 
 #include <exception>
+#include <cstdlib>
 
 #ifndef LogError
     #define LogError(...)
@@ -17,6 +21,9 @@
 //#define LogInform(...)
 #endif
 
+#ifdef LOGGING
+    #undef LOGGING
+#endif
 #define LOGGING(...)
 //#define LOGGING printf
 
@@ -1325,7 +1332,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
     }
 
     LOGGING(
-        "IsMember index size is %zu    output size is %zu  HashSize is %llu  "
+        "MakeHashLocation index size is %zu    output size is %zu  HashSize is %llu  "
         "  hashmode %d\n",
         sizeof(U), sizeof(T), HashSize, (int)HashMode);
 
@@ -1557,7 +1564,7 @@ void CHashLinear<T, U>::MakeHashLocation(int64_t arraySize, T * pHashList, int64
     }
     LOGGING("%llu entries had %llu collisions   %llu unique\n", arraySize, NumCollisions, NumUnique);
 
-    LOGGING("IsMember index size is %zu    output size is %zu  HashSize is %llu\n", sizeof(U), sizeof(T), HashSize);
+    LOGGING("MakeHashLocation at end index size is %zu    output size is %zu  HashSize is %llu\n", sizeof(U), sizeof(T), HashSize);
 
     // for (int i = 0; i < ((HashSize + 63) / 64); i++) {
     //   printf("%llu |", pBitFields[i]);
@@ -5769,55 +5776,112 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
             }
             else
             {
-                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                if (runtime_hash_choice != hash_choice_t::hash_linear)
                 {
-                    LOGGING("Calling float!\n");
-                    sizeType1 += 100;
-                }
+                    if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                    {
+                        LOGGING("Calling float!\n");
+                        sizeType1 += 100;
+                    }
 
-                int dtype = NPY_INT8;
+                    int dtype = riptide::index_size_type(arraySize2);
 
-                if (arraySize2 < 100)
-                {
-                    dtype = NPY_INT8;
-                }
-                else if (arraySize2 < 30000)
-                {
-                    dtype = NPY_INT16;
-                }
-                else if (arraySize2 < 2000000000)
-                {
-                    dtype = NPY_INT32;
+                    indexArray = AllocateLikeNumpyArray(inArr1, dtype);
+
+                    // make sure allocation succeeded
+                    if (indexArray)
+                    {
+                        auto [opt_op_trait, opt_type_trait] = riptable_cpp::set_traits(0, arrayType1);
+                        riptable_cpp::data_type_t variant = *opt_type_trait;
+                        switch (dtype)
+                        {
+                        case NPY_INT8:
+                            {
+                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                                   reinterpret_cast<char const *>(pDataIn2),
+                                                   reinterpret_cast<int8_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
+                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                            }
+                            break;
+                        case NPY_INT16:
+                            {
+                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                                   reinterpret_cast<char const *>(pDataIn2),
+                                                   reinterpret_cast<int16_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
+                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                            }
+                            break;
+                        case NPY_INT32:
+                            {
+                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                                   reinterpret_cast<char const *>(pDataIn2),
+                                                   reinterpret_cast<int32_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
+                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                            }
+                            break;
+                        default:
+                            {
+                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                                   reinterpret_cast<char const *>(pDataIn2),
+                                                   reinterpret_cast<int64_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
+                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
+                            }
+                            break;
+                        }
+                    }
                 }
                 else
                 {
-                    dtype = NPY_INT64;
-                }
-
-                indexArray = AllocateLikeNumpyArray(inArr1, dtype);
-
-                // make sure allocation succeeded
-                if (indexArray)
-                {
-                    void * pDataOut2 = PyArray_BYTES(indexArray);
-                    switch (dtype)
+                    if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
                     {
-                    case NPY_INT8:
-                        IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1,
-                                               sizeType1, HASH_MODE(hashMode), hintSize);
-                        break;
-                    case NPY_INT16:
-                        IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1,
-                                                sizeType1, HASH_MODE(hashMode), hintSize);
-                        break;
-                    CASE_NPY_INT32:
-                        IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1,
-                                                sizeType1, HASH_MODE(hashMode), hintSize);
-                        break;
-                    CASE_NPY_INT64:
-                        IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1,
-                                                sizeType1, HASH_MODE(hashMode), hintSize);
-                        break;
+                        LOGGING("Calling float!\n");
+                        sizeType1 += 100;
+                    }
+
+                    int dtype = NPY_INT8;
+
+                    if (arraySize2 < 100)
+                    {
+                        dtype = NPY_INT8;
+                    }
+                    else if (arraySize2 < 30000)
+                    {
+                        dtype = NPY_INT16;
+                    }
+                    else if (arraySize2 < 2000000000)
+                    {
+                        dtype = NPY_INT32;
+                    }
+                    else
+                    {
+                        dtype = NPY_INT64;
+                    }
+
+                    indexArray = AllocateLikeNumpyArray(inArr1, dtype);
+
+                    // make sure allocation succeeded
+                    if (indexArray)
+                    {
+                        void * pDataOut2 = PyArray_BYTES(indexArray);
+                        switch (dtype)
+                        {
+                        case NPY_INT8:
+                            IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1,
+                                                   sizeType1, HASH_MODE(hashMode), hintSize);
+                            break;
+                        case NPY_INT16:
+                            IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1,
+                                                    sizeType1, HASH_MODE(hashMode), hintSize);
+                            break;
+                        CASE_NPY_INT32:
+                            IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1,
+                                                    sizeType1, HASH_MODE(hashMode), hintSize);
+                            break;
+                        CASE_NPY_INT64:
+                            IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1,
+                                                    sizeType1, HASH_MODE(hashMode), hintSize);
+                            break;
+                        }
                     }
                 }
             }
@@ -6047,11 +6111,9 @@ static uint64_t GroupByImpl(const int64_t partitionLength, // may be 0
         // parallel mode, it has to shut down the low level caching Further, the
         // size of the first array is not known until the unique count is known
 
-        uint64_t numUnique = GroupByInternal<_Index>(
-
-            reinterpret_cast<void **>(&pFirstArray), &pHashTableAny, &hashTableSize,
-
-            totalRows, totalItemSize, pInput1, coreType, pIndexArray, hashMode, hintSize, pBoolFilter);
+        uint64_t numUnique =
+            GroupByInternal<_Index>(reinterpret_cast<void **>(&pFirstArray), &pHashTableAny, &hashTableSize, totalRows,
+                                    totalItemSize, pInput1, coreType, pIndexArray, hashMode, hintSize, pBoolFilter);
 
         // Move uniques into proper array size
         // Free HashTableAllocSize

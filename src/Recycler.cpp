@@ -593,13 +593,13 @@ PyObject * SetRecycleMode(PyObject * self, PyObject * args)
 }
 
 //-----------------------------------
-// Called when an array is deleted
+// Called when an array is finalized
 // Returns: true if recycled
 // Returns: false if rejected recycling
 //
 // pFirst == original object without base pointer traversed
 // inArr = base array object
-static bool DeleteNumpyArray(PyArrayObject * inArr)
+static bool FinalizeNumpyArray(PyArrayObject * inArr)
 {
     // Make sure this is worth caching
     // For very small sizes, we do not bother to cache
@@ -611,7 +611,7 @@ static bool DeleteNumpyArray(PyArrayObject * inArr)
     }
 
     int64_t refCount = inArr->ob_base.ob_refcnt;
-    if (refCount != 0)
+    if (refCount != 1)
     {
         LOGRECYCLE("Rejected recycling because base refCount is %lld\n", refCount);
         return false;
@@ -839,7 +839,7 @@ bool RecycleNumpyInternal(PyArrayObject * inArr)
         // numpy array)
         if (inArr->ob_base.ob_type == g_FastArrayType)
         {
-            return DeleteNumpyArray(inArr);
+            return FinalizeNumpyArray(inArr);
         }
     }
     return false;

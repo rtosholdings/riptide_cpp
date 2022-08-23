@@ -18,7 +18,7 @@ elseif(PROJ_COMPILER_FRONTEND STREQUAL "GNU")
     add_compile_options(-falign-functions=32 -fno-strict-aliasing)
     #add_compile_options(-falign-loops=32)
     add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unused-variable -Wno-unused-parameter -Wno-ignored-attributes -Wno-error=conversion-null)
-    add_compile_options(-Wno-format) # TODO: Remove this and fix all the printf format mismatches
+    add_compile_options(-Wno-format -Wno-error=cast-qual -Wno-error=useless-cast -Wno-error=duplicated-branches -Wno-error=old-style-cast -Wno-error=redundant-decls -Wno-error=double-promotion -Wno-error=zero-as-null-pointer-constant) # TODO: Remove this and fix all the printf format mismatches
 else()
      message(FATAL_ERROR "Unexpected proj compiler front-end, ${PROJ_COMPILER_FRONTEND}")
 endif()
@@ -59,7 +59,7 @@ add_test(NAME test_riptide_cpp_python
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_tests_properties(test_riptide_cpp_python PROPERTIES
-    ENVIRONMENT "PYTHONHOME=${Python3_RUNTIME_LIBRARY_DIRS};PYTHONPATH=${Python3_STDLIB}")
+    ENVIRONMENT "PYTHONHOME=${Python3_RUNTIME_LIBRARY_DIRS}")
 
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
@@ -69,9 +69,12 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR}
 
         COMMENT "Copying Python dependencies to ${_TARGET_DIR}"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR})
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
+        )
 endif()
 
 target_link_libraries(${TARGET_NAME}
                       Python3::Python
-                      riptide_cpp)
+                      riptide_cpp
+                      ut)

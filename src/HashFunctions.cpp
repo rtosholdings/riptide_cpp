@@ -1,7 +1,11 @@
 #include "RipTide.h"
+#include "flat_hash_map.h"
 #include "HashFunctions.h"
 #include "HashLinear.h"
 #include "ndarray.h"
+#include "one_input.h"
+
+#include <cstdlib>
 
 // struct ndbuf;
 // typedef struct ndbuf {
@@ -168,7 +172,8 @@ PyObject * IsMemberCategorical(PyObject * self, PyObject * args)
     int sizeType1 = (int)NpyItemSize((PyObject *)inArr1);
     int sizeType2 = (int)NpyItemSize((PyObject *)inArr2);
 
-    LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
+    LOGGING("IsMemberCategorical %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1,
+            sizeType2);
 
     switch (arrayType1)
     {

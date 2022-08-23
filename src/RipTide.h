@@ -2,19 +2,13 @@
 
 #define PY_SSIZE_T_CLEAN // needed to py310, before python.h
 
-// Undo the damage we're going to cause by undefining a reserved macro name
-#if defined(_MSC_VER) && defined(_DEBUG) && _MSC_VER >= 1930
-    #include <corecrt.h>
-#endif
-
 // Hack because debug builds force python36_d.lib
-#ifdef _DEBUG
-    #undef _DEBUG
-    #include <Python.h>
-    #define _DEBUG
-#else
-    #include <Python.h>
-#endif
+#define MS_NO_COREDLL       // don't add import libs by default
+#define Py_ENABLE_SHARED    // but do enable shared libs
+#include <pyconfig.h>
+#undef Py_DEBUG             // don't use debug Python APIs
+
+#include <Python.h>
 
 //#include <x86intrin.h>
 //#include "zmmintrin.h"

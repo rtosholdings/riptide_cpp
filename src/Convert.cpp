@@ -1156,7 +1156,7 @@ PyObject * ConvertSafeInternal(PyArrayObject * const inArr1, const int64_t out_d
         {
             // Don't leak the memory we allocated -- free it before raising the Python
             // error and returning.
-            RecycleNumpyInternal(outArray);
+            Py_DECREF(outArray);
             // have numpy do the work
             outArray = (PyArrayObject *)PyArray_FROM_OT((PyObject *)inArr1, numpyOutType);
             // return PyErr_Format(PyExc_RuntimeError, "ConvertSafe allocated an

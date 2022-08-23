@@ -14,6 +14,16 @@ package_name = 'riptide_cpp'
 version_scm_path = 'src/_version.scm.d'
 version_path = 'src/_version.d'
 
+install_requires = [
+    'numpy >=1.21'
+]
+
+# Sadly, a conda install of tbb does not make it visible to pip (at least as of ver 2021).
+# Thus, when conda-build attempts to validate our package dependencies it thinks it needs tbb but is prohibited from downloading it.
+# So if we're doing a conda build, simply omit these requirements as they are handled by conda anyhow.
+if "CONDA_BUILD" not in os.environ:
+    install_requires.append('tbb >=2021')
+
 def copy_if_different(src_path, dst_path):
     with open(src_path) as file:
         src_contents = file.read()
@@ -43,15 +53,20 @@ class CMakeBuild(build_ext):
             "-DRIPTIDE_PYTHON_VER=" + platform.python_version()
             ]
 
-        if platform.system() == 'Windows':
-            cmake_args += [
-                '-GVisual Studio 16 2019'
-                ]
-        elif platform.system() == 'Linux':
-            if find_executable('ninja'):
+        # If CMAKE_GENERATOR specified in env-var, and not a Conda build, let CMake use that.
+        # Otherwise, fall back to defaults.
+        if "CMAKE_GENERATOR" in os.environ and "CONDA_BUILD" not in os.environ:
+            print(f"Using specified CMAKE_GENERATOR: \"{os.environ['CMAKE_GENERATOR']}\"")
+        else:
+            if platform.system() == 'Windows':
                 cmake_args += [
-                    '-GNinja'
+                    '-GVisual Studio 16 2019'
                     ]
+            elif platform.system() == 'Linux':
+                if find_executable('ninja'):
+                    cmake_args += [
+                        '-GNinja'
+                        ]
 
         copy_if_different(version_scm_path, version_path)
 
@@ -128,7 +143,7 @@ setup(
     setup_requires=['setuptools_scm'],
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
-    author_email = 'thomasdimitri@gmail.com',
+    author_email = 'rtosholdings-bot@sig.com',
     long_description= 'Python Package with fast math util functions',
     long_description_content_type= 'text/markdown',
     url="https://github.com/rtosholdings/riptide_cpp",
@@ -137,7 +152,9 @@ setup(
         'build_ext': CMakeBuild,
         'sdist': CMakeSdist,
         },
-    install_requires=['numpy'],
+    install_requires=install_requires,
+    python_requires='>=3.8',
+    zip_safe = False,
     classifiers=[
          "Development Status :: 4 - Beta",
          "Programming Language :: Python :: 3",
