@@ -90,13 +90,13 @@ jobs:
       - name: Install riptable
         # Get just the latest riptable package (first explicitly install its deps)
         run: |
-          pip install ansi2html numba python-dateutil
+          pip install pandas ansi2html numba python-dateutil
           #conda install -q -y -c rtosholdings --no-deps riptable
           pip install --no-deps riptable
           python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
       - name: Install other dependencies
         run: |
-          pip install pyarrow pandas ipython ipykernel flake8 pytest hypothesis nose bottleneck arrow
+          pip install pyarrow ipython ipykernel flake8 pytest hypothesis nose bottleneck arrow
           conda list
       - name: Riptable test with pytest
         run: |

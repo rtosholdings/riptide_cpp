@@ -78,7 +78,7 @@ jobs:
       - name: Install riptable
         run: |
           # Get just the latest riptable package
-          conda install -q -y -c rtosholdings --no-deps riptable
+          conda install -q -y --override-channels -c rtosholdings --no-deps riptable
           python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
       - name: Run the riptide Python tests
         if: ${{ matrix.os == 'ubuntu-latest' }}
