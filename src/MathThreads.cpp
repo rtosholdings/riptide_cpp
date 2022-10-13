@@ -82,8 +82,7 @@ void * WorkerThreadFunction(void * lpParam)
 {
     stWorkerRing * pWorkerRing = (stWorkerRing *)lpParam;
 
-    uint32_t core = (uint32_t)(InterlockedIncrement64(&pWorkerRing->WorkThread));
-    core = core - 1;
+    uint32_t const core{pWorkerRing->ThreadsRunning++};
 
     // if (core > 3) core += 16;
     // core += 16;
@@ -98,12 +97,12 @@ void * WorkerThreadFunction(void * lpParam)
         // UINT64 ret = SetThreadAffinityMask(GetCurrentThread(), 0xFFFFFFFF);
     }
 
-    int64_t lastWorkItemCompleted = -1;
+    ++pWorkerRing->ThreadsAwakened;
 
     //
     // Setting Cancelled will stop all worker threads
     //
-    while (pWorkerRing->Cancelled == 0)
+    while (!pWorkerRing->Cancelled)
     {
         int64_t workIndexCompleted;
         int64_t workIndex;
@@ -116,29 +115,23 @@ void * WorkerThreadFunction(void * lpParam)
         // See if work to do
         if (workIndex > workIndexCompleted)
         {
-            stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetExistingWorkItem();
-            InterlockedIncrement64(&pWorkItem->ThreadAwakened);
-
 #if defined(RT_OS_WINDOWS)
-            // Windows we check if the work was for our thread
-            int64_t wakeup = InterlockedDecrement64(&pWorkItem->ThreadWakeup);
-            if (wakeup >= 0)
+            // On windows all threads awakened, so ignore spurious awakenings.
+            bool const wakeup{InterlockedDecrement64(&pWorkerRing->ThreadWakeup) >= 0};
+            if (wakeup)
+#endif
             {
+                stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetExistingWorkItem();
+
                 didSomeWork = pWorkItem->DoWork(core, workIndex);
             }
-            else
-            {
-                // printf("[%d] not doing work %lld.  %lld  %lld\n", core, wakeup,
-                // workIndex, workIndexCompleted); workIndex++;
-            }
-#else
-            didSomeWork = pWorkItem->DoWork(core, workIndex);
-#endif
-            InterlockedDecrement64(&pWorkItem->ThreadAwakened);
         }
 
+        // If no work was done, thread can go to sleep.
         if (! didSomeWork)
         {
+            --pWorkerRing->ThreadsAwakened;
+
             workIndexCompleted = workIndex;
 
 #if defined(RT_OS_WINDOWS)
@@ -150,11 +143,6 @@ void * WorkerThreadFunction(void * lpParam)
             }
             else
             {
-                if (! didSomeWork)
-                {
-                    // workIndexCompleted++;
-                }
-
                 LOGGING("[%d] WaitAddress %llu  %llu  %d\n", core, workIndexCompleted, pWorkerRing->WorkIndex, (int)didSomeWork);
 
                 // Otherwise wake up using conditional variable
@@ -181,17 +169,16 @@ void * WorkerThreadFunction(void * lpParam)
 
 #else
     #error riptide MathThreads support needs to be implemented for this platform.
-
 #endif
 
-            // printf("Waking %d", core);
-
-            // YieldProcessor();
+            ++pWorkerRing->ThreadsAwakened;
         }
-        // YieldProcessor();
     }
 
     printf("Thread %d exiting!!!\n", (int)core);
+
+    --pWorkerRing->ThreadsRunning;
+
 #if defined(RT_OS_WINDOWS)
     return 0;
 #else

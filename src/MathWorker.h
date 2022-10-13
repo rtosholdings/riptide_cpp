@@ -107,8 +107,11 @@ public:
         NoThreading = false;
         NoCaching = false;
 
-        pWorkerRing = (stWorkerRing *)ALIGNED_ALLOC(sizeof(stWorkerRing), 64);
-        memset(pWorkerRing, 0, sizeof(stWorkerRing));
+        // TODO: rework this use aligned new() and have stWorkerRing properly initialize itself.
+        // Currently, there are uninitialized data members that require zeroing the buffer.
+        void * buffer = (stWorkerRing *)ALIGNED_ALLOC(sizeof(stWorkerRing), 64);
+        memset(buffer, 0, sizeof(stWorkerRing));
+        pWorkerRing = new (buffer) stWorkerRing;
         pWorkerRing->Init();
 
         for (int i = 0; i < WorkerThreadCount; i++)
@@ -163,22 +166,7 @@ public:
 
     //------------------------------------------------------------------------------
     //
-    void StartWorkerThreads(int numaNode)
-    {
-        MATHLOGGING("Start worker threads\n");
-        for (int i = 0; i < WorkerThreadCount; i++)
-        {
-            WorkerThreadHandles[i] = StartThread(pWorkerRing);
-        }
-
-        // Pin the main thread to a numa node?
-        // TODO: work
-        // uint64_t mask = ((uint64_t)1 << WorkerThreadCount);//core number starts
-        // from 0
-        // uint64_t ret = SetThreadAffinityMask(GetCurrentThread(),
-        // (uint64_t)0xFFFF); SetThreadAffinityMask(GetCurrentThread(),
-        // (uint64_t)0xFFFFFFFF);
-    }
+    DllExport void StartWorkerThreads(int numaNode);
 
     //------------------------------------------------------------------------------
     //
@@ -434,10 +422,6 @@ public:
             threadWakeup = threadWakeup < maxWakeup ? threadWakeup : maxWakeup;
         }
 
-        // only windows uses this for now
-        pWorkItem->ThreadWakeup = threadWakeup;
-        pWorkItem->ThreadAwakened = 0;
-
         if (bGenericMode)
         {
             // WORK_ITEM_CHUNK at a time
@@ -485,15 +469,15 @@ public:
             }
         }
 
-        // Join all awakened threads.
-        while (pWorkItem->ThreadAwakened != 0)
-        {
-            MATHLOGGING("Joining %llu\n", pWorkItem->ThreadAwakened);
-            YieldProcessor();
-        }
-
         // Mark this as completed
         pWorkerRing->CompleteWorkItem();
+
+        // Join all awakened threads.
+        while (pWorkerRing->AnyThreadsAwakened())
+        {
+            MATHLOGGING("Joining %llu\n", pWorkerRing->ThreadsAwakened);
+            YieldProcessor();
+        }
     }
 
     //=================================================================================================================

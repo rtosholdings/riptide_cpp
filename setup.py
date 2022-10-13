@@ -14,15 +14,25 @@ package_name = 'riptide_cpp'
 version_scm_path = 'src/_version.scm.d'
 version_path = 'src/_version.d'
 
-install_requires = [
-    'numpy >=1.21'
-]
-
-# Sadly, a conda install of tbb does not make it visible to pip (at least as of ver 2021).
-# Thus, when conda-build attempts to validate our package dependencies it thinks it needs tbb but is prohibited from downloading it.
-# So if we're doing a conda build, simply omit these requirements as they are handled by conda anyhow.
+# Only define requirements if not a Conda build (which will set up requirements separately).
 if "CONDA_BUILD" not in os.environ:
-    install_requires.append('tbb >=2021')
+    setup_requires = [
+        'cmake >=3.18',
+        'numpy >=1.21',
+        'setuptools_scm',
+        'tbb-devel ==2021.6.*',
+        'tbb ==2021.6.*'
+    ]
+
+    install_requires = [
+        'numpy >=1.21',
+        'tbb ==2021.6.*'
+    ]
+
+else:
+    setup_requires = []
+    install_requires = []
+
 
 def copy_if_different(src_path, dst_path):
     with open(src_path) as file:
@@ -140,7 +150,7 @@ setup(
         'write_to': version_scm_path,
         'write_to_template': '"{version}"',
     },
-    setup_requires=['setuptools_scm'],
+    setup_requires=setup_requires,
     description = 'Python Package with fast math util functions',
     author = 'RTOS Holdings',
     author_email = 'rtosholdings-bot@sig.com',

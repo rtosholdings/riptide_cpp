@@ -1,11 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#if defined(_WIN32) && ! defined(__GNUC__)
-    #include <../Lib/site-packages/numpy/core/include/numpy/ndarraytypes.h>
-#else
-    #include <numpy/ndarraytypes.h>
-#endif
+#include <numpy/ndarraytypes.h>
 
 namespace riptide
 {

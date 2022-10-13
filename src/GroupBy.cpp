@@ -4,6 +4,7 @@
 #include "MultiKey.h"
 #include "GroupBy.h"
 #include "Sort.h"
+#include "missing_values.h"
 
 #include <algorithm>
 #include <cmath>
@@ -38,6 +39,7 @@ enum GB_FUNCTIONS
     GB_MEDIAN = 103, // auto handles nan
     GB_MODE = 104,   // auto handles nan
     GB_TRIMBR = 105, // auto handles nan
+    GB_QUANTILE_MULT = 106, // handles all (nan)median/quantile versions
 
     // All int/uints output upgraded to int64_t
     // Output is all elements (not just grouped)
@@ -91,15 +93,40 @@ inline uint64_t MEDIAN_SPLIT(uint64_t X, uint64_t Y)
 }
 inline float MEDIAN_SPLIT(float X, float Y)
 {
-    return (X + Y) / 2;
+    return (X + Y) / 2.0f;
 }
 inline double MEDIAN_SPLIT(double X, double Y)
 {
-    return (X + Y) / 2;
+    return (X + Y) / 2.0;
 }
 inline long double MEDIAN_SPLIT(long double X, long double Y)
 {
-    return (X + Y) / 2;
+    return (X + Y) / 2.0L;
+}
+
+template <typename T, typename U>
+inline U QUANTILE_SPLIT(T X, T Y)
+{
+    return (X + Y) / 2.0;
+}
+
+// Overloads to handle cases of bool, float, long double
+template <>
+inline bool QUANTILE_SPLIT<bool, bool>(bool X, bool Y)
+{
+    return (X | Y);
+}
+
+template <>
+inline float QUANTILE_SPLIT<float, float>(float X, float Y)
+{
+    return (X + Y) / 2.0f;
+}
+
+template <>
+inline long double QUANTILE_SPLIT<long double, long double>(long double X, long double Y)
+{
+    return (X + Y) / 2.0L;
 }
 
 // taken from multiarray/scalartypesc.src
@@ -375,12 +402,12 @@ public:
     static void AccumMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
                          int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
 
         // Fill with invalid?
-        U invalid = GET_INVALID(pOut[0]);
+        U const invalid{ GET_INVALID(U{}) };
 
         if (pass <= 0)
         {
@@ -392,21 +419,37 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                if (pCountOut[index] == 0)
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
                 {
-                    // first time
-                    pOut[index] = (U)temp;
-                    pCountOut[index] = 1;
-                }
-                else if ((U)temp < pOut[index])
-                {
-                    pOut[index] = (U)temp;
+                    T const temp{ pIn[i] };
+                    // check if this is a nan
+                    if (not riptide::invalid_for_type<T>::is_valid(temp))
+                    {
+                        // output invalid value and set pCountOut to -1
+                        pOut[index] = invalid;
+                        pCountOut[index] = -1;
+                    }
+                    else
+                    {
+                        U const tempOut{ temp };
+                        if (pCountOut[index] == 0)
+                        {
+                            // first time
+                            pOut[index] = tempOut;
+                            pCountOut[index] = 1;
+                        }
+                        else if (tempOut < pOut[index])
+                        {
+                            pOut[index] = tempOut;
+                        }
+                    }
                 }
             }
         }
@@ -416,12 +459,12 @@ public:
     static void AccumNanMin(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
                             int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
 
         // Fill with NaNs
-        U invalid = GET_INVALID(pOut[0]);
+        U const invalid{ GET_INVALID(U{}) };
         if (pass <= 0)
         {
             // printf("NanMin clearing at %p  %lld  %lld\n", pOut, binLow, binHigh);
@@ -431,55 +474,23 @@ public:
             }
         }
 
-        if (invalid == invalid)
+        for (int64_t i = 0; i < len; i++)
         {
-            // non-float path
-            for (int64_t i = 0; i < len; i++)
-            {
-                V index = pIndex[i];
+            V const index{ pIndex[i] };
 
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
+            {
+                T const temp{ pIn[i] };
+                // if temp is invalid, just ignore and continue
+                if (not riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    T temp = pIn[i];
-                    // Note filled with nans, so comparing with nans
-                    if (pOut[index] != invalid)
-                    {
-                        if (pOut[index] > temp)
-                        {
-                            pOut[index] = temp;
-                        }
-                    }
-                    else
-                    {
-                        pOut[index] = temp;
-                    }
+                    continue;
                 }
-            }
-        }
-        else
-        {
-            // float path
-            for (int64_t i = 0; i < len; i++)
-            {
-                V index = pIndex[i];
-
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
+                // if the current answer is invalid (first valid data), or otherwise if comparison holds
+                else if ((not riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] > temp))
                 {
-                    T temp = pIn[i];
-                    // Note filled with nans, so comparing with nans
-                    if (pOut[index] == pOut[index])
-                    {
-                        if (pOut[index] > temp)
-                        {
-                            pOut[index] = temp;
-                        }
-                    }
-                    else
-                    {
-                        pOut[index] = temp;
-                    }
+                    pOut[index] = temp;
                 }
             }
         }
@@ -489,12 +500,12 @@ public:
     static void AccumMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
                          int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
 
         // Fill with invalid?
-        U invalid = GET_INVALID(pOut[0]);
+        U const invalid{ GET_INVALID(U{}) };
         if (pass <= 0)
         {
             for (int64_t i = binLow; i < binHigh; i++)
@@ -505,21 +516,37 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                if (pCountOut[index] == 0)
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
                 {
-                    // first time
-                    pOut[index] = (U)temp;
-                    pCountOut[index] = 1;
-                }
-                else if ((U)temp > pOut[index])
-                {
-                    pOut[index] = (U)temp;
+                    T const temp{ pIn[i] };
+                    // check if this is a nan
+                    if (not riptide::invalid_for_type<T>::is_valid(temp))
+                    {
+                        // output invalid value and set pCountOut to -1
+                        pOut[index] = invalid;
+                        pCountOut[index] = -1;
+                    }
+                    else
+                    {
+                        U const tempOut{ temp };
+                        if (pCountOut[index] == 0)
+                        {
+                            // first time
+                            pOut[index] = tempOut;
+                            pCountOut[index] = 1;
+                        }
+                        else if (tempOut > pOut[index])
+                        {
+                            pOut[index] = tempOut;
+                        }
+                    }
                 }
             }
         }
@@ -529,12 +556,12 @@ public:
     static void AccumNanMax(void * pDataIn, void * pIndexT, int32_t * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
                             int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
 
         // Fill with invalid?
-        U invalid = GET_INVALID(pOut[0]);
+        U const invalid{ GET_INVALID(U{}) };
         if (pass <= 0)
         {
             for (int64_t i = binLow; i < binHigh; i++)
@@ -543,55 +570,23 @@ public:
             }
         }
 
-        if (invalid == invalid)
+        for (int64_t i = 0; i < len; i++)
         {
-            // non-float path
-            for (int64_t i = 0; i < len; i++)
-            {
-                V index = pIndex[i];
+            V const index{ pIndex[i] };
 
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
+            {
+                T const temp{ pIn[i] };
+                // if temp is invalid, just ignore and continue
+                if (not riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    T temp = pIn[i];
-                    // Note filled with nans, so comparing with nans
-                    if (pOut[index] != invalid)
-                    {
-                        if (pOut[index] < temp)
-                        {
-                            pOut[index] = temp;
-                        }
-                    }
-                    else
-                    {
-                        pOut[index] = temp;
-                    }
+                    continue;
                 }
-            }
-        }
-        else
-        {
-            // float path
-            for (int64_t i = 0; i < len; i++)
-            {
-                V index = pIndex[i];
-
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
+                // if the current answer is invalid (first valid data), or otherwise if comparison holds
+                else if ((not riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] < temp))
                 {
-                    T temp = pIn[i];
-                    // Note filled with nans, so comparing with nans
-                    if (pOut[index] == pOut[index])
-                    {
-                        if (pOut[index] < temp)
-                        {
-                            pOut[index] = temp;
-                        }
-                    }
-                    else
-                    {
-                        pOut[index] = temp;
-                    }
+                    pOut[index] = temp;
                 }
             }
         }
@@ -1925,6 +1920,129 @@ public:
     }
 
     //------------------------------
+    // Quantiles and medians are all here (nan) and non-nan versions
+    // pGroup -> int8_t/16/32/64  (V typename)
+    static void AccumQuantile1e9Mult(void * pColumn, void * pGroupT, int32_t * pFirst, int32_t * pCount, void * pAccumBin, int64_t binLow,
+                            int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    {
+        T const * const pSrc = (T *)pColumn;
+        U * const pDest = (U *)pAccumBin;
+        // only allow int32_t since comes from group and not ikey
+        int32_t const * const pGroup = (int32_t *)pGroupT;
+
+        // pGroup -> int8_t/16/32/64  (V typename)
+
+        static constexpr double multiplier{ 1e9 };
+        // funcParam = q * multiplier + (isNanQuantile) * (multiplier + 1),
+        // where q is the quantile to take.
+        // so funcParam = 5e8 is median, funcParam = (15e8 + 1) is nanmedian
+
+        double quantile_with_1e9_mult{ static_cast< double >(funcParam) };
+
+        bool const is_nan_quantile{ quantile_with_1e9_mult > multiplier };
+
+        if (is_nan_quantile) {
+            quantile_with_1e9_mult -= multiplier + 1;
+        }
+
+        double const quantile{ quantile_with_1e9_mult / multiplier};
+
+        // Alloc
+        T * const pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
+
+        LOGGING("Quantile %llu  %lld  %lld  sizeof: %lld %lld %lld\n", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U),
+                sizeof(V));
+
+        // For all the bins we have to fill
+        for (int64_t i = binLow; i < binHigh; i++)
+        {
+            int32_t const index{ pFirst[i] };
+            int32_t nCount{ pCount[i] };
+
+            if (nCount == 0)
+            {
+                pDest[i] = GET_INVALID(U{});
+                continue;
+            }
+
+            // Copy over the items for this group
+            // check for nans while copying elements to pSort
+            bool no_nans{ true };
+            int32_t pSort_index{ 0 };
+            int32_t pSrc_index{};
+            for (int j = 0; j < nCount; j++)
+            {
+                pSrc_index = pGroup[index + j];
+                if (not riptide::invalid_for_type<T>::is_valid(pSrc[pSrc_index])) 
+                {
+                    // if see a nan and this is a non-nan function, break and return nan
+                    if (not is_nan_quantile) 
+                    {
+                        no_nans = false;
+                        break;
+                    }
+                    // if see a nan and this is a nan-function, just ignore and don't copy
+                    else 
+                    {
+                        continue;
+                    }
+                } 
+                // if don't see a nan, copy over the value
+                else 
+                {
+                    pSort[pSort_index++] = pSrc[pSrc_index];
+                }
+            }
+
+            // if there are nans and is non-nan quantile, set result to nan and go to next group
+            if (not(is_nan_quantile || no_nans)) {
+                pDest[i] = GET_INVALID(U{});
+                continue;
+            }
+
+            // since handled nans already, know the correct number of non-nan elements
+            nCount = pSort_index;
+
+            if (nCount == 0)
+            {
+                // nothing valid
+                pDest[i] = GET_INVALID(U{});
+                continue;
+            }
+
+            U answer{};
+
+            // find the quantile. It will be at index (N - 1) * quantile
+            // there are no nans between pSort and pSort + nCount, 
+            // so apply nth_element
+
+            double const frac_index{ (nCount - 1) * quantile };
+
+            int32_t const idx_round_up{ static_cast< int32_t >(ceil(frac_index)) };
+            int32_t const idx_round_down{ static_cast< int32_t >(floor(frac_index)) };
+
+            if (idx_round_up == idx_round_down) 
+            {
+                answer = (U)get_nth_element<T>(pSort, pSort + nCount, idx_round_up);
+            }
+            else
+            {
+                // for now only "midpoint" interpolation
+                // first `get_nth_element` modifies pSort (partial sorting)
+                // only need max element after partial sorting
+                T const upper{ get_nth_element<T>(pSort, pSort + nCount, idx_round_up) };
+                T const lower{ *(std::max_element<T *>(pSort, pSort + idx_round_up)) };
+                answer = QUANTILE_SPLIT<T, U>(upper, lower);
+            }
+
+            // copy the data over from pSort
+            pDest[i] = answer;
+        }
+
+        WORKSPACE_FREE(pSort);
+    }
+
+    //------------------------------
     // median does a sort
     // auto-nan
     // pGroup -> int8_t/16/32/64  (V typename)
@@ -2069,6 +2187,8 @@ public:
             return AccumMedian;
         case GB_MODE:
             return AccumMode;
+        case GB_QUANTILE_MULT:
+            return AccumQuantile1e9Mult;
         default:
             break;
         }
@@ -2170,14 +2290,14 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
 }
 
 template <typename U>
-static void GatherMinFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase,
-                           int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase, int64_t numUnique,
+                         int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
-    U invalid = GET_INVALID(pDataOut[0]);
+    U const invalid{ GET_INVALID(U{}) };
     for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
@@ -2188,19 +2308,16 @@ static void GatherMinFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                U curValue = pDataOut[i];
-                U compareValue = pDataIn[i];
+                U const curValue{ pDataOut[i] };
+                U const compareValue{ pDataIn[i] };
 
-                // nan != nan --> true
-                // nan == nan --> false
-                // == invalid
-                if (compareValue == compareValue)
+                if (riptide::invalid_for_type<U>::is_valid(compareValue))
                 {
-                    if (! (curValue <= compareValue))
+                    if ((not riptide::invalid_for_type<U>::is_valid(curValue)) || (compareValue < curValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2214,11 +2331,17 @@ template <typename U>
 static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase, int64_t numUnique,
                       int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
+
+    // Array indicating if the final answer for each bin will be invalid
+    // if one thread saw data and returned invalid, answer is fixed to be invalid.
+    // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
+    int32_t * const pInvFinal{ pCountOutBase };
+    // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     // Fill with invalid
-    U invalid = GET_INVALID(pDataOut[0]);
+    U const invalid{ GET_INVALID(U{}) };
 
     for (int64_t i = binLow; i < binHigh; i++)
     {
@@ -2230,16 +2353,38 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            int32_t const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            // pCountOut[i] = 0 means worker j did not see any value for bin i
+            // pCountOut[i] = 1 means worker j saw a value, and did not see any invalid for bin i
+            // pCountOut[i] = -1 means worker j saw an invalid value for bin i
+            // these are set in AccumMin
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                U curValue = pDataOut[i];
-                U compareValue = pDataIn[i];
-
-                if (compareValue != invalid)
+                // if pCountOut[i] = 0, this thread never saw any data for this entry
+                // or if final answer is already invalid:
+                // don't update anything
+                if (pCountOut[i] == 0 || pInvFinal[i] == -1)
                 {
-                    if (compareValue < curValue || curValue == invalid)
+                    continue;
+                }
+                // if pCountOut[i] = -1, this worker saw an invalid. Fix answer to invalid
+                else if (pCountOut[i] == -1)
+                {
+                    pInvFinal[i] = -1;
+                    pDataOut[i] = invalid;
+                }
+                else
+                {
+                    // answer for i is not fixed to invalid, and worker did not see invalid
+                    U const curValue{ pDataOut[i] };
+                    U const compareValue{ pDataIn[i] };
+
+                    // if curValue is invalid, update it without comparison (first valid data for i)
+                    // otherwise none of the two values are invalid, just compare
+                    // (compareValue is valid since pCountOut[i] != -1 here)
+                    if ((not riptide::invalid_for_type<U>::is_valid(curValue)) || (compareValue < curValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2250,15 +2395,14 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
 }
 
 template <typename U>
-static void GatherMaxFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase,
-                           int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase, int64_t numUnique,
+                         int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
-    U invalid = GET_INVALID(pDataOut[0]);
-
+    U const invalid{ GET_INVALID(U{}) };
     for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
@@ -2269,19 +2413,16 @@ static void GatherMaxFloat(stGroupBy32 * pstGroupBy32, void * pDataInT, void * p
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                U curValue = pDataOut[i];
-                U compareValue = pDataIn[i];
+                U const curValue{ pDataOut[i] };
+                U const compareValue{ pDataIn[i] };
 
-                // nan != nan --> true
-                // nan == nan --> false
-                // == invalid
-                if (compareValue == compareValue)
+                if (riptide::invalid_for_type<U>::is_valid(compareValue))
                 {
-                    if (! (curValue >= compareValue))
+                    if ((not riptide::invalid_for_type<U>::is_valid(curValue)) || (compareValue > curValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2295,11 +2436,17 @@ template <typename U>
 static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, int32_t * pCountOutBase, int64_t numUnique,
                       int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
 
-    // Fill with invalid?
-    U invalid = GET_INVALID(pDataOut[0]);
+    // Array indicating if the final answer for each bin will be invalid
+    // if one thread saw data and returned invalid, answer is fixed to be invalid.
+    // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
+    int32_t * const pInvFinal{ pCountOutBase };
+    // pInvFinal[i] == -1 means the naswer must remain invalid till the end
+
+    // Fill with invalid
+    U const invalid{ GET_INVALID(U{}) };
 
     for (int64_t i = binLow; i < binHigh; i++)
     {
@@ -2311,16 +2458,38 @@ static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            int32_t const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            // pCountOut[i] = 0 means worker j did not see any value for bin i
+            // pCountOut[i] = 1 means worker j saw a value, and did not see any invalid for bin i
+            // pCountOut[i] = -1 means worker j saw an invalid value for bin i
+            // these are set in AccumMin
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                U curValue = pDataOut[i];
-                U compareValue = pDataIn[i];
-
-                if (compareValue != invalid)
+                // if pCountOut[i] = 0, this thread never saw any data for this entry
+                // or if final answer is already invalid:
+                // don't update anything
+                if (pCountOut[i] == 0 || pInvFinal[i] == -1)
                 {
-                    if (compareValue > curValue || curValue == invalid)
+                    continue;
+                }
+                // if pCountOut[i] = -1, this worker saw an invalid. Fix answer to invalid
+                else if (pCountOut[i] == -1)
+                {
+                    pInvFinal[i] = -1;
+                    pDataOut[i] = invalid;
+                }
+                else
+                {
+                    // answer for i is not fixed to invalid, and worker did not see invalid
+                    U const curValue{ pDataOut[i] };
+                    U const compareValue{ pDataIn[i] };
+
+                    // if curValue is invalid, update it without comparison (first valid data for i)
+                    // otherwise none of the two values are invalid, just compare
+                    // (compareValue is valid since pCountOut[i] != -1 here)
+                    if ((not riptide::invalid_for_type<U>::is_valid(curValue)) || (compareValue > curValue))
                     {
                         pDataOut[i] = compareValue;
                     }
@@ -2390,17 +2559,16 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
         break;
 
     case GB_MAX:
-    case GB_NANMAX:
         switch (outputType)
         {
         case NPY_BOOL:
             return GatherMax<int8_t>;
         case NPY_FLOAT:
-            return GatherMaxFloat<float>;
+            return GatherMax<float>;
         case NPY_DOUBLE:
-            return GatherMaxFloat<double>;
+            return GatherMax<double>;
         case NPY_LONGDOUBLE:
-            return GatherMaxFloat<long double>;
+            return GatherMax<long double>;
         case NPY_INT8:
             return GatherMax<int8_t>;
         case NPY_INT16:
@@ -2422,18 +2590,49 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
         }
         break;
 
+    case GB_NANMAX:
+        switch (outputType)
+        {
+        case NPY_BOOL:
+            return GatherNanMax<int8_t>;
+        case NPY_FLOAT:
+            return GatherNanMax<float>;
+        case NPY_DOUBLE:
+            return GatherNanMax<double>;
+        case NPY_LONGDOUBLE:
+            return GatherNanMax<long double>;
+        case NPY_INT8:
+            return GatherNanMax<int8_t>;
+        case NPY_INT16:
+            return GatherNanMax<int16_t>;
+        CASE_NPY_INT32:
+            return GatherNanMax<int32_t>;
+        CASE_NPY_INT64:
+
+            return GatherNanMax<int64_t>;
+        case NPY_UINT8:
+            return GatherNanMax<uint8_t>;
+        case NPY_UINT16:
+            return GatherNanMax<uint16_t>;
+        CASE_NPY_UINT32:
+            return GatherNanMax<uint32_t>;
+        CASE_NPY_UINT64:
+
+            return GatherNanMax<uint64_t>;
+        }
+        break;
+
     case GB_MIN:
-    case GB_NANMIN:
         switch (outputType)
         {
         case NPY_BOOL:
             return GatherMin<int8_t>;
         case NPY_FLOAT:
-            return GatherMinFloat<float>;
+            return GatherMin<float>;
         case NPY_DOUBLE:
-            return GatherMinFloat<double>;
+            return GatherMin<double>;
         case NPY_LONGDOUBLE:
-            return GatherMinFloat<long double>;
+            return GatherMin<long double>;
         case NPY_INT8:
             return GatherMin<int8_t>;
         case NPY_INT16:
@@ -2452,6 +2651,38 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
         CASE_NPY_UINT64:
 
             return GatherMin<uint64_t>;
+        }
+        break;
+
+    case GB_NANMIN:
+        switch (outputType)
+        {
+        case NPY_BOOL:
+            return GatherNanMin<int8_t>;
+        case NPY_FLOAT:
+            return GatherNanMin<float>;
+        case NPY_DOUBLE:
+            return GatherNanMin<double>;
+        case NPY_LONGDOUBLE:
+            return GatherNanMin<long double>;
+        case NPY_INT8:
+            return GatherNanMin<int8_t>;
+        case NPY_INT16:
+            return GatherNanMin<int16_t>;
+        CASE_NPY_INT32:
+            return GatherNanMin<int32_t>;
+        CASE_NPY_INT64:
+
+            return GatherNanMin<int64_t>;
+        case NPY_UINT8:
+            return GatherNanMin<uint8_t>;
+        case NPY_UINT16:
+            return GatherNanMin<uint16_t>;
+        CASE_NPY_UINT32:
+            return GatherNanMin<uint32_t>;
+        CASE_NPY_UINT64:
+
+            return GatherNanMin<uint64_t>;
         }
         break;
     default:
@@ -3063,7 +3294,38 @@ static GROUPBY_X_FUNC32 GetGroupByXFunction32(int inputType, int outputType, GB_
         CASE_NPY_UINT64:
             return GroupByBase<uint64_t, double, V>::AccumTrimMeanBR;
         }
-        return NULL;
+        return NULL;      
+    }
+    else if (func == GB_QUANTILE_MULT)        
+    {
+        switch (inputType)
+        {
+        case NPY_BOOL:
+            return GroupByBase<bool, bool, V>::GetXFunc(func);
+        case NPY_FLOAT:
+            return GroupByBase<float, float, V>::GetXFunc(func);
+        case NPY_DOUBLE:
+            return GroupByBase<double, double, V>::GetXFunc(func);
+        case NPY_LONGDOUBLE:
+            return GroupByBase<long double, long double, V>::GetXFunc(func);
+        case NPY_INT8:
+            return GroupByBase<int8_t, double, V>::GetXFunc(func);
+        case NPY_INT16:
+            return GroupByBase<int16_t, double, V>::GetXFunc(func);
+        CASE_NPY_INT32:
+            return GroupByBase<int32_t, double, V>::GetXFunc(func);
+        CASE_NPY_INT64:
+            return GroupByBase<int64_t, double, V>::GetXFunc(func);
+        case NPY_UINT8:
+            return GroupByBase<uint8_t, double, V>::GetXFunc(func);
+        case NPY_UINT16:
+            return GroupByBase<uint16_t, double, V>::GetXFunc(func);
+        CASE_NPY_UINT32:
+            return GroupByBase<uint32_t, double, V>::GetXFunc(func);
+        CASE_NPY_UINT64:
+            return GroupByBase<uint64_t, double, V>::GetXFunc(func);
+        }
+        return NULL;  
     }
     else if (func == GB_ROLLING_COUNT)
     {
@@ -3471,7 +3733,7 @@ GROUPBY_TWO_FUNC GetGroupByFunctionStep1(int32_t iKeyType, bool * hasCounts, int
 // and then gathering the work from threads.
 PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, PyArrayObject * iFirst, PyArrayObject * iGroup,
                                      PyArrayObject * nCount, GB_FUNCTIONS firstFuncNum, int64_t unique_rows, int64_t tupleSize,
-                                     int64_t binLow, int64_t binHigh)
+                                     int64_t binLow, int64_t binHigh, int64_t funcParam)
 {
     PyObject * returnTuple = NULL;
     int32_t iKeyType = PyArray_TYPE(iKey);
@@ -3498,6 +3760,20 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         pFunction = GetGroupByXFunction32<int64_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
         break;
     }
+
+    if ((firstFuncNum == GB_TRIMBR) ||
+        (firstFuncNum == GB_QUANTILE_MULT))
+    {
+        numpyOutType = NPY_FLOAT64;
+        if (aInfo[0].NumpyDType == NPY_FLOAT32)
+        {
+            numpyOutType = NPY_FLOAT32;
+        } else if (aInfo[0].NumpyDType == NPY_BOOL && firstFuncNum != GB_TRIMBR) 
+        {
+            numpyOutType = NPY_BOOL;
+        }
+    }
+
 
     if (pFunction)
     {
@@ -3576,6 +3852,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             pstGroupBy32->pGroup = PyArray_BYTES(iGroup);
             pstGroupBy32->pCount = PyArray_BYTES(nCount);
             pstGroupBy32->typeOfFunctionCall = TYPE_OF_FUNCTION_CALL::ANY_GROUPBY_XFUNC32;
+            pstGroupBy32->funcParam = funcParam;
 
             pstGroupBy32->totalInputRows = arraySizeKey;
 
@@ -4134,11 +4411,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         LOGGING("Checking banded %lld\n", firstFuncNum);
 
-        if ((firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR))
-
+        if ((firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR) ||
+            (firstFuncNum == GB_QUANTILE_MULT))
         {
             returnTuple = GroupBySingleOpMultiBands(aInfo, iKey, iFirst, iGroup, nCount, (GB_FUNCTIONS)firstFuncNum, unique_rows,
-                                                    tupleSize, binLow, binHigh);
+                                                    tupleSize, binLow, binHigh, funcParam);
         }
     }
 
@@ -4243,6 +4520,30 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                     if (aInfo[i].NumpyDType == NPY_FLOAT32)
                     {
                         numpyOutType = NPY_FLOAT32;
+                    }
+                    outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
+                    CHECK_MEMORY_ERROR(outArray);
+                }
+                // almost same for quantiles, but check bool case
+                // string will need to be different when they are supported
+                else if (funcNum == GB_QUANTILE_MULT)
+                {
+                    // Variance must be in float form
+                    numpyOutType = NPY_FLOAT64;
+
+                    // Everything is a float64 unless it is already a float32, then we
+                    // keep it as float32
+                    if (aInfo[i].NumpyDType == NPY_FLOAT32)
+                    {
+                        numpyOutType = NPY_FLOAT32;
+                    }
+                    else if (aInfo[i].NumpyDType == NPY_BOOL) 
+                    {
+                        numpyOutType = NPY_BOOL;
+                    }
+                    else if (aInfo[i].NumpyDType == NPY_LONGDOUBLE) 
+                    {
+                        numpyOutType = NPY_LONGDOUBLE;
                     }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);

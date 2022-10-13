@@ -6,6 +6,7 @@
 *.c text
 *.h text
 *.hpp text
+*.rc text eol=crlf
 
 *.sln text eol=crlf
 *.py text

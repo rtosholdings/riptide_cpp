@@ -48,12 +48,12 @@ jobs:
       - name: Install Linux dependencies
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil binutils binutils_linux-64 gxx=8 gcc=8 "cmake>=3.18" ninja "tbb>=2021" "tbb-devel>=2021"
+          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil binutils binutils_linux-64 gxx=8 gcc=8 "cmake>=3.18" ninja "tbb=2021.6" "tbb-devel=2021.6"
           echo "CONFIG_SUBDIR=." >> $GITHUB_ENV
       - name: Install Windows dependencies
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil "cmake>=3.18" "tbb>=2021" "tbb-devel>=2021"
+          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil "cmake>=3.18" "tbb=2021.6" "tbb-devel=2021.6"
           echo "CONFIG_SUBDIR=${{ matrix.build-config }}" >> $GITHUB_ENV
       - name: Setup CMake configuration
         run: |

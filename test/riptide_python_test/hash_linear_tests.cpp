@@ -2,7 +2,6 @@
 
 #include "HashLinear.h"
 
-#define BOOST_UT_DISABLE_MODULE
 #include "boost/ut.hpp"
 
 #include <array>

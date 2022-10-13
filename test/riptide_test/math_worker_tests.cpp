@@ -1,9 +1,6 @@
-#include "riptide_python_test.h"
-
 #include "MathWorker.h"
 
-#define BOOST_UT_DISABLE_MODULE
-#include "../ut/include/boost/ut.hpp"
+#include "boost/ut.hpp"
 
 #include <mutex>
 #include <condition_variable>
@@ -11,6 +8,16 @@
 
 using namespace boost::ut;
 using boost::ut::suite;
+
+namespace
+{
+    std::once_flag initialized_math_workers_;
+}
+
+void once_start_math_workers()
+{
+    std::call_once(initialized_math_workers_, []() { g_cMathWorker->StartWorkerThreads(0); });
+}
 
 namespace
 {
@@ -111,6 +118,7 @@ namespace
         "work_main_joins_workers"_test = [&]
         {
             expect(g_cMathWorker != nullptr);
+            once_start_math_workers();
 
             JoinTestCallbackInfo callbackInfo{};
 

@@ -29,32 +29,15 @@ extern pthread_cond_t g_WakeupCond;
 
 #endif // defined(__unix__) || defined(__unix) || defined(__APPLE__)
 
+#include <atomic>
+
+// Ensure ued set of atomics are always lock-free.
+static_assert(std::atomic<bool>::is_always_lock_free);
+static_assert(std::atomic<int64_t>::is_always_lock_free);
+static_assert(std::atomic<uint32_t>::is_always_lock_free);
+
 #define THREADLOGGING(...)
 //#define THREADLOGGING printf
-
-//--------------------------------------------------------------------
-// bool
-// WINAPI
-// WaitOnAddress(
-//   _In_reads_bytes_(AddressSize) volatile void * Address,
-//   _In_reads_bytes_(AddressSize) void* CompareAddress,
-//   _In_ size_t AddressSize,
-//   _In_opt_ DWORD dwMilliseconds
-//);
-//
-//
-// void
-// WINAPI
-// WakeByAddressSingle(
-//   _In_ void* Address
-//);
-//
-//
-// void
-// WINAPI
-// WakeByAddressAll(
-//   _In_ void* Address
-//);
 
 //-------------------------------------------------------------------
 //
@@ -187,12 +170,6 @@ struct stMATH_WORKER_ITEM
     DOWORK_CALLBACK DoWorkCallback;
     void * WorkCallbackArg;
 
-    // How many threads to wake up (atomic decrement)
-    int64_t ThreadWakeup;
-
-    // How many threads have been awakened (possibly executing callbacks).
-    int64_t ThreadAwakened;
-
     // Used when calling MultiThreadedWork
     union
     {
@@ -311,16 +288,23 @@ struct stWorkerRing
     volatile int64_t WorkIndex;
     volatile int64_t WorkIndexCompleted;
 
-    // incremented when worker thread start
-    volatile int64_t WorkThread;
+    // incremented when worker thread starts; decremented when thread stops
+    std::atomic<uint32_t> ThreadsRunning{0};
     int32_t Reserved32;
     int32_t SleepTime;
 
     int32_t NumaNode;
-    int32_t Cancelled;
+    std::atomic<bool> Cancelled{false};
 
     // Change this value to wake up less workers
     int32_t FutexWakeCount;
+
+#ifdef _WIN32
+    // How many threads to wake up (atomic decrement)
+    int64_t ThreadWakeup;
+#endif
+
+    std::atomic<int64_t> ThreadsAwakened{0};
 
     stMATH_WORKER_ITEM WorkerQueue[RING_BUFFER_SIZE];
 
@@ -328,9 +312,7 @@ struct stWorkerRing
     {
         WorkIndex = 0;
         WorkIndexCompleted = 0;
-        WorkThread = 0;
         NumaNode = 0;
-        Cancelled = 0;
         SleepTime = 1;
         // how many threads to wake up on Linux
         FutexWakeCount = FUTEX_WAKE_DEFAULT;
@@ -338,7 +320,12 @@ struct stWorkerRing
 
     FORCE_INLINE void Cancel()
     {
-        Cancelled = 1;
+        Cancelled = true;
+    }
+
+    FORCE_INLINE bool AnyThreadsAwakened() const
+    {
+        return ThreadsAwakened != 0;
     }
 
     FORCE_INLINE stMATH_WORKER_ITEM * GetWorkItem()
@@ -358,6 +345,8 @@ struct stWorkerRing
         InterlockedIncrement64(&WorkIndex);
 
 #if defined(_WIN32)
+        ThreadWakeup = maxThreadsToWake;
+
         // Are we allowed to wake threads?
         if (g_WakeAllAddress != NULL)
         {
