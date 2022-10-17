@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageVersion>$(PKG_VER)</PackageVersion>
+        <PackageId>$(PKG_ID)</PackageId>
+        <Authors>RTOS Holdings</Authors>
+        <Description>SDSFile Nuget package</Description>
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="$(PKG_BINFILE)" PackagePath="runtimes/win-x64/native" Pack="true" />
+        <Content Include="$(PKG_PDBFILE)" PackagePath="runtimes/win-x64/native" Pack="true" />
+        <Content Include="$(PKG_SRCDIR)/sdsfile.targets" PackagePath="build/$(PKG_ID).targets" Pack="true" />
+    </ItemGroup>
+</Project>

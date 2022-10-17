@@ -500,3 +500,20 @@ int GetProcCount()
 
     return count;
 }
+
+void CMathWorker::StartWorkerThreads(int numaNode)
+{
+    MATHLOGGING("Start worker threads\n");
+    for (int i = 0; i < WorkerThreadCount; i++)
+    {
+        WorkerThreadHandles[i] = StartThread(pWorkerRing);
+    }
+
+    // Pin the main thread to a numa node?
+    // TODO: work
+    // uint64_t mask = ((uint64_t)1 << WorkerThreadCount);//core number starts
+    // from 0
+    // uint64_t ret = SetThreadAffinityMask(GetCurrentThread(),
+    // (uint64_t)0xFFFF); SetThreadAffinityMask(GetCurrentThread(),
+    // (uint64_t)0xFFFFFFFF);
+}

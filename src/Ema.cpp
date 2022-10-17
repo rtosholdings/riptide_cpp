@@ -8,15 +8,9 @@
 #include <pymem.h>
 #include <stdio.h>
 
-#if defined(_WIN32) && ! defined(__GNUC__)
-    #include <../Lib/site-packages/numpy/core/include/numpy/arrayobject.h>
-    #include <../Lib/site-packages/numpy/core/include/numpy/ndarraytypes.h>
-    #include <../Lib/site-packages/numpy/core/include/numpy/npy_common.h>
-#else
-    #include <numpy/arrayobject.h>
-    #include <numpy/ndarraytypes.h>
-    #include <numpy/npy_common.h>
-#endif
+#include <numpy/arrayobject.h>
+#include <numpy/ndarraytypes.h>
+#include <numpy/npy_common.h>
 
 #define LOGGING(...)
 //#define LOGGING printf

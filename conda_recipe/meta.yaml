@@ -7,6 +7,8 @@ source:
 
 build:
   number: 0
+  # Use Python installed in host environment.
+  script: {{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
   build:
@@ -15,8 +17,8 @@ requirements:
     - cmake >=3.18
     - setuptools_scm
     - numpy {{ numpy }}
-    - tbb-devel >=2021,<2022
-    - tbb >=2021,<2022
+    - tbb-devel 2021.6
+    - tbb 2021.6.*
   host:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
@@ -24,15 +26,14 @@ requirements:
   run:
     - python {{ python }}
     - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
-    - {{ pin_compatible('tbb', min_pin='x.x', max_pin='x.x') }}
+    - tbb 2021.6.*
 
 test:
   imports:
-    riptide_cpp
+    - riptide_cpp
 
 about:
   home: https://github.com/rtosholdings/riptide_cpp
   license: BSD 3-Clause License
   license_file: LICENSE
   summary: 'Python Package with fast math util functions'
-

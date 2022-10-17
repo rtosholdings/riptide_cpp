@@ -241,7 +241,7 @@ size_t ZSTD_decompress_stackmode(void * dst, size_t dstCapacity, const void * sr
     size_t regenSize;
     ZSTD_DCtx * const dctx = ZSTD_createDCtx();
     if (dctx == NULL)
-        return -64; // ERROR(memory_allocation);
+        return static_cast<size_t>(-64); // ERROR(memory_allocation);
     regenSize = ZSTD_decompressDCtx(dctx, dst, dstCapacity, src, srcSize);
     ZSTD_freeDCtx(dctx);
     return regenSize;
@@ -317,7 +317,7 @@ static size_t DecompressDataPartial(int32_t core, int32_t compMode, void * dst, 
 
         // return regenSize;
     }
-    return -1;
+    return static_cast<size_t>(-1);
 }
 
 //------------------------------------------------------------

@@ -66,6 +66,7 @@ endif()
 
 message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLSET}, path=${CMAKE_CXX_COMPILER}")
 
+include(AddCommonSettings)
 include(AddPythonSupport)
 
 # Under setupbuild, exclude all dependencies from install target to avoid polluting distribution.
@@ -82,4 +83,6 @@ find_package(TBB CONFIG REQUIRED)
 add_subdirectory(src)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(bench ${EXLUSION_SPECIFIER})
+include(AddCpm) # workaround CPM download requirement
 add_subdirectory(test ${EXLUSION_SPECIFIER})
+add_subdirectory(extras ${EXLUSION_SPECIFIER})
