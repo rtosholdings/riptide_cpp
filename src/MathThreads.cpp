@@ -82,7 +82,7 @@ void * WorkerThreadFunction(void * lpParam)
 {
     stWorkerRing * pWorkerRing = (stWorkerRing *)lpParam;
 
-    uint32_t const core{pWorkerRing->ThreadsRunning++};
+    uint32_t const core{ pWorkerRing->ThreadsRunning++ };
 
     // if (core > 3) core += 16;
     // core += 16;
@@ -102,7 +102,7 @@ void * WorkerThreadFunction(void * lpParam)
     //
     // Setting Cancelled will stop all worker threads
     //
-    while (!pWorkerRing->Cancelled)
+    while (! pWorkerRing->Cancelled)
     {
         int64_t workIndexCompleted;
         int64_t workIndex;
@@ -117,7 +117,7 @@ void * WorkerThreadFunction(void * lpParam)
         {
 #if defined(RT_OS_WINDOWS)
             // On windows all threads awakened, so ignore spurious awakenings.
-            bool const wakeup{InterlockedDecrement64(&pWorkerRing->ThreadWakeup) >= 0};
+            bool const wakeup{ InterlockedDecrement64(&pWorkerRing->ThreadWakeup) >= 0 };
             if (wakeup)
 #endif
             {

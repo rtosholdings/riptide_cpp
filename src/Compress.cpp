@@ -375,7 +375,12 @@ PyObject * CompressString(PyObject * self, PyObject * args)
             return NULL;
         }
 
+// Py3.9 intoduced Py_SET_SIZE(), and it's preferred over using Py_SIZE() as an l-value.
+#if defined(Py_SET_SIZE)
+        Py_SET_SIZE(result, cSize);
+#else
         Py_SIZE(result) = cSize;
+#endif // defined(Py_SET_SIZE)
     }
     return result;
 }

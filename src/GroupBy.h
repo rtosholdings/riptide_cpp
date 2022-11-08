@@ -26,7 +26,7 @@ struct stGroupByReturn
     void * pOutArray;
     void * pTmpArray;
 
-    int32_t * pCountOut;
+    void * pCountOut;
 
     int32_t numpyOutType;
     int32_t funcNum;
@@ -37,8 +37,7 @@ struct stGroupByReturn
     union
     {
         GROUPBY_TWO_FUNC pFunction;
-        GROUPBY_X_FUNC32 pFunctionX32;
-        GROUPBY_X_FUNC64 pFunctionX64;
+        GROUPBY_X_FUNC pFunctionX;
     };
 
     PyObject * returnObject;

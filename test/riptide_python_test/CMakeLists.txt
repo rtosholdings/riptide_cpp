@@ -21,8 +21,9 @@ get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
 
 target_include_directories(${TARGET_NAME} PRIVATE
                              ${RT_SOURCE_DIR}
-                             ${Python3_INCLUDE_DIRS}
-                             ${Python3_NumPy_INCLUDE_DIRS})
+							 ${Python3_INCLUDE_DIRS}
+							 ${Python3_NumPy_INCLUDE_DIRS}
+)
 
 target_link_directories(${TARGET_NAME} PRIVATE
     ${Python3_LIBRARY_DIRS})
@@ -30,6 +31,8 @@ target_link_directories(${TARGET_NAME} PRIVATE
 target_link_libraries(${TARGET_NAME}
     rt_common_settings
     riptide_cpp
+	absl::base
+	absl::flat_hash_map
     ${Python3_LIBRARIES})
 
 add_test(NAME test_riptide_cpp_python
@@ -48,8 +51,11 @@ if(WIN32)
 
         COMMENT "Copying Python dependencies to ${_TARGET_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
-        )
+
+        COMMENT "Copying TBB dependencies to ${_TARGET_DIR}"
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbbmalloc> ${_TARGET_DIR}
+		)
 endif()
 
 target_link_libraries(${TARGET_NAME}

@@ -3,10 +3,10 @@
 #define PY_SSIZE_T_CLEAN // needed to py310, before python.h
 
 // Hack because debug builds force python36_d.lib
-#define MS_NO_COREDLL       // don't add import libs by default
-#define Py_ENABLE_SHARED    // but do enable shared libs
+#define MS_NO_COREDLL    // don't add import libs by default
+#define Py_ENABLE_SHARED // but do enable shared libs
 #include <pyconfig.h>
-#undef Py_DEBUG             // don't use debug Python APIs
+#undef Py_DEBUG // don't use debug Python APIs
 
 #include <Python.h>
 

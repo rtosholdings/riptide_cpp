@@ -312,37 +312,27 @@ namespace riptide
      */
     static constexpr NPY_TYPES index_size_type(int64_t array_length)
     {
-        // VS2015 says it supports C++14, but doesn't fully -- so it's explicitly
-        // excluded here even when the language version checks pass.
-#if __cplusplus >= 201402L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L && _MSC_VER > 1900)
         if (array_length < 0)
         {
             return NPY_TYPES::NPY_NOTYPE;
         }
-        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT8>::value)
+
+        if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT8>::value)
         {
             return NPY_TYPES::NPY_INT8;
         }
-        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT16>::value)
+
+        if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT16>::value)
         {
             return NPY_TYPES::NPY_INT16;
         }
-        else if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT32>::value)
+
+        if (array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT32>::value)
         {
             return NPY_TYPES::NPY_INT32;
         }
-        else
-        {
-            return NPY_TYPES::NPY_INT64;
-        }
-#else
-        // Fall back to the C++11 constexpr style.
-        return array_length < 0                                                ? NPY_TYPES::NPY_NOTYPE :
-               array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT8>::value  ? NPY_TYPES::NPY_INT8 :
-               array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT16>::value ? NPY_TYPES::NPY_INT16 :
-               array_length < arrlen_index_cutoff<NPY_TYPES::NPY_INT32>::value ? NPY_TYPES::NPY_INT32 :
-                                                                                 NPY_TYPES::NPY_INT64;
-#endif
+
+        return NPY_TYPES::NPY_INT64;
     }
 
     // The maximum number of rows (non-inclusive) for which we'll use a 32-bit

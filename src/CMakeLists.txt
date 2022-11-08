@@ -1,7 +1,6 @@
 set(TARGET_NAME riptide_cpp)
 
 set(HEADERS
-    #ArenaMemory.h
     Array.h
     BasicMath.h
     Bins.h
@@ -12,21 +11,18 @@ set(HEADERS
     Convert.h
     DateTime.h
     Ema.h
-    #FileReadWrite.h
-    flat_hash_map.h
+    FileReadWrite.h
     GroupBy.h
     HashFunctions.h
     HashLinear.h
     Hook.h
+    is_member_tg.h
     MathThreads.h
     MathWorker.h
     Merge.h
     #missing_values.h
     MultiKey.h
-    #ndarray.h
-    #numpy_traits.h
     one_input.h
-    #platform_detect.h
     Recycler.h
     Reduce.h
     RipTide.h
@@ -34,14 +30,12 @@ set(HEADERS
     SDSFilePython.h
     SharedMemory.h
     Sort.h
-    #stdafx.h
     TileRepeat.h
     TimeWindow.h
-    #TypeSystem.h
+    TypeSystem.h
     UnaryOps.h)
 
 set(SOURCES
-    #ArenaMemory.cpp
     Array.cpp
     BasicMath.cpp
     Bins.cpp
@@ -52,15 +46,13 @@ set(SOURCES
     CRC32.cpp
     DateTime.cpp
     Ema.cpp
-    #FileReadWrite.cpp
-    flat_hash_map.cpp
     GroupBy.cpp
     HashFunctions.cpp
     HashLinear.cpp
     Hook.cpp
+    is_member_tg.cpp
     MathThreads.cpp
     MathWorker.cpp
-    #mat_interp.cpp
     Merge.cpp
     MultiKey.cpp
     one_input.cpp
@@ -74,7 +66,7 @@ set(SOURCES
     strptime5.cpp
     TileRepeat.cpp
     TimeWindow.cpp
-    #TypeSystem.cpp
+    TypeSystem.cpp
     UnaryOps.cpp)
 
 add_library(${TARGET_NAME} SHARED
@@ -89,8 +81,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
     ${EXTERNAL_ZSTD_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
-    ${ABSL_COMMON_INCLUDE_DIRS}
-	)
+    )
 
 target_compile_options(${TARGET_NAME} PRIVATE
     $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>:-bigobj>)
@@ -99,11 +90,12 @@ target_link_libraries(${TARGET_NAME}
     rt_common_settings
     Python3::Python
     libzstd_static
+    TBB::tbb
+    TBB::tbbmalloc
     absl::base
     absl::flat_hash_map
-    TBB::tbb
     $<$<PLATFORM_ID:Linux>:rt>
-	)
+    )
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES

@@ -2,10 +2,7 @@
 #include <assert.h>
 
 #include "Defs.h"
-
-PyObject * IsMember32(PyObject * self, PyObject * args);
-PyObject * IsMember64(PyObject * self, PyObject * args);
-PyObject * IsMemberCategorical(PyObject * self, PyObject * args);
+#include "HashFunctions.h"
 
 enum HASH_MODE
 {
@@ -28,12 +25,17 @@ int64_t IsMemberHashCategorical(int64_t size1, void * pInput1, int64_t size2, vo
 int64_t IsMemberHashCategorical64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
                                   int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-template <typename U>
-void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, U * pOutput, int8_t * pBooleanOutput,
-                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int8_t * pOutput,
+                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-DllExport void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
-                                 int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int16_t * pOutput,
+                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+
+DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int32_t * pOutput,
+                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+
+DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
+                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
 int64_t IsMemberCategoricalHashStringPre(PyArrayObject ** indexArray, PyArrayObject * inArr1, int64_t size1, int64_t strWidth1,
                                          const char * pInput1, int64_t size2, int64_t strWidth2, const char * pInput2,
@@ -45,10 +47,6 @@ void IsMemberHashString32Pre(PyArrayObject ** indexArray, PyArrayObject * inArr1
 
 void IsMemberHashMKPre(PyArrayObject ** indexArray, int64_t size1, void * pInput1, int64_t size2, void * pInput2,
                        int8_t * pBooleanOutput, int64_t totalItemSize, int64_t hintSize, HASH_MODE hashMode);
-
-void IsMemberHashString64(int64_t size1, int64_t strWidth1, const char * pInput1, int64_t size2, int64_t strWidth2,
-                          const char * pInput2, int64_t * pOutput, int8_t * pBooleanOutput, HASH_MODE hashMode, int64_t hintSize,
-                          bool isUnicode);
 
 template <typename U, typename V>
 void FindLastMatchCategorical(int64_t arraySize1, int64_t arraySize2, U * pKey1, U * pKey2, V * pVal1, V * pVal2,
@@ -242,6 +240,8 @@ public:
     // how to hash, affects memory allocation
     HASH_MODE HashMode;
 
+    // TODO: Change this to be a constexpr value or function, and it can get the value from
+    //       riptide::invalid_for_type<> in "missing_values.h"
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
     bool Deallocate = true;

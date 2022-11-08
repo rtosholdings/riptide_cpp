@@ -2565,136 +2565,141 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 
         // If size is large, go parallel
         if (arrayLength >= CMathWorker::WORK_ITEM_BIG)
-    {
-        PLOGGING("Parallel version  %p  %p  %p\n", pToSort, pToSort + arrayLength, pValues);
-        // Divide into 8 jobs
-        // Allocate all memory up front?
-        // UINDEX* pWorkSpace = (UINDEX*)WORKSPACE_FREE(((arrayLength / 2) + 256)*
-        // sizeof(UINDEX));
-        void * pWorkSpace = NULL;
-        uint64_t allocSize = arrayLength * sizeof(UINDEX);
-
-        //(UINDEX*)WORKSPACE_ALLOC(arrayLength * sizeof(UINDEX));
-        pWorkSpace = WorkSpaceAllocLarge(allocSize);
-
-        if (pWorkSpace == NULL)
         {
-            return -1;
-        }
+            PLOGGING("Parallel version  %p  %p  %p\n", pToSort, pToSort + arrayLength, pValues);
+            // Divide into 8 jobs
+            // Allocate all memory up front?
+            // UINDEX* pWorkSpace = (UINDEX*)WORKSPACE_FREE(((arrayLength / 2) + 256)*
+            // sizeof(UINDEX));
+            void * pWorkSpace = NULL;
+            uint64_t allocSize = arrayLength * sizeof(UINDEX);
 
-        MERGE_STEP_ONE mergeStepOne = NULL;
+            //(UINDEX*)WORKSPACE_ALLOC(arrayLength * sizeof(UINDEX));
+            pWorkSpace = WorkSpaceAllocLarge(allocSize);
 
-        switch (sortType)
-        {
-        case PAR_SORT_TYPE::Float:
-            mergeStepOne = ParMergeFloat<T, UINDEX>;
-            break;
-        case PAR_SORT_TYPE::String:
-            mergeStepOne = ParMergeString<UINDEX>;
-            break;
-        case PAR_SORT_TYPE::Unicode:
-            mergeStepOne = ParMergeUnicode<UINDEX>;
-            break;
-        case PAR_SORT_TYPE::Void:
-            mergeStepOne = ParMergeVoid<UINDEX>;
-            break;
-        default:
-            mergeStepOne = ParMergeNormal<T, UINDEX>;
-        }
+            if (pWorkSpace == NULL)
+            {
+                return -1;
+            }
 
-        stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arrayLength);
+            MERGE_STEP_ONE mergeStepOne = NULL;
 
-        if (pWorkItem == NULL)
-        {
-            // Threading not allowed for this work item, call it directly from main
-            // thread
-            mergeStepOne(pValues, pToSort, arrayLength, strlen, pWorkSpace);
+            switch (sortType)
+            {
+            case PAR_SORT_TYPE::Float:
+                mergeStepOne = ParMergeFloat<T, UINDEX>;
+                break;
+            case PAR_SORT_TYPE::String:
+                mergeStepOne = ParMergeString<UINDEX>;
+                break;
+            case PAR_SORT_TYPE::Unicode:
+                mergeStepOne = ParMergeUnicode<UINDEX>;
+                break;
+            case PAR_SORT_TYPE::Void:
+                mergeStepOne = ParMergeVoid<UINDEX>;
+                break;
+            default:
+                mergeStepOne = ParMergeNormal<T, UINDEX>;
+            }
+
+            stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arrayLength);
+
+            if (pWorkItem == NULL)
+            {
+                // Threading not allowed for this work item, call it directly from main
+                // thread
+                mergeStepOne(pValues, pToSort, arrayLength, strlen, pWorkSpace);
+            }
+            else
+            {
+                pWorkItem->DoWorkCallback = ParMergeThreadCallback;
+                pWorkItem->WorkCallbackArg = &stParMergeCallback;
+
+                stParMergeCallback.MergeCallbackOne = mergeStepOne;
+                switch (sortType)
+                {
+                case PAR_SORT_TYPE::String:
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>;
+                    break;
+                case PAR_SORT_TYPE::Unicode:
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>;
+                    break;
+                case PAR_SORT_TYPE::Void:
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX>;
+                    break;
+                default:
+                    // Last Merge
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMerge<T, UINDEX>;
+                };
+
+                stParMergeCallback.pValues = pValues;
+                stParMergeCallback.pToSort = pToSort;
+                stParMergeCallback.ArrayLength = arrayLength;
+                stParMergeCallback.StrLen = strlen;
+                stParMergeCallback.pWorkSpace = pWorkSpace;
+                stParMergeCallback.TypeSizeInput = sizeof(T);
+                if (strlen)
+                {
+                    stParMergeCallback.TypeSizeInput = strlen;
+                }
+                stParMergeCallback.TypeSizeOutput = sizeof(UINDEX);
+
+                // NOTE set this value to 2,4 or 8
+                stParMergeCallback.MergeBlocks = 8;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    stParMergeCallback.Level[i] = 0;
+                }
+
+                if (stParMergeCallback.MergeBlocks == 2)
+                {
+                    stParMergeCallback.EndPositions[1] = arrayLength;
+                    stParMergeCallback.EndPositions[0] = arrayLength / 2;
+                }
+                else if (stParMergeCallback.MergeBlocks == 4)
+                {
+                    stParMergeCallback.EndPositions[3] = arrayLength;
+                    stParMergeCallback.EndPositions[1] = arrayLength / 2;
+                    stParMergeCallback.EndPositions[2] =
+                        stParMergeCallback.EndPositions[1] +
+                        (stParMergeCallback.EndPositions[3] - stParMergeCallback.EndPositions[1]) / 2;
+                    stParMergeCallback.EndPositions[0] = 0 + (stParMergeCallback.EndPositions[1] - 0) / 2;
+                }
+
+                else
+                {
+                    // We use an 8 way merge, we need the size breakdown
+                    stParMergeCallback.EndPositions[7] = arrayLength;
+                    stParMergeCallback.EndPositions[3] = arrayLength / 2;
+                    stParMergeCallback.EndPositions[5] =
+                        stParMergeCallback.EndPositions[3] +
+                        (stParMergeCallback.EndPositions[7] - stParMergeCallback.EndPositions[3]) / 2;
+                    stParMergeCallback.EndPositions[1] = 0 + (stParMergeCallback.EndPositions[3] - 0) / 2;
+                    stParMergeCallback.EndPositions[6] =
+                        stParMergeCallback.EndPositions[5] +
+                        (stParMergeCallback.EndPositions[7] - stParMergeCallback.EndPositions[5]) / 2;
+                    stParMergeCallback.EndPositions[4] =
+                        stParMergeCallback.EndPositions[3] +
+                        (stParMergeCallback.EndPositions[5] - stParMergeCallback.EndPositions[3]) / 2;
+                    stParMergeCallback.EndPositions[2] =
+                        stParMergeCallback.EndPositions[1] +
+                        (stParMergeCallback.EndPositions[3] - stParMergeCallback.EndPositions[1]) / 2;
+                    stParMergeCallback.EndPositions[0] = 0 + (stParMergeCallback.EndPositions[1] - 0) / 2;
+                }
+
+                // This will notify the worker threads of a new work item
+                g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, false);
+            }
+
+            // Free temp memory used
+            WorkSpaceFreeAllocLarge(pWorkSpace, allocSize);
         }
         else
         {
-            pWorkItem->DoWorkCallback = ParMergeThreadCallback;
-            pWorkItem->WorkCallbackArg = &stParMergeCallback;
-
-            stParMergeCallback.MergeCallbackOne = mergeStepOne;
-            switch (sortType)
-            {
-            case PAR_SORT_TYPE::String:
-                stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>;
-                break;
-            case PAR_SORT_TYPE::Unicode:
-                stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>;
-                break;
-            case PAR_SORT_TYPE::Void:
-                stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX>;
-                break;
-            default:
-                // Last Merge
-                stParMergeCallback.MergeCallbackTwo = ParMergeMerge<T, UINDEX>;
-            };
-
-            stParMergeCallback.pValues = pValues;
-            stParMergeCallback.pToSort = pToSort;
-            stParMergeCallback.ArrayLength = arrayLength;
-            stParMergeCallback.StrLen = strlen;
-            stParMergeCallback.pWorkSpace = pWorkSpace;
-            stParMergeCallback.TypeSizeInput = sizeof(T);
-            if (strlen)
-            {
-                stParMergeCallback.TypeSizeInput = strlen;
-            }
-            stParMergeCallback.TypeSizeOutput = sizeof(UINDEX);
-
-            // NOTE set this value to 2,4 or 8
-            stParMergeCallback.MergeBlocks = 8;
-
-            for (int i = 0; i < 3; i++)
-            {
-                stParMergeCallback.Level[i] = 0;
-            }
-
-            if (stParMergeCallback.MergeBlocks == 2)
-            {
-                stParMergeCallback.EndPositions[1] = arrayLength;
-                stParMergeCallback.EndPositions[0] = arrayLength / 2;
-            }
-            else if (stParMergeCallback.MergeBlocks == 4)
-            {
-                stParMergeCallback.EndPositions[3] = arrayLength;
-                stParMergeCallback.EndPositions[1] = arrayLength / 2;
-                stParMergeCallback.EndPositions[2] = stParMergeCallback.EndPositions[1] +
-                                                     (stParMergeCallback.EndPositions[3] - stParMergeCallback.EndPositions[1]) / 2;
-                stParMergeCallback.EndPositions[0] = 0 + (stParMergeCallback.EndPositions[1] - 0) / 2;
-            }
-
-            else
-            {
-                // We use an 8 way merge, we need the size breakdown
-                stParMergeCallback.EndPositions[7] = arrayLength;
-                stParMergeCallback.EndPositions[3] = arrayLength / 2;
-                stParMergeCallback.EndPositions[5] = stParMergeCallback.EndPositions[3] +
-                                                     (stParMergeCallback.EndPositions[7] - stParMergeCallback.EndPositions[3]) / 2;
-                stParMergeCallback.EndPositions[1] = 0 + (stParMergeCallback.EndPositions[3] - 0) / 2;
-                stParMergeCallback.EndPositions[6] = stParMergeCallback.EndPositions[5] +
-                                                     (stParMergeCallback.EndPositions[7] - stParMergeCallback.EndPositions[5]) / 2;
-                stParMergeCallback.EndPositions[4] = stParMergeCallback.EndPositions[3] +
-                                                     (stParMergeCallback.EndPositions[5] - stParMergeCallback.EndPositions[3]) / 2;
-                stParMergeCallback.EndPositions[2] = stParMergeCallback.EndPositions[1] +
-                                                     (stParMergeCallback.EndPositions[3] - stParMergeCallback.EndPositions[1]) / 2;
-                stParMergeCallback.EndPositions[0] = 0 + (stParMergeCallback.EndPositions[1] - 0) / 2;
-            }
-
-            // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, stParMergeCallback.MergeBlocks, 0, 1, false);
+            // single threaded sort
+            return single_amergesort<T, UINDEX>(pValues, pToSort, arrayLength, strlen, sortType);
         }
-
-        // Free temp memory used
-        WorkSpaceFreeAllocLarge(pWorkSpace, allocSize);
-    }
-    else
-    {
-        // single threaded sort
-        return single_amergesort<T, UINDEX>(pValues, pToSort, arrayLength, strlen, sortType);
-    }
 
     return 0;
 }

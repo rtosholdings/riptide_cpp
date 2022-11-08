@@ -23,7 +23,8 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
     int32_t direction{ GetStridesAndContig(in_array, ndim, stride) };
     npy_intp len{ CALC_ARRAY_LENGTH(ndim, PyArray_DIMS(const_cast<PyArrayObject *>(in_array))) };
 
-    auto [opt_op_trait, opt_type_trait] = riptable_cpp::set_traits(function_num, numpy_intype);
+    std::optional<riptable_cpp::operation_t> opt_op_trait = riptable_cpp::get_op_trait(function_num);
+    std::optional<riptable_cpp::array_content_t> opt_type_trait = riptable_cpp::get_type_trait(numpy_intype);
 
     if (opt_op_trait && opt_type_trait)
     {
@@ -109,98 +110,107 @@ PyObject * process_one_input(PyArrayObject const * in_array, PyArrayObject * out
 
 namespace riptable_cpp
 {
-    chosen_traits_t set_traits(int32_t const function_num, int32_t const numpy_intype)
+    std::optional<array_content_t> get_type_trait(int32_t const numpy_intype)
     {
-        chosen_traits_t retval{};
-
         switch (numpy_intype)
         {
         case NPY_INT8:
-            retval.second = int8_traits{};
+            return int8_traits{};
             break;
         case NPY_INT16:
-            retval.second = int16_traits{};
+            return int16_traits{};
             break;
 #if RT_COMPILER_MSVC
         case NPY_INT:
 #endif
         case NPY_INT32:
-            retval.second = int32_traits{};
+            return int32_traits{};
             break;
 #if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_LONGLONG:
 #endif
         case NPY_INT64:
-            retval.second = int64_traits{};
+            return int64_traits{};
             break;
         case NPY_UINT8:
-            retval.second = uint8_traits{};
+            return uint8_traits{};
             break;
         case NPY_UINT16:
-            retval.second = uint16_traits{};
+            return uint16_traits{};
             break;
 #if RT_COMPILER_MSVC
         case NPY_UINT:
 #endif
         case NPY_UINT32:
-            retval.second = uint32_traits{};
+            return uint32_traits{};
             break;
 #if (RT_COMPILER_CLANG || RT_COMPILER_GCC)
         case NPY_ULONGLONG:
 #endif
         case NPY_UINT64:
-            retval.second = uint64_traits{};
+            return uint64_traits{};
             break;
         case NPY_FLOAT:
-            retval.second = float_traits{};
+            return float_traits{};
             break;
         case NPY_DOUBLE:
-            retval.second = double_traits{};
+            return double_traits{};
+            break;
+        case NPY_STRING:
+            return string_traits{};
+            break;
+        case NPY_UNICODE:
+            return unicode_traits{};
             break;
         }
 
+        return {};
+    }
+
+    std::optional<operation_t> get_op_trait(int32_t const function_num)
+    {
         switch (function_num)
         {
         case MATH_OPERATION::ABS:
-            retval.first = abs_op{};
+            return abs_op{};
             break;
         case MATH_OPERATION::ISNAN:
-            retval.first = isnan_op{};
+            return isnan_op{};
             break;
         case MATH_OPERATION::ISNOTNAN:
-            retval.first = isnotnan_op{};
+            return isnotnan_op{};
             break;
         case MATH_OPERATION::ISFINITE:
-            retval.first = isfinite_op{};
+            return isfinite_op{};
             break;
         case MATH_OPERATION::ISNOTFINITE:
-            retval.first = isnotfinite_op{};
+            return isnotfinite_op{};
             break;
         case MATH_OPERATION::NEG:
-            retval.first = bitwise_not_op{};
+            return bitwise_not_op{};
             break;
         case MATH_OPERATION::INVERT:
-            retval.first = bitwise_not_op{};
+            return bitwise_not_op{};
             break;
         case MATH_OPERATION::FLOOR:
-            retval.first = floor_op{};
+            return floor_op{};
             break;
         case MATH_OPERATION::CEIL:
-            retval.first = ceil_op{};
+            return ceil_op{};
             break;
         case MATH_OPERATION::TRUNC:
-            retval.first = trunc_op{};
+            return trunc_op{};
             break;
         case MATH_OPERATION::ROUND:
-            retval.first = round_op{};
+            return round_op{};
             break;
         case MATH_OPERATION::SQRT:
-            retval.first = sqrt_op{};
+            return sqrt_op{};
             break;
         default:
             throw(std::runtime_error("Invalid unary operation requested"));
         }
 
-        return retval;
+        return {};
     }
 } // namespace riptable_cpp

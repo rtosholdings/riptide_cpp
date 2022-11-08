@@ -1,11 +1,16 @@
+#include "stdafx.h"
+#include "CommonInc.h"
 #include "RipTide.h"
-#include "flat_hash_map.h"
+#include "is_member_tg.h"
 #include "HashFunctions.h"
 #include "HashLinear.h"
 #include "ndarray.h"
 #include "one_input.h"
+#include "numpy_traits.h"
+#include "TypeSystem.h"
 
 #include <cstdlib>
+#include <memory>
 
 // struct ndbuf;
 // typedef struct ndbuf {
@@ -28,115 +33,6 @@
 
 #define LOGGING(...)
 //#define LOGGING printf
-
-//-----------------------------------------------------------------------------------------
-// IsMember
-//    First arg: existing  numpy array
-//    Second arg: existing  numpy array
-//    Third arg: hashmode (1 or 2)
-//    Returns: boolean array and optional int64_t location array
-PyObject * IsMember64(PyObject * self, PyObject * args)
-{
-    PyArrayObject * inArr1 = NULL;
-    PyArrayObject * inArr2 = NULL;
-    int hashMode;
-    int64_t hintSize = 0;
-
-    if (! PyArg_ParseTuple(args, "O!O!i", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode))
-        return NULL;
-
-    int32_t arrayType1 = PyArray_TYPE(inArr1);
-    int32_t arrayType2 = PyArray_TYPE(inArr2);
-
-    int sizeType1 = (int)NpyItemSize((PyObject *)inArr1);
-    int sizeType2 = (int)NpyItemSize((PyObject *)inArr2);
-
-    LOGGING("IsMember64 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
-
-    if (arrayType1 != arrayType2)
-    {
-        // Arguments do not match
-        PyErr_Format(PyExc_ValueError, "IsMember64 needs first arg to match %s vs %s", NpyToString(arrayType1),
-                     NpyToString(arrayType2));
-        return NULL;
-    }
-
-    if (sizeType1 == 0)
-    {
-        // Weird type
-        PyErr_Format(PyExc_ValueError, "IsMember64 needs a type it understands %s vs %s", NpyToString(arrayType1),
-                     NpyToString(arrayType2));
-        return NULL;
-    }
-
-    if (arrayType1 == NPY_OBJECT)
-    {
-        PyErr_Format(PyExc_ValueError,
-                     "IsMember64 cannot handle unicode strings, "
-                     "please convert to np.chararray");
-        return NULL;
-    }
-
-    int ndim = PyArray_NDIM(inArr1);
-    npy_intp * dims = PyArray_DIMS(inArr1);
-
-    int ndim2 = PyArray_NDIM(inArr2);
-    npy_intp * dims2 = PyArray_DIMS(inArr2);
-
-    int64_t arraySize1 = CalcArrayLength(ndim, dims);
-    int64_t arraySize2 = CalcArrayLength(ndim2, dims2);
-
-    PyArrayObject * boolArray = AllocateNumpyArray(ndim, dims, NPY_BOOL);
-    CHECK_MEMORY_ERROR(boolArray);
-
-    PyArrayObject * indexArray = AllocateNumpyArray(ndim, dims, NPY_INT64);
-    CHECK_MEMORY_ERROR(indexArray);
-
-    if (boolArray && indexArray)
-    {
-        try
-        {
-            void * pDataIn1 = PyArray_BYTES(inArr1);
-            void * pDataIn2 = PyArray_BYTES(inArr2);
-            int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
-            int64_t * pDataOut2 = (int64_t *)PyArray_BYTES(indexArray);
-
-            // printf("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
-
-            if (arrayType1 >= NPY_STRING)
-            {
-                LOGGING("Calling string!\n");
-                IsMemberHashString64(arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2, (const char *)pDataIn2,
-                                     pDataOut2, pDataOut1, HASH_MODE(hashMode), hintSize, arrayType1 == NPY_UNICODE);
-            }
-            else
-            {
-                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
-                {
-                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1 + 100,
-                                   HASH_MODE(hashMode), hintSize);
-                }
-                else
-                {
-                    IsMemberHash64(arraySize1, pDataIn1, arraySize2, pDataIn2, pDataOut2, pDataOut1, sizeType1,
-                                   HASH_MODE(hashMode), hintSize);
-                }
-
-                PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
-                Py_DECREF((PyObject *)boolArray);
-                Py_DECREF((PyObject *)indexArray);
-
-                return (PyObject *)retObject;
-            }
-        }
-        catch (std::runtime_error const & e)
-        {
-            PyErr_Format(PyExc_RuntimeError, e.what());
-        }
-    }
-    // out of memory
-    return NULL;
-}
 
 //-----------------------------------------------------------------------------------
 // IsMemberCategorical

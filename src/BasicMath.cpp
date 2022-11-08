@@ -2904,33 +2904,33 @@ public:
             else
                 // Check for functions that always output a boolean
                 if (len1 >= len2)
-            {
-                LOGGING("Going to allocate for len1 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim1,
-                        dims1 ? (int64_t)dims1[0] : 0);
-                if (ndim1 > 1)
                 {
-                    returnObject = AllocateNumpyArray(ndim1, dims1, wantOutType, 0,
-                                                      (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
+                    LOGGING("Going to allocate for len1 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim1,
+                            dims1 ? (int64_t)dims1[0] : 0);
+                    if (ndim1 > 1)
+                    {
+                        returnObject = AllocateNumpyArray(ndim1, dims1, wantOutType, 0,
+                                                          (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
+                    }
+                    else
+                    {
+                        returnObject = AllocateNumpyArray(ndim1, dims1, wantOutType);
+                    }
                 }
                 else
                 {
-                    returnObject = AllocateNumpyArray(ndim1, dims1, wantOutType);
+                    LOGGING("Going to allocate for len2 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim2,
+                            dims2 ? (int64_t)dims2[0] : 0);
+                    if (ndim2 > 1)
+                    {
+                        returnObject = AllocateNumpyArray(ndim2, dims2, wantOutType, 0,
+                                                          (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
+                    }
+                    else
+                    {
+                        returnObject = AllocateNumpyArray(ndim2, dims2, wantOutType);
+                    }
                 }
-            }
-            else
-            {
-                LOGGING("Going to allocate for len2 type %d  %lld  %lld  %d %lld\n", wantOutType, len1, len2, ndim2,
-                        dims2 ? (int64_t)dims2[0] : 0);
-                if (ndim2 > 1)
-                {
-                    returnObject = AllocateNumpyArray(ndim2, dims2, wantOutType, 0,
-                                                      (flags1 & flags2 & NPY_ARRAY_F_CONTIGUOUS) == NPY_ARRAY_F_CONTIGUOUS);
-                }
-                else
-                {
-                    returnObject = AllocateNumpyArray(ndim2, dims2, wantOutType);
-                }
-            }
             CHECK_MEMORY_ERROR(returnObject);
         }
 

@@ -5,9 +5,9 @@ name: Python package
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2019]
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.8, 3.9, "3.10"]
         numpy-version: [1.21, 1.22]
     steps:
       - uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
       - name: Setup Miniconda
         env:
-         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "pypi_build"
@@ -44,14 +44,10 @@ jobs:
       - name: Configure Conda
         run: |
           conda config --set unsatisfiable_hints_check_depth 0 # setting unsatisfiable_hints=False is broken
-      - name: Install Linux dependencies
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Install PyPI dependencies
         run: |
-          conda install -q -y binutils=2.36 binutils_linux-64 gxx=8 gcc=8 "cmake>=3.18" ninja "tbb=2021.6" "tbb-devel=2021.6"
-      - name: Install Windows dependencies
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          conda install -q -y "cmake>=3.18" "tbb=2021.6" "tbb-devel=2021.6"
+          python dev_tools/gen_requirements.py --out pypi_reqs.txt pypi
+          conda install -q -y --file pypi_reqs.txt
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
@@ -87,17 +83,15 @@ jobs:
         run: |
           pip install riptide_cpp --upgrade --find-links ./dist
           python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
-      - name: Install riptable
+      - name: Setting up riptable tests
         # Get just the latest riptable package (first explicitly install its deps)
         run: |
-          pip install pandas ansi2html numba python-dateutil
-          #conda install -q -y -c rtosholdings --no-deps riptable
+          python dev_tools/gen_requirements.py --out runtime_reqs.txt runtime
+          python dev_tools/gen_requirements.py --out tests_reqs.txt tests
+          pip install -r runtime_reqs.txt -r tests_reqs.txt
           pip install --no-deps riptable
-          python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
-      - name: Install other dependencies
-        run: |
-          pip install pyarrow ipython ipykernel flake8 pytest hypothesis nose bottleneck arrow
           conda list
+          python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
       - name: Riptable test with pytest
         run: |
           python -m riptable.tests.run
@@ -118,7 +112,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: "3.x"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -145,15 +139,16 @@ jobs:
         working-directory: ./
     strategy:
       matrix:
-        os: ['ubuntu-latest', 'windows-2019']
+        os: ["ubuntu-latest", "windows-2019"]
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
-        zips: [
-          { python: '3.8', numpy: '1.21' },
-          { python: '3.8', numpy: '1.22' },
-          { python: '3.9', numpy: '1.21' },
-          { python: '3.9', numpy: '1.22' },
-          { python: '3.10', numpy: '1.21' },
-          { python: '3.10', numpy: '1.22' }
+        zips:
+          [
+            { python: "3.8", numpy: "1.21" },
+            { python: "3.8", numpy: "1.22" },
+            { python: "3.9", numpy: "1.21" },
+            { python: "3.9", numpy: "1.22" },
+            { python: "3.10", numpy: "1.21" },
+            { python: "3.10", numpy: "1.22" },
           ]
     env:
       python_version: 3.9
@@ -165,7 +160,7 @@ jobs:
           fetch-depth: 0
       - name: Setup Miniconda
         env:
-         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_build"
@@ -177,7 +172,8 @@ jobs:
       - name: Install dependencies
         run: |
           conda config --set unsatisfiable_hints_check_depth 0 # setting unsatisfiable_hints=False is broken
-          conda install -q -y conda-build setuptools_scm
+          python dev_tools/gen_requirements.py --out conda_reqs.txt conda
+          conda install -q -y --file conda_reqs.txt
       - name: Build package
         run: |
           set -ex
@@ -203,7 +199,7 @@ jobs:
     steps:
       - name: Setup Miniconda
         env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_deploy"
