@@ -1,16 +1,17 @@
 #include "stdafx.h"
-#include <memory>
 #include "CommonInc.h"
 #include "RipTide.h"
-#include "flat_hash_map.h"
+#include "is_member_tg.h"
 #include "HashLinear.h"
 #include "MathWorker.h"
 #include "one_input.h"
 #include "Recycler.h"
 #include "numpy_traits.h"
+#include "TypeSystem.h"
 
 #include <exception>
 #include <cstdlib>
+#include <memory>
 
 #ifndef LogError
     #define LogError(...)
@@ -4393,14 +4394,9 @@ static void IsMemberMultiThread(ISMEMBER_MT pFunction, void * pHashLinearVoid, i
 //
 // Returns in pOutput: index location of second arg -- where first arg found in
 // second arg Returns in pBoolOutput: True if found, False otherwise
-template <typename U>
-void * IsMemberHash32(int64_t size1, void * pInput1,
-
-                      int64_t size2, void * pInput2,
-
-                      U * pOutput,
-
-                      int8_t * pBoolOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
+template <typename index_t>
+void * IsMemberHash32_impl(int64_t size1, void * pInput1, int64_t size2, void * pInput2, index_t * pOutput, int8_t * pBoolOutput,
+                           int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
 {
     // Allocate hash
 
@@ -4408,20 +4404,20 @@ void * IsMemberHash32(int64_t size1, void * pInput1,
     {
     case 1:
         {
-            CHashLinear<uint8_t, U> * pHashLinear = new CHashLinear<uint8_t, U>(HASH_MODE_MASK);
+            CHashLinear<uint8_t, index_t> * pHashLinear = new CHashLinear<uint8_t, index_t>(HASH_MODE_MASK);
             pHashLinear->MakeHashLocation(size2, (uint8_t *)pInput2, 256 / 2);
-            IsMemberMultiThread(IsMember<uint8_t, U>, pHashLinear, size1, (uint8_t *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(uint8_t), sizeof(U));
+            IsMemberMultiThread(IsMember<uint8_t, index_t>, pHashLinear, size1, (uint8_t *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(uint8_t), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
         break;
     case 2:
         {
-            CHashLinear<uint16_t, U> * pHashLinear = new CHashLinear<uint16_t, U>(HASH_MODE_MASK);
+            CHashLinear<uint16_t, index_t> * pHashLinear = new CHashLinear<uint16_t, index_t>(HASH_MODE_MASK);
             pHashLinear->MakeHashLocation(size2, (uint16_t *)pInput2, 65536 / 2);
-            IsMemberMultiThread(IsMember<uint16_t, U>, pHashLinear, size1, (uint16_t *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(uint16_t), sizeof(U));
+            IsMemberMultiThread(IsMember<uint16_t, index_t>, pHashLinear, size1, (uint16_t *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(uint16_t), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
@@ -4429,40 +4425,40 @@ void * IsMemberHash32(int64_t size1, void * pInput1,
 
     case 4:
         {
-            CHashLinear<uint32_t, U> * pHashLinear = new CHashLinear<uint32_t, U>(hashMode);
+            CHashLinear<uint32_t, index_t> * pHashLinear = new CHashLinear<uint32_t, index_t>(hashMode);
             pHashLinear->MakeHashLocation(size2, (uint32_t *)pInput2, hintSize);
-            IsMemberMultiThread(IsMember<uint32_t, U>, pHashLinear, size1, (uint32_t *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(uint32_t), sizeof(U));
+            IsMemberMultiThread(IsMember<uint32_t, index_t>, pHashLinear, size1, (uint32_t *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(uint32_t), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
         break;
     case 8:
         {
-            CHashLinear<uint64_t, U> * pHashLinear = new CHashLinear<uint64_t, U>(hashMode);
+            CHashLinear<uint64_t, index_t> * pHashLinear = new CHashLinear<uint64_t, index_t>(hashMode);
             pHashLinear->MakeHashLocation(size2, (uint64_t *)pInput2, hintSize);
-            IsMemberMultiThread(IsMember<uint64_t, U>, pHashLinear, size1, (uint64_t *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(uint64_t), sizeof(U));
+            IsMemberMultiThread(IsMember<uint64_t, index_t>, pHashLinear, size1, (uint64_t *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(uint64_t), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
         break;
     case 104:
         {
-            CHashLinear<float, U> * pHashLinear = new CHashLinear<float, U>(hashMode);
+            CHashLinear<float, index_t> * pHashLinear = new CHashLinear<float, index_t>(hashMode);
             pHashLinear->MakeHashLocationFloat(size2, (float *)pInput2, hintSize);
-            IsMemberMultiThread(IsMemberFloat<float, U>, pHashLinear, size1, (float *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(float), sizeof(U));
+            IsMemberMultiThread(IsMemberFloat<float, index_t>, pHashLinear, size1, (float *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(float), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
         break;
     case 108:
         {
-            CHashLinear<double, U> * pHashLinear = new CHashLinear<double, U>(hashMode);
+            CHashLinear<double, index_t> * pHashLinear = new CHashLinear<double, index_t>(hashMode);
             pHashLinear->MakeHashLocationFloat(size2, (double *)pInput2, hintSize);
-            IsMemberMultiThread(IsMemberFloat<double, U>, pHashLinear, size1, (double *)pInput1, pBoolOutput, (U *)pOutput,
-                                sizeof(double), sizeof(U));
+            IsMemberMultiThread(IsMemberFloat<double, index_t>, pHashLinear, size1, (double *)pInput1, pBoolOutput,
+                                (index_t *)pOutput, sizeof(double), sizeof(index_t));
             delete pHashLinear;
             return NULL;
         }
@@ -4475,73 +4471,25 @@ void * IsMemberHash32(int64_t size1, void * pInput1,
 
     return NULL;
 }
-
-//-----------------------------------------------------------------------------------------
-//  Based on the sizeType it will call different hash functions
-// floats are + 100 and will be handled differnt from int64_t or UIN32
-void * IsMemberHash64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput, int8_t * pBoolOutput,
+void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int8_t * pOutput, int8_t * pBoolOutput,
                       int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
 {
-    switch (sizeType)
-    {
-    case 1:
-        {
-            CHashLinear<uint8_t, int64_t> * pHashLinear = new CHashLinear<uint8_t, int64_t>(hashMode);
-            pHashLinear->MakeHashLocation(size2, (uint8_t *)pInput2, hintSize);
-            IsMember<uint8_t, int64_t>(pHashLinear, size1, (uint8_t *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-    case 2:
-        {
-            CHashLinear<uint16_t, int64_t> * pHashLinear = new CHashLinear<uint16_t, int64_t>(hashMode);
-            pHashLinear->MakeHashLocation(size2, (uint16_t *)pInput2, hintSize);
-            IsMember<uint16_t, int64_t>(pHashLinear, size1, (uint16_t *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-
-    case 4:
-        {
-            CHashLinear<uint32_t, int64_t> * pHashLinear = new CHashLinear<uint32_t, int64_t>(hashMode);
-            pHashLinear->MakeHashLocation(size2, (uint32_t *)pInput2, hintSize);
-            IsMember<uint32_t, int64_t>(pHashLinear, size1, (uint32_t *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-    case 8:
-        {
-            CHashLinear<uint64_t, int64_t> * pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
-            pHashLinear->MakeHashLocation(size2, (uint64_t *)pInput2, hintSize);
-            IsMember<uint64_t, int64_t>(pHashLinear, size1, (uint64_t *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-    case 104:
-        {
-            CHashLinear<float, int64_t> * pHashLinear = new CHashLinear<float, int64_t>(hashMode);
-            pHashLinear->MakeHashLocationFloat(size2, (float *)pInput2, hintSize);
-            IsMemberFloat<float, int64_t>(pHashLinear, size1, (float *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-    case 108:
-        {
-            CHashLinear<double, int64_t> * pHashLinear = new CHashLinear<double, int64_t>(hashMode);
-            pHashLinear->MakeHashLocationFloat(size2, (double *)pInput2, hintSize);
-            IsMemberFloat<double, int64_t>(pHashLinear, size1, (double *)pInput1, pBoolOutput, (int64_t *)pOutput);
-            delete pHashLinear;
-            return NULL;
-        }
-        break;
-    }
-
-    return NULL;
+    return IsMemberHash32_impl<int8_t>(size1, pInput1, size2, pInput2, pOutput, pBoolOutput, sizeType, hashMode, hintSize);
+}
+void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int16_t * pOutput, int8_t * pBoolOutput,
+                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
+{
+    return IsMemberHash32_impl<int16_t>(size1, pInput1, size2, pInput2, pOutput, pBoolOutput, sizeType, hashMode, hintSize);
+}
+void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int32_t * pOutput, int8_t * pBoolOutput,
+                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
+{
+    return IsMemberHash32_impl<int32_t>(size1, pInput1, size2, pInput2, pOutput, pBoolOutput, sizeType, hashMode, hintSize);
+}
+void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput, int8_t * pBoolOutput,
+                      int32_t sizeType, HASH_MODE hashMode, int64_t hintSize)
+{
+    return IsMemberHash32_impl<int64_t>(size1, pInput1, size2, pInput2, pOutput, pBoolOutput, sizeType, hashMode, hintSize);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -4863,18 +4811,6 @@ void IsMemberHashString32(int64_t size1, int64_t strWidth1, const char * pInput1
 
     LOGGING("IsMemberHashString32  done\n");
 
-    delete pHashLinear;
-}
-
-//-----------------------------------------------------------------------------------------
-//  Based on the sizeType it will call different hash functions
-void IsMemberHashString64(int64_t size1, int64_t strWidth1, const char * pInput1, int64_t size2, int64_t strWidth2,
-                          const char * pInput2, int64_t * pOutput, int8_t * pBoolOutput, HASH_MODE hashMode, int64_t hintSize,
-                          bool isUnicode)
-{
-    CHashLinear<uint64_t, int64_t> * pHashLinear = new CHashLinear<uint64_t, int64_t>(hashMode);
-    pHashLinear->MakeHashLocationString(size2, pInput2, strWidth2, hintSize, isUnicode);
-    pHashLinear->IsMemberString(size1, strWidth1, strWidth2, pInput1, pBoolOutput, (int64_t *)pOutput, isUnicode);
     delete pHashLinear;
 }
 
@@ -5588,6 +5524,26 @@ void IsMemberHashMKPre(PyArrayObject ** indexArray, int64_t size1, void * pInput
     CHECK_MEMORY_ERROR(*indexArray);
 }
 
+namespace
+{
+    NPY_TYPES equivalent_type(int32_t item_size)
+    {
+        switch (item_size)
+        {
+        case 1:
+            return NPY_INT8;
+        case 2:
+            return NPY_INT16;
+        case 4:
+            return NPY_INT32;
+        case 8:
+            return NPY_INT64;
+        default:
+            return NPY_NOTYPE;
+        }
+    }
+
+}
 //-----------------------------------------------------------------------------------------
 // IsMember
 //    First arg: existing  numpy array
@@ -5678,49 +5634,16 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
         if (! PyArg_ParseTuple(args, "O!O!iL", &PyArray_Type, &inArr1, &PyArray_Type, &inArr2, &hashMode, &hintSize))
             return NULL;
     }
-    int32_t arrayType1 = PyArray_TYPE(inArr1);
-    int32_t arrayType2 = PyArray_TYPE(inArr2);
+    NPY_TYPES arrayType1 = static_cast<NPY_TYPES>(PyArray_TYPE(inArr1));
+    NPY_TYPES arrayType2 = static_cast<NPY_TYPES>(PyArray_TYPE(inArr2));
 
     int sizeType1 = (int)NpyItemSize((PyObject *)inArr1);
     int sizeType2 = (int)NpyItemSize((PyObject *)inArr2);
 
     LOGGING("IsMember32 %s vs %s   size: %d  %d\n", NpyToString(arrayType1), NpyToString(arrayType2), sizeType1, sizeType2);
 
-    switch (arrayType1)
-    {
-    CASE_NPY_INT32:
-        arrayType1 = NPY_INT32;
-        break;
-    CASE_NPY_UINT32:
-        arrayType1 = NPY_UINT32;
-        break;
-    CASE_NPY_INT64:
-
-        arrayType1 = NPY_INT64;
-        break;
-    CASE_NPY_UINT64:
-
-        arrayType1 = NPY_UINT64;
-        break;
-    }
-
-    switch (arrayType2)
-    {
-    CASE_NPY_INT32:
-        arrayType2 = NPY_INT32;
-        break;
-    CASE_NPY_UINT32:
-        arrayType2 = NPY_UINT32;
-        break;
-    CASE_NPY_INT64:
-
-        arrayType2 = NPY_INT64;
-        break;
-    CASE_NPY_UINT64:
-
-        arrayType2 = NPY_UINT64;
-        break;
-    }
+    arrayType1 = riptide::normalize_dtype(arrayType1, sizeType1);
+    arrayType2 = riptide::normalize_dtype(arrayType2, sizeType2);
 
     if (arrayType1 != arrayType2)
     {
@@ -5750,85 +5673,107 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
     int64_t arraySize2 = ArrayLength(inArr2);
 
     PyArrayObject * boolArray = AllocateLikeNumpyArray(inArr1, NPY_BOOL);
-
-    if (boolArray)
+    if (! boolArray)
     {
-        try
+        // out of memory
+        return NULL;
+    }
+
+    const NPY_TYPES dtype = riptide::index_size_type(arraySize2);
+    PyArrayObject * indexArray = AllocateLikeNumpyArray(inArr1, dtype);
+    // make sure allocation succeeded
+    if (! indexArray)
+    {
+        // out of memory
+        return NULL;
+    }
+
+    try
+    {
+        void * pDataIn1 = PyArray_BYTES(inArr1);
+        void * pDataIn2 = PyArray_BYTES(inArr2);
+
+        int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
+
+        LOGGING("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
+
+        if (NPY_TYPES const alias_type = equivalent_type(sizeType1);
+            (arrayType1 >= NPY_STRING) && (sizeType1 == sizeType2) && (alias_type != NPY_NOTYPE))
         {
-            void * pDataIn1 = PyArray_BYTES(inArr1);
-            void * pDataIn2 = PyArray_BYTES(inArr2);
+            arrayType1 = alias_type;
+            arrayType2 = alias_type;
+        }
 
-            int8_t * pDataOut1 = (int8_t *)PyArray_BYTES(boolArray);
-
-            PyArrayObject * indexArray = NULL;
-
-            LOGGING("Size array1: %llu   array2: %llu\n", arraySize1, arraySize2);
-
-            if (arrayType1 >= NPY_STRING)
+        switch (runtime_hash_choice)
+        {
+        case hash_choice_t::tbb:
             {
-                LOGGING("Calling string!\n");
-
-                // Performance gain: if STRING and itemsize matches and itemsize is 1 or 2
-                // --> Send to IsMemberHash32
-                IsMemberHashString32Pre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2, sizeType2,
-                                        (const char *)pDataIn2, pDataOut1, HASH_MODE(hashMode), hintSize,
-                                        arrayType1 == NPY_UNICODE);
-            }
-            else
-            {
-                if (runtime_hash_choice != hash_choice_t::hash_linear)
+                if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
                 {
-                    if (arrayType1 == NPY_FLOAT32 || arrayType1 == NPY_FLOAT64)
+                    LOGGING("Calling float!\n");
+                    sizeType1 += 100;
+                }
+
+                std::optional<riptable_cpp::array_content_t> opt_type_trait = riptable_cpp::get_type_trait(arrayType1);
+                riptable_cpp::array_content_t variant = *opt_type_trait;
+
+                int cpus{ 8 }; // TODO: override from command line / environmental.
+
+                size_t data_extent{ arrayType2 >= NPY_STRING ? static_cast<size_t>(sizeType2) : 1 };
+
+                switch (dtype) // TODO: Add extra safety by normalizing through `riptide::normalize_dtype()`.
+                {
+                case NPY_INT8:
                     {
-                        LOGGING("Calling float!\n");
-                        sizeType1 += 100;
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                                           reinterpret_cast<int8_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
+                                           std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }
-
-                    int dtype = riptide::index_size_type(arraySize2);
-
-                    indexArray = AllocateLikeNumpyArray(inArr1, dtype);
-
-                    // make sure allocation succeeded
-                    if (indexArray)
+                    break;
+                case NPY_INT16:
                     {
-                        auto [opt_op_trait, opt_type_trait] = riptable_cpp::set_traits(0, arrayType1);
-                        riptable_cpp::data_type_t variant = *opt_type_trait;
-                        switch (dtype)
-                        {
-                        case NPY_INT8:
-                            {
-                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                                   reinterpret_cast<char const *>(pDataIn2),
-                                                   reinterpret_cast<int8_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
-                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
-                            }
-                            break;
-                        case NPY_INT16:
-                            {
-                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                                   reinterpret_cast<char const *>(pDataIn2),
-                                                   reinterpret_cast<int16_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
-                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
-                            }
-                            break;
-                        case NPY_INT32:
-                            {
-                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                                   reinterpret_cast<char const *>(pDataIn2),
-                                                   reinterpret_cast<int32_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
-                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
-                            }
-                            break;
-                        default:
-                            {
-                                is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                                   reinterpret_cast<char const *>(pDataIn2),
-                                                   reinterpret_cast<int64_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant,
-                                                   std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
-                            }
-                            break;
-                        }
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                                           reinterpret_cast<int16_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
+                                           std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }
+                    break;
+                case NPY_INT32:
+                    {
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                                           reinterpret_cast<int32_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
+                                           std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
+                    }
+                    break;
+                case NPY_INT64:
+                    {
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                                           reinterpret_cast<int64_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
+                                           std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
+                    }
+                    break;
+                default:
+                    // TODO: Unsupported index type -- set error and short-circuit.
+                    break;
+                }
+                break;
+            }
+
+        case hash_choice_t::hash_linear:
+            {
+                if (arrayType1 >= NPY_STRING)
+                {
+                    LOGGING("Calling string!\n");
+
+                    // Performance gain: if STRING and itemsize matches and itemsize is 1 or 2
+                    // --> Send to IsMemberHash32
+                    // sizeType2 is taken to the be fixed length of each string
+                    IsMemberHashString32Pre(&indexArray, inArr1, arraySize1, sizeType1, (const char *)pDataIn1, arraySize2,
+                                            sizeType2, (const char *)pDataIn2, pDataOut1, HASH_MODE(hashMode), hintSize,
+                                            arrayType1 == NPY_UNICODE);
                 }
                 else
                 {
@@ -5838,71 +5783,46 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
                         sizeType1 += 100;
                     }
 
-                    int dtype = NPY_INT8;
-
-                    if (arraySize2 < 100)
+                    void * pDataOut2 = PyArray_BYTES(indexArray);
+                    switch (dtype) // TODO: Add extra safety by normalizing through `riptide::normalize_dtype()`.
                     {
-                        dtype = NPY_INT8;
-                    }
-                    else if (arraySize2 < 30000)
-                    {
-                        dtype = NPY_INT16;
-                    }
-                    else if (arraySize2 < 2000000000)
-                    {
-                        dtype = NPY_INT32;
-                    }
-                    else
-                    {
-                        dtype = NPY_INT64;
-                    }
-
-                    indexArray = AllocateLikeNumpyArray(inArr1, dtype);
-
-                    // make sure allocation succeeded
-                    if (indexArray)
-                    {
-                        void * pDataOut2 = PyArray_BYTES(indexArray);
-                        switch (dtype)
-                        {
-                        case NPY_INT8:
-                            IsMemberHash32<int8_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1,
-                                                   sizeType1, HASH_MODE(hashMode), hintSize);
-                            break;
-                        case NPY_INT16:
-                            IsMemberHash32<int16_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1,
-                                                    sizeType1, HASH_MODE(hashMode), hintSize);
-                            break;
-                        CASE_NPY_INT32:
-                            IsMemberHash32<int32_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1,
-                                                    sizeType1, HASH_MODE(hashMode), hintSize);
-                            break;
-                        CASE_NPY_INT64:
-                            IsMemberHash32<int64_t>(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1,
-                                                    sizeType1, HASH_MODE(hashMode), hintSize);
-                            break;
-                        }
+                    case NPY_INT8:
+                        IsMemberHash32(arraySize1, pDataIn1, arraySize2, pDataIn2, (int8_t *)pDataOut2, pDataOut1, sizeType1,
+                                       HASH_MODE(hashMode), hintSize);
+                        break;
+                    case NPY_INT16:
+                        IsMemberHash32(arraySize1, pDataIn1, arraySize2, pDataIn2, (int16_t *)pDataOut2, pDataOut1, sizeType1,
+                                       HASH_MODE(hashMode), hintSize);
+                        break;
+                    CASE_NPY_INT32:
+                        IsMemberHash32(arraySize1, pDataIn1, arraySize2, pDataIn2, (int32_t *)pDataOut2, pDataOut1, sizeType1,
+                                       HASH_MODE(hashMode), hintSize);
+                        break;
+                    CASE_NPY_INT64:
+                        IsMemberHash32(arraySize1, pDataIn1, arraySize2, pDataIn2, (int64_t *)pDataOut2, pDataOut1, sizeType1,
+                                       HASH_MODE(hashMode), hintSize);
+                        break;
+                    default:
+                        // TODO: Unsupported index type -- set error and short-circuit.
+                        break;
                     }
                 }
-            }
-
-            if (indexArray)
-            {
-                PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
-                Py_DECREF((PyObject *)boolArray);
-                Py_DECREF((PyObject *)indexArray);
-
-                return (PyObject *)retObject;
+                break;
             }
         }
-        catch (std::runtime_error const & e)
-        {
-            PyErr_Format(PyExc_RuntimeError, e.what());
-            return NULL;
-        }
+
+        PyObject * retObject = Py_BuildValue("(OO)", boolArray, indexArray);
+        Py_DECREF((PyObject *)boolArray);
+        Py_DECREF((PyObject *)indexArray);
+
+        return (PyObject *)retObject;
     }
-    // out of memory
-    return NULL;
+    catch (std::runtime_error const & e)
+    {
+        // TODO: Need to release some objects that may have been allocated? E.g. 'boolArray', 'indexArray'.
+        PyErr_Format(PyExc_RuntimeError, e.what());
+        return NULL;
+    }
 }
 
 /**

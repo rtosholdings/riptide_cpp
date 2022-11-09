@@ -289,12 +289,12 @@ struct stWorkerRing
     volatile int64_t WorkIndexCompleted;
 
     // incremented when worker thread starts; decremented when thread stops
-    std::atomic<uint32_t> ThreadsRunning{0};
+    std::atomic<uint32_t> ThreadsRunning{ 0 };
     int32_t Reserved32;
     int32_t SleepTime;
 
     int32_t NumaNode;
-    std::atomic<bool> Cancelled{false};
+    std::atomic<bool> Cancelled{ false };
 
     // Change this value to wake up less workers
     int32_t FutexWakeCount;
@@ -304,7 +304,7 @@ struct stWorkerRing
     int64_t ThreadWakeup;
 #endif
 
-    std::atomic<int64_t> ThreadsAwakened{0};
+    std::atomic<int64_t> ThreadsAwakened{ 0 };
 
     stMATH_WORKER_ITEM WorkerQueue[RING_BUFFER_SIZE];
 

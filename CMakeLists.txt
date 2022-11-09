@@ -48,8 +48,8 @@ if(PROJ_COMPILER_ID STREQUAL "MSVC")
             set(PROJ_COMPILER_TOOLSET "v141")
         elseif((MSVC_VERSION GREATER_EQUAL "1920" AND MSVC_VERSION LESS "1930"))
             set(PROJ_COMPILER_TOOLSET "v142")
-		elseif((MSVC_VERSION GREATER_EQUAL "1930" AND MSVC_VERSION LESS "1940"))
-			set(PROJ_COMPILER_TOOLSET "v143")
+        elseif((MSVC_VERSION GREATER_EQUAL "1930" AND MSVC_VERSION LESS "1940"))
+            set(PROJ_COMPILER_TOOLSET "v143")
         else()
             message(FATAL_ERROR "Unknown MSVC_VERSION, ${MSVC_VERSION}")
         endif()
@@ -58,8 +58,10 @@ if(PROJ_COMPILER_ID STREQUAL "MSVC")
     endif()
 elseif(PROJ_COMPILER_ID STREQUAL "GNU")
     # No toolset variants
+    # Remove warnings from absl compilation
 elseif(PROJ_COMPILER_ID STREQUAL "LLVM")
     # No toolset variants
+    # Remove warnings from absl compilation
 else()
     message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
 endif()
@@ -68,6 +70,30 @@ message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLS
 
 include(AddCommonSettings)
 include(AddPythonSupport)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+#if(PROJ_COMPILER_ID STREQUAL "MSVC")
+# No absl specific option overrides needed
+#elseif(PROJ_COMPILER_ID STREQUAL "GNU")
+    # Remove warnings from absl compilation
+#    add_compile_options(-Wno-duplicated-branches)
+#    add_compile_options(-Wno-useless-cast)
+#    add_compile_options(-Wno-old-style-cast)
+#    add_compile_options(-Wno-redundant-decls)
+#    add_compile_options(-Wno-cast-qual)
+#elseif(PROJ_COMPILER_ID STREQUAL "LLVM")
+    # Remove warnings from absl compilation
+#    add_compile_options(-Wno-duplicated-branches)
+#    add_compile_options(-Wno-useless-cast)
+#    add_compile_options(-Wno-old-style-cast)
+#    add_compile_options(-Wno-redundant-decls)
+#    add_compile_options(-Wno-cast-qual)
+#else()
+#    message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
+#endif()
+
+
 
 # Under setupbuild, exclude all dependencies from install target to avoid polluting distribution.
 if(SETUPBUILD)
@@ -83,6 +109,5 @@ find_package(TBB CONFIG REQUIRED)
 add_subdirectory(src)
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(bench ${EXLUSION_SPECIFIER})
-include(AddCpm) # workaround CPM download requirement
 add_subdirectory(test ${EXLUSION_SPECIFIER})
 add_subdirectory(extras ${EXLUSION_SPECIFIER})

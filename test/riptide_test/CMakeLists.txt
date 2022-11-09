@@ -6,7 +6,7 @@ set(TARGET_NAME riptide_test)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
-    flat_hash_map_tests.cpp
+    is_member_tests.cpp
     main.cpp
     math_worker_tests.cpp
     test_one_input.cpp)
@@ -21,13 +21,18 @@ target_include_directories(${TARGET_NAME} PRIVATE
                              ${RT_SOURCE_DIR}
                              ${Python3_INCLUDE_DIRS}
                              ${Python3_NumPy_INCLUDE_DIRS}
-                             ${ABSL_COMMON_INCLUDE_DIRS})
+                             )
 
 target_link_libraries(${TARGET_NAME}
                       rt_common_settings
                       riptide_cpp
                       TBB::tbb
-                      ut)
+                      ut
+                      absl::base
+                      absl::flat_hash_map
+                      $<$<PLATFORM_ID:Linux>:pthread> 
+                      $<$<PLATFORM_ID:Linux>:rt>
+                      )
 
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)

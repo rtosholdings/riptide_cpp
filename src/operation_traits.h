@@ -5,6 +5,7 @@
 
 #include <type_traits>
 #include <variant>
+#include <string_view>
 
 namespace riptable_cpp
 {
@@ -35,6 +36,19 @@ namespace riptable_cpp
 
     using data_type_t = std::variant<int8_traits, int16_traits, int32_traits, int64_traits, uint8_traits, uint16_traits,
                                      uint32_traits, uint64_traits, float_traits, double_traits>;
+
+    template <typename string_data_type_concept>
+    struct string_data_type_traits
+    {
+        using data_type = string_data_type_concept;
+        using hash_type = std::basic_string_view<string_data_type_concept>;
+    };
+
+    using string_traits = string_data_type_traits<char>;
+    using unicode_traits = string_data_type_traits<wchar_t>;
+
+    using array_content_t = std::variant<int8_traits, int16_traits, int32_traits, int64_traits, uint8_traits, uint16_traits,
+                                         uint32_traits, uint64_traits, float_traits, double_traits, string_traits, unicode_traits>;
 
     struct abs_op
     {

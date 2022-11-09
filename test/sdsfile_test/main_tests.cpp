@@ -16,13 +16,14 @@ namespace
 
 extern "C" IntPtr ReadFromSharedMemory(string FileName, string ShareName);
 
-extern "C" Int32 CreateSDSFile(string FileName, string ShareName, string MetaData, string ListNames, Int64 TotalRows, Int64 BandSize);
+extern "C" Int32 CreateSDSFile(string FileName, string ShareName, string MetaData, string ListNames, Int64 TotalRows,
+                               Int64 BandSize);
 
 extern "C" Int32 AppendSDSFile(string OutFileName, string ShareFileName, string ShareName, Int64 TotalRows, Int64 BandSize);
 
 namespace
 {
-    bool dummy{0};
+    bool dummy{ 0 };
 
     suite stsfile_tests = []
     {
@@ -33,8 +34,8 @@ namespace
                 std::terminate(); // shouldn't ever be called...
 
                 ReadFromSharedMemory("FileName", "ShareName");
-                CreateSDSFile("FileName", "ShareName", "MetaData", "ListNames", /*TotalRows*/1, /*BandSize*/2);
-                AppendSDSFile("OutFileName", "ShareFileName", "ShareName", /*TotalRows*/1, /*BandSize*/2);
+                CreateSDSFile("FileName", "ShareName", "MetaData", "ListNames", /*TotalRows*/ 1, /*BandSize*/ 2);
+                AppendSDSFile("OutFileName", "ShareFileName", "ShareName", /*TotalRows*/ 1, /*BandSize*/ 2);
             }
         };
     };

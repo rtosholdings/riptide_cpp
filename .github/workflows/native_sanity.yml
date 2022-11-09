@@ -5,9 +5,9 @@ name: Native Sanity Checks
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -21,9 +21,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.8, 3.9, "3.10"]
         numpy-version: [1.21, 1.22]
-        build-config: ['Debug', 'Release']
+        build-config: ["Debug", "Release"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
       - name: Setup Miniconda
         env:
-         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_build"
@@ -45,15 +45,19 @@ jobs:
       - name: Configure Conda
         run: |
           conda config --set unsatisfiable_hints_check_depth 0 # setting unsatisfiable_hints=False is broken
-      - name: Install Linux dependencies
+      - name: Initializing Conda environment
+        run: |
+          python dev_tools/gen_requirements.py --out native_reqs.txt native
+          python dev_tools/gen_requirements.py --out runtime_reqs.txt runtime
+          python dev_tools/gen_requirements.py --out tests_reqs.txt tests
+          conda install -q -y numpy=${{ matrix.numpy-version }} --file native_reqs.txt --file runtime_reqs.txt --file tests_reqs.txt
+      - name: Configure Linux
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil binutils binutils_linux-64 gxx=8 gcc=8 "cmake>=3.18" ninja "tbb=2021.6" "tbb-devel=2021.6"
           echo "CONFIG_SUBDIR=." >> $GITHUB_ENV
-      - name: Install Windows dependencies
+      - name: Configure Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          conda install -q -y numpy=${{ matrix.numpy-version }} pyarrow pandas ansi2html numba python-dateutil "cmake>=3.18" "tbb=2021.6" "tbb-devel=2021.6"
           echo "CONFIG_SUBDIR=${{ matrix.build-config }}" >> $GITHUB_ENV
       - name: Setup CMake configuration
         run: |

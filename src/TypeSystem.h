@@ -1,13 +1,16 @@
 #pragma once
-#include <cstdint>
+
+#include "RipTide.h"
 
 #include <numpy/ndarraytypes.h>
+
+#include <cstdint>
 
 namespace riptide
 {
     // Linux: long = 64 bits
     // Windows: long = 32 bits
-    static /*constexpr*/ NPY_TYPES normalize_dtype(const NPY_TYPES dtype, const int64_t itemsize)
+    static constexpr NPY_TYPES normalize_dtype(const NPY_TYPES dtype, const int64_t itemsize)
     {
         switch (dtype)
         {

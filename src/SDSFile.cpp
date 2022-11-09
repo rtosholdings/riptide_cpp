@@ -4443,7 +4443,7 @@ public:
         if (bResult && pReadCallbacks->ReadFinalCallback)
         {
             // Ferry data to callback routine
-            SDS_FINAL_CALLBACK FinalCallback;
+            SDS_FINAL_CALLBACK FinalCallback{};
 
             // Copy over the important data from read class
             // The metadata is temporary and cannot be held onto (copy into your own
@@ -5711,10 +5711,10 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
             // dtypes MATCH, and are NOT STRINGS, but itemsize does not match (is
             // this a void)?
             if (pMasterArrayBlock->ItemSize != pArrayBlock->ItemSize)
-        {
-            LOGGING("!!!Incompat due to itemsize\n");
-            c.IsCompatible = false;
-        }
+            {
+                LOGGING("!!!Incompat due to itemsize\n");
+                c.IsCompatible = false;
+            }
     }
     if (pMasterArrayBlock->NDim != pArrayBlock->NDim)
     {
@@ -6819,7 +6819,8 @@ public:
             {
                 SDSDecompressFile * pSDSDecompress = pSDSDecompressFile[t];
 
-                //
+                pReadFinalCallback[t] = {};
+
                 pReadFinalCallback[t].strFileName = pSDSDecompress->FileName;
 
                 if (pSDSDecompress->IsFileValid)
@@ -7176,13 +7177,13 @@ public:
             //} else
 
             if (TotalDimensionProblems != 0)
-        {
-            SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- detected a dimension fixup problem %s\n", pFirstFileName);
-        }
-        else
-        {
-            isGood = true;
-        }
+            {
+                SetErr_Format(SDS_VALUE_ERROR, "MultiDecompress error -- detected a dimension fixup problem %s\n", pFirstFileName);
+            }
+            else
+            {
+                isGood = true;
+            }
 
         if (isGood)
         {

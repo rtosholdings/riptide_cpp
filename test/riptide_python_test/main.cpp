@@ -69,8 +69,22 @@ namespace
             return -1;
         }
 
-        /* Pass argv[0] to the Python interpreter */
-        Py_SetProgramName(program);
+        PyStatus status;
+
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+
+        /*
+        Set the program name (for the Python interpreter).
+        This implicitly pre-initializes Python:
+            https://docs.python.org/3.11/c-api/init_config.html#initialization-with-pyconfig
+        */
+        status = PyConfig_SetString(&config, &config.program_name, program);
+        if (PyStatus_Exception(status))
+        {
+            fprintf(stderr, "Failed to set the Python program name.\n");
+            return -1;
+        }
 
         /* Start the interpreter, load numpy */
         Py_Initialize();
@@ -81,18 +95,18 @@ namespace
         // located in $PYTHONHOME/Library/bin.
         // See https://docs.python.org/3/whatsnew/3.8.html#bpo-36085-whatsnew for details.
 
-        wchar_t dll_directory[_MAX_PATH + 1]{0};
+        wchar_t dll_directory[_MAX_PATH + 1]{ 0 };
         GetEnvironmentVariableW(L"PYTHONHOME", dll_directory, sizeof(dll_directory));
-        if (!dll_directory[0])
+        if (! dll_directory[0])
         {
             fprintf(stderr, "Cannot obtain the environment variable PYTHONHOME\n");
             return -1;
         }
         wcscat_s(dll_directory, L"\\Library\\bin");
 
-        if (!SetDllDirectoryW(dll_directory))
+        if (! SetDllDirectoryW(dll_directory))
         {
-            auto const error{GetLastError()};
+            auto const error{ GetLastError() };
             fprintf(stderr, "Cannot set DLL search directory to \"%ws\": error=%d\n", dll_directory, error);
             return -1;
         }

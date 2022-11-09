@@ -27,10 +27,10 @@ namespace
                                                            1.5, 2,    2.5, 3,    3.5, 4,    4.5,  5,    5.5, 6,        6.5,
                                                            7,   7.5,  8,   8.5,  9,   9.5,  10.5, 10.5, 11 };
 
-    std::array<float const, 31> const input_data_normal_f = { -4,       -3.5,          -3,   -2.5, -2,  -1.5, -1,  -0.5, 0,
-                                                              INFINITY, FLT_MIN / 2.0, NAN,  2,    2.5, 3,    3.5, 4,    4.5,
-                                                              5,        5.5,           6,    6.5,  7,   7.5,  8,   8.5,  9,
-                                                              9.5,      10.5,          10.5, 11 };
+    std::array<float const, 31> const input_data_normal_f = { -4.0f, -3.5f,    -3.0f,          -2.5f, -2.0f, -1.5f, -1.0f, -0.5f,
+                                                              0.0f,  INFINITY, FLT_MIN / 2.0f, NAN,   2.0f,  2.5f,  3.0f,  3.5f,
+                                                              4.0f,  4.5f,     5.0f,           5.5f,  6.0f,  6.5f,  7.0f,  7.5f,
+                                                              8.0f,  8.5f,     9.0f,           9.5f,  10.5f, 10.5f, 11.0f };
 
     std::array<int32_t const, 31> const input_data_simple_i = { -8, -7, -6, -5, -4, -3, -2, -1, 0,  1,  2,  3,  4,  5,  6, 7,
                                                                 8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 };
@@ -44,7 +44,10 @@ namespace
     suite one_input = []
     {
         size_t len{ sizeof(input_data_simple_f) };
-        "expected_array_len_f"_test = [len] { expect(31_u == len / sizeof(float)); };
+        "expected_array_len_f"_test = [len]
+        {
+            expect(31_u == len / sizeof(float));
+        };
 
         "calculate_abs_int"_test = [&]
         {
@@ -298,9 +301,9 @@ namespace
             expect(res_ptr[0] == -2.0_f);
             expect(res_ptr[1] == -1.0_f);
             expect(res_ptr[2] == 0.0_f);
-            expect(std::round(-0.5) == -1.0_f);
+            expect(std::round(-0.5f) == -1.0_f);
             expect(res_ptr[3] == 0.0_f);
-            expect(std::round(0.5) == 1.0_f);
+            expect(std::round(0.5f) == 1.0_f);
             expect(res_ptr[4] == 0.0_f);
             expect(res_ptr[5] == 1.0_f);
             expect(res_ptr[6] == 2.0_f);

@@ -25,7 +25,7 @@
 #include "DateTime.h"
 #include "Hook.h"
 #include "Array.h"
-#include "flat_hash_map.h"
+#include "is_member_tg.h"
 
 namespace
 {
@@ -385,7 +385,7 @@ PyObject * SetFastArrayType(PyObject * self, PyObject * args)
     // take over deallocation
     if (g_FastArrayType == NULL)
     {
-        PyTypeObject * fastArrayType{Py_TYPE(arg1)};
+        PyTypeObject * fastArrayType{ Py_TYPE(arg1) };
 
         // Take over finalize so we can recycle
         LOGGING("SetFastArrayType finalize %p %p\n", fastArrayType->tp_finalize, FastArrayFinalizer);
@@ -725,11 +725,12 @@ PyArrayObject * AllocateNumpyArrayForData(int ndim, npy_intp * dims, int32_t num
     const int64_t len = CalcArrayLength(ndim, dims);
 
     // This is the safest way...
+    // BUG EST... No It's Not, but I'm not fixing it now.
+    // Make one dimension size on stack
+    int64_t dimensions[1] = { len };
+
     if (! dims)
     {
-        // Make one dimension size on stack
-        int64_t dimensions[1] = { len };
-
         // Happens with a=FA([]); 100*a;
         // printf("dims was null when allocating\n");
         ndim = 1;
@@ -1664,7 +1665,9 @@ static PyMethodDef CSigMathUtilMethods[] = {
 
     { "BitCount", BitCount, METH_VARARGS, "BitCount calculation" },
     { "IsMember32", IsMember32, METH_VARARGS, "IsMember32 calculation" },
-    { "IsMember64", IsMember64, METH_VARARGS, "IsMember64 calculation" },
+    // IsMember64 doesn't exist as a separate function anymore; IsMember32 detects the size of the index
+    // to use and dispatches to a type-specialized implementation, so a separate IsMember64 function isn't needed.
+    { "IsMember64", IsMember32, METH_VARARGS, "IsMember64 calculation" },
     { "IsMemberCategorical", IsMemberCategorical, METH_VARARGS, "IsMemberCategorical calculation" },
     { "IsMemberCategoricalFixup", IsMemberCategoricalFixup, METH_VARARGS,
       "IsMemberCategoricalFixup used for ismember unique on cat" },
@@ -1893,117 +1896,117 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
             else
                 // Check for long upcasting?
                 if (convertType1 > convertType2)
-            {
-                if (convertType1 == NPY_ULONGLONG)
                 {
-                    // check for signed value
-                    if ((convertType2 & 1) == 1)
-                    {
-                        pRow->dtype1 = NPY_FLOAT64;
-                        pRow->dtype2 = NPY_FLOAT64;
-                    }
-                    else
-                    {
-                        pRow->dtype1 = NPY_ULONGLONG;
-                        pRow->dtype2 = NPY_ULONGLONG;
-                    }
-                }
-                else
-                {
-                    // if the higher is unsigned and the other is signed go up one
-                    if (convertType1 < NPY_ULONGLONG && (convertType1 & 1) == 0 && (convertType2 & 1) == 1)
-                    {
-                        // Choose the higher dtype +1
-                        pRow->dtype1 = convertType1 + 1;
-                        pRow->dtype2 = convertType1 + 1;
-
-                        // Handle ambiguous dtype upcast (going from int to long does
-                        // nothing on some C compilers)
-                        if (sizeof(long) == 4)
-                        {
-                            if (convertType1 == NPY_INT || convertType1 == NPY_UINT)
-                            {
-                                pRow->dtype1 = convertType1 + 3;
-                                pRow->dtype2 = convertType1 + 3;
-                            }
-                        }
-                        else
-                        {
-                            if (convertType1 == NPY_LONG || convertType1 == NPY_ULONG)
-                            {
-                                pRow->dtype1 = convertType1 + 3;
-                                pRow->dtype2 = convertType1 + 3;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Choose the higher dtype
-                        pRow->dtype1 = convertType1;
-                        pRow->dtype2 = convertType1;
-                    }
-                }
-            }
-            else
-            {
-                if (convertType1 == convertType2)
-                {
-                    pRow->dtype1 = convertType2;
-                    pRow->dtype2 = convertType2;
-                }
-                else
-                {
-                    // convertType2 is larger
-                    if (convertType2 == NPY_ULONGLONG)
+                    if (convertType1 == NPY_ULONGLONG)
                     {
                         // check for signed value
-                        if ((convertType1 & 1) == 1)
+                        if ((convertType2 & 1) == 1)
                         {
                             pRow->dtype1 = NPY_FLOAT64;
                             pRow->dtype2 = NPY_FLOAT64;
                         }
                         else
                         {
-                            pRow->dtype2 = NPY_ULONGLONG;
                             pRow->dtype1 = NPY_ULONGLONG;
+                            pRow->dtype2 = NPY_ULONGLONG;
                         }
                     }
                     else
                     {
-                        // Check for signed/unsigned integer
-                        if (convertType2 < NPY_ULONGLONG && (convertType2 & 1) == 0 && (convertType1 & 1) == 1)
+                        // if the higher is unsigned and the other is signed go up one
+                        if (convertType1 < NPY_ULONGLONG && (convertType1 & 1) == 0 && (convertType2 & 1) == 1)
                         {
                             // Choose the higher dtype +1
-                            pRow->dtype1 = convertType2 + 1;
-                            pRow->dtype2 = convertType2 + 1;
+                            pRow->dtype1 = convertType1 + 1;
+                            pRow->dtype2 = convertType1 + 1;
 
-                            // Handle ambiguous dtype upcast
+                            // Handle ambiguous dtype upcast (going from int to long does
+                            // nothing on some C compilers)
                             if (sizeof(long) == 4)
                             {
-                                if (convertType2 == NPY_INT || convertType2 == NPY_UINT)
+                                if (convertType1 == NPY_INT || convertType1 == NPY_UINT)
                                 {
-                                    pRow->dtype1 = convertType2 + 3;
-                                    pRow->dtype2 = convertType2 + 3;
+                                    pRow->dtype1 = convertType1 + 3;
+                                    pRow->dtype2 = convertType1 + 3;
                                 }
                             }
                             else
                             {
-                                if (convertType2 == NPY_LONG || convertType2 == NPY_ULONG)
+                                if (convertType1 == NPY_LONG || convertType1 == NPY_ULONG)
                                 {
-                                    pRow->dtype1 = convertType2 + 3;
-                                    pRow->dtype2 = convertType2 + 3;
+                                    pRow->dtype1 = convertType1 + 3;
+                                    pRow->dtype2 = convertType1 + 3;
                                 }
                             }
                         }
                         else
                         {
                             // Choose the higher dtype
-                            pRow->dtype1 = convertType2;
-                            pRow->dtype2 = convertType2;
+                            pRow->dtype1 = convertType1;
+                            pRow->dtype2 = convertType1;
                         }
                     }
                 }
-            }
+                else
+                {
+                    if (convertType1 == convertType2)
+                    {
+                        pRow->dtype1 = convertType2;
+                        pRow->dtype2 = convertType2;
+                    }
+                    else
+                    {
+                        // convertType2 is larger
+                        if (convertType2 == NPY_ULONGLONG)
+                        {
+                            // check for signed value
+                            if ((convertType1 & 1) == 1)
+                            {
+                                pRow->dtype1 = NPY_FLOAT64;
+                                pRow->dtype2 = NPY_FLOAT64;
+                            }
+                            else
+                            {
+                                pRow->dtype2 = NPY_ULONGLONG;
+                                pRow->dtype1 = NPY_ULONGLONG;
+                            }
+                        }
+                        else
+                        {
+                            // Check for signed/unsigned integer
+                            if (convertType2 < NPY_ULONGLONG && (convertType2 & 1) == 0 && (convertType1 & 1) == 1)
+                            {
+                                // Choose the higher dtype +1
+                                pRow->dtype1 = convertType2 + 1;
+                                pRow->dtype2 = convertType2 + 1;
+
+                                // Handle ambiguous dtype upcast
+                                if (sizeof(long) == 4)
+                                {
+                                    if (convertType2 == NPY_INT || convertType2 == NPY_UINT)
+                                    {
+                                        pRow->dtype1 = convertType2 + 3;
+                                        pRow->dtype2 = convertType2 + 3;
+                                    }
+                                }
+                                else
+                                {
+                                    if (convertType2 == NPY_LONG || convertType2 == NPY_ULONG)
+                                    {
+                                        pRow->dtype1 = convertType2 + 3;
+                                        pRow->dtype2 = convertType2 + 3;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Choose the higher dtype
+                                pRow->dtype1 = convertType2;
+                                pRow->dtype2 = convertType2;
+                            }
+                        }
+                    }
+                }
         }
     }
 
@@ -2044,16 +2047,10 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
     char const * hash_choice_p = getenv("RT_NEW_HASH");
     if (hash_choice_p)
     {
-        switch(*hash_choice_p)
+        switch (*hash_choice_p)
         {
         case '1':
             runtime_hash_choice = hash_choice_t::tbb;
-            break;
-        case '2':
-            runtime_hash_choice = hash_choice_t::absl;
-            break;
-        case '3':
-            runtime_hash_choice = hash_choice_t::stl;
             break;
         default:
             PyErr_Format(PyExc_ValueError, "Invalid value for RT_NEW_HASH");
@@ -2061,7 +2058,7 @@ PyMODINIT_FUNC PyInit_riptide_cpp()
         }
     }
 
-// start up the worker threads now in case we use them
+    // start up the worker threads now in case we use them
     g_cMathWorker->StartWorkerThreads(0);
 
     LOGGING("riptide_cpp loaded\n");

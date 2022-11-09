@@ -7,10 +7,10 @@
 #endif
 
 // Hack because debug builds force python36_d.lib
-#define MS_NO_COREDLL       // don't add import libs by default
-#define Py_ENABLE_SHARED    // but do enable shared libs
+#define MS_NO_COREDLL    // don't add import libs by default
+#define Py_ENABLE_SHARED // but do enable shared libs
 #include <pyconfig.h>
-#undef Py_DEBUG             // don't use debug Python APIs
+#undef Py_DEBUG // don't use debug Python APIs
 
 #include <Python.h>
 
@@ -37,4 +37,11 @@ namespace riptide_python_test::internal
 extern PyObject * riptide_module_p;
 extern PyObject * riptable_module_p;
 
+enum struct hash_choice_t
+{
+    hash_linear,
+    tbb,
+};
+
+inline hash_choice_t runtime_hash_choice;
 #endif
