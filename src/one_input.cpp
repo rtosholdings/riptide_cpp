@@ -1,6 +1,7 @@
 #include "one_input.h"
 #include "one_input_impl.h"
 #include "overloaded.h"
+#include "platform_detect.h"
 
 #include "MathWorker.h"
 #include "RipTide.h"
@@ -162,6 +163,8 @@ namespace riptable_cpp
         case NPY_UNICODE:
             return unicode_traits{};
             break;
+        default:
+            throw(std::runtime_error("Invalid type traits requested"));
         }
 
         return {};

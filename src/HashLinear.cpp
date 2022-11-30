@@ -5719,38 +5719,39 @@ PyObject * IsMember32(PyObject * self, PyObject * args)
 
                 int cpus{ 8 }; // TODO: override from command line / environmental.
 
-                size_t data_extent{ arrayType2 >= NPY_STRING ? static_cast<size_t>(sizeType2) : 1 };
+                size_t needle_extent{ arrayType1 >= NPY_STRING ? static_cast<size_t>(sizeType1) : 1 };
+                size_t haystack_extent{ arrayType2 >= NPY_STRING ? static_cast<size_t>(sizeType2) : 1 };
 
                 switch (dtype) // TODO: Add extra safety by normalizing through `riptide::normalize_dtype()`.
                 {
                 case NPY_INT8:
                     {
-                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), needle_extent, arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), haystack_extent,
                                            reinterpret_cast<int8_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
                                            std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }
                     break;
                 case NPY_INT16:
                     {
-                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), needle_extent, arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), haystack_extent,
                                            reinterpret_cast<int16_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
                                            std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }
                     break;
                 case NPY_INT32:
                     {
-                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), needle_extent, arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), haystack_extent,
                                            reinterpret_cast<int32_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
                                            std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }
                     break;
                 case NPY_INT64:
                     {
-                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), arraySize2,
-                                           reinterpret_cast<char const *>(pDataIn2), data_extent,
+                        is_member_for_type(arraySize1, reinterpret_cast<char const *>(pDataIn1), needle_extent, arraySize2,
+                                           reinterpret_cast<char const *>(pDataIn2), haystack_extent,
                                            reinterpret_cast<int64_t *>(PyArray_BYTES(indexArray)), pDataOut1, variant, cpus,
                                            std::make_index_sequence<std::variant_size_v<riptable_cpp::array_content_t>>{});
                     }

@@ -1,5 +1,6 @@
 #include "is_member_tg.h"
 #include "HashLinear.h"
+#include "platform_detect.h"
 
 #include "boost/ut.hpp"
 
@@ -20,6 +21,53 @@ namespace
     std::array<int32_t, 1024ULL * 1024ULL> small_output;
     std::array<int8_t, 1024ULL * 1024ULL> bools;
 
+    template <typename T>
+    class fixed_string_array
+    {
+    public:
+        fixed_string_array() = default;
+
+        template <size_t Len>
+        fixed_string_array(std::array<T const *, Len> const & list)
+        {
+            for (std::basic_string_view<T> const item : list)
+            {
+                auto const len{ item.size() };
+                item_size_ = std::max(item_size_, len);
+                ++size_;
+            }
+
+            contents_.reserve(size_ * item_size_);
+
+            for (std::basic_string_view<T> const item : list)
+            {
+                auto const len{ item.size() };
+                contents_.append(item);
+                contents_.append(item_size_ > len ? item_size_ - len : 0, '\0');
+            }
+        }
+
+        T const * const data() const
+        {
+            return contents_.data();
+        }
+
+        size_t size() const
+        {
+            return size_;
+        }
+
+        size_t item_size() const
+        {
+            return item_size_;
+        }
+
+    private:
+        std::basic_string<T> contents_;
+        size_t size_{ 0 };
+        size_t item_size_{ 0 };
+    };
+
     suite is_member_ops = []
     {
         "is_member_uint64_tbb"_test = [&]
@@ -38,7 +86,7 @@ namespace
                           });
             std::vector<uint64_t> needles{ haystack[3], haystack[9], haystack[0], haystack[5], ULLONG_MAX - 1 };
 
-            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                          reinterpret_cast<char const *>(haystack.data()), 1, output.data(), bools.data(), needles[0]);
 
             expect(output[0] == 3_i);
@@ -61,7 +109,7 @@ namespace
 
             std::vector<int8_t> results(16);
 
-            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                          reinterpret_cast<char const *>(haystack.data()), 1, results.data(), bools.data(), haystack[0]);
 
             expect(results[0] == 0_i);
@@ -82,7 +130,7 @@ namespace
 
             std::vector<int8_t> results(8);
 
-            is_member_tg(needles1.size(), reinterpret_cast<char const *>(needles1.data()), haystack1.size(),
+            is_member_tg(needles1.size(), reinterpret_cast<char const *>(needles1.data()), 1, haystack1.size(),
                          reinterpret_cast<char const *>(haystack1.data()), 1, results.data(), bools.data(), haystack1[0]);
 
             expect(bools[0] == 1_i);
@@ -95,7 +143,7 @@ namespace
 
             std::vector<int> haystack2{ 5 };
 
-            is_member_tg(needles1.size(), reinterpret_cast<char const *>(needles1.data()), haystack2.size(),
+            is_member_tg(needles1.size(), reinterpret_cast<char const *>(needles1.data()), 1, haystack2.size(),
                          reinterpret_cast<char const *>(haystack2.data()), 1, results.data(), bools.data(), haystack2[0]);
 
             expect(bools[0] == 0_i);
@@ -114,7 +162,7 @@ namespace
 
             std::vector<int8_t> results(4);
 
-            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                          reinterpret_cast<char const *>(haystack.data()), 1, results.data(), bools.data(), haystack[0]);
 
             expect(bools[0] == 1_i);
@@ -145,7 +193,7 @@ namespace
                               return haystack[dist(engine)];
                           });
 
-            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                          reinterpret_cast<char const *>(haystack.data()), 1, output.data(), bools.data(), needles[0]);
 
             for (size_t i{ 0 }; i != needles.size(); ++i)
@@ -170,7 +218,7 @@ namespace
                     expect(nothrow(
                         [&]()
                         {
-                            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+                            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                                          reinterpret_cast<char const *>(haystack.data()), 1, output.data(), bools.data(),
                                          needles[0]);
                         }));
@@ -204,7 +252,7 @@ namespace
             expect(nothrow(
                 [&]()
                 {
-                    is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), haystack.size(),
+                    is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, haystack.size(),
                                  reinterpret_cast<char const *>(haystack.data()), 1, output.data(), bools.data(), needles[0]);
                 }));
         };
@@ -253,6 +301,42 @@ namespace
                     IsMemberHash32(needles.size(), needles.data(), haystack.size(), haystack.data(), small_output.data(),
                                    bools.data(), 8, HASH_MODE(1), 0);
                 }));
+        };
+
+        "is_member_string_tbb"_test = [&]
+        {
+            fixed_string_array<char> const haystack{ std::array{ "ABC", "ST", "WXYZ" } };
+            fixed_string_array<char> const needles{ std::array{ "ST", "ABCDE" } };
+
+            std::vector<int8_t> results(3);
+
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), needles.item_size(), haystack.size(),
+                         reinterpret_cast<char const *>(haystack.data()), haystack.item_size(), results.data(), bools.data(),
+                         *haystack.data());
+
+            expect(bools[0] == 1_i);
+            expect(bools[1] == 0_i);
+
+            expect(results[0] == 1_i);
+            expect(results[1] == -128_i);
+        };
+
+        "is_member_wstring_tbb"_test = [&]
+        {
+            fixed_string_array<wchar_t> const haystack{ std::array{ L"ABC", L"ST", L"WXYZ" } };
+            fixed_string_array<wchar_t> const needles{ std::array{ L"ST", L"ABCDE" } };
+
+            std::vector<int8_t> results(3);
+
+            is_member_tg(needles.size(), reinterpret_cast<char const *>(needles.data()), needles.item_size(), haystack.size(),
+                         reinterpret_cast<char const *>(haystack.data()), haystack.item_size(), results.data(), bools.data(),
+                         *haystack.data());
+
+            expect(bools[0] == 1_i);
+            expect(bools[1] == 0_i);
+
+            expect(results[0] == 1_i);
+            expect(results[1] == -128_i);
         };
     };
 }

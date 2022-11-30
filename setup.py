@@ -14,21 +14,10 @@ package_name = "riptide_cpp"
 version_scm_path = "src/_version.scm.d"
 version_path = "src/_version.d"
 
-# Only define requirements if not a Conda build (which will set up requirements separately).
-if "CONDA_BUILD" not in os.environ:
-    setup_requires = [
-        "cmake >=3.18",
-        "numpy >=1.21",
-        "setuptools_scm",
-        "tbb-devel ==2021.6.*",
-        "tbb ==2021.6.*",
-    ]
-
-    install_requires = ["numpy >=1.21", "tbb ==2021.6.*"]
-
-else:
-    setup_requires = []
-    install_requires = []
+install_requires = [
+    "numpy >=1.21, <1.23",
+    "tbb ==2021.6.*",
+]
 
 
 def copy_if_different(src_path, dst_path):
@@ -156,7 +145,7 @@ setup(
         "write_to": version_scm_path,
         "write_to_template": '"{version}"',
     },
-    setup_requires=setup_requires,
+    setup_requires=["setuptools_scm"],  # remaining requirements are in pyproject.toml
     description="Python Package with fast math util functions",
     author="RTOS Holdings",
     author_email="rtosholdings-bot@sig.com",
