@@ -13,7 +13,7 @@ on:
 jobs:
   native-build:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         shell: bash -l {0}
@@ -50,7 +50,9 @@ jobs:
           python dev_tools/gen_requirements.py --out native_reqs.txt native
           python dev_tools/gen_requirements.py --out runtime_reqs.txt runtime
           python dev_tools/gen_requirements.py --out tests_reqs.txt tests
-          conda install -q -y numpy=${{ matrix.numpy-version }} --file native_reqs.txt --file runtime_reqs.txt --file tests_reqs.txt
+          conda install -q -y numpy=${{ matrix.numpy-version }} --file native_reqs.txt
+          conda install -q -y numpy=${{ matrix.numpy-version }} --file runtime_reqs.txt
+          conda install -q -y numpy=${{ matrix.numpy-version }} --file tests_reqs.txt
       - name: Configure Linux
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
