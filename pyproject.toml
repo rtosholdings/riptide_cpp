@@ -1,12 +1,10 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools >=42",
     "wheel",
-    "cmake>=3.18",
+    "cmake >=3.18",
     "ninja; platform_system!='Windows'",
-    "numpy>=1.21",
-    # pip install of tbb-devel is broken (see https://github.com/oneapi-src/oneTBB/issues/682)
-    # better to simply omit it than download a broken package.
-    #"tbb-devel>=2021"
+    "numpy >=1.21, <1.23",
+    "tbb-devel ==2021.6.*",
     ]
 build-backend = "setuptools.build_meta"

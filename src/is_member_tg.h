@@ -40,6 +40,17 @@ namespace
 
     static constexpr ptrdiff_t grainsize_v{ 1000000 };
 
+    template <typename T>
+    riptide_cpp::simple_span<T> simple_span_from_fixed_cstring(T const * const string, size_t const fixed_length)
+    {
+        size_t length{ 0 };
+        while (length < fixed_length && string[length])
+        {
+            ++length;
+        }
+        return riptide_cpp::simple_span<T>{ string, length };
+    }
+
     template <typename key_t>
     constexpr bool is_string_type()
     {
@@ -262,7 +273,7 @@ namespace
                         {
                             continue;
                         }
-                        riptide_cpp::simple_span<key_t> temp{ &start_p[i], string_length };
+                        riptide_cpp::simple_span<key_t> temp{ simple_span_from_fixed_cstring(&start_p[i], string_length) };
                         target_hasher = riptide_cpp::our_hash_function(temp, num_buckets);
 
                         buckets[target_hasher].push_back({ i / static_cast<index_t>(string_length), temp, target_hasher });
@@ -311,9 +322,10 @@ namespace
 
         index_t find(typename my_hasher_types<key_t, index_t>::map_key_t const * key, size_t bucket = 0) const noexcept
         {
-            typename my_hasher_types<key_t, index_t>::my_hasher_t::const_iterator found = grouped_hashes[bucket].find(*key);
+            typename my_hasher_types<key_t, index_t>::my_hasher_t const & hashes{ grouped_hashes[bucket] };
+            typename my_hasher_types<key_t, index_t>::my_hasher_t::const_iterator found = hashes.find(*key);
 
-            return (found != std::end(grouped_hashes[bucket]) && riptide::invalid_for_type<index_t>::is_valid(found->second)) ?
+            return (found != std::end(hashes) && riptide::invalid_for_type<index_t>::is_valid(found->second)) ?
                        found->second :
                        riptide::invalid_for_type<index_t>::value;
         }
@@ -352,10 +364,11 @@ namespace
                     typename my_hasher_types<key_t, index_t>::map_key_t temp{ &needles_base_p[i * string_length], string_length };
                     size_t hasher_index{ riptide_cpp::our_hash_function(temp, num_hashers) };
 
-                    hashes[hasher_index].push_back(hash_details<key_t>{
-                        static_cast<ptrdiff_t>(i),
-                        typename my_hasher_types<key_t, index_t>::map_key_t{ &needles_base_p[i * string_length], string_length },
-                        hasher_index });
+                    hashes[hasher_index].push_back(
+                        hash_details<key_t>{ static_cast<ptrdiff_t>(i),
+                                             typename my_hasher_types<key_t, index_t>::map_key_t{ simple_span_from_fixed_cstring(
+                                                 &needles_base_p[i * string_length], string_length) },
+                                             hasher_index });
                 }
                 else
                 {
@@ -414,9 +427,9 @@ namespace
 }
 
 template <typename index_t>
-inline void is_member_tg(size_t const needles_size, char const * needles_p, size_t const haystack_size, char const * haystack_p,
-                         size_t const haystack_type_size, index_t * output_p, int8_t * bool_out_p,
-                         is_member_allowed_types_t const sample_value, int max_cpus = 8)
+inline void is_member_tg(size_t const needles_size, char const * needles_p, size_t const needles_type_size,
+                         size_t const haystack_size, char const * haystack_p, size_t const haystack_type_size, index_t * output_p,
+                         int8_t * bool_out_p, is_member_allowed_types_t const sample_value, int max_cpus = 8)
 {
     oneapi::tbb::task_arena::constraints const local_arena_setters{ oneapi::tbb::numa_node_id{ 0 }, max_cpus };
     oneapi::tbb::task_arena local_arena{ local_arena_setters };
@@ -440,7 +453,7 @@ inline void is_member_tg(size_t const needles_size, char const * needles_p, size
 
                     oneapi::tbb::parallel_for(oneapi::tbb::blocked_range<size_t>(0, needles_size),
                                               is_member_pre_hash_needles<key_t, index_t>(
-                                                  needles_size, typed_needles_p, haystack_type_size, num_slices, index_hashes),
+                                                  needles_size, typed_needles_p, needles_type_size, num_slices, index_hashes),
                                               oneapi::tbb::static_partitioner{});
 
                     oneapi::tbb::parallel_for(
@@ -453,27 +466,27 @@ inline void is_member_tg(size_t const needles_size, char const * needles_p, size
 }
 
 template <typename data_trait_t, typename out_t>
-inline void is_member_shim(size_t const needles_size, char const * needles_p, size_t const haystack_size, char const * haystack_p,
-                           size_t const haystack_type_size, out_t * output_p, int8_t * bool_out_p, data_trait_t const * data_p,
-                           int max_cpus = 8)
+inline void is_member_shim(size_t const needles_size, char const * needles_p, size_t const needles_type_size,
+                           size_t const haystack_size, char const * haystack_p, size_t const haystack_type_size, out_t * output_p,
+                           int8_t * bool_out_p, data_trait_t const * data_p, int max_cpus = 8)
 {
     if (data_p)
     {
         using T = typename data_trait_t::data_type;
         T const sample_value{};
-        is_member_tg<out_t>(needles_size, needles_p, haystack_size, haystack_p, haystack_type_size, output_p, bool_out_p,
-                            sample_value, max_cpus);
+        is_member_tg<out_t>(needles_size, needles_p, needles_type_size, haystack_size, haystack_p, haystack_type_size, output_p,
+                            bool_out_p, sample_value, max_cpus);
     }
 }
 
 template <typename variant_t, typename out_t, size_t... Is>
-inline void is_member_for_type(size_t const needles_size, char const * needles_p, size_t const haystack_size,
-                               char const * haystack_p, size_t const haystack_type_size, out_t * output_p, int8_t * bool_out_p,
-                               variant_t const data_type_traits, int max_cpus = 8,
+inline void is_member_for_type(size_t const needles_size, char const * needles_p, size_t const needles_type_size,
+                               size_t const haystack_size, char const * haystack_p, size_t const haystack_type_size,
+                               out_t * output_p, int8_t * bool_out_p, variant_t const data_type_traits, int max_cpus = 8,
                                std::index_sequence<Is...> const = std::make_index_sequence<std::variant_size_v<variant_t>>{})
 {
-    (is_member_shim(needles_size, needles_p, haystack_size, haystack_p, haystack_type_size, output_p, bool_out_p,
-                    std::get_if<Is>(&data_type_traits), max_cpus),
+    (is_member_shim(needles_size, needles_p, needles_type_size, haystack_size, haystack_p, haystack_type_size, output_p,
+                    bool_out_p, std::get_if<Is>(&data_type_traits), max_cpus),
      ...);
 }
 

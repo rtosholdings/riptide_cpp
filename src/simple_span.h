@@ -7,11 +7,12 @@
 
 namespace riptide_cpp
 {
+    // Simple string span, a trivial type modeling a std::basic_string_view<T>.
     template <typename T>
     struct simple_span
     {
         T const * pointer;
-        size_t const length;
+        size_t length;
 
         bool operator==(simple_span<T> const & b) const noexcept
         {

@@ -9,10 +9,11 @@
 #include "SharedMemory.h"
 
 #include "MathWorker.h"
-#include <set>
 #include <stdarg.h>
 #include <string.h>
+#include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #if defined(__clang__)
@@ -1087,58 +1088,25 @@ public:
 
 class SDSIncludeExclude
 {
-    // keep track of inclusion/exclusion list
-    std::unordered_map<std::string, int> InclusionList;
-    const char BANG_CHAR = '!';
-    char SEP_CHAR = 0;
-
 public:
-    //-------------------------------------------------------------
-    // Tries to find the '!' char in the string
-    // if it finds the ! it returns the location
-    //
-    const char * FindSep(const char * pString, char SEPARATOR)
-    {
-        while (*pString)
-        {
-            if (*pString == SEPARATOR)
-                return pString;
-            pString++;
-        }
-        return NULL;
-    }
-
-    const char * FindBackwardSep(const char * pString, char SEPARATOR)
-    {
-        const char * pStart = pString;
-        while (*pString)
-        {
-            pString++;
-        }
-        while (pString > pStart)
-        {
-            pString--;
-            if (*pString == SEPARATOR)
-                return pString;
-        }
-        return NULL;
-    }
-
     void ClearLists()
     {
         InclusionList.clear();
+        count_ = 0;
     }
 
     bool IsEmpty()
     {
-        return InclusionList.empty();
+        return count_ == 0;
     }
 
+    // Add the item string to the inclusion list.
+    // The caller must ensure that stritem outlives this object.
     void AddItem(const char * stritem)
     {
-        std::string item = std::string(stritem);
-        if (InclusionList.find(item) == InclusionList.end())
-            InclusionList.emplace(item, 1);
+        auto const result{ InclusionList.emplace(stritem) };
+        cached_ = *result.first;
+        count_ += result.second ? 1 : 0;
     }
 
     void AddItems(std::vector<const char *> * pItems, const char sep)
@@ -1156,105 +1124,117 @@ public:
     int32_t IsIncluded(const char * stritem)
     {
         // If we have no inclusion list, then every item is accepted
-        if (InclusionList.empty())
+        if (IsEmpty())
             return 1;
+
+        std::string_view item{ stritem };
 
         // if this is a column check
         if (SEP_CHAR == 0)
         {
             // Now check for '/' from onefile (?? should we check for onefile in
             // fileheader first?)
-            char * pHasSep = (char *)FindBackwardSep(stritem, '/');
-            if (pHasSep && pHasSep != stritem)
+            auto const separator_pos{ item.rfind('/') };
+            if (separator_pos != std::string_view::npos && separator_pos > 0)
             {
-                // if we find a separator, trim the name
-                stritem = pHasSep + 1;
+                item = item.substr(separator_pos + 1);
             }
         }
 
-        std::string item = std::string(stritem);
+        return (count_ == 1) ? FindIncluded<true>(item) : FindIncluded<false>(item);
+    }
 
-        // Check if we matched
-        if (InclusionList.find(item) == InclusionList.end())
+private:
+    // keep track of inclusion/exclusion list
+    std::unordered_set<std::string_view> InclusionList;
+    // Holds the last added value, used for comparing against 1 member.
+    std::string_view cached_{};
+    size_t count_{};
+    const char BANG_CHAR = '!';
+    char SEP_CHAR = 0;
+
+    template <bool HasSingleListMember>
+    bool FindItem(std::string_view const & item)
+    {
+        if constexpr (HasSingleListMember)
         {
-            // Failed to match, but maybe the first part matches
-            if (SEP_CHAR == 0)
-            {
-                // The pArrayName might be a categorical column
-                // If so, it will be in the format categoricalname!col0
-                char * pHasBang = (char *)FindSep(stritem, BANG_CHAR);
-
-                if (pHasBang)
-                {
-                    LOGGING("Failed to match, has bang %s\n", item.c_str());
-
-                    // temp remove bang
-                    *pHasBang = 0;
-
-                    std::string newitem = std::string(stritem);
-
-                    // replace bang
-                    *pHasBang = BANG_CHAR;
-
-                    // if we matched return true
-                    if (InclusionList.find(newitem) != InclusionList.end())
-                    {
-                        return 1;
-                    }
-                }
-
-                // Now check for '/' from onefile (?? should we check for onefile in
-                // fileheader first?)
-                // char* pHasSep = (char*)FindBackwardSep(stritem, '/');
-                // if (pHasSep && pHasSep != stritem) {
-                //   LOGGING("Failed to match, has slash %s  %s\n", item.c_str(),
-                //   pHasSep);
-                //   // skip over '/' and check again
-                //   pHasSep++;
-                //   if (InclusionList.find(pHasSep) != InclusionList.end()) {
-                //      return 1;
-                //   }
-                //}
-                // else {
-                //   LOGGING("NO MATCH %s  %s\n", item.c_str(), pHasSep);
-                //}
-
-                return 0;
-            }
-            else
-            {
-                // This is a folder check
-                // The pArrayName might be from onefile and flattened
-                // If so, it will be in the format foldername/col0
-                char * pHasSep = (char *)FindBackwardSep(stritem, SEP_CHAR);
-
-                if (pHasSep)
-                {
-                    // temp remove char after sep
-                    char tempchar = pHasSep[1];
-                    pHasSep[1] = 0;
-
-                    std::string newitem = std::string(stritem);
-
-                    // replace char we just flipped
-                    pHasSep[1] = tempchar;
-
-                    LOGGING("Failed to match, has sep %s   folder: %s\n", item.c_str(), newitem.c_str());
-
-                    // if we matched return true
-                    if (InclusionList.find(newitem) != InclusionList.end())
-                    {
-                        return 1;
-                    }
-                }
-                return 0;
-            }
+            return cached_ == item;
         }
         else
         {
-            LOGGING("Simple match %s\n", item.c_str());
+            return InclusionList.find(item) != InclusionList.end();
+        }
+    }
+
+    // Indicates if the item is included in the list's members.
+    template <bool HasSingleListMember>
+    int FindIncluded(std::string_view const item)
+    {
+        // Check if we matched
+        if (FindItem<HasSingleListMember>(item))
+        {
+            LOGGING("Simple match %s\n", std::string(item).c_str());
 
             return 1;
+        }
+
+        // Failed to match, but maybe the first part matches
+        if (SEP_CHAR == 0)
+        {
+            // The pArrayName might be a categorical column
+            // If so, it will be in the format categoricalname!col0
+            auto const separator_pos{ item.find(BANG_CHAR) };
+
+            if (separator_pos != std::string_view::npos)
+            {
+                LOGGING("Failed to match, has bang %s\n", std::string(item).c_str());
+
+                // ignore bang
+                std::string_view const newitem{ item.substr(0, separator_pos) };
+
+                // if we matched return true
+                if (FindItem<HasSingleListMember>(newitem))
+                {
+                    return 1;
+                }
+            }
+
+            // Now check for '/' from onefile (?? should we check for onefile in
+            // fileheader first?)
+            // auto const separator_pos{ item.rfind('/') };);
+            // if (separator_pos != std::string_view::npos && separator_pos > 0) {
+            //   LOGGING("Failed to match, has slash %s\n", item.c_str());
+            //   if (FindItem<HasSingleListMember>(item.substr(separator_pos + 1)) {
+            //      return 1;
+            //   }
+            //}
+            // else {
+            //   LOGGING("NO MATCH %s\n", item.c_str());
+            //}
+
+            return 0;
+        }
+        else
+        {
+            // This is a folder check
+            // The pArrayName might be from onefile and flattened
+            // If so, it will be in the format foldername/col0
+            auto const separator_pos{ item.rfind(SEP_CHAR) };
+
+            if (separator_pos != std::string_view::npos)
+            {
+                // ignore chars after sep
+                std::string_view const newitem{ item.substr(0, separator_pos + 1) };
+
+                LOGGING("Failed to match, has sep %s   folder: %s\n", std::string(item).c_str(), std::string(newitem).c_str());
+
+                // if we matched return true
+                if (FindItem<HasSingleListMember>(newitem))
+                {
+                    return 1;
+                }
+            }
+            return 0;
         }
     }
 };

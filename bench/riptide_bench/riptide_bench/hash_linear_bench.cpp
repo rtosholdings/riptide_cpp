@@ -168,7 +168,7 @@ namespace
 
         for (auto _ : state)
         {
-            is_member_for_type(needles.size(), reinterpret_cast<char const *>(needles.data()), test_data.size(),
+            is_member_for_type(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, test_data.size(),
                                reinterpret_cast<char const *>(test_data.data()), 1, output.data(), bools.data(), variant,
                                state.range(1), std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
             benchmark::DoNotOptimize(output.data());
@@ -228,7 +228,7 @@ namespace
         for (auto _ : state)
         {
             riptable_cpp::data_type_t variant = riptable_cpp::uint64_traits{};
-            is_member_for_type(needles.size(), reinterpret_cast<char const *>(needles.data()), test_data.size(),
+            is_member_for_type(needles.size(), reinterpret_cast<char const *>(needles.data()), 1, test_data.size(),
                                reinterpret_cast<char const *>(test_data.data()), 1, output.data(), bools.data(), variant,
                                state.range(1), std::make_index_sequence<std::variant_size_v<riptable_cpp::data_type_t>>{});
             benchmark::DoNotOptimize(test_data.data());
