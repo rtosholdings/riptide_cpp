@@ -3,6 +3,7 @@
 #include "MathWorker.h"
 #include "MultiKey.h"
 #include "Ema.h"
+#include "Heap.h"
 
 #include <cmath>
 #include <pymem.h>
@@ -26,6 +27,7 @@ enum ROLLING_FUNCTIONS
     // These output a float/double
     ROLLING_MEAN = 102,
     ROLLING_NANMEAN = 103,
+    ROLLING_QUANTILE = 104,
 
     ROLLING_VAR = 106,
     ROLLING_NANVAR = 107,
@@ -43,6 +45,31 @@ enum EMA_FUNCTIONS
     EMA_NORMAL = 304,
     EMA_WEIGHTED = 305
 };
+
+template <typename T, typename U>
+inline U QUANTILE_SPLIT(T X, T Y)
+{
+    return (X + Y) / 2.0;
+}
+
+// Overloads to handle cases of bool, float, long double
+template <>
+inline bool QUANTILE_SPLIT<bool, bool>(bool X, bool Y)
+{
+    return (X | Y);
+}
+
+template <>
+inline float QUANTILE_SPLIT<float, float>(float X, float Y)
+{
+    return (X + Y) / 2.0f;
+}
+
+template <>
+inline long double QUANTILE_SPLIT<long double, long double>(long double X, long double Y)
+{
+    return (X + Y) / 2.0L;
+}
 
 //=========================================================================================================================
 typedef void (*EMA_BY_TWO_FUNC)(void * pKey, void * pAccumBin, void * pColumn, int64_t numUnique, int64_t totalInputRows,
@@ -257,6 +284,71 @@ public:
             }
 
             pOut[i] = currentSum / count;
+        }
+    }
+
+    static void RollingQuantile(void * pDataIn, void * pDataOut, int64_t len, int64_t windowSize)
+    {
+        T const * const pIn = (T *)pDataIn;
+        U * const pOut = (U *)pDataOut;
+
+        static constexpr int64_t multiplier{ static_cast<int64_t>(1e9) };
+        // windowSize = q * multiplier + (actual_window_size) * (multiplier + 1),
+        // where q is the quantile to take, actual_window_size is the actual size of the rolling window.
+
+        int64_t quantile_with_1e9_mult{ windowSize % (multiplier + 1) };
+        long double const quantile{ static_cast<long double>(quantile_with_1e9_mult) / static_cast<long double>(multiplier) };
+        windowSize = windowSize / (multiplier + 1);
+
+        U const invalid{ GET_INVALID(U{}) };
+
+        if (windowSize <= 0)
+        {
+            // negative or zero window sizes not accepted yet
+            PyErr_Format(PyExc_ValueError, "Negative or zero window sizes are not supported for rolling_quantile.");
+            return;
+        }
+        else if (windowSize == 1)
+        {
+            // return data itself (probably can do better than copying everything, but no one should call this with window=1
+            // anyway) (things in RollingQuantile:: will break (for now) with windowSize = 1)
+            for (int64_t i = 0; i < len; i++)
+            {
+                if (riptide::invalid_for_type<T>::is_valid(pIn[i]))
+                {
+                    pOut[i] = (U)pIn[i];
+                }
+                else
+                {
+                    pOut[i] = invalid;
+                }
+            }
+        }
+        else
+        {
+            using QElement = RollingQuantile::StructureElement<T>;
+
+            // Only need O(window) extra space
+            QElement * all_elements = (QElement *)WORKSPACE_ALLOC(windowSize * sizeof(QElement));
+            QElement ** all_element_pointers = (QElement **)WORKSPACE_ALLOC(windowSize * sizeof(QElement *));
+
+            // max_heap_size is (floor((windowSize - 1) * quantile) + 1), but need to handle some precision issues
+            size_t max_heap_size = RollingQuantile::IntegralIndex(windowSize, quantile) + 1;
+            size_t min_heap_size = windowSize - max_heap_size;
+
+            // Can't pass another parameter here at this point, fix to 1
+            size_t min_count = 1;
+
+            RollingQuantile::RollingQuantile<T, U> rolling_quantile(windowSize, quantile, all_elements, all_element_pointers,
+                                                                    max_heap_size, min_heap_size, min_count, QUANTILE_SPLIT<T, U>);
+
+            for (int64_t i = 0; i < len; i++)
+            {
+                pOut[i] = rolling_quantile.Update(&pIn[i]);
+            }
+            rolling_quantile.Clean();
+            WORKSPACE_FREE(all_elements);
+            WORKSPACE_FREE(all_element_pointers);
         }
     }
 
@@ -528,6 +620,8 @@ public:
             return RollingMean;
         case ROLLING_NANMEAN:
             return RollingNanMean;
+        case ROLLING_QUANTILE:
+            return RollingQuantile;
         case ROLLING_VAR:
             return RollingVar;
         case ROLLING_NANVAR:

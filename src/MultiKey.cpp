@@ -145,18 +145,15 @@ ArrayInfo * AllocArrayInfo(int64_t tupleSize)
 ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, int64_t * pTotalItemSize, bool checkrows, bool convert)
 {
     bool isTuple = false;
-    bool isArray = false;
     bool isList = false;
     int64_t tupleSize = 0;
 
     if (PyArray_Check(listObject))
     {
-        isArray = true;
+        // isArray = true;
         tupleSize = 1;
     }
-    else
-
-        if (PyTuple_Check(listObject))
+    else if (PyTuple_Check(listObject))
     {
         isTuple = true;
         tupleSize = PyTuple_GET_SIZE(listObject);
@@ -188,12 +185,12 @@ ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, int64_t 
             inObject = PyTuple_GET_ITEM(listObject, i);
         }
 
-        if (isList)
+        else if (isList)
         {
             inObject = PyList_GetItem(listObject, i);
         }
 
-        if (isArray)
+        else // isArray
         {
             inObject = listObject;
         }
@@ -254,7 +251,8 @@ ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, int64_t 
                     PyErr_Format(PyExc_ValueError, "BuildArrayInfo array must have ndim ==1 instead of %d", aInfo[i].NDim);
                     goto EXIT_ROUTINE;
                 }
-                if (itemSize != stride0)
+
+                if (itemSize != stride0 && aInfo[i].ArrayLength > 0)
                 {
                     PyErr_Format(PyExc_ValueError, "BuildArrayInfo array strides must match itemsize -- %lld %lld", itemSize,
                                  stride0);
@@ -263,10 +261,11 @@ ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, int64_t 
             }
             else
             {
-                if (itemSize != stride0)
+                if (itemSize != stride0 && aInfo[i].ArrayLength > 0)
                 {
                     // If 2 dims and Fortran, then strides will not match
                     // TODO: better check
+
                     if (aInfo[i].NDim == 1)
                     {
                         PyErr_Format(PyExc_ValueError,

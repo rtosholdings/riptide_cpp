@@ -1,6 +1,6 @@
 package:
   name: riptide_cpp
-  version: {{ environ.get('BUILD_VERSION', 'DEV') }}
+  version: "{{ environ.get('BUILD_VERSION', 'DEV') }}"
 
 source:
   path: ..
@@ -8,12 +8,12 @@ source:
 build:
   number: 0
   # Use Python installed in host environment.
-  script: {{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt
+  script: "{{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt"
 
 requirements:
   build:
     - python {{ python }}
-    - {{ compiler('cxx') }}
+    - "{{ compiler('cxx') }}"
     - cmake >=3.18
     - setuptools_scm
     - numpy {{ numpy }}
@@ -21,11 +21,11 @@ requirements:
     - tbb 2021.6.*
   host:
     - python {{ python }}
-    - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
+    - "{{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}"
     - setuptools_scm
   run:
     - python {{ python }}
-    - {{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}
+    - "{{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}"
     - tbb 2021.6.*
 
 test:
@@ -36,4 +36,4 @@ about:
   home: https://github.com/rtosholdings/riptide_cpp
   license: BSD 3-Clause License
   license_file: LICENSE
-  summary: 'Python Package with fast math util functions'
+  summary: "Python Package with fast math util functions"

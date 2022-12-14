@@ -4,7 +4,7 @@ requires = [
     "wheel",
     "cmake >=3.18",
     "ninja; platform_system!='Windows'",
-    "numpy >=1.21, <1.23",
+    "numpy >=1.22, <1.24",
     "tbb-devel ==2021.6.*",
     ]
 build-backend = "setuptools.build_meta"
