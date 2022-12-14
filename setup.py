@@ -15,7 +15,7 @@ version_scm_path = "src/_version.scm.d"
 version_path = "src/_version.d"
 
 install_requires = [
-    "numpy >=1.21, <1.23",
+    "numpy >=1.22, <1.24",
     "tbb ==2021.6.*",
 ]
 

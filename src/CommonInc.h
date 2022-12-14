@@ -380,12 +380,13 @@ typedef void (*ANY_TWO_FUNC)(void * pDataIn, void * pDataIn2, void * pDataOut, i
 // Arg4 optional - count out
 
 // Used for Groupby Sum/Mean/Min/Max/etc
-typedef void (*GROUPBY_TWO_FUNC)(void * pDataIn, void * pIndex, void * pCountOut, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass, void * pDataTmp);
+typedef void (*GROUPBY_TWO_FUNC)(void const * pDataIn, void const * pIndex, void * pCountOut, void * pDataOut, int64_t len,
+                                 int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp);
 
 // Used for Groupby Mode/Median/etc
-typedef void (*GROUPBY_X_FUNC)(void * pColumn, void * pGroup, void * pFirst, void * pCount, void * pAccumBin, int64_t binLow,
-                               int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam);
+typedef void (*GROUPBY_X_FUNC)(void const * pColumn, void const * pGroup, void const * pFirst, void const * pCount,
+                               void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                               int64_t funcParam);
 
 // Pass in three vectors and return one vector
 // Used for operations like D = A*B + C

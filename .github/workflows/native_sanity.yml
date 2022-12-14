@@ -22,10 +22,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: [3.8, 3.9, "3.10"]
-        numpy-version: [1.21, 1.22]
+        numpy-version: [1.22, 1.23]
         build-config: ["Debug", "Release"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
@@ -84,7 +84,7 @@ jobs:
       - name: Install riptable
         run: |
           # Get just the latest riptable package
-          conda install -q -y --override-channels -c rtosholdings --no-deps riptable
+          pip install -v --no-deps riptable
           python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
       - name: Run the riptide Python tests
         if: ${{ matrix.os == 'ubuntu-latest' }}

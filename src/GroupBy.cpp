@@ -4,6 +4,7 @@
 #include "MultiKey.h"
 #include "GroupBy.h"
 #include "Sort.h"
+#include "Heap.h"
 #include "missing_values.h"
 #include "numpy_traits.h"
 
@@ -13,7 +14,7 @@
 #include <vector>
 
 #define LOGGING(...)
-//#define LOGGING printf
+// #define LOGGING printf
 
 enum GB_FUNCTIONS
 {
@@ -53,6 +54,7 @@ enum GB_FUNCTIONS
     GB_ROLLING_COUNT = 204,
     GB_ROLLING_MEAN = 205,
     GB_ROLLING_NANMEAN = 206,
+    GB_ROLLING_QUANTILE = 207,
 };
 
 // Overloads to handle case of bool
@@ -207,12 +209,12 @@ static size_t strip_nans(T * x, size_t n)
     size_t i = 0, j = n;
     while (i < j)
     {
-        if (x[i] == x[i])
+        if (riptide::invalid_for_type<T>::is_valid(x[i]))
             ++i;
         else
         {
             --j;
-            if (x[j] == x[j])
+            if (riptide::invalid_for_type<T>::is_valid(x[j]))
             {
                 tmp = x[j];
                 x[j] = x[i];
@@ -248,12 +250,15 @@ public:
     // int64_t len, int32_t scalarMode); typedef void(*ANY_ONE_FUNC)(void* pDataIn,
     // void* pDataOut, int64_t len);
 
-    static void AccumSum(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumSum(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
+        W * const pCountOut{ (W *)pCountOutT };
+
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (pass <= 0)
         {
@@ -263,23 +268,44 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                pOut[index] += (U)pIn[i];
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
+                {
+                    T const temp{ pIn[i] };
+
+                    // check if this is a nan
+                    if (riptide::invalid_for_type<T>::is_valid(temp))
+                    {
+                        pOut[index] += (U)temp;
+                    }
+                    else
+                    {
+                        pOut[index] = invalid;
+                        pCountOut[index] = -1;
+                    }
+                }
             }
         }
     }
 
     // This routine is only for float32.  It will upcast to float64, add up all
     // the numbers, then convert back to float32
-    static void AccumSumFloat(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                              int64_t binHigh, int64_t pass, void * pDataTmp)
+    static void AccumSumFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                              int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
-        float * pIn = (float *)pDataIn;
-        V * pIndex = (V *)pIndexT;
-        double * pOutAccum = static_cast<double *>(pDataTmp);
+        float const * const pIn{ (float *)pDataIn };
+        V const * const pIndex{ (V *)pIndexT };
+        double * const pOutAccum{ static_cast<double *>(pDataTmp) };
+
+        W * const pCountOut{ (W *)pCountOutT };
+
+        double const invalid_double{ riptide::invalid_for_type<double>::value };
+        float const invalid_float{ riptide::invalid_for_type<float>::value };
 
         if (pass <= 0)
         {
@@ -287,32 +313,53 @@ public:
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
-        // Main loop
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                pOutAccum[index - binLow] += (double)pIn[i];
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
+                {
+                    float const temp{ pIn[i] };
+                    // check if this is a nan
+                    if (riptide::invalid_for_type<float>::is_valid(temp))
+                    {
+                        pOutAccum[index - binLow] += (double)temp;
+                    }
+                    else
+                    {
+                        pOutAccum[index - binLow] = invalid_double;
+                        pCountOut[index] = -1;
+                    }
+                }
             }
         }
 
         // Downcast from double to single
-        float * pOut = (float *)pDataOut;
+        float * const pOut{ (float *)pDataOut };
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            pOut[i] = (float)pOutAccum[i - binLow];
+            if (pCountOut[i] >= 0)
+            {
+                pOut[i] = (float)pOutAccum[i - binLow];
+            }
+            else
+            {
+                pOut[i] = invalid_float;
+            }
         }
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanSum(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumNanSum(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
 
         if (pass <= 0)
         {
@@ -320,42 +367,17 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        // get invalid
-        T invalid = GET_INVALID(pIn[0]);
-
-        if (invalid == invalid)
+        for (int64_t i = 0; i < len; i++)
         {
-            // non-float path
-            for (int64_t i = 0; i < len; i++)
-            {
-                V index = pIndex[i];
+            V const index{ pIndex[i] };
 
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
-                {
-                    T temp = pIn[i];
-                    if (temp != invalid)
-                    {
-                        pOut[index] += (U)temp;
-                    }
-                }
-            }
-        }
-        else
-        {
-            // float path
-            for (int64_t i = 0; i < len; i++)
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                V index = pIndex[i];
-
-                //--------------------------------------
-                ACCUM_INNER_LOOP(index, binLow, binHigh)
+                T const temp{ pIn[i] };
+                if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    T temp = pIn[i];
-                    if (temp == temp)
-                    {
-                        pOut[index] += (U)temp;
-                    }
+                    pOut[index] += (U)temp;
                 }
             }
         }
@@ -364,12 +386,12 @@ public:
     // This is for float only
     // $TODO: Adapted from AccumSumFloat: should refactor this common behavior and
     // potentially cache the working buffer in between invocations.
-    static void AccumNanSumFloat(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                                 int64_t binHigh, int64_t pass, void * pDataTmp)
+    static void AccumNanSumFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                                 int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
-        float * pIn = (float *)pDataIn;
-        V * pIndex = (V *)pIndexT;
-        double * pOutAccum = static_cast<double *>(pDataTmp);
+        float const * const pIn{ (float *)pDataIn };
+        V const * const pIndex{ (V *)pIndexT };
+        double * const pOutAccum{ static_cast<double *>(pDataTmp) };
 
         if (pass <= 0)
         {
@@ -379,13 +401,13 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                float temp = pIn[i];
-                if (temp == temp)
+                float const temp{ pIn[i] };
+                if (riptide::invalid_for_type<float>::is_valid(temp))
                 {
                     pOutAccum[index - binLow] += (double)temp;
                 }
@@ -393,7 +415,7 @@ public:
         }
 
         // Downcast from double to single
-        float * pOut = (float *)pDataOut;
+        float * const pOut{ (float *)pDataOut };
         for (int64_t i = binLow; i < binHigh; i++)
         {
             pOut[i] = (float)pOutAccum[i - binLow];
@@ -401,8 +423,8 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumMin(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumMin(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
@@ -410,7 +432,7 @@ public:
         W * const pCountOut{ (W *)pCountOutT };
 
         // Fill with invalid?
-        U const invalid{ GET_INVALID(U{}) };
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (pass <= 0)
         {
@@ -459,15 +481,15 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanMin(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumNanMin(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
 
         // Fill with NaNs
-        U const invalid{ GET_INVALID(U{}) };
+        U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
             // printf("NanMin clearing at %p  %lld  %lld\n", pOut, binLow, binHigh);
@@ -500,8 +522,8 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumMax(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumMax(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
@@ -509,7 +531,7 @@ public:
         W * const pCountOut{ (W *)pCountOutT };
 
         // Fill with invalid?
-        U const invalid{ GET_INVALID(U{}) };
+        U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
             for (int64_t i = binLow; i < binHigh; i++)
@@ -557,15 +579,15 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanMax(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumNanMax(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
 
         // Fill with invalid?
-        U const invalid{ GET_INVALID(U{}) };
+        U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
             for (int64_t i = binLow; i < binHigh; i++)
@@ -597,13 +619,15 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumMean(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                          int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumMean(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                          int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
         W * const pCountOut{ (W *)pCountOutT };
+
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (pass <= 0)
         {
@@ -613,14 +637,28 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                pOut[index] += (U)temp;
-                pCountOut[index]++;
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
+                {
+                    T const temp{ pIn[i] };
+                    if (not riptide::invalid_for_type<T>::is_valid(temp))
+                    {
+                        // output invalid value and set pCountOut to -1
+                        pOut[index] = invalid;
+                        pCountOut[index] = -1;
+                    }
+                    else
+                    {
+                        pOut[index] += (U)temp;
+                        pCountOut[index]++;
+                    }
+                }
             }
         }
 
@@ -634,7 +672,7 @@ public:
                 }
                 else
                 {
-                    pOut[i] = GET_INVALID(pOut[i]);
+                    pOut[i] = invalid;
                 }
             }
         }
@@ -642,16 +680,19 @@ public:
 
     // Just for float32 since we can upcast
     //-------------------------------------------------------------------------------
-    static void AccumMeanFloat(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                               int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumMeanFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                               int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOriginalOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOriginalOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
         W * const pCountOut{ (W *)pCountOutT };
 
+        U const invalid{ riptide::invalid_for_type<U>::value };
+        double const invalid_double{ riptide::invalid_for_type<double>::value };
+
         // Allocate pOut
-        double * pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
+        double * const pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
         if (pOut)
         {
             if (pass <= 0)
@@ -667,14 +708,28 @@ public:
 
             for (int64_t i = 0; i < len; i++)
             {
-                V index = pIndex[i];
+                V const index{ pIndex[i] };
 
                 //--------------------------------------
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
-                    double temp = pIn[i];
-                    pOut[index - binLow] += (double)temp;
-                    pCountOut[index]++;
+                    // pCountOut = -1 means the answer for this bin is already invalid
+                    // (encountered invalid value before)
+                    if (pCountOut[index] >= 0)
+                    {
+                        double const temp{ pIn[i] };
+                        if (not riptide::invalid_for_type<double>::is_valid(temp))
+                        {
+                            // output invalid value and set pCountOut to -1
+                            pOut[index - binLow] = invalid_double;
+                            pCountOut[index] = -1;
+                        }
+                        else
+                        {
+                            pOut[index - binLow] += (double)temp;
+                            pCountOut[index]++;
+                        }
+                    }
                 }
             }
 
@@ -688,7 +743,7 @@ public:
                     }
                     else
                     {
-                        pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+                        pOriginalOut[i] = invalid;
                     }
                 }
             }
@@ -697,7 +752,14 @@ public:
                 // copy over original values
                 for (int64_t i = binLow; i < binHigh; i++)
                 {
-                    pOriginalOut[i] = (U)pOut[i - binLow];
+                    if (pCountOut[i] >= 0)
+                    {
+                        pOriginalOut[i] = (U)pOut[i - binLow];
+                    }
+                    else
+                    {
+                        pOriginalOut[i] = invalid;
+                    }
                 }
             }
 
@@ -706,16 +768,66 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanMean(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                             int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumNanMean(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                             int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOriginalOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
         W * const pCountOut{ (W *)pCountOutT };
 
+        U const invalid{ riptide::invalid_for_type<U>::value };
+
+        if (pass <= 0)
+        {
+            // Clear out memory for our range
+            memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+        }
+
+        for (int64_t i = 0; i < len; i++)
+        {
+            V const index{ pIndex[i] };
+
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
+            {
+                T const temp{ pIn[i] };
+                if (riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    pOut[index] += (U)temp;
+                    pCountOut[index]++;
+                }
+            }
+        }
+
+        if (pass < 0)
+        {
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                if (pCountOut[i] > 0)
+                {
+                    pOut[i] /= (U)(pCountOut[i]);
+                }
+                else
+                {
+                    pOut[i] = invalid;
+                }
+            }
+        }
+    }
+
+    //-------------------------------------------------------------------------------
+    static void AccumNanMeanFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                                  int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    {
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOriginalOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
+        W * const pCountOut{ (W *)pCountOutT };
+
+        U const invalid{ riptide::invalid_for_type<U>::value };
         // Allocate pOut
-        double * pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
+        double * const pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
         if (pOut)
         {
             if (pass <= 0)
@@ -731,13 +843,13 @@ public:
 
             for (int64_t i = 0; i < len; i++)
             {
-                V index = pIndex[i];
+                V const index{ pIndex[i] };
 
                 //--------------------------------------
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
-                    T temp = pIn[i];
-                    if (temp == temp)
+                    T const temp{ pIn[i] };
+                    if (riptide::invalid_for_type<T>::is_valid(temp))
                     {
                         pOut[index - binLow] += (double)temp;
                         pCountOut[index]++;
@@ -754,7 +866,7 @@ public:
                     }
                     else
                     {
-                        pOriginalOut[i] = GET_INVALID(pOriginalOut[i]);
+                        pOriginalOut[i] = invalid;
                     }
                 }
             }
@@ -771,60 +883,15 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanMeanFloat(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                                  int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumVar(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
         W * const pCountOut{ (W *)pCountOutT };
 
-        if (pass <= 0)
-        {
-            // Clear out memory for our range
-            memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
-        }
-
-        for (int64_t i = 0; i < len; i++)
-        {
-            V index = pIndex[i];
-
-            //--------------------------------------
-            ACCUM_INNER_LOOP(index, binLow, binHigh)
-            {
-                T temp = pIn[i];
-                if (temp == temp)
-                {
-                    pOut[index] += (U)temp;
-                    pCountOut[index]++;
-                }
-            }
-        }
-
-        if (pass < 0)
-        {
-            for (int64_t i = binLow; i < binHigh; i++)
-            {
-                if (pCountOut[i] > 0)
-                {
-                    pOut[i] /= (U)(pCountOut[i]);
-                }
-                else
-                {
-                    pOut[i] = GET_INVALID(pOut[i]);
-                }
-            }
-        }
-    }
-
-    //-------------------------------------------------------------------------------
-    static void AccumVar(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
-    {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
-        W * const pCountOut{ (W *)pCountOutT };
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (pass <= 0)
         {
@@ -833,37 +900,58 @@ public:
         }
 
         // TODO: optimize this for our range
-        U * sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
+        U * const sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
         memset(sumsquares, 0, sizeof(U) * binHigh);
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                pOut[index] += (U)temp;
-                pCountOut[index]++;
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
+                {
+                    T const temp{ pIn[i] };
+                    if (not riptide::invalid_for_type<T>::is_valid(temp))
+                    {
+                        // output invalid value and set pCountOut to -1
+                        pOut[index] = invalid;
+                        pCountOut[index] = -1;
+                    }
+                    else
+                    {
+                        pOut[index] += (U)temp;
+                        pCountOut[index]++;
+                    }
+                }
             }
         }
 
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            pOut[i] /= (U)(pCountOut[i]);
+            if (pCountOut[i] >= 0)
+            {
+                pOut[i] /= (U)(pCountOut[i]);
+            }
         }
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                U diff = (U)temp - pOut[index];
-                sumsquares[index] += (diff * diff);
+                if (pCountOut[index] >= 0)
+                {
+                    // since this is a second pass, already nothing is invalid in `index` bin
+                    T const temp{ pIn[i] };
+                    U diff = (U)temp - pOut[index];
+                    sumsquares[index] += (diff * diff);
+                }
             }
         }
 
@@ -875,20 +963,22 @@ public:
             }
             else
             {
-                pOut[i] = GET_INVALID(pOut[i]);
+                pOut[i] = invalid;
             }
         }
         WORKSPACE_FREE(sumsquares);
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanVar(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+    static void AccumNanVar(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
     {
-        T * pIn = (T *)pDataIn;
-        U * pOut = (U *)pDataOut;
-        V * pIndex = (V *)pIndexT;
+        T const * const pIn{ (T *)pDataIn };
+        U * const pOut{ (U *)pDataOut };
+        V const * const pIndex{ (V *)pIndexT };
         W * const pCountOut{ (W *)pCountOutT };
+
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (pass <= 0)
         {
@@ -901,13 +991,13 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                if (temp == temp)
+                T const temp{ pIn[i] };
+                if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
                     pOut[index] += (U)temp;
                     pCountOut[index]++;
@@ -922,13 +1012,13 @@ public:
 
         for (int64_t i = 0; i < len; i++)
         {
-            V index = pIndex[i];
+            V const index{ pIndex[i] };
 
             //--------------------------------------
             ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                T temp = pIn[i];
-                if (temp == temp)
+                T const temp{ pIn[i] };
+                if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
                     U diff = (U)temp - pOut[index];
                     sumsquares[index] += (diff * diff);
@@ -944,15 +1034,15 @@ public:
             }
             else
             {
-                pOut[i] = GET_INVALID(pOut[i]);
+                pOut[i] = invalid;
             }
         }
         WORKSPACE_FREE(sumsquares);
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumStd(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                         int64_t binHigh, int64_t pass, void * pDataTmp)
+    static void AccumStd(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
 
@@ -964,8 +1054,8 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNanStd(void * pDataIn, void * pIndexT, void * pCountOutT, void * pDataOut, int64_t len, int64_t binLow,
-                            int64_t binHigh, int64_t pass, void * pDataTmp)
+    static void AccumNanStd(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         U * pOut = (U *)pDataOut;
 
@@ -978,8 +1068,8 @@ public:
 
     //-------------------------------------------------------------------------------
     // V is is the INDEX Type
-    static void AccumNth(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                         int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumNth(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT, void * pAccumBin,
+                         int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -990,7 +1080,7 @@ public:
 
         int64_t nth = funcParam;
 
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -1009,8 +1099,9 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumNthString(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                               int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumNthString(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                               void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                               int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1039,8 +1130,9 @@ public:
 
     //-------------------------------------------------------------------------------
     // V is is the INDEX Type
-    static void AccumFirst(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                           int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumFirst(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                           void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                           int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1051,7 +1143,7 @@ public:
 
         LOGGING("in accum first low: %lld  high: %lld   group:%p  first:%p  count:%p\n", binLow, binHigh, pGroup, pFirst, pCount);
 
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -1073,8 +1165,9 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumFirstString(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                 int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumFirstString(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                 void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                 int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1100,8 +1193,8 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumLast(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                          int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumLast(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT, void * pAccumBin,
+                          int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1110,7 +1203,7 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
         // printf("last called %lld -- %llu %llu %llu\n", numUnique, sizeof(T),
         // sizeof(U), sizeof(V));
 
@@ -1133,8 +1226,9 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumLastString(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumLastString(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1161,8 +1255,9 @@ public:
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingSum(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingSum(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1172,7 +1267,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         int64_t windowSize = funcParam;
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (binLow == 0)
         {
@@ -1181,7 +1276,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1202,7 +1297,7 @@ public:
             // Priming of the summation
             for (V j = start; j < last && j < (start + windowSize); j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
 
                 currentSum += (U)pSrc[index];
                 pDest[index] = currentSum;
@@ -1210,7 +1305,7 @@ public:
 
             for (V j = start + windowSize; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
 
                 currentSum += (U)pSrc[index];
 
@@ -1224,8 +1319,9 @@ public:
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingNanSum(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin,
-                                   int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingNanSum(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                   void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                   int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1235,7 +1331,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         int64_t windowSize = funcParam;
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (binLow == 0)
         {
@@ -1244,7 +1340,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1254,99 +1350,52 @@ public:
         if (windowSize < 0)
             return;
 
-        if (invalid == invalid)
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            // NOT FLOAT (integer based)
-            // For all the bins we have to fill
-            for (int64_t i = binLow; i < binHigh; i++)
+            V start = pFirst[i];
+            V last = start + pCount[i];
+
+            U currentSum = 0;
+
+            // Priming of the summation
+            for (V j = start; j < last && j < (start + windowSize); j++)
             {
-                V start = pFirst[i];
-                V last = start + pCount[i];
-
-                U currentSum = 0;
-
-                // Priming of the summation
-                for (V j = start; j < last && j < (start + windowSize); j++)
+                V const index{ pGroup[j] };
+                U value = (U)pSrc[index];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-                    U value = (U)pSrc[index];
-                    if (value != invalid)
-                    {
-                        currentSum += value;
-                    }
-                    pDest[index] = currentSum;
+                    currentSum += value;
                 }
-
-                for (V j = start + windowSize; j < last; j++)
-                {
-                    V index = pGroup[j];
-
-                    U value = (U)pSrc[index];
-                    if (value != invalid)
-                    {
-                        currentSum += value;
-                    }
-
-                    // subtract the item leaving the window
-                    value = (U)pSrc[pGroup[j - windowSize]];
-                    if (value != invalid)
-                    {
-                        currentSum -= value;
-                    }
-
-                    pDest[index] = currentSum;
-                }
+                pDest[index] = currentSum;
             }
-        }
-        else
-        {
-            // FLOAT BASED
-            for (int64_t i = binLow; i < binHigh; i++)
+
+            for (V j = start + windowSize; j < last; j++)
             {
-                V start = pFirst[i];
-                V last = start + pCount[i];
+                V const index{ pGroup[j] };
 
-                U currentSum = 0;
-
-                // Priming of the summation
-                for (V j = start; j < last && j < (start + windowSize); j++)
+                U value = (U)pSrc[index];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-                    U value = (U)pSrc[index];
-                    if (value == value)
-                    {
-                        currentSum += value;
-                    }
-                    pDest[index] = currentSum;
+                    currentSum += value;
                 }
 
-                for (V j = start + windowSize; j < last; j++)
+                // subtract the item leaving the window
+                value = (U)pSrc[pGroup[j - windowSize]];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-
-                    U value = (U)pSrc[index];
-                    if (value == value)
-                    {
-                        currentSum += value;
-                    }
-
-                    // subtract the item leaving the window
-                    value = (U)pSrc[pGroup[j - windowSize]];
-                    if (value == value)
-                    {
-                        currentSum -= value;
-                    }
-
-                    pDest[index] = currentSum;
+                    currentSum -= value;
                 }
+
+                pDest[index] = currentSum;
             }
         }
     }
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingMean(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                 int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingMean(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                 void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                 int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1355,9 +1404,8 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        int64_t windowSize = funcParam;
-        U invalid = GET_INVALID((U)0);
-        double invalid_out = GET_INVALID(pDest[0]);
+        int64_t const windowSize = funcParam;
+        U const invalid_out{ riptide::invalid_for_type<U>::value };
 
         if (binLow == 0)
         {
@@ -1366,7 +1414,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid_out;
             }
             binLow++;
@@ -1387,7 +1435,7 @@ public:
             // Priming of the summation
             for (V j = start; j < last && j < (start + windowSize); j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
 
                 currentSum += pSrc[index];
                 pDest[index] = currentSum / (j - start + 1);
@@ -1395,7 +1443,7 @@ public:
 
             for (V j = start + windowSize; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
 
                 currentSum += pSrc[index];
 
@@ -1409,8 +1457,9 @@ public:
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingNanMean(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin,
-                                    int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingNanMean(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                    void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                    int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1419,9 +1468,8 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        int64_t windowSize = funcParam;
-        U invalid = GET_INVALID((U)0);
-        double invalid_out = GET_INVALID(pDest[0]);
+        int64_t const windowSize = funcParam;
+        U const invalid_out{ riptide::invalid_for_type<U>::value };
 
         if (binLow == 0)
         {
@@ -1430,7 +1478,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid_out;
             }
             binLow++;
@@ -1440,107 +1488,56 @@ public:
         if (windowSize < 0)
             return;
 
-        if (invalid == invalid)
+        for (int64_t i = binLow; i < binHigh; i++)
         {
-            // NOT FLOAT (integer based)
-            // For all the bins we have to fill
-            for (int64_t i = binLow; i < binHigh; i++)
+            V start = pFirst[i];
+            V last = start + pCount[i];
+
+            double currentSum = 0;
+            double count = 0;
+
+            // Priming of the summation
+            for (V j = start; j < last && j < (start + windowSize); j++)
             {
-                V start = pFirst[i];
-                V last = start + pCount[i];
-
-                double currentSum = 0;
-                double count = 0;
-
-                // Priming of the summation
-                for (V j = start; j < last && j < (start + windowSize); j++)
+                V const index{ pGroup[j] };
+                U value = (U)pSrc[index];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-                    U value = (U)pSrc[index];
-                    if (value != invalid)
-                    {
-                        currentSum += value;
-                        count++;
-                    }
-                    pDest[index] = count > 0 ? currentSum / count : invalid_out;
+                    currentSum += value;
+                    count++;
                 }
-
-                for (V j = start + windowSize; j < last; j++)
-                {
-                    V index = pGroup[j];
-
-                    U value = (U)pSrc[index];
-                    if (value != invalid)
-                    {
-                        currentSum += value;
-                        count++;
-                    }
-
-                    // subtract the item leaving the window
-                    value = (U)pSrc[pGroup[j - windowSize]];
-                    if (value != invalid)
-                    {
-                        currentSum -= value;
-                        count--;
-                    }
-
-                    pDest[index] = count > 0 ? currentSum / count : invalid_out;
-                }
+                pDest[index] = count > 0 ? currentSum / count : invalid_out;
             }
-        }
-        else
-        {
-            // FLOAT BASED
-            for (int64_t i = binLow; i < binHigh; i++)
+
+            for (V j = start + windowSize; j < last; j++)
             {
-                V start = pFirst[i];
-                V last = start + pCount[i];
+                V const index{ pGroup[j] };
 
-                double currentSum = 0;
-                double count = 0;
-
-                // Priming of the summation
-                for (V j = start; j < last && j < (start + windowSize); j++)
+                U value = (U)pSrc[index];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-                    U value = (U)pSrc[index];
-                    if (value == value)
-                    {
-                        currentSum += value;
-                        count++;
-                    }
-                    pDest[index] = count > 0 ? currentSum / count : invalid_out;
+                    currentSum += value;
+                    count++;
                 }
 
-                for (V j = start + windowSize; j < last; j++)
+                // subtract the item leaving the window
+                value = (U)pSrc[pGroup[j - windowSize]];
+                if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    V index = pGroup[j];
-
-                    U value = (U)pSrc[index];
-                    if (value == value)
-                    {
-                        currentSum += value;
-                        count++;
-                    }
-
-                    // subtract the item leaving the window
-                    value = (U)pSrc[pGroup[j - windowSize]];
-                    if (value == value)
-                    {
-                        currentSum -= value;
-                        count--;
-                    }
-
-                    pDest[index] = count > 0 ? currentSum / count : invalid_out;
+                    currentSum -= value;
+                    count--;
                 }
+
+                pDest[index] = count > 0 ? currentSum / count : invalid_out;
             }
         }
     }
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingCount(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                  int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingQuantile1e9Mult(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                            void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows,
+                                            int64_t itemSize, int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1549,8 +1546,109 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        int64_t windowSize = funcParam;
-        U invalid = GET_INVALID(pDest[0]);
+        static constexpr int64_t multiplier{ static_cast<int64_t>(1e9) };
+        // funcParam = q * multiplier + (window_size) * (multiplier + 1),
+        // where q is the quantile to take, window_size is the size of the rolling window.
+
+        int64_t quantile_with_1e9_mult{ funcParam % (multiplier + 1) };
+        long double const quantile{ static_cast<long double>(quantile_with_1e9_mult) / static_cast<long double>(multiplier) };
+        int64_t const windowSize = funcParam / (multiplier + 1);
+
+        U const invalid{ riptide::invalid_for_type<U>::value };
+
+        if (binLow == 0)
+        {
+            // Mark all invalid if invalid bin
+            V start{ pFirst[0] };
+            V last{ start + pCount[0] };
+            for (V j = start; j < last; j++)
+            {
+                V index{ pGroup[j] };
+                pDest[index] = invalid;
+            }
+            binLow++;
+        }
+
+        if (windowSize <= 0)
+        {
+            // negative or zero window sizes not accepted yet
+            PyErr_Format(PyExc_ValueError, "Negative or zero window sizes are not supported for rolling_quantile.");
+            return;
+        }
+        else if (windowSize == 1)
+        {
+            // return data itself (probably can do better than copying everything, but no one should call this with window=1
+            // anyway) (things in RollingQuantile:: will break (for now) with windowSize = 1)
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                V start{ pFirst[i] };
+                V last{ start + pCount[i] };
+
+                for (V j = start; j < last; j++)
+                {
+                    V index{ pGroup[j] };
+                    if (riptide::invalid_for_type<T>::is_valid(pSrc[index]))
+                    {
+                        pDest[index] = pSrc[index];
+                    }
+                    else
+                    {
+                        pDest[index] = invalid;
+                    }
+                }
+            }
+        }
+        else
+        {
+            using QElement = RollingQuantile::StructureElement<T>;
+
+            // Space will be reused for each bin. Only need O(window) extra space
+            QElement * all_elements = (QElement *)WORKSPACE_ALLOC(windowSize * sizeof(QElement));
+            QElement ** all_element_pointers = (QElement **)WORKSPACE_ALLOC(windowSize * sizeof(QElement *));
+
+            // max_heap_size is (floor((windowSize - 1) * quantile) + 1), but need to handle some precision issues
+            size_t max_heap_size = RollingQuantile::IntegralIndex(windowSize, quantile) + 1;
+            size_t min_heap_size = windowSize - max_heap_size;
+
+            // Can't pass another parameter here at this point, fix to 1
+            size_t min_count = 1;
+
+            RollingQuantile::RollingQuantile<T, U> rolling_quantile(windowSize, quantile, all_elements, all_element_pointers,
+                                                                    max_heap_size, min_heap_size, min_count, QUANTILE_SPLIT<T, U>);
+
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                V start{ pFirst[i] };
+                V last{ start + pCount[i] };
+
+                for (V j = start; j < last; j++)
+                {
+                    V index{ pGroup[j] };
+                    pDest[index] = rolling_quantile.Update(&pSrc[index]);
+                }
+
+                rolling_quantile.Clean();
+            }
+            WORKSPACE_FREE(all_elements);
+            WORKSPACE_FREE(all_element_pointers);
+        }
+    }
+
+    //------------------------------
+    // Rolling uses entire size: totalInputRows
+    static void AccumRollingCount(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                  void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                  int64_t funcParam)
+    {
+        T const * const pSrc = (T *)pColumn;
+        U * const pDest = (U *)pAccumBin;
+        // iGroup, iFirst, and nCount can be int32 or int64
+        V const * const pGroup = (V *)pGroupT;
+        V const * const pFirst = (V *)pFirstT;
+        V const * const pCount = (V *)pCountT;
+
+        int64_t const windowSize = funcParam;
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         LOGGING("in rolling count %lld %lld  sizeofdest %lld\n", binLow, binHigh, sizeof(U));
 
@@ -1561,7 +1659,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1581,7 +1679,7 @@ public:
             {
                 for (V j = last - 1; j >= start; j--)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = currentSum;
                     currentSum += 1;
                 }
@@ -1590,7 +1688,7 @@ public:
             {
                 for (V j = start; j < last; j++)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = currentSum;
                     currentSum += 1;
                 }
@@ -1601,8 +1699,9 @@ public:
     //------------------------------
     // Rolling uses entire size: totalInputRows
     // NOTE: pDest/pAccumBin must be the size
-    static void AccumRollingShift(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                  int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingShift(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                  void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                  int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1612,7 +1711,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         int64_t windowSize = (int64_t)funcParam;
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh,
         // windowSize);
@@ -1624,7 +1723,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1641,13 +1740,13 @@ public:
                 // invalid for window
                 for (V j = start; j < last && j < (start + windowSize); j++)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = invalid;
                 }
 
                 for (V j = start + windowSize; j < last; j++)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = (U)pSrc[pGroup[j - windowSize]];
                 }
             }
@@ -1662,13 +1761,13 @@ public:
 
                 for (V j = last; j > start && j > (last - windowSize); j--)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = invalid;
                 }
 
                 for (V j = last - windowSize; j > start; j--)
                 {
-                    V index = pGroup[j];
+                    V const index{ pGroup[j] };
                     pDest[index] = (U)pSrc[pGroup[j + windowSize]];
                 }
                 // put it back to what it was
@@ -1679,8 +1778,9 @@ public:
 
     //------------------------------
     // Rolling uses entire size: totalInputRows
-    static void AccumRollingDiff(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                 int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumRollingDiff(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                 void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                 int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1690,7 +1790,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         int64_t windowSize = funcParam;
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         if (binLow == 0)
         {
@@ -1699,7 +1799,7 @@ public:
             V last = start + pCount[0];
             for (V j = start; j < last; j++)
             {
-                V index = pGroup[j];
+                V const index{ pGroup[j] };
                 pDest[index] = invalid;
             }
             binLow++;
@@ -1745,13 +1845,13 @@ public:
 
                     for (V j = start; j < last && j < (start + windowSize); j++)
                     {
-                        V index = pGroup[j];
+                        V const index{ pGroup[j] };
                         pDest[index] = invalid;
                     }
 
                     for (V j = start + windowSize; j < last; j++)
                     {
-                        V index = pGroup[j];
+                        V const index{ pGroup[j] };
                         U temp = (U)pSrc[index];
                         U previous = (U)pSrc[pGroup[j - windowSize]];
                         pDest[index] = temp - previous;
@@ -1766,13 +1866,13 @@ public:
 
                     for (V j = last; j > start && j > (last - windowSize); j--)
                     {
-                        V index = pGroup[j];
+                        V const index{ pGroup[j] };
                         pDest[index] = invalid;
                     }
 
                     for (V j = last - windowSize; j > start; j--)
                     {
-                        V index = pGroup[j];
+                        V const index{ pGroup[j] };
                         U temp = (U)pSrc[index];
                         U previous = (U)pSrc[pGroup[j + windowSize]];
                         pDest[index] = temp - previous;
@@ -1787,8 +1887,9 @@ public:
     //------------------------------
     // median does a sort for now -- but could use nth
     //
-    static void AccumTrimMeanBR(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumTrimMeanBR(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1800,7 +1901,7 @@ public:
         // Alloc worst case
         T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
 
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         LOGGING("TrimMean rows: %lld\n", totalInputRows);
 
@@ -1867,8 +1968,8 @@ public:
     //------------------------------
     // mode does a sort (auto handles nans?)
     // pGroup -> int32/64  (V typename)
-    static void AccumMode(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                          int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumMode(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT, void * pAccumBin,
+                          int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -1879,7 +1980,7 @@ public:
 
         // Alloc worst case
         T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
-        U invalid = GET_INVALID(pDest[0]);
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         // printf("Mode %llu\n", totalInputRows);
 
@@ -1951,17 +2052,19 @@ public:
     //------------------------------
     // Quantiles and medians are all here (nan) and non-nan versions
     // pGroup, pFirst, pCount -> int32/64  (V typename)
-    static void AccumQuantile1e9Mult(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin,
-                                     int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumQuantile1e9Mult(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                     void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                     int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
         // iGroup, iFirst, and nCount can be int32 or int64
+        // pGroup -> int8_t/16/32/64  (V typename)
         V const * const pGroup = (V *)pGroupT;
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        // pGroup -> int8_t/16/32/64  (V typename)
+        U const invalid{ riptide::invalid_for_type<U>::value };
 
         static constexpr double multiplier{ 1e9 };
         // funcParam = q * multiplier + (isNanQuantile) * (multiplier + 1),
@@ -1993,7 +2096,7 @@ public:
 
             if (nCount == 0)
             {
-                pDest[i] = GET_INVALID(U{});
+                pDest[i] = invalid;
                 continue;
             }
 
@@ -2029,7 +2132,7 @@ public:
             // if there are nans and is non-nan quantile, set result to nan and go to next group
             if (not (is_nan_quantile || no_nans))
             {
-                pDest[i] = GET_INVALID(U{});
+                pDest[i] = invalid;
                 continue;
             }
 
@@ -2039,7 +2142,7 @@ public:
             if (nCount == 0)
             {
                 // nothing valid
-                pDest[i] = GET_INVALID(U{});
+                pDest[i] = invalid;
                 continue;
             }
 
@@ -2079,8 +2182,9 @@ public:
     // median does a sort
     // auto-nan
     // pGroup -> int32_t/64  (V typename)
-    static void AccumMedian(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                            int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumMedian(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                            void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                            int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -2161,8 +2265,9 @@ public:
     }
 
     //-------------------------------------------------------------------------------
-    static void AccumMedianString(void * pColumn, void * pGroupT, void * pFirstT, void * pCountT, void * pAccumBin, int64_t binLow,
-                                  int64_t binHigh, int64_t totalInputRows, int64_t itemSize, int64_t funcParam)
+    static void AccumMedianString(void const * pColumn, void const * pGroupT, void const * pFirstT, void const * pCountT,
+                                  void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
+                                  int64_t funcParam)
     {
         T const * const pSrc = (T *)pColumn;
         U * const pDest = (U *)pAccumBin;
@@ -2201,6 +2306,8 @@ public:
             return AccumRollingMean;
         case GB_ROLLING_NANMEAN:
             return AccumRollingNanMean;
+        case GB_ROLLING_QUANTILE:
+            return AccumRollingQuantile1e9Mult;
         default:
             break;
         }
@@ -2259,15 +2366,68 @@ public:
 };
 
 //-------------------------------------------------------------------
-typedef void (*GROUPBY_GATHER_FUNC)(stGroupBy32 * pstGroupBy32, void * pDataIn, void * pDataOut, void * pCountOutT,
+typedef void (*GROUPBY_GATHER_FUNC)(stGroupBy32 * pstGroupBy32, void const * pDataIn, void * pDataOut, void * pCountOutT,
                                     int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh);
 
 template <typename U, typename W>
-static void GatherSum(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutT, int64_t numUnique,
-                      int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
+    W * const pCountOutBase = (W *)pCountOutBaseT;
+
+    // Array indicating if the final answer for a bin will be invalid
+    // if one thread saw data and returned invalid, answer is fixed to be invalid.
+    // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
+    W * const pInvFinal{ pCountOutBase };
+    // pInvFinal[i] == -1 means the naswer must remain invalid till the end
+
+    U const invalid{ riptide::invalid_for_type<U>::value };
+
+    // TODO: if no data was seen for some bin, answer will be 0 instead of NaN
+    memset(pDataOut, 0, sizeof(U) * numUnique);
+
+    // Collect the results from the core
+    for (int64_t j = 0; j < numCores; j++)
+    {
+        if (pstGroupBy32->returnObjects[j].didWork)
+        {
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
+
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                if (pInvFinal[i] == -1)
+                {
+                    // since pInvFinal reuses space from worker 0, must always update the output for that worker
+                    if (j == 0)
+                    {
+                        pDataOut[i] = invalid;
+                    }
+                    continue;
+                }
+                else if (pCountOut[i] == -1)
+                {
+                    // a worker saw negiative for this bin
+                    pInvFinal[i] = -1;
+                    pDataOut[i] = invalid;
+                }
+                else
+                {
+                    pDataOut[i] += pDataIn[i];
+                }
+            }
+        }
+    }
+}
+
+template <typename U, typename W>
+static void GatherNanSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutT, int64_t numUnique,
+                         int64_t numCores, int64_t binLow, int64_t binHigh)
+{
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
 
     memset(pDataOut, 0, sizeof(U) * numUnique);
 
@@ -2276,7 +2436,7 @@ static void GatherSum(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2287,13 +2447,78 @@ static void GatherSum(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
 }
 
 template <typename U, typename W>
-static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutBaseT, int64_t numUnique,
-                       int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                       int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
-    U * pDataInBase = (U *)pDataInT;
-    U * pDataOut = (U *)pDataOutT;
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
+    W * const pCountOutBase{ (W *)pCountOutBaseT };
 
-    W const * const pCountOutBase = (W *)pCountOutBaseT;
+    W * const pInvFinal{ pCountOutBase };
+
+    U const invalid{ riptide::invalid_for_type<U>::value };
+
+    int64_t allocSize = sizeof(W) * numUnique;
+    W * const pCountOut = (W *)WORKSPACE_ALLOC(allocSize);
+    memset(pCountOut, 0, allocSize);
+
+    // Collect the results from the core
+    for (int64_t j = 0; j < numCores; j++)
+    {
+        if (pstGroupBy32->returnObjects[j].didWork)
+        {
+            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            W * const pCountOut{ &pCountOutBase[j * numUnique] };
+
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                if (pInvFinal[i] == -1)
+                {
+                    // since pInvFinal reuses space from worker 0, set answer for it manually
+                    if (not j)
+                    {
+                        pDataOut[i] = invalid;
+                    }
+                    continue;
+                }
+                else if (pCountOut[i] == -1)
+                {
+                    // a worker saw invalid entry for this bin
+                    pInvFinal[i] = -1;
+                    pDataOut[i] = invalid;
+                }
+                else
+                {
+                    pDataOut[i] += pDataIn[i];
+                    pCountOut[i] += pCountOut[i];
+                }
+            }
+        }
+    }
+
+    // calculate the mean
+    for (int64_t i = binLow; i < binHigh; i++)
+    {
+        if (riptide::invalid_for_type<U>::is_valid(pDataOut[i]))
+        {
+            pDataOut[i] = pDataOut[i] / pCountOut[i];
+        }
+        else
+        {
+            pDataOut[i] = invalid;
+        }
+    }
+
+    WORKSPACE_FREE(pCountOut);
+}
+
+template <typename U, typename W>
+static void GatherNanMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                          int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+{
+    U const * const pDataInBase{ (U *)pDataInT };
+    U * const pDataOut{ (U *)pDataOutT };
+    W const * const pCountOutBase{ (W *)pCountOutBaseT };
 
     int64_t allocSize = sizeof(W) * numUnique;
     W * const pCountOut = (W *)WORKSPACE_ALLOC(allocSize);
@@ -2306,7 +2531,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U * pDataIn = &pDataInBase[j * numUnique];
+            U const * const pDataIn = &pDataInBase[j * numUnique];
             W const * const pCountOutCore = &pCountOutBase[j * numUnique];
 
             for (int64_t i = binLow; i < binHigh; i++)
@@ -2327,14 +2552,14 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pData
 }
 
 template <typename U, typename W>
-static void GatherNanMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutBaseT, int64_t numUnique,
-                         int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                         int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
     U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
-    U const invalid{ GET_INVALID(U{}) };
+    U const invalid{ riptide::invalid_for_type<U>::value };
     for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
@@ -2365,8 +2590,8 @@ static void GatherNanMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDa
 }
 
 template <typename U, typename W>
-static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutBaseT, int64_t numUnique,
-                      int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
     U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
@@ -2379,7 +2604,7 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     // Fill with invalid
-    U const invalid{ GET_INVALID(U{}) };
+    U const invalid{ riptide::invalid_for_type<U>::value };
 
     for (int64_t i = binLow; i < binHigh; i++)
     {
@@ -2433,14 +2658,14 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
 }
 
 template <typename U, typename W>
-static void GatherNanMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutBase, int64_t numUnique,
-                         int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBase,
+                         int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
     U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
-    U const invalid{ GET_INVALID(U{}) };
+    U const invalid{ riptide::invalid_for_type<U>::value };
     for (int64_t i = binLow; i < binHigh; i++)
     {
         pDataOut[i] = invalid;
@@ -2471,8 +2696,8 @@ static void GatherNanMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDa
 }
 
 template <typename U, typename W>
-static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataOutT, void * pCountOutBaseT, int64_t numUnique,
-                      int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
+                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
 {
     U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
@@ -2485,7 +2710,7 @@ static void GatherMax(stGroupBy32 * pstGroupBy32, void * pDataInT, void * pDataO
     // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     // Fill with invalid
-    U const invalid{ GET_INVALID(U{}) };
+    U const invalid{ riptide::invalid_for_type<U>::value };
 
     for (int64_t i = binLow; i < binHigh; i++)
     {
@@ -2544,7 +2769,6 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
     switch (func)
     {
     case GB_SUM:
-    case GB_NANSUM:
         switch (outputType)
         {
         case NPY_BOOL:
@@ -2570,13 +2794,40 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
         CASE_NPY_UINT32:
             return GatherSum<uint64_t, W>;
         CASE_NPY_UINT64:
-
             return GatherSum<uint64_t, W>;
+        }
+        break;
+    case GB_NANSUM:
+        switch (outputType)
+        {
+        case NPY_BOOL:
+            return GatherNanSum<int64_t, W>;
+        case NPY_FLOAT:
+            return GatherNanSum<float, W>;
+        case NPY_DOUBLE:
+            return GatherNanSum<double, W>;
+        case NPY_LONGDOUBLE:
+            return GatherNanSum<long double, W>;
+        case NPY_INT8:
+            return GatherNanSum<int64_t, W>;
+        case NPY_INT16:
+            return GatherNanSum<int64_t, W>;
+        CASE_NPY_INT32:
+            return GatherNanSum<int64_t, W>;
+        CASE_NPY_INT64:
+            return GatherNanSum<int64_t, W>;
+        case NPY_UINT8:
+            return GatherNanSum<uint64_t, W>;
+        case NPY_UINT16:
+            return GatherNanSum<uint64_t, W>;
+        CASE_NPY_UINT32:
+            return GatherNanSum<uint64_t, W>;
+        CASE_NPY_UINT64:
+            return GatherNanSum<uint64_t, W>;
         }
         break;
 
     case GB_MEAN:
-    case GB_NANMEAN:
         switch (outputType)
         {
         case NPY_FLOAT:
@@ -2595,6 +2846,27 @@ static GROUPBY_GATHER_FUNC GetGroupByGatherFunction(int outputType, GB_FUNCTIONS
         CASE_NPY_UINT64:
 
             return GatherMean<double, W>;
+        }
+        break;
+    case GB_NANMEAN:
+        switch (outputType)
+        {
+        case NPY_FLOAT:
+            return GatherNanMean<float, W>;
+        case NPY_BOOL:
+        case NPY_DOUBLE:
+        case NPY_LONGDOUBLE:
+        case NPY_INT8:
+        case NPY_INT16:
+        CASE_NPY_INT32:
+        CASE_NPY_INT64:
+
+        case NPY_UINT8:
+        case NPY_UINT16:
+        CASE_NPY_UINT32:
+        CASE_NPY_UINT64:
+
+            return GatherNanMean<double, W>;
         }
         break;
 
@@ -2746,6 +3018,9 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
     switch (func)
     {
     case GB_SUM:
+        // used for checking if NaN was encountered
+        // TODO: for sum, min, max, nanmin, nanmax, can use int8_t? Since only store 0 and +-1 there
+        *hasCounts = true;
         switch (inputType)
         {
         case NPY_BOOL:
@@ -2805,7 +3080,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
         // bool has no invalid
         case NPY_BOOL:
             *wantedOutputType = NPY_INT64;
-            return GroupByBase<int8_t, int64_t, V, W>::AccumSum;
+            return GroupByBase<int8_t, int64_t, V, W>::AccumNanSum;
         case NPY_INT8:
             *wantedOutputType = NPY_INT64;
             return GroupByBase<int8_t, int64_t, V, W>::AccumNanSum;
@@ -3385,13 +3660,13 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         }
         return NULL;
     }
-    else if (func >= GB_ROLLING_DIFF && func < GB_ROLLING_MEAN)
+    else if (func == GB_ROLLING_DIFF)
     {
         LOGGING("Rolling+diff called with type %d\n", inputType);
         switch (inputType)
         {
-            // really need to change output type for accumsum/rolling
-            // case NPY_BOOL:   return GroupByBase<bool, int64_t, V>::GetXFunc2(func);
+        // case NPY_BOOL:
+        //         return GroupByBase<bool, int64_t, V>::GetXFunc2(func);
         case NPY_FLOAT:
             return GroupByBase<float, float, V>::GetXFunc2(func);
         case NPY_DOUBLE:
@@ -3417,9 +3692,41 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         }
         return NULL;
     }
+    else if (func == GB_ROLLING_SHIFT)
+    {
+        LOGGING("Rolling shift called with type %d\n", inputType);
+        switch (inputType)
+        {
+        case NPY_BOOL:
+            return GroupByBase<bool, bool, V>::AccumRollingShift;
+        case NPY_FLOAT:
+            return GroupByBase<float, float, V>::AccumRollingShift;
+        case NPY_DOUBLE:
+            return GroupByBase<double, double, V>::AccumRollingShift;
+        case NPY_LONGDOUBLE:
+            return GroupByBase<long double, long double, V>::AccumRollingShift;
+        case NPY_INT8:
+            return GroupByBase<int8_t, int8_t, V>::AccumRollingShift;
+        case NPY_INT16:
+            return GroupByBase<int16_t, int16_t, V>::AccumRollingShift;
+        CASE_NPY_INT32:
+            return GroupByBase<int32_t, int32_t, V>::AccumRollingShift;
+        CASE_NPY_INT64:
+            return GroupByBase<int64_t, int64_t, V>::AccumRollingShift;
+        case NPY_UINT8:
+            return GroupByBase<uint8_t, uint8_t, V>::AccumRollingShift;
+        case NPY_UINT16:
+            return GroupByBase<uint16_t, uint16_t, V>::AccumRollingShift;
+        CASE_NPY_UINT32:
+            return GroupByBase<uint32_t, uint32_t, V>::AccumRollingShift;
+        CASE_NPY_UINT64:
+            return GroupByBase<uint64_t, uint64_t, V>::AccumRollingShift;
+        }
+        return NULL;
+    }
     else if (func >= GB_ROLLING_SUM)
     {
-        if (func == GB_ROLLING_MEAN || func == GB_ROLLING_NANMEAN)
+        if (func == GB_ROLLING_MEAN || func == GB_ROLLING_NANMEAN || func == GB_ROLLING_QUANTILE)
         {
             LOGGING("Rolling+mean called with type %d\n", inputType);
             // default to a double for output
@@ -4459,9 +4766,35 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         return NULL;
     }
 
+    int64_t funcTupleSize = PyList_GET_SIZE(listFuncNum);
+
+    if (tupleSize != funcTupleSize)
+    {
+        PyErr_Format(PyExc_ValueError, "GroupByAllPack32 func numbers do not match array columns %lld %lld", tupleSize,
+                     funcTupleSize);
+        return NULL;
+    }
+
+    int64_t binTupleSize = PyList_GET_SIZE(listBinLow);
+
+    if (tupleSize != binTupleSize)
+    {
+        PyErr_Format(PyExc_ValueError, "GroupByAllPack32 bin numbers do not match array columns %lld %lld", tupleSize,
+                     binTupleSize);
+        return NULL;
+    }
+
+    void * pDataIn2 = PyArray_BYTES(iKey);
     // New reference
     PyObject * returnTuple = NULL;
     int64_t arraySizeKey = ArrayLength(iKey);
+
+    if (aInfo->ArrayLength != arraySizeKey)
+    {
+        PyErr_Format(PyExc_ValueError, "GroupByAllPack32 iKey length does not match value length %lld %lld", aInfo->ArrayLength,
+                     arraySizeKey);
+        return NULL;
+    }
 
     if (tupleSize == 1 && arraySizeKey > 65536)
     {
@@ -4635,7 +4968,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                                 }
                             }
                         }
-                        else if (funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN)
+                        else if (funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN || funcNum == GB_ROLLING_QUANTILE)
                         {
                             numpyOutType = NPY_FLOAT64;
                         }

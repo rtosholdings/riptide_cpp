@@ -22,9 +22,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-2019]
         python-version: [3.8, 3.9, "3.10"]
-        numpy-version: [1.21, 1.22]
+        numpy-version: [1.22, 1.23]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
@@ -65,7 +65,7 @@ jobs:
         run: |
           python setup.py sdist
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: dist/
@@ -73,15 +73,21 @@ jobs:
         #
         # Test with riptable (using existing env for better performance)
         #
-      - name: Install built riptide_cpp
-        # This depends on the riptide_cpp in dist being "newer" than on PyPI (which should be true),
-        # but also allows finding all the dependencies using regular lookup.
-        # The alternative would be to use "pip install --find-links --no-deps", then install all dependencies,
-        # as there doesn't appear to be a "pip install --only-deps" option.
-        # Could also use the "pip install -e" (editable installs) method to link to pre-build tree, but
-        # that doesn't exercise the ability to install.
+      - name: Install built riptide_cpp (Windows)
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          pip install riptide_cpp --upgrade --find-links ./dist
+          # Pip install the locally built bdist package, along with any dependencies.
+          dir ./dist
+          pip install -v $(dir ./dist/riptide_cpp*.whl)
+          python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
+      - name: Install built riptide_cpp (Linux)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          # Pip install the locally built sdist package, along with all dependencies.
+          ls ./dist
+          # Pin build-constraints for numpy (see https://github.com/pypa/pip/issues/9542#issuecomment-1242347397)
+          echo "numpy==${{ matrix.numpy-version }}.*" > constraints.txt
+          PIP_CONSTRAINT=constraints.txt pip install -v ./dist/riptide_cpp*.gz
           python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
       - name: Setting up riptable tests
         # Get just the latest riptable package (first explicitly install its deps)
@@ -89,7 +95,7 @@ jobs:
           python dev_tools/gen_requirements.py --out runtime_reqs.txt runtime
           python dev_tools/gen_requirements.py --out tests_reqs.txt tests
           pip install -r runtime_reqs.txt -r tests_reqs.txt
-          pip install --no-deps riptable
+          pip install -v --no-deps riptable
           conda list
           python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
       - name: Riptable test with pytest
@@ -143,18 +149,18 @@ jobs:
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips:
           [
-            { python: "3.8", numpy: "1.21" },
             { python: "3.8", numpy: "1.22" },
-            { python: "3.9", numpy: "1.21" },
+            { python: "3.8", numpy: "1.23" },
             { python: "3.9", numpy: "1.22" },
-            { python: "3.10", numpy: "1.21" },
+            { python: "3.9", numpy: "1.23" },
             { python: "3.10", numpy: "1.22" },
+            { python: "3.10", numpy: "1.23" },
           ]
     env:
       python_version: 3.9
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -183,7 +189,7 @@ jobs:
           echo "numpy: " ${{ matrix.zips.numpy }} >> ./conda_variant.yaml
           conda build conda_recipe --output-folder ./conda_pkgs_output --variant-config-files ./conda_variant.yaml
       - name: Publish artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: conda-build-artifacts
           path: conda_pkgs_output/*/riptide_cpp-*.tar.bz2
