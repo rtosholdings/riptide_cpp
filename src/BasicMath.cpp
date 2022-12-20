@@ -2587,7 +2587,7 @@ public:
             // We know the first object is an array
             FillArray1(inObject1);
             // Check strides
-            if (ndim1 > 0 && itemSize1 != PyArray_STRIDE((PyArrayObject *)inArr, 0))
+            if (ndim1 > 0 && PyArray_DIM(inArr, 0) > 1 && itemSize1 != PyArray_STRIDE(inArr, 0))
             {
                 return false;
             }
@@ -2641,7 +2641,7 @@ public:
             FillArray2(inObject2);
 
             // Check strides
-            if (ndim2 > 0 && itemSize2 != PyArray_STRIDE((PyArrayObject *)inArr2, 0))
+            if (ndim2 > 0 && PyArray_DIM(inArr2, 0) > 1 && itemSize2 != PyArray_STRIDE((PyArrayObject *)inArr2, 0))
             {
                 return false;
             }
@@ -2818,7 +2818,8 @@ public:
                     return nullptr;
                 }
 
-                if (PyArray_ITEMSIZE((PyArrayObject *)outputObject) != PyArray_STRIDE((PyArrayObject *)outputObject, 0))
+                if (PyArray_DIM(reinterpret_cast<PyArrayObject const *>(outputObject), 0) > 1 &&
+                    PyArray_ITEMSIZE((PyArrayObject *)outputObject) != PyArray_STRIDE((PyArrayObject *)outputObject, 0))
                 {
                     // output array is strided
                     LOGGING("Punting because output array is strided\n");
@@ -3426,9 +3427,9 @@ PyObject * TwoInputsInternal(CTwoInputs & twoInputs, int64_t funcNumber)
             fl.Input2Strides = 0;
 
             // TODO: handle C vs F two dim arrays (if not C contiguous punt)
-            if (twoInputs.len1 > 1)
+            if (twoInputs.len1 > 1 && PyArray_DIM(twoInputs.inArr, 0) > 1)
                 fl.Input1Strides = PyArray_STRIDE(twoInputs.inArr, 0);
-            if (twoInputs.len2 > 1)
+            if (twoInputs.len2 > 1 && PyArray_DIM(twoInputs.inArr2, 0) > 1)
                 fl.Input2Strides = PyArray_STRIDE(twoInputs.inArr2, 0);
 
             fl.InputItemSize =
@@ -3902,12 +3903,12 @@ PyObject * Where(PyObject * self, PyObject * args)
             // handle strided arrays only when one dimension
             if (twoInputs.scalarMode == SCALAR_MODE::NO_SCALARS || twoInputs.scalarMode == SCALAR_MODE::SECOND_ARG_SCALAR)
             {
-                if (twoInputs.ndim1 == 1)
+                if (twoInputs.ndim1 == 1 && PyArray_DIM(twoInputs.inArr, 0) > 1)
                     WCBS.strideSize1 = PyArray_STRIDE(twoInputs.inArr, 0) / twoInputs.itemSize1;
             }
             if (twoInputs.scalarMode == SCALAR_MODE::NO_SCALARS || twoInputs.scalarMode == SCALAR_MODE::FIRST_ARG_SCALAR)
             {
-                if (twoInputs.ndim2 == 1)
+                if (twoInputs.ndim2 == 1 && PyArray_DIM(twoInputs.inArr2, 0) > 1)
                     WCBS.strideSize2 = PyArray_STRIDE(twoInputs.inArr2, 0) / twoInputs.itemSize2;
             }
 

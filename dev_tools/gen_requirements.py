@@ -68,6 +68,7 @@ runtime_reqs = [
 # Needed to engage all features and their tests.
 tests_reqs = [
     "arrow",
+    "bokeh",
     "bottleneck",
     "flake8",
     "hypothesis",

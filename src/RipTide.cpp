@@ -2281,12 +2281,19 @@ int GetStridesAndContig(PyArrayObject const * inArray, int & ndim, int64_t & str
     ndim = PyArray_NDIM(inArray);
     if (ndim > 0)
     {
-        stride = PyArray_STRIDE(inArray, 0);
+        if (PyArray_DIM(inArray, 0) > 1)
+        {
+            stride = PyArray_STRIDE(inArray, 0);
+        }
         if (ndim > 1)
         {
             // at least two strides
             int ndims = PyArray_NDIM(inArray);
-            int64_t lastStride = PyArray_STRIDE(inArray, ndims - 1);
+            int64_t lastStride = PyArray_ITEMSIZE(inArray);
+            if (PyArray_DIM(inArray, ndims - 1) > 1)
+            {
+                lastStride = PyArray_STRIDE(inArray, ndims - 1);
+            }
             if (lastStride == stride)
             {
                 // contiguous with one of the dimensions having length 1
