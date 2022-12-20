@@ -3112,7 +3112,7 @@ PyObject * Reduce(PyObject * self, PyObject * args)
     if (IsFastArrayOrNumpy(inArr1))
     {
         // make sure not strided -- we don't currently handle those
-        if (PyArray_STRIDE(inArr1, 0) == PyArray_ITEMSIZE(inArr1))
+        if (PyArray_DIM(inArr1, 0) <= 1 || PyArray_STRIDE(inArr1, 0) == PyArray_ITEMSIZE(inArr1))
         {
             PyObject * object2 = PyTuple_GET_ITEM(args, 1);
             if (PyLong_Check(object2))

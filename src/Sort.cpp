@@ -3250,7 +3250,7 @@ PyObject * IsSorted(PyObject * self, PyObject * args)
 
     int64_t itemSize = PyArray_ITEMSIZE(inArr1);
 
-    if (ndim != 1 || itemSize != PyArray_STRIDE(inArr1, 0))
+    if (ndim != 1 || (dims[0] > 1 && itemSize != PyArray_STRIDE(inArr1, 0)))
     {
         PyErr_Format(PyExc_ValueError, "IsSorted arrays must be one dimensional and contiguous.  ndim is %d\n", ndim);
         return NULL;

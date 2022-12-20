@@ -3901,7 +3901,7 @@ PyObject * PutMask(PyObject * self, PyObject * args)
 
             // check for strides... ?
             int64_t arrayLength = ArrayLength(arr);
-            if (arrayLength == ArrayLength(mask) && itemSizeOut == PyArray_STRIDE(arr, 0))
+            if (arrayLength == ArrayLength(mask) && (arrayLength <= 1 || itemSizeOut == PyArray_STRIDE(arr, 0)))
             {
                 int64_t valLength = ArrayLength(inValues);
 

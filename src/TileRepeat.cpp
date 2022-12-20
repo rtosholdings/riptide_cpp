@@ -174,7 +174,7 @@ PyObject * RecordArrayToColMajor(PyObject * self, PyObject * args)
 
     int64_t itemSize = PyArray_ITEMSIZE(inArr);
 
-    if (itemSize != PyArray_STRIDE(inArr, 0))
+    if (PyArray_DIM(inArr, 0) > 1 && itemSize != PyArray_STRIDE(inArr, 0))
     {
         PyErr_Format(PyExc_ValueError, "RecordArrayToColMajor cannot handle strides");
         return NULL;
