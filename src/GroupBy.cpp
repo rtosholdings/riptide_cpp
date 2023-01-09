@@ -2459,8 +2459,10 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
     U const invalid{ riptide::invalid_for_type<U>::value };
 
     int64_t allocSize = sizeof(W) * numUnique;
-    W * const pCountOut = (W *)WORKSPACE_ALLOC(allocSize);
-    memset(pCountOut, 0, allocSize);
+    W * const pTotalCountOut = (W *)WORKSPACE_ALLOC(allocSize);
+    memset(pTotalCountOut, 0, allocSize);
+
+    memset(pDataOut, 0, sizeof(U) * numUnique);
 
     // Collect the results from the core
     for (int64_t j = 0; j < numCores; j++)
@@ -2468,18 +2470,17 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
         if (pstGroupBy32->returnObjects[j].didWork)
         {
             U const * const pDataIn{ &pDataInBase[j * numUnique] };
-            W * const pCountOut{ &pCountOutBase[j * numUnique] };
+            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 if (pInvFinal[i] == -1)
                 {
                     // since pInvFinal reuses space from worker 0, set answer for it manually
-                    if (not j)
+                    if (j == 0)
                     {
                         pDataOut[i] = invalid;
                     }
-                    continue;
                 }
                 else if (pCountOut[i] == -1)
                 {
@@ -2490,7 +2491,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
                 else
                 {
                     pDataOut[i] += pDataIn[i];
-                    pCountOut[i] += pCountOut[i];
+                    pTotalCountOut[i] += pCountOut[i];
                 }
             }
         }
@@ -2499,9 +2500,9 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
     // calculate the mean
     for (int64_t i = binLow; i < binHigh; i++)
     {
-        if (riptide::invalid_for_type<U>::is_valid(pDataOut[i]))
+        if (pTotalCountOut[i] > 0 && riptide::invalid_for_type<U>::is_valid(pDataOut[i]))
         {
-            pDataOut[i] = pDataOut[i] / pCountOut[i];
+            pDataOut[i] = pDataOut[i] / pTotalCountOut[i];
         }
         else
         {
@@ -2509,7 +2510,7 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
         }
     }
 
-    WORKSPACE_FREE(pCountOut);
+    WORKSPACE_FREE(pTotalCountOut);
 }
 
 template <typename U, typename W>
