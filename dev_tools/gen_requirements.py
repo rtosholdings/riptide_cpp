@@ -14,7 +14,7 @@ def is_windows() -> bool:
 
 
 _CMAKE_REQ = "cmake>=3.18"
-_NUMPY_REQ = "numpy>=1.22"
+_NUMPY_REQ = "numpy>=1.22,<1.24"
 _TBB_DEVEL_REQ = "tbb-devel==2021.6.*"
 
 # Host toolchain requirements to build riptide_cpp.
