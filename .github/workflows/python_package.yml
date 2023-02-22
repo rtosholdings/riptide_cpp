@@ -47,7 +47,7 @@ jobs:
       - name: Install PyPI dependencies
         run: |
           python dev_tools/gen_requirements.py --out pypi_reqs.txt pypi
-          conda install -q -y --file pypi_reqs.txt
+          conda create -q -y -n pypi_build --file pypi_reqs.txt
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
@@ -179,7 +179,7 @@ jobs:
         run: |
           conda config --set unsatisfiable_hints_check_depth 0 # setting unsatisfiable_hints=False is broken
           python dev_tools/gen_requirements.py --out conda_reqs.txt conda
-          conda install -q -y --file conda_reqs.txt
+          conda create -q -y -n conda_build --file conda_reqs.txt
       - name: Build package
         run: |
           set -ex
