@@ -7,8 +7,6 @@ include(CheckIPOSupported)
 enable_testing()
 set(CMAKE_VERBOSE_MAKEFILE on)
 
-include(add_git_submodules)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -34,7 +32,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT 
     set(PROJ_COMPILER_FRONTEND "MSVC")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set(PROJ_COMPILER_FRONTEND "GNU")
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "clang") 
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "clang")
     set(PROJ_COMPILER_FRONTEND "LLVM")
 else()
     message(FATAL_ERROR "Unknown compiler front-end")
@@ -73,28 +71,6 @@ include(AddPythonSupport)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-#if(PROJ_COMPILER_ID STREQUAL "MSVC")
-# No absl specific option overrides needed
-#elseif(PROJ_COMPILER_ID STREQUAL "GNU")
-    # Remove warnings from absl compilation
-#    add_compile_options(-Wno-duplicated-branches)
-#    add_compile_options(-Wno-useless-cast)
-#    add_compile_options(-Wno-old-style-cast)
-#    add_compile_options(-Wno-redundant-decls)
-#    add_compile_options(-Wno-cast-qual)
-#elseif(PROJ_COMPILER_ID STREQUAL "LLVM")
-    # Remove warnings from absl compilation
-#    add_compile_options(-Wno-duplicated-branches)
-#    add_compile_options(-Wno-useless-cast)
-#    add_compile_options(-Wno-old-style-cast)
-#    add_compile_options(-Wno-redundant-decls)
-#    add_compile_options(-Wno-cast-qual)
-#else()
-#    message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
-#endif()
-
-
-
 # Under setupbuild, exclude all dependencies from install target to avoid polluting distribution.
 if(SETUPBUILD)
     set(EXLUSION_SPECIFIER EXCLUDE_FROM_ALL)
@@ -104,10 +80,18 @@ endif()
 
 add_subdirectory(external ${EXLUSION_SPECIFIER})
 
-find_package(TBB CONFIG REQUIRED)
+macro(verbose_find_package)
+    message("Finding package ${ARGV0}")
+    find_package(${ARGN})
+    message("Found package ${ARGV0} config: ${${ARGV0}_CONFIG}")
+endmacro()
+
+verbose_find_package(absl CONFIG REQUIRED)
+verbose_find_package(benchmark CONFIG REQUIRED)
+verbose_find_package(TBB CONFIG REQUIRED)
+verbose_find_package(zstd REQUIRED)
 
 add_subdirectory(src)
-set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(bench ${EXLUSION_SPECIFIER})
 add_subdirectory(test ${EXLUSION_SPECIFIER})
 add_subdirectory(extras ${EXLUSION_SPECIFIER})
