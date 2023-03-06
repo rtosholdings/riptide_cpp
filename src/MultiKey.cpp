@@ -397,6 +397,7 @@ public:
         if (aInfo)
         {
             totalRows = aInfo[0].ArrayLength;
+            bool ok{ true };
 
             for (int64_t i = 0; i < listSize; i++)
             {
@@ -404,6 +405,7 @@ public:
                 {
                     PyErr_Format(PyExc_ValueError, "MultiKeyHash all arrays must be same number of rows %llu", totalRows);
                     totalRows = 0;
+                    ok = false;
                 }
             }
 
@@ -416,10 +418,11 @@ public:
                                  "same size %llu",
                                  totalRows);
                     totalRows = 0;
+                    ok = false;
                 }
             }
 
-            if (totalRows != 0)
+            if (totalRows >= 0 && ok)
             {
                 // printf("row width %llu   rows %llu\n", totalItemSize, totalRows);
 
