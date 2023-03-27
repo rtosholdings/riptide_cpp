@@ -3,19 +3,19 @@ set(TARGET_NAME riptide_bench)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES main.cpp
-			bench_one_input.cpp
-			hash_linear_bench.cpp
-			memcmp_bench.cpp)
+    bench_one_input.cpp
+    hash_linear_bench.cpp
+    memcmp_bench.cpp)
 
 add_executable(${TARGET_NAME} ${HEADERS} ${SOURCES})
 
-get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
+target_compile_definitions(${TARGET_NAME} PRIVATE BENCHMARK_STATIC_DEFINE)
 
-target_include_directories(${TARGET_NAME} PRIVATE ${RT_SOURCE_DIR} ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS} )
+target_include_directories(${TARGET_NAME} PRIVATE $<TARGET_PROPERTY:riptide_cpp,SOURCE_DIR> ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 
-target_link_directories(${TARGET_NAME} PRIVATE 
-									   ${Python3_LIBRARY_DIRS}
-									   )
+target_link_directories(${TARGET_NAME} PRIVATE
+    ${Python3_LIBRARY_DIRS}
+)
 
 target_link_libraries(${TARGET_NAME} PRIVATE
     rt_common_settings
@@ -38,7 +38,8 @@ if(WIN32)
 
         COMMENT "Copying TBB dependencies to ${_TARGET_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
+
         COMMENT "Copying TBBmalloc dependencies to ${_TARGET_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbbmalloc> ${_TARGET_DIR}
-		)
+    )
 endif()

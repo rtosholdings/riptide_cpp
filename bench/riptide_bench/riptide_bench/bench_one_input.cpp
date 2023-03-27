@@ -1,6 +1,6 @@
 #include "../../../src/one_input_impl.h"
 
-#include "../../benchmark/include/benchmark/benchmark.h"
+#include <benchmark/benchmark.h>
 
 #include <array>
 #include <cfloat>

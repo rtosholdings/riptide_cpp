@@ -16,46 +16,18 @@
 #define LOGGING(...)
 // #define LOGGING printf
 
-enum GB_FUNCTIONS
+namespace
 {
-    GB_SUM = 0,
-    GB_MEAN = 1,
-    GB_MIN = 2,
-    GB_MAX = 3,
+    // Placeholder representing flexible NumPy dtypes (string, unicode, etc.)
+    // These must be handled as byte-arrays with some fixed item size.
+    struct flexible_t;
 
-    // STD uses VAR with the param set to 1
-    GB_VAR = 4,
-    GB_STD = 5,
+    template <typename _T>
+    using is_flexible = std::is_same<_T, flexible_t>;
 
-    GB_NANSUM = 50,
-    GB_NANMEAN = 51,
-    GB_NANMIN = 52,
-    GB_NANMAX = 53,
-    GB_NANVAR = 54,
-    GB_NANSTD = 55,
-
-    GB_FIRST = 100,
-    GB_NTH = 101,
-    GB_LAST = 102,
-
-    GB_MEDIAN = 103,        // auto handles nan
-    GB_MODE = 104,          // auto handles nan
-    GB_TRIMBR = 105,        // auto handles nan
-    GB_QUANTILE_MULT = 106, // handles all (nan)median/quantile versions
-
-    // All int/uints output upgraded to int64_t
-    // Output is all elements (not just grouped)
-    // Input must be same length
-    GB_ROLLING_SUM = 200,
-    GB_ROLLING_NANSUM = 201,
-
-    GB_ROLLING_DIFF = 202,
-    GB_ROLLING_SHIFT = 203,
-    GB_ROLLING_COUNT = 204,
-    GB_ROLLING_MEAN = 205,
-    GB_ROLLING_NANMEAN = 206,
-    GB_ROLLING_QUANTILE = 207,
-};
+    template <typename _T>
+    inline constexpr bool is_flexible_v{ is_flexible<_T>::value };
+}
 
 // Overloads to handle case of bool
 inline bool MEDIAN_SPLIT(bool X, bool Y)
@@ -1085,9 +1057,10 @@ public:
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            if (pCount[i] > 0 && nth < pCount[i])
+            auto const nthIndex{ nth >= 0 ? nth : pCount[i] + nth }; // handle wraparound
+            if (pCount[i] > 0 && nthIndex >= 0 && nthIndex < pCount[i])
             {
-                V grpIndex = pFirst[i] + nth;
+                V grpIndex = pFirst[i] + nthIndex;
                 V bin = pGroup[grpIndex];
                 pDest[i] = pSrc[bin];
             }
@@ -1115,9 +1088,10 @@ public:
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            if (pCount[i] > 0 && nth < pCount[i])
+            auto const nthIndex{ nth >= 0 ? nth : pCount[i] + nth }; // handle wraparound
+            if (pCount[i] > 0 && nthIndex >= 0 && nthIndex < pCount[i])
             {
-                V grpIndex = pFirst[i] + nth;
+                V grpIndex = pFirst[i] + nthIndex;
                 V bin = pGroup[grpIndex];
                 memcpy(&pDest[i * itemSize], &pSrc[bin * itemSize], itemSize);
             }
@@ -1703,15 +1677,19 @@ public:
                                   void * pAccumBin, int64_t binLow, int64_t binHigh, int64_t totalInputRows, int64_t itemSize,
                                   int64_t funcParam)
     {
-        T const * const pSrc = (T *)pColumn;
-        U * const pDest = (U *)pAccumBin;
+        constexpr bool is_scalar{ ! (is_flexible_v<T> && is_flexible_v<U>)};
+
+        using TData = std::conditional_t<is_scalar, T, char>;
+        using UData = std::conditional_t<is_scalar, U, char>;
+
+        TData const * const pSrc = (TData *)pColumn;
+        UData * const pDest = (UData *)pAccumBin;
         // iGroup, iFirst, and nCount can be int32 or int64
         V const * const pGroup = (V *)pGroupT;
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
         int64_t windowSize = (int64_t)funcParam;
-        U const invalid{ riptide::invalid_for_type<U>::value };
 
         // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh,
         // windowSize);
@@ -1724,7 +1702,14 @@ public:
             for (V j = start; j < last; j++)
             {
                 V const index{ pGroup[j] };
-                pDest[index] = invalid;
+                if constexpr (is_scalar)
+                {
+                    pDest[index] = riptide::invalid_for_type<U>::value;
+                }
+                else
+                {
+                    memset(&pDest[index * itemSize], 0, itemSize);
+                }
             }
             binLow++;
         }
@@ -1741,13 +1726,27 @@ public:
                 for (V j = start; j < last && j < (start + windowSize); j++)
                 {
                     V const index{ pGroup[j] };
-                    pDest[index] = invalid;
+                    if constexpr (is_scalar)
+                    {
+                        pDest[index] = riptide::invalid_for_type<U>::value;
+                    }
+                    else
+                    {
+                        memset(&pDest[index * itemSize], 0, itemSize);
+                    }
                 }
 
                 for (V j = start + windowSize; j < last; j++)
                 {
                     V const index{ pGroup[j] };
-                    pDest[index] = (U)pSrc[pGroup[j - windowSize]];
+                    if constexpr (is_scalar)
+                    {
+                        pDest[index] = (U)pSrc[pGroup[j - windowSize]];
+                    }
+                    else
+                    {
+                        memcpy(&pDest[index * itemSize], &pSrc[pGroup[j - windowSize] * itemSize], itemSize);
+                    }
                 }
             }
             else
@@ -1762,13 +1761,27 @@ public:
                 for (V j = last; j > start && j > (last - windowSize); j--)
                 {
                     V const index{ pGroup[j] };
-                    pDest[index] = invalid;
+                    if constexpr (is_scalar)
+                    {
+                        pDest[index] = riptide::invalid_for_type<U>::value;
+                    }
+                    else
+                    {
+                        memset(&pDest[index * itemSize], 0, itemSize);
+                    }
                 }
 
                 for (V j = last - windowSize; j > start; j--)
                 {
                     V const index{ pGroup[j] };
-                    pDest[index] = (U)pSrc[pGroup[j + windowSize]];
+                    if constexpr (is_scalar)
+                    {
+                        pDest[index] = (U)pSrc[pGroup[j + windowSize]];
+                    }
+                    else
+                    {
+                        memcpy(&pDest[index * itemSize], &pSrc[pGroup[j + windowSize] * itemSize], itemSize);
+                    }
                 }
                 // put it back to what it was
                 windowSize = -windowSize;
@@ -3590,6 +3603,8 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     {
         switch (inputType)
         {
+        case NPY_BOOL:
+            return GroupByBase<bool, float, V>::AccumTrimMeanBR;
         case NPY_FLOAT:
             return GroupByBase<float, float, V>::AccumTrimMeanBR;
         case NPY_DOUBLE:
@@ -3722,6 +3737,10 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
             return GroupByBase<uint32_t, uint32_t, V>::AccumRollingShift;
         CASE_NPY_UINT64:
             return GroupByBase<uint64_t, uint64_t, V>::AccumRollingShift;
+        case NPY_STRING:
+        case NPY_UNICODE:
+        case NPY_VOID:
+            return GroupByBase<flexible_t, flexible_t, V>::AccumRollingShift;
         }
         return NULL;
     }
@@ -3822,7 +3841,6 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         CASE_NPY_UINT64:
             return GroupByBase<uint64_t, uint64_t, V>::GetXFunc(func);
         case NPY_STRING:
-            return GroupByBase<char, char, V>::GetXFuncString(func);
         case NPY_UNICODE:
         case NPY_VOID:
             return GroupByBase<char, char, V>::GetXFuncString(func);
@@ -4099,10 +4117,10 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
     switch (iGroupType)
     {
     CASE_NPY_INT32:
-        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
+        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, firstFuncNum);
         break;
     CASE_NPY_INT64:
-        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)firstFuncNum);
+        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, firstFuncNum);
         break;
     }
 
@@ -4213,7 +4231,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
                 // next low bin is the previous high bin
                 low = high;
 
-                pstGroupBy32->returnObjects[i].funcNum = (int32_t)firstFuncNum;
+                pstGroupBy32->returnObjects[i].funcNum = firstFuncNum;
                 pstGroupBy32->returnObjects[i].didWork = 0;
 
                 // Assign working memory per call
@@ -4268,13 +4286,13 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
     {
         pCountOutTypeSize = sizeof(int32_t);
         pFunction = GetGroupByFunctionStep1<int32_t>(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[0].NumpyDType,
-                                                     (GB_FUNCTIONS)firstFuncNum);
+                                                     firstFuncNum);
     }
     else
     {
         pCountOutTypeSize = sizeof(int64_t);
         pFunction = GetGroupByFunctionStep1<int64_t>(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType, aInfo[0].NumpyDType,
-                                                     (GB_FUNCTIONS)firstFuncNum);
+                                                     firstFuncNum);
     }
 
     // printf("Taking the divide path  %lld \n", unique_rows);
@@ -4370,7 +4388,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             for (int i = 0; i < numCores; i++)
             {
-                pstGroupBy32->returnObjects[i].funcNum = (int32_t)firstFuncNum;
+                pstGroupBy32->returnObjects[i].funcNum = firstFuncNum;
                 pstGroupBy32->returnObjects[i].binLow = binLow;
                 pstGroupBy32->returnObjects[i].binHigh = binHigh;
 
@@ -4404,11 +4422,11 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             GROUPBY_GATHER_FUNC pGather;
             if (pCountOutTypeSize == sizeof(int32_t))
             {
-                pGather = GetGroupByGatherFunction<int32_t>(numpyOutType, (GB_FUNCTIONS)firstFuncNum);
+                pGather = GetGroupByGatherFunction<int32_t>(numpyOutType, firstFuncNum);
             }
             else
             {
-                pGather = GetGroupByGatherFunction<int64_t>(numpyOutType, (GB_FUNCTIONS)firstFuncNum);
+                pGather = GetGroupByGatherFunction<int64_t>(numpyOutType, firstFuncNum);
             }
 
             if (pGather)
@@ -4522,7 +4540,8 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     }
 
     int overflow = 0;
-    int64_t firstFuncNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, 0), &overflow);
+    GB_FUNCTIONS const firstFuncNum{ static_cast<GB_FUNCTIONS>(
+        PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, 0), &overflow)) };
     PyObject * returnTuple = NULL;
 
     // NOTE: what if bin size 10x larger?
@@ -4536,8 +4555,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
         {
             // multithread by data segments (NOT bin ranges)
             // scatter/gather technique -- no memory is read twice
-            returnTuple =
-                GroupBySingleOpMultithreaded(aInfo, iKey, (GB_FUNCTIONS)firstFuncNum, unique_rows, tupleSize, binLow, binHigh);
+            returnTuple = GroupBySingleOpMultithreaded(aInfo, iKey, firstFuncNum, unique_rows, tupleSize, binLow, binHigh);
         }
     }
 
@@ -4577,8 +4595,9 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             bool hasCounts = false;
 
             int overflow = 0;
-            int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
-            pstGroupBy32->returnObjects[i].funcNum = (int32_t)funcNum;
+            GB_FUNCTIONS const funcNum{ static_cast<GB_FUNCTIONS>(
+                PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow)) };
+            pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);
             pstGroupBy32->returnObjects[i].binLow = binLow;
@@ -4593,13 +4612,13 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             {
                 pCountOutTypeSize = sizeof(int32_t);
                 pFunction = GetGroupByFunctionStep1<int32_t>(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType,
-                                                             aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
+                                                             aInfo[i].NumpyDType, funcNum);
             }
             else
             {
                 pCountOutTypeSize = sizeof(int64_t);
                 pFunction = GetGroupByFunctionStep1<int64_t>(iKeyType, &hasCounts, &numpyOutType, &numpyTmpType,
-                                                             aInfo[i].NumpyDType, (GB_FUNCTIONS)funcNum);
+                                                             aInfo[i].NumpyDType, funcNum);
             }
 
             PyArrayObject * outArray = NULL;
@@ -4803,14 +4822,15 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, 0), &overflow);
         int64_t binHigh = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinHigh, 0), &overflow);
 
-        int64_t firstFuncNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, 0), &overflow);
+        GB_FUNCTIONS const firstFuncNum{ static_cast<GB_FUNCTIONS>(
+            PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, 0), &overflow)) };
 
         LOGGING("Checking banded %lld\n", firstFuncNum);
 
         if ((firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR) || (firstFuncNum == GB_QUANTILE_MULT))
         {
-            returnTuple = GroupBySingleOpMultiBands(aInfo, iKey, iFirst, iGroup, nCount, (GB_FUNCTIONS)firstFuncNum, unique_rows,
-                                                    tupleSize, binLow, binHigh, funcParam);
+            returnTuple = GroupBySingleOpMultiBands(aInfo, iKey, iFirst, iGroup, nCount, firstFuncNum, unique_rows, tupleSize,
+                                                    binLow, binHigh, funcParam);
         }
     }
 
@@ -4820,7 +4840,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         if (tupleSize != funcTupleSize)
         {
-            PyErr_Format(PyExc_ValueError, "GroupByAll32 func numbers do not match array columns %lld %lld", tupleSize,
+            PyErr_Format(PyExc_ValueError, "GroupByAllPack32 func numbers do not match array columns %lld %lld", tupleSize,
                          funcTupleSize);
         }
 
@@ -4828,7 +4848,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         if (tupleSize != binTupleSize)
         {
-            PyErr_Format(PyExc_ValueError, "GroupByAll32 bin numbers do not match array columns %lld %lld", tupleSize,
+            PyErr_Format(PyExc_ValueError, "GroupByAllPack32 bin numbers do not match array columns %lld %lld", tupleSize,
                          binTupleSize);
             return NULL;
         }
@@ -4843,7 +4863,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         // Allocate the struct + ROOM at the end of struct for all the tuple objects
         // being produced
         int64_t allocSize = (sizeof(stGroupBy32) + 8 + sizeof(stGroupByReturn)) * tupleSize;
-        LOGGING("in groupby32 allocating %lld\n", allocSize);
+        LOGGING("in GroupByAllPack32 allocating %lld\n", allocSize);
 
         stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(allocSize);
 
@@ -4869,8 +4889,9 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         for (int i = 0; i < tupleSize; i++)
         {
             int overflow = 0;
-            int64_t funcNum = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow);
-            pstGroupBy32->returnObjects[i].funcNum = (int32_t)funcNum;
+            GB_FUNCTIONS const funcNum{ static_cast<GB_FUNCTIONS>(
+                PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, i), &overflow)) };
+            pstGroupBy32->returnObjects[i].funcNum = funcNum;
 
             int64_t binLow = PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listBinLow, i), &overflow);
             pstGroupBy32->returnObjects[i].binLow = binLow;
@@ -4885,11 +4906,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             switch (iGroupType)
             {
             CASE_NPY_INT32:
-                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)funcNum);
+                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, funcNum);
                 break;
-            CASE_NPY_INT64:
 
-                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, (GB_FUNCTIONS)funcNum);
+            CASE_NPY_INT64:
+                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, funcNum);
                 break;
             }
 
@@ -4902,13 +4923,18 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 if (funcNum == GB_TRIMBR)
                 {
                     // Variance must be in float form
-                    numpyOutType = NPY_FLOAT64;
-
-                    // Everything is a float64 unless it is already a float32, then we
+                    // Everything is a float64 unless it is already a float32 or bool, then we
                     // keep it as float32
-                    if (aInfo[i].NumpyDType == NPY_FLOAT32)
+                    switch (aInfo[i].NumpyDType)
                     {
+                    case NPY_BOOL:
+                    case NPY_FLOAT32:
                         numpyOutType = NPY_FLOAT32;
+                        break;
+
+                    default:
+                        numpyOutType = NPY_FLOAT64;
+                        break;
                     }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);
@@ -4977,7 +5003,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                         if (aInfo[i].ArrayLength != pstGroupBy32->totalInputRows)
                         {
                             PyErr_Format(PyExc_ValueError,
-                                         "GroupByAll32 for rolling functions, input size "
+                                         "GroupByAllPack32 for rolling functions, input size "
                                          "must be same size as group size: %lld vs %lld",
                                          aInfo[i].ArrayLength, pstGroupBy32->totalInputRows);
                             goto ERROR_EXIT;
@@ -4987,7 +5013,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                     }
                     else
                     {
-                        LOGGING("GBALLPACK32:  Allocating for output type: %d\n", aInfo[i].NumpyDType);
+                        LOGGING("GroupByAllPack32:  Allocating for output type: %d\n", aInfo[i].NumpyDType);
                         outArray = AllocateLikeResize(aInfo[i].pObject, unique_rows);
                     }
                 }
@@ -5001,6 +5027,9 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             else
             {
                 LOGGING("Failed to find function %llu for type %d\n", funcNum, numpyOutType);
+                PyErr_Format(PyExc_NotImplementedError, "GroupByAllPack32 doesn't implement function %llu for type %d", funcNum,
+                             numpyOutType);
+                goto ERROR_EXIT;
             }
 
             pstGroupBy32->returnObjects[i].outArray = outArray;
@@ -5039,7 +5068,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         //   void* pAccumBin = PyArray_BYTES(pAccumObject);
         //   GROUPBY_X_FUNC  pFunction =
         //   GetGroupByXFunction(aInfo[i].NumpyDType, numpyOutType,
-        //   (GB_FUNCTIONS)funcNum);
+        //   funcNum);
 
         //   if (pFunction) {
         //      // Perform op

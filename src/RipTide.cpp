@@ -787,7 +787,7 @@ PyArrayObject * AllocateNumpyArrayForData(int ndim, npy_intp * dims, int32_t num
 
 //-----------------------------------------------------------------------------------
 // Check recycle pool
-PyArrayObject * AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t numpyType)
+PyArrayObject * AllocateLikeNumpyArray(PyArrayObject const * const inArr, int32_t const numpyType)
 {
     const int ndim = PyArray_NDIM(inArr);
     npy_intp * const dims = PyArray_DIMS(const_cast<PyArrayObject *>(inArr));
@@ -803,17 +803,36 @@ PyArrayObject * AllocateLikeNumpyArray(PyArrayObject const * inArr, int32_t nump
 
     // If we couldn't re-use an array from the recycler (for whatever reason),
     // allocate a new one based on the old one but override the type.
-    // TODO: How to handle the case where either the prototype array is a string
-    // array xor numpyType is a string type?
-    //       (For the latter, we don't have the target itemsize available here, so
-    //       we don't know how to allocate the array.)
     PyArray_Descr * const descr = PyArray_DescrFromType(numpyType);
     if (! descr)
     {
         return nullptr;
     }
-    PyArrayObject * returnObject =
-        (PyArrayObject *)PyArray_NewLikeArray(const_cast<PyArrayObject *>(inArr), NPY_KEEPORDER, descr, 1);
+
+    PyArrayObject * returnObject;
+
+    // Handle the case where either the prototype array is a string
+    // array xor numpyType is a string type.
+    if (PyDataType_ISFLEXIBLE(descr)) // flexible dtype
+    {
+        if (numpyType != PyArray_TYPE(inArr))
+        {
+            // (For the latter, we don't have the target itemsize available here, so
+            // we don't know how to allocate the array.)
+            PyErr_Format(PyExc_TypeError, "AllocateLikeNumpyArray: cannot allocate like-array of type %d from type %d", numpyType,
+                         PyArray_TYPE(inArr));
+            return nullptr;
+        }
+
+        auto const itemsize{ PyArray_ITEMSIZE(inArr) };
+        bool const fortran_array{ false };
+        auto * const strides{ PyArray_STRIDES(const_cast<PyArrayObject *>(inArr)) };
+        returnObject = AllocateNumpyArray(ndim, dims, numpyType, itemsize, fortran_array, strides);
+    }
+    else
+    {
+        returnObject = (PyArrayObject *)PyArray_NewLikeArray(const_cast<PyArrayObject *>(inArr), NPY_KEEPORDER, descr, 1);
+    }
     CHECK_MEMORY_ERROR(returnObject);
 
     if (! returnObject)
