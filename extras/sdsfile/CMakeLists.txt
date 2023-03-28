@@ -36,12 +36,9 @@ add_library(${TARGET_NAME} SHARED
 
 target_compile_definitions(${TARGET_NAME} PRIVATE BUILDING_RIPTIDE_CPP)
 
-target_include_directories(${TARGET_NAME} PRIVATE
-    ${EXTERNAL_ZSTD_INCLUDE_DIR})
-
 target_link_libraries(${TARGET_NAME}
     rt_common_settings
-    libzstd_static
+    zstd::libzstd_shared
     $<$<PLATFORM_ID:Linux>:rt>)
 
 if(WIN32)

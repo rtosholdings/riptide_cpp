@@ -1,10 +1,13 @@
 [build-system]
 requires = [
-    "setuptools >=42",
-    "wheel",
+    #"abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
+    #"benchmark >=1.7,<1.8", # DOES NOT EXIST! We must assume it exists in environment
     "cmake >=3.18",
     "ninja; platform_system!='Windows'",
     "numpy >=1.22, <1.24",
     "tbb-devel ==2021.6.*",
-    ]
+    "setuptools >=42",
+    "wheel",
+    "zstd> =1.5.2,<1.6",
+]
 build-backend = "setuptools.build_meta"

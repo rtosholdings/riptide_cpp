@@ -1,4 +1,4 @@
-#include "../../benchmark/include/benchmark/benchmark.h"
+#include <benchmark/benchmark.h>
 
 #include <array>
 #include <cfloat>

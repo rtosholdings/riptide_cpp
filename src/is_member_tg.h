@@ -129,10 +129,13 @@ namespace
     using is_member_allowed_types_t =
         std::variant<uint8_t, uint16_t, uint32_t, uint64_t, float, double, int8_t, int16_t, int32_t, int64_t, char, wchar_t>;
 
-    // TODO: When moving the whole thread model to TBB, consider how to configure things like NUMA node, etc. HWLOC?
+// TODO: When moving the whole thread model to TBB, consider how to configure things like NUMA node, etc. HWLOC?
+// These should be explicitly instantiated/shut-down in order to avoid strange deadlocks (see riptide_cpp#33).
+#if 0
     inline static oneapi::tbb::global_control const global_limit{ oneapi::tbb::global_control::max_allowed_parallelism, 32 };
     inline static oneapi::tbb::task_arena::constraints const arena_setters{ oneapi::tbb::numa_node_id{ 0 }, 8 };
     inline static oneapi::tbb::task_arena arena{ arena_setters };
+#endif
 
     template <typename key_t, typename index_t, typename enable = void>
     struct my_hasher_types
@@ -431,6 +434,9 @@ inline void is_member_tg(size_t const needles_size, char const * needles_p, size
                          size_t const haystack_size, char const * haystack_p, size_t const haystack_type_size, index_t * output_p,
                          int8_t * bool_out_p, is_member_allowed_types_t const sample_value, int max_cpus = 8)
 {
+    // TODO: global_limit belongs with the existing app-level thread startup/shutdown logic.
+    oneapi::tbb::global_control const global_limit{ oneapi::tbb::global_control::max_allowed_parallelism, 32 };
+
     oneapi::tbb::task_arena::constraints const local_arena_setters{ oneapi::tbb::numa_node_id{ 0 }, max_cpus };
     oneapi::tbb::task_arena local_arena{ local_arena_setters };
 

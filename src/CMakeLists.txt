@@ -20,7 +20,7 @@ set(HEADERS
     MathThreads.h
     MathWorker.h
     Merge.h
-    #missing_values.h
+    missing_values.h
     MultiKey.h
     one_input.h
     Recycler.h
@@ -75,27 +75,30 @@ add_library(${TARGET_NAME} SHARED
 
 target_compile_definitions(${TARGET_NAME} PRIVATE BUILDING_RIPTIDE_CPP)
 
-get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
-
 target_include_directories(${TARGET_NAME} PRIVATE
-    ${EXTERNAL_ZSTD_INCLUDE_DIR}
     ${Python3_INCLUDE_DIRS}
     ${Python3_NumPy_INCLUDE_DIRS}
-    )
+)
 
 target_compile_options(${TARGET_NAME} PRIVATE
     $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>:-bigobj>)
 
+# Match MSVC debug compile settings to those used in release static abseil libs.
+# See recipe at https://github.com/conda-forge/abseil-cpp-feedstock/blob/main/recipe/meta.yaml
+target_compile_definitions(${TARGET_NAME} PUBLIC
+    $<$<AND:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>>:_ITERATOR_DEBUG_LEVEL=0>)
+target_compile_options(${TARGET_NAME} PUBLIC
+    $<$<AND:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>>:-MD>)
+
 target_link_libraries(${TARGET_NAME}
     rt_common_settings
     Python3::Python
-    libzstd_static
+    zstd::libzstd_shared
     TBB::tbb
     TBB::tbbmalloc
-    absl::base
     absl::flat_hash_map
     $<$<PLATFORM_ID:Linux>:rt>
-    )
+)
 
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES

@@ -13,20 +13,25 @@ build:
 requirements:
   build:
     - python {{ python }}
+    - abseil-cpp 20220623.*
+    - benchmark >=1.7,<1.8
     - "{{ compiler('cxx') }}"
     - cmake >=3.18
     - setuptools_scm
     - numpy {{ numpy }}
     - tbb-devel 2021.6
     - tbb 2021.6.*
+    - zstd >=1.5,<1.6
   host:
     - python {{ python }}
     - "{{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}"
     - setuptools_scm
   run:
     - python {{ python }}
+    - abseil-cpp >=20220623
     - "{{ pin_compatible('numpy', min_pin='x.x', max_pin='x.x') }}"
     - tbb 2021.6.*
+    - zstd >=1.5,<1.6
 
 test:
   imports:

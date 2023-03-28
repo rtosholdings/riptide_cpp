@@ -12,27 +12,25 @@ set(SOURCES
     test_one_input.cpp)
 
 add_executable(${TARGET_NAME}
-               ${HEADERS}
-               ${SOURCES})
-
-get_target_property(RT_SOURCE_DIR riptide_cpp SOURCE_DIR)
+    ${HEADERS}
+    ${SOURCES})
 
 target_include_directories(${TARGET_NAME} PRIVATE
-                             ${RT_SOURCE_DIR}
-                             ${Python3_INCLUDE_DIRS}
-                             ${Python3_NumPy_INCLUDE_DIRS}
-                             )
+    $<TARGET_PROPERTY:riptide_cpp,SOURCE_DIR>
+    ${Python3_INCLUDE_DIRS}
+    ${Python3_NumPy_INCLUDE_DIRS}
+)
 
 target_link_libraries(${TARGET_NAME}
-                      rt_common_settings
-                      riptide_cpp
-                      TBB::tbb
-                      ut
-                      absl::base
-                      absl::flat_hash_map
-                      $<$<PLATFORM_ID:Linux>:pthread> 
-                      $<$<PLATFORM_ID:Linux>:rt>
-                      )
+    rt_common_settings
+    riptide_cpp
+    TBB::tbb
+    ut
+    absl::base
+    absl::flat_hash_map
+    $<$<PLATFORM_ID:Linux>:pthread>
+    $<$<PLATFORM_ID:Linux>:rt>
+)
 
 if(WIN32)
     set(_TARGET_DIR $<TARGET_FILE_DIR:${TARGET_NAME}>)
@@ -42,5 +40,5 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:riptide_cpp> ${_TARGET_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${Python3_RUNTIME_LIBRARY_DIRS}/python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll ${_TARGET_DIR}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbb> ${_TARGET_DIR}
-        )
+    )
 endif()

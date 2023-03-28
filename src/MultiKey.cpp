@@ -340,6 +340,7 @@ public:
 
     char * pSuperArray;
     bool bAllocated;
+    bool filterObjAllocated{ false };
 
     CMultiKeyPrepare(PyObject * args)
     {
@@ -372,11 +373,27 @@ public:
 
             if (tupleSize >= 3)
             {
-                // check for filter
+                // check for filter.
                 PyObject * filterArray = PyTuple_GetItem(args, 2);
-                if (PyArray_Check(filterArray))
+                if (filterArray != Py_None)
                 {
-                    pBoolFilterObject = (PyArrayObject *)filterArray;
+                    // Extract the ndarray. Validating it's a proper bool array is done below.
+                    if (! PyArray_Check(filterArray))
+                    {
+                        // Convert from anything into ndarray.
+                        pBoolFilterObject =
+                            reinterpret_cast<PyArrayObject *>(PyArray_FromAny(filterArray, nullptr, 0, 0, 0, nullptr));
+                        if (! pBoolFilterObject)
+                        {
+                            PyErr_Format(PyExc_TypeError, "MultiKeyHash filter is not an array");
+                            return;
+                        }
+                        filterObjAllocated = true;
+                    }
+                    else
+                    {
+                        pBoolFilterObject = (PyArrayObject *)filterArray;
+                    }
                     pBoolFilter = (bool *)PyArray_BYTES(pBoolFilterObject);
                     LOGGING("Bool array is at %p\n", pBoolFilter);
                 }
@@ -458,6 +475,10 @@ public:
         {
             WORKSPACE_FREE(pSuperArray);
             pSuperArray = NULL;
+        }
+        if (filterObjAllocated)
+        {
+            Py_DECREF(pBoolFilterObject);
         }
     }
 };
@@ -982,6 +1003,11 @@ PyObject * MultiKeyGroupBy32(PyObject * self, PyObject * args, PyObject * kwargs
 
         // Rotate the arrays
         CMultiKeyPrepare mkp(args);
+        if (! mkp.pSuperArray)
+        {
+            // error already set
+            return nullptr;
+        }
 
         if (mkp.totalRows > 2100000000)
         {

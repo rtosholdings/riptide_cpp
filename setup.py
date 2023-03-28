@@ -13,9 +13,12 @@ package_name = "riptide_cpp"
 version_scm_path = "src/_version.scm.d"
 version_path = "src/_version.d"
 
+# Runtime install requirements (build requirements are in pyproject.toml)
 install_requires = [
+    # "abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
     "numpy >=1.22, <1.24",
     "tbb ==2021.6.*",
+    "zstd >=1.5.2,<1.6",
 ]
 
 
