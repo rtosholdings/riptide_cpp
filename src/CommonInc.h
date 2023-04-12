@@ -460,6 +460,16 @@ static inline long double GET_INVALID(long double X)
     return std::numeric_limits<long double>::quiet_NaN();
 }
 
+// Placeholder representing flexible NumPy dtypes (string, unicode, etc.)
+// These must be handled as byte-arrays with some fixed item size.
+struct flexible_t;
+
+template <typename _T>
+using is_flexible = std::is_same<_T, flexible_t>;
+
+template <typename _T>
+inline constexpr bool is_flexible_v{ is_flexible<_T>::value };
+
 //-----------------------------------------------------------
 // Build a list of callable vector functions
 enum TYPE_OF_FUNCTION_CALL

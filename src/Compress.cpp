@@ -71,12 +71,18 @@ bool DecompressOneArray(void * pstCompressArraysV, int core, int64_t t)
         NUMPY_HEADERSIZE * pNumpyHeader = (NUMPY_HEADERSIZE *)pstCompressArrays->aInfo[t].pData;
 
         void * source = &pNumpyHeader[1];
-        uint64_t dest_size = (uint64_t)ZSTD_getDecompressedSize(source, pNumpyHeader->compressedSize);
+        uint64_t dest_size = (uint64_t)ZSTD_getFrameContentSize(source, pNumpyHeader->compressedSize);
 
-        if (dest_size == 0)
+        switch (dest_size)
         {
+        case ZSTD_CONTENTSIZE_UNKNOWN:
+        case ZSTD_CONTENTSIZE_ERROR:
+        case 0:
             PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
             return false;
+
+        default:
+            break;
         }
 
         PyArrayObject * pArrayObject = pstCompressArrays->pNumpyArray[t];
@@ -202,7 +208,18 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                 for (int t = 0; t < tupleSize; t++)
                 {
                     NUMPY_HEADERSIZE * pNumpyHeader = (NUMPY_HEADERSIZE *)aInfo[t].pData;
-                    uint64_t dest_size = (uint64_t)ZSTD_getDecompressedSize(&pNumpyHeader[1], pNumpyHeader->compressedSize);
+                    uint64_t dest_size = (uint64_t)ZSTD_getFrameContentSize(&pNumpyHeader[1], pNumpyHeader->compressedSize);
+                    switch (dest_size)
+                    {
+                    case ZSTD_CONTENTSIZE_UNKNOWN:
+                    case ZSTD_CONTENTSIZE_ERROR:
+                        PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
+                        return NULL;
+
+                    case 0: // empty is allowed
+                    default:
+                        break;
+                    }
 
                     // Allocate all the arrays before multithreading
                     // NOTE: do we care about flags -- what if Fortran mode when saved?
@@ -255,7 +272,18 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                     char * pCompressedData = (char *)(&pstNumpyHeader[1]);
 
                     int64_t totalCompressedBytes = pstNumpyHeader->compressedSize + sizeof(NUMPY_HEADERSIZE);
-                    int64_t uncomp = (int64_t)ZSTD_getDecompressedSize(pCompressedData, (size_t)totalCompressedBytes);
+                    int64_t uncomp = (int64_t)ZSTD_getFrameContentSize(pCompressedData, (size_t)totalCompressedBytes);
+                    switch (uncomp)
+                    {
+                    case ZSTD_CONTENTSIZE_UNKNOWN:
+                    case ZSTD_CONTENTSIZE_ERROR:
+                        PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
+                        return NULL;
+
+                    case 0: // empty is allowed
+                    default:
+                        break;
+                    }
 
                     uncompressedSize += uncomp;
                     compressedSize += totalCompressedBytes;
@@ -405,11 +433,17 @@ PyObject * DecompressString(PyObject * self, PyObject * args)
 
     source_size = source_size32;
 
-    dest_size = (uint64_t)ZSTD_getDecompressedSize(source, source_size);
-    if (dest_size == 0)
+    dest_size = (uint64_t)ZSTD_getFrameContentSize(source, source_size);
+    switch (dest_size)
     {
+    case ZSTD_CONTENTSIZE_UNKNOWN:
+    case ZSTD_CONTENTSIZE_ERROR:
+    case 0:
         PyErr_Format(PyExc_ValueError, "input data invalid or missing content size in frame header");
         return NULL;
+
+    default:
+        break;
     }
     result = PyBytes_FromStringAndSize(NULL, dest_size);
 

@@ -999,8 +999,6 @@ PyObject * MultiKeyGroupBy32(PyObject * self, PyObject * args, PyObject * kwargs
 
     try
     {
-        int32_t numpyIndexType = NPY_INT32;
-
         // Rotate the arrays
         CMultiKeyPrepare mkp(args);
         if (! mkp.pSuperArray)
@@ -1008,6 +1006,8 @@ PyObject * MultiKeyGroupBy32(PyObject * self, PyObject * args, PyObject * kwargs
             // error already set
             return nullptr;
         }
+
+        int32_t numpyIndexType = NPY_INT32;
 
         if (mkp.totalRows > 2100000000)
         {

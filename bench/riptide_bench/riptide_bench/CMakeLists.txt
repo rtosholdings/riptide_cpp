@@ -41,5 +41,7 @@ if(WIN32)
 
         COMMENT "Copying TBBmalloc dependencies to ${_TARGET_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:TBB::tbbmalloc> ${_TARGET_DIR}
+
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:zstd::libzstd_shared> ${_TARGET_DIR}
     )
 endif()
