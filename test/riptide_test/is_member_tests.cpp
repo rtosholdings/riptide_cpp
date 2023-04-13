@@ -21,6 +21,9 @@ namespace
     std::array<int32_t, 1024ULL * 1024ULL> small_output;
     std::array<int8_t, 1024ULL * 1024ULL> bools;
 
+    std::array<int32_t, 128ULL * 1024ULL * 1024ULL> small_output2;
+    std::array<int8_t, 128ULL * 1024ULL * 1024ULL> bools2;
+
     template <typename T>
     class fixed_string_array
     {
@@ -264,7 +267,7 @@ namespace
             boost::ut::log << "ismember64_uint64_too_many_uniques random seed is " << seed << "\n";
             std::mt19937 engine{ seed };
             std::vector<uint64_t> haystack(128ULL * 1024ULL * 1024ULL);
-            std::vector<uint64_t> needles(1024ULL * 1024ULL);
+            std::vector<uint64_t> needles(128ULL * 1024ULL);
             std::uniform_int_distribution<uint64_t> dist(3002950000, haystack.size() + 3002950000);
 
             std::iota(std::begin(haystack), std::end(haystack), 3002954000);
@@ -278,8 +281,8 @@ namespace
                 [&]
                 {
                     // Note the reversed order of haystack and needles in this call - more unique needles than uniques in haystack
-                    IsMemberHash32(haystack.size(), haystack.data(), needles.size(), needles.data(), small_output.data(),
-                                   bools.data(), 8, HASH_MODE(1), 0);
+                    IsMemberHash32(haystack.size(), haystack.data(), needles.size(), needles.data(), small_output2.data(),
+                                   bools2.data(), 8, HASH_MODE(1), 0);
                 }));
         };
 

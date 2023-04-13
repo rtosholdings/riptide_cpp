@@ -396,18 +396,16 @@ int64_t CHashLinear<T, U>::GetHashSize(int64_t numberOfEntries)
     {
         // Power of 2 search
         int32_t i = 0;
-        while ((1LL << i) < numberOfEntries)
+        while ((1LL << i) < numberOfEntries && i < 64)
             i++;
 
-        int64_t result = (1LL << i);
-        int64_t maxhashsize = (1LL << 31);
-
-        // TODO: really need to change strategies if high unique count and high row
-        // count
-        if (result > maxhashsize)
+        if (i == 64)
         {
-            result = maxhashsize;
+            LogError("**Failed to find power of 2 for hash size %lld\n", numberOfEntries);
+            return 0;
         }
+
+        int64_t result = (1LL << i);
         return result;
     }
 }

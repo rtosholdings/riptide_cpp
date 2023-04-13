@@ -16,19 +16,6 @@
 #define LOGGING(...)
 // #define LOGGING printf
 
-namespace
-{
-    // Placeholder representing flexible NumPy dtypes (string, unicode, etc.)
-    // These must be handled as byte-arrays with some fixed item size.
-    struct flexible_t;
-
-    template <typename _T>
-    using is_flexible = std::is_same<_T, flexible_t>;
-
-    template <typename _T>
-    inline constexpr bool is_flexible_v{ is_flexible<_T>::value };
-}
-
 // Overloads to handle case of bool
 inline bool MEDIAN_SPLIT(bool X, bool Y)
 {
