@@ -2098,6 +2098,7 @@ static uint8_t gDefaultUInt8 = 0xFF;
 
 static float gDefaultFloat = NAN;
 static double gDefaultDouble = NAN;
+static long double gDefaultLongDouble = NAN;
 static int8_t gDefaultBool = 0;
 static char gString[1024] = { 0, 0, 0, 0 };
 
@@ -2106,7 +2107,7 @@ static char gString[1024] = { 0, 0, 0, 0 };
 // invalid value for the type does not yet handle strings
 void * GetDefaultForType(int numpyInType)
 {
-    void * pgDefault = &gDefaultInt64;
+    void * pgDefault = nullptr; // if unknown, rather crash than be incorrect.
 
     switch (numpyInType)
     {
@@ -2114,6 +2115,8 @@ void * GetDefaultForType(int numpyInType)
         pgDefault = &gDefaultFloat;
         break;
     case NPY_LONGDOUBLE:
+        pgDefault = &gDefaultLongDouble;
+        break;
     case NPY_DOUBLE:
         pgDefault = &gDefaultDouble;
         break;
@@ -2121,7 +2124,7 @@ void * GetDefaultForType(int numpyInType)
     case NPY_BOOL:
         pgDefault = &gDefaultBool;
         break;
-    case NPY_BYTE:
+    case NPY_INT8:
         pgDefault = &gDefaultInt8;
         break;
     case NPY_INT16:
@@ -2132,7 +2135,6 @@ void * GetDefaultForType(int numpyInType)
         pgDefault = &gDefaultInt32;
         break;
     CASE_NPY_INT64:
-
         pgDefault = &gDefaultInt64;
         break;
     case NPY_UINT8:
@@ -2146,7 +2148,6 @@ void * GetDefaultForType(int numpyInType)
         pgDefault = &gDefaultUInt32;
         break;
     CASE_NPY_UINT64:
-
         pgDefault = &gDefaultUInt64;
         break;
     case NPY_STRING:
@@ -2157,6 +2158,7 @@ void * GetDefaultForType(int numpyInType)
         break;
     default:
         printf("!!! likely problem in GetDefaultForType\n");
+        throw std::runtime_error("Unexpected type, " + std::to_string(numpyInType));
     }
 
     return pgDefault;

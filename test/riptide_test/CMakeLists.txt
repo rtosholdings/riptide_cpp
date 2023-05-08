@@ -6,6 +6,7 @@ set(TARGET_NAME riptide_test)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
+    invalid_tests.cpp
     is_member_tests.cpp
     main.cpp
     math_worker_tests.cpp

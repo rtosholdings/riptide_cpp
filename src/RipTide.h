@@ -229,26 +229,26 @@ static inline PyArray_Descr * DTypeToDescr(PyObject * inobject)
 
 PyObject * SetFastArrayView(PyArrayObject * pArray);
 
-extern int GetNumpyType(bool value);
-extern int GetNumpyType(int8_t value);
-extern int GetNumpyType(int16_t value);
-extern int GetNumpyType(int32_t value);
-extern int GetNumpyType(int64_t value);
-extern int GetNumpyType(uint8_t value);
-extern int GetNumpyType(uint16_t value);
-extern int GetNumpyType(uint32_t value);
-extern int GetNumpyType(uint64_t value);
-extern int GetNumpyType(float value);
-extern int GetNumpyType(double value);
-extern int GetNumpyType(long double value);
-extern int GetNumpyType(char * value);
+extern DllExport int GetNumpyType(bool value);
+extern DllExport int GetNumpyType(int8_t value);
+extern DllExport int GetNumpyType(int16_t value);
+extern DllExport int GetNumpyType(int32_t value);
+extern DllExport int GetNumpyType(int64_t value);
+extern DllExport int GetNumpyType(uint8_t value);
+extern DllExport int GetNumpyType(uint16_t value);
+extern DllExport int GetNumpyType(uint32_t value);
+extern DllExport int GetNumpyType(uint64_t value);
+extern DllExport int GetNumpyType(float value);
+extern DllExport int GetNumpyType(double value);
+extern DllExport int GetNumpyType(long double value);
+extern DllExport int GetNumpyType(char * value);
 
 //---------------------------------------------------------
 // Returns nanoseconds since utc epoch
 extern uint64_t GetUTCNanos();
 
 template <typename T>
-static void * GetInvalid()
+void * GetInvalid()
 {
     return GetDefaultForType(GetNumpyType((T)0));
 }
