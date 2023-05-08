@@ -6,6 +6,7 @@ set(TARGET_NAME riptide_python_test)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
+    basic_math_tests.cpp
     ema_test.cpp
     hash_linear_tests.cpp
     main.cpp

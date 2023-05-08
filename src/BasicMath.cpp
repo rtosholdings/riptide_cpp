@@ -2592,6 +2592,13 @@ public:
                 return false;
             }
 
+            // If expecting a specific length, check for that
+            if (expectedLength && len1 != expectedLength)
+            {
+                PyErr_Format(PyExc_ValueError, "BasicMath argument1 needs to be of length %lld", expectedLength);
+                return false;
+            }
+
             //// check for a scalar passed as array of 1 item
             // if (len1 == 1) {
             //   if (!isScalar2) {
@@ -2643,6 +2650,13 @@ public:
             // Check strides
             if (ndim2 > 0 && PyArray_DIM(inArr2, 0) > 1 && itemSize2 != PyArray_STRIDE((PyArrayObject *)inArr2, 0))
             {
+                return false;
+            }
+
+            // If expecting a specific length, check for that
+            if (expectedLength && len2 != expectedLength)
+            {
+                PyErr_Format(PyExc_ValueError, "BasicMath argument2 needs to be of length %lld", expectedLength);
                 return false;
             }
 
@@ -2786,7 +2800,7 @@ public:
 
         // TJD: Possibly make this dynamic?
         // If the number of args is 3, the third argument can be considered the
-        // output argument outputObject will be set if came from inplace opeation
+        // output argument outputObject will be set if came from inplace operation
         // like x += 3
 
         if (outputObject)
@@ -3459,6 +3473,13 @@ PyObject * TwoInputsInternal(CTwoInputs & twoInputs, int64_t funcNumber)
         LOGGING("Setting empty array view\n");
         return SetFastArrayView(outputArray);
     }
+
+    // return exception indication if was raised.
+    if (PyErr_Occurred())
+    {
+        return nullptr;
+    }
+
     LOGGING("BasicMath punting inner loop\n");
     // punt to numpy
     Py_INCREF(Py_None);

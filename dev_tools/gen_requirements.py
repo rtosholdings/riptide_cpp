@@ -13,6 +13,11 @@ def is_windows() -> bool:
     return platform.system() == "Windows"
 
 
+def is_python(major: int, minor: int) -> bool:
+    ver = sys.version_info
+    return ver.major == major and ver.minor == minor
+
+
 _ABSEIL_REQ = "abseil-cpp==20220623.*"
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
 _CMAKE_REQ = "cmake>=3.18"
@@ -92,7 +97,7 @@ tests_reqs += [
     "flake8",
     "hypothesis",
     "ipykernel",
-    "ipython",
+    "ipython<8.13" if is_python(3, 8) else "ipython",
     "matplotlib",
     "nose",
     "pyarrow",

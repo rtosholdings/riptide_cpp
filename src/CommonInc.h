@@ -408,7 +408,7 @@ typedef void (*I64_I8_FUNC)(int64_t * pDataIn, int8_t * pDataOut, int64_t len);
 //----------------------------------------------------
 // returns pointer to a data type (of same size in memory) that holds the invalid value for the type
 // does not yet handle strings
-void * GetDefaultForType(int numpyInType);
+DllExport void * GetDefaultForType(int numpyInType);
 
 // Overloads to handle invalids
 static inline bool GET_INVALID(bool x)
