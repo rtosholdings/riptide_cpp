@@ -21,7 +21,7 @@ def is_python(major: int, minor: int) -> bool:
 _ABSEIL_REQ = "abseil-cpp==20220623.*"
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
 _CMAKE_REQ = "cmake>=3.18"
-_NUMPY_REQ = "numpy>=1.22,<1.24"
+_NUMPY_REQ = "numpy>=1.23,<1.25"
 _TBB_VER = "==2021.6.*"
 _TBB_REQ = "tbb" + _TBB_VER
 _TBB_DEVEL_REQ = "tbb-devel" + _TBB_VER
@@ -108,19 +108,35 @@ tests_reqs += [
     "ansi2html>=1.5.2",
     "numba>=0.56.2",
     _NUMPY_REQ,
-    "pandas>=0.24,<2.0",
+    "pandas>=1.0,<3.0",
     "python-dateutil",
+]
+
+# Black formatting requirements.
+black_reqs = [
+    "black==23.*",
+]
+
+# Flake8 style guide requirements.
+flake8_reqs = [
+    "flake8==6.*",
+]
+
+# Clang-format formatting requirements.
+clang_format_reqs = [
+    "clang-format",
 ]
 
 # Complete developer requirements.
 # Union of all above requuirements plus those needed for code contributions.
 developer_reqs = (
     [
-        "black",
-        "clang-format",
         "setuptools_scm",
     ]
+    + black_reqs
+    + clang_format_reqs
     + conda_reqs
+    + flake8_reqs
     + pypi_reqs
     + runtime_reqs
     + tests_reqs
@@ -132,9 +148,12 @@ if is_linux():
     ]
 
 target_reqs = {
+    "black": black_reqs,
+    "clang_format": clang_format_reqs,
     "conda": conda_reqs,
     "developer": developer_reqs,
     "extras": extras_reqs,
+    "flake8": flake8_reqs,
     "native": native_reqs,
     "pypi": pypi_reqs,
     "runtime": runtime_reqs,

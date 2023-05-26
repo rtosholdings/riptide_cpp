@@ -16,7 +16,7 @@ version_path = "src/_version.d"
 # Runtime install requirements (build requirements are in pyproject.toml)
 install_requires = [
     # "abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
-    "numpy >=1.22, <1.24",
+    "numpy >=1.23, <1.25",
     "tbb ==2021.6.*",
     "zstd >=1.5.2,<1.6",
 ]
@@ -67,7 +67,6 @@ class CMakeBuild(build_ext):
         copy_if_different(version_scm_path, version_path)
 
         for ext in self.extensions:
-
             extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
             cfg = "Debug" if "--debug" in sys.argv else "Release"
 

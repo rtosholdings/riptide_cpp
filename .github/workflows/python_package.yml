@@ -22,7 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-2019]
         python-version: [3.8, 3.9, "3.10"]
-        numpy-version: [1.22, 1.23]
+        numpy-version: [1.23, 1.24]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -149,12 +149,12 @@ jobs:
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips:
           [
-            { python: "3.8", numpy: "1.22" },
             { python: "3.8", numpy: "1.23" },
-            { python: "3.9", numpy: "1.22" },
+            { python: "3.8", numpy: "1.24" },
             { python: "3.9", numpy: "1.23" },
-            { python: "3.10", numpy: "1.22" },
+            { python: "3.9", numpy: "1.24" },
             { python: "3.10", numpy: "1.23" },
+            { python: "3.10", numpy: "1.24" },
           ]
     env:
       python_version: 3.9
