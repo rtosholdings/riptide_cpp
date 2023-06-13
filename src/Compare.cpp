@@ -94,7 +94,7 @@ const __m256i g_ones = _mm256_set1_epi8(1);
 
 // This will compute 32 x int32 comparison at a time, returning 32 bools
 template <typename T>
-FORCE_INLINE const __m256i COMP32i_EQS(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
+RT_FORCEINLINE const __m256i COMP32i_EQS(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
 {
     // the shuffle will move all 8 comparisons together
     __m256i m0 = _mm256_shuffle_epi8(_mm256_cmpeq_epi32(x1, y1), g_shuffle1);
@@ -108,7 +108,7 @@ FORCE_INLINE const __m256i COMP32i_EQS(T x1, T y1, T x2, T y2, T x3, T y3, T x4,
 
 // This will compute 32 x int32 comparison at a time
 template <typename T>
-FORCE_INLINE const __m256i COMP32i_NES(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
+RT_FORCEINLINE const __m256i COMP32i_NES(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
 {
     // the shuffle will move all 8 comparisons together
     __m256i m0 = _mm256_shuffle_epi8(_mm256_cmpeq_epi32(x1, y1), g_shuffle1);
@@ -123,7 +123,7 @@ FORCE_INLINE const __m256i COMP32i_NES(T x1, T y1, T x2, T y2, T x3, T y3, T x4,
 
 // This will compute 32 x int32 comparison at a time
 template <typename T>
-FORCE_INLINE const __m256i COMP32i_GTS(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
+RT_FORCEINLINE const __m256i COMP32i_GTS(T x1, T y1, T x2, T y2, T x3, T y3, T x4, T y4)
 {
     // the shuffle will move all 8 comparisons together
     __m256i m0 = _mm256_shuffle_epi8(_mm256_cmpgt_epi32(x1, y1), g_shuffle1);
@@ -137,7 +137,7 @@ FORCE_INLINE const __m256i COMP32i_GTS(T x1, T y1, T x2, T y2, T x3, T y3, T x4,
 
 // This will compute 32 x int32 comparison at a time
 template <typename T>
-FORCE_INLINE const __m256i COMP32i_LTS(T y1, T x1, T y2, T x2, T y3, T x3, T y4, T x4)
+RT_FORCEINLINE const __m256i COMP32i_LTS(T y1, T x1, T y2, T x2, T y3, T x3, T y4, T x4)
 {
     // the shuffle will move all 8 comparisons together
     __m256i m0 = _mm256_shuffle_epi8(_mm256_cmpgt_epi32(x1, y1), g_shuffle1);
@@ -151,105 +151,105 @@ FORCE_INLINE const __m256i COMP32i_LTS(T y1, T x1, T y2, T x2, T y3, T x3, T y4,
 
 // This series of functions processes 8 int32 and returns 8 bools
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_EQ(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_EQ(T x, T y)
 {
     return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255];
 }
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_NE(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_NE(T x, T y)
 {
     return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(x, y))) & 255];
 }
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_GT(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_GT(T x, T y)
 {
     return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255];
 }
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_LT(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_LT(T x, T y)
 {
     return gBooleanLUT64[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255];
 }
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_GE(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_GE(T x, T y)
 {
     return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(y, x))) & 255];
 }
 template <typename T>
-FORCE_INLINE const int64_t COMP32i_LE(T x, T y)
+RT_FORCEINLINE const int64_t COMP32i_LE(T x, T y)
 {
     return gBooleanLUT64Inverse[_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(x, y))) & 255];
 }
 
 // This will compute 4 x int64 comparison at a time
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_EQ(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_EQ(T x, T y)
 {
     return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(x, y))) & 15];
 }
 
 // This series of functions processes 4 int64 and returns 4 bools
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_NE(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_NE(T x, T y)
 {
     return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(x, y))) & 15];
 }
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_GT(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_GT(T x, T y)
 {
     return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15];
 }
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_LT(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_LT(T x, T y)
 {
     return gBooleanLUT32[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15];
 }
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_GE(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_GE(T x, T y)
 {
     return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(y, x))) & 15];
 }
 template <typename T>
-FORCE_INLINE const int32_t COMP64i_LE(T x, T y)
+RT_FORCEINLINE const int32_t COMP64i_LE(T x, T y)
 {
     return gBooleanLUT32Inverse[_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(x, y))) & 15];
 }
 
 // This will compute 32 x int8 comparison at a time
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_EQ(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_EQ(T x, T y, T mask1)
 {
     return _mm256_and_si256(_mm256_cmpeq_epi8(x, y), mask1);
 }
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_NE(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_NE(T x, T y, T mask1)
 {
     return _mm256_xor_si256(_mm256_and_si256(_mm256_cmpeq_epi8(x, y), mask1), mask1);
 }
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_GT(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_GT(T x, T y, T mask1)
 {
     return _mm256_and_si256(_mm256_cmpgt_epi8(x, y), mask1);
 }
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_LT(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_LT(T x, T y, T mask1)
 {
     return _mm256_and_si256(_mm256_cmpgt_epi8(y, x), mask1);
 }
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_GE(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_GE(T x, T y, T mask1)
 {
     return _mm256_xor_si256(_mm256_and_si256(_mm256_cmpgt_epi8(y, x), mask1), mask1);
 }
 template <typename T>
-FORCE_INLINE const __m256i COMP8i_LE(T x, T y, T mask1)
+RT_FORCEINLINE const __m256i COMP8i_LE(T x, T y, T mask1)
 {
     return _mm256_xor_si256(_mm256_and_si256(_mm256_cmpgt_epi8(x, y), mask1), mask1);
 }
 
 // This will compute 16 x int16 comparison at a time
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_EQ(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_EQ(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_and_si256(_mm256_cmpeq_epi16(x1, y1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -257,7 +257,7 @@ FORCE_INLINE const __m128i COMP16i_EQ(T x1, T y1, T mask1)
     return _mm256_extracti128_si256(_mm256_packs_epi16(m0, m1), 0);
 }
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_NE(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_NE(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_xor_si256(_mm256_and_si256(_mm256_cmpeq_epi16(x1, y1), mask1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -265,7 +265,7 @@ FORCE_INLINE const __m128i COMP16i_NE(T x1, T y1, T mask1)
     return _mm256_extracti128_si256(_mm256_packs_epi16(m0, m1), 0);
 }
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_GT(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_GT(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_and_si256(_mm256_cmpgt_epi16(x1, y1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -273,7 +273,7 @@ FORCE_INLINE const __m128i COMP16i_GT(T x1, T y1, T mask1)
     return _mm256_extracti128_si256(_mm256_packs_epi16(m0, m1), 0);
 }
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_LT(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_LT(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_and_si256(_mm256_cmpgt_epi16(y1, x1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -281,7 +281,7 @@ FORCE_INLINE const __m128i COMP16i_LT(T x1, T y1, T mask1)
     return _mm256_extracti128_si256(_mm256_packs_epi16(m0, m1), 0);
 }
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_GE(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_GE(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_xor_si256(_mm256_and_si256(_mm256_cmpgt_epi16(y1, x1), mask1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -289,7 +289,7 @@ FORCE_INLINE const __m128i COMP16i_GE(T x1, T y1, T mask1)
     return _mm256_extracti128_si256(_mm256_packs_epi16(m0, m1), 0);
 }
 template <typename T>
-FORCE_INLINE const __m128i COMP16i_LE(T x1, T y1, T mask1)
+RT_FORCEINLINE const __m128i COMP16i_LE(T x1, T y1, T mask1)
 {
     __m256i m0 = _mm256_xor_si256(_mm256_and_si256(_mm256_cmpgt_epi16(x1, y1), mask1), mask1);
     // move upper 128 in m0 to lower 128 in m1
@@ -299,60 +299,60 @@ FORCE_INLINE const __m128i COMP16i_LE(T x1, T y1, T mask1)
 
 // Build template of comparison functions
 template <typename T>
-FORCE_INLINE const bool COMP_EQ(T X, T Y)
+RT_FORCEINLINE const bool COMP_EQ(T X, T Y)
 {
     return (X == Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_GT(T X, T Y)
+RT_FORCEINLINE const bool COMP_GT(T X, T Y)
 {
     return (X > Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_GE(T X, T Y)
+RT_FORCEINLINE const bool COMP_GE(T X, T Y)
 {
     return (X >= Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LT(T X, T Y)
+RT_FORCEINLINE const bool COMP_LT(T X, T Y)
 {
     return (X < Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LE(T X, T Y)
+RT_FORCEINLINE const bool COMP_LE(T X, T Y)
 {
     return (X <= Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_NE(T X, T Y)
+RT_FORCEINLINE const bool COMP_NE(T X, T Y)
 {
     return (X != Y);
 }
 
 // Comparing int64_t to uint64_t
 template <typename T>
-FORCE_INLINE const bool COMP_GT_int64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_GT_int64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return false;
     return (X > Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_GE_int64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_GE_int64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return false;
     return (X >= Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LT_int64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_LT_int64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return true;
     return (X < Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LE_int64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_LE_int64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return true;
@@ -361,42 +361,42 @@ FORCE_INLINE const bool COMP_LE_int64_t(T X, T Y)
 
 // Comparing uint64_t to int64_t
 template <typename T>
-FORCE_INLINE const bool COMP_EQ_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_EQ_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return false;
     return (X == Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_NE_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_NE_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return true;
     return (X != Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_GT_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_GT_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return true;
     return (X > Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_GE_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_GE_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return true;
     return (X >= Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LT_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_LT_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return false;
     return (X < Y);
 }
 template <typename T>
-FORCE_INLINE const bool COMP_LE_uint64_t(T X, T Y)
+RT_FORCEINLINE const bool COMP_LE_uint64_t(T X, T Y)
 {
     if ((X | Y) & 0x8000000000000000)
         return false;

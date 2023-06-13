@@ -404,9 +404,9 @@ void AllocateArrayCallback(SDS_ALLOCATE_ARRAY * pAllocateArray)
 
 // Export DLL section
 #if defined(_WIN32) && ! defined(__GNUC__)
-    #define DllExport __declspec(dllexport)
+    #define RT_DLLEXPORT __declspec(dllexport)
 #else
-    #define DllExport
+    #define RT_DLLEXPORT
 #endif
 
 extern "C"
@@ -417,7 +417,7 @@ extern "C"
     //    shareName: the sharename the user provided
     // Returns:
     //    pointer to stReadSharedMemory
-    DllExport stReadSharedMemory * ReadFromSharedMemory(const char * fileName, const char * shareName)
+    RT_DLLEXPORT stReadSharedMemory * ReadFromSharedMemory(const char * fileName, const char * shareName)
     {
         // uint64_t fileNameSize;
         // uint64_t shareNameSize = 0;
@@ -734,7 +734,7 @@ extern "C"
             pDest->pData = (char *)WORKSPACE_ALLOC(pDest->NumBytes);
             if (pDest->pData)
             {
-                RtlZeroMemory(pDest->pData, pDest->NumBytes);
+                std::memset(pDest->pData, 0, pDest->NumBytes);
             }
 
             int32_t ndim = 1;
@@ -811,9 +811,9 @@ extern "C"
         return result;
     }
 
-    DllExport bool CreateSDSFile(const char * fileName, const char * shareName, const char * metaData,
-                                 const char * inListNames, // use commas to separate
-                                 int64_t totalRows, int64_t bandSize = 0)
+    RT_DLLEXPORT bool CreateSDSFile(const char * fileName, const char * shareName, const char * metaData,
+                                    const char * inListNames, // use commas to separate
+                                    int64_t totalRows, int64_t bandSize = 0)
     {
         bool result = CreateSDSFileInternal(fileName, shareName, metaData,
                                             inListNames, // use commas to separate
@@ -829,9 +829,9 @@ extern "C"
     //    shareName: the sharename the user provided, may be NULL
     // Returns:
     //    true/false
-    DllExport bool AppendSDSFile(const char * outFileName,
+    RT_DLLEXPORT bool AppendSDSFile(const char * outFileName,
 
-                                 const char * shareFileName, const char * shareName, int64_t totalRows, int64_t bandSize = 0)
+                                    const char * shareFileName, const char * shareName, int64_t totalRows, int64_t bandSize = 0)
     {
         stReadSharedMemory * pSharedMemory = (stReadSharedMemory *)ReadFromSharedMemory(shareFileName, shareName);
         if (pSharedMemory)

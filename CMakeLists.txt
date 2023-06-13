@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.21)
 
 project(riptide_cpp)
 
@@ -68,6 +68,7 @@ message(STATUS "Proj compiler=${PROJ_COMPILER_ID}, toolset=${PROJ_COMPILER_TOOLS
 
 include(AddCommonSettings)
 include(AddPythonSupport)
+include(CopyRuntimeDeps)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 

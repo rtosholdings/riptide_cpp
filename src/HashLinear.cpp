@@ -130,7 +130,7 @@ int64_t PRIME_NUMBERS[] = { 53,         97,          193,         389,         7
 //   return hash;
 //}
 
-static FORCEINLINE uint64_t crchash64(const char * buf, size_t count)
+static RT_FORCEINLINE uint64_t crchash64(const char * buf, size_t count)
 {
     uint64_t h = 0;
 
@@ -176,7 +176,7 @@ static FORCEINLINE uint64_t crchash64(const char * buf, size_t count)
     h *= 0x2127599bf4325c37ULL; \
     h ^= h >> 47;
 
-static FORCEINLINE uint64_t fasthash64(const void * buf, size_t len)
+static RT_FORCEINLINE uint64_t fasthash64(const void * buf, size_t len)
 {
     uint64_t seed = 0;
     const uint64_t m = 0x880355f21e6d1965ULL;
@@ -221,7 +221,7 @@ static FORCEINLINE uint64_t fasthash64(const void * buf, size_t len)
 
 // --------------------------------------------
 // Used when we know 8byte hash
-FORCEINLINE uint64_t fasthash64_8(uint64_t v)
+RT_FORCEINLINE uint64_t fasthash64_8(uint64_t v)
 {
     uint64_t seed = 0;
     const uint64_t m = 0x880355f21e6d1965ULL;
@@ -235,7 +235,7 @@ FORCEINLINE uint64_t fasthash64_8(uint64_t v)
 
 // --------------------------------------------
 // Used when we know 8byte hash
-FORCEINLINE uint64_t fasthash64_16(uint64_t * v)
+RT_FORCEINLINE uint64_t fasthash64_16(uint64_t * v)
 {
     uint64_t seed = 0;
     const uint64_t m = 0x880355f21e6d1965ULL;
@@ -282,7 +282,7 @@ FORCEINLINE uint64_t fasthash64_16(uint64_t * v)
             break; \
     }
 
-FORCE_INLINE
+RT_FORCEINLINE
 bool UNICODE_MATCH(const char * str1T, const char * str2T, int64_t strWidth1)
 {
     const uint32_t * str1 = (const uint32_t *)str1T;
@@ -299,7 +299,7 @@ bool UNICODE_MATCH(const char * str1T, const char * str2T, int64_t strWidth1)
     return true;
 }
 
-FORCE_INLINE
+RT_FORCEINLINE
 bool STRING_MATCH(const char * str1, const char * str2, int64_t strWidth1)
 {
     while (strWidth1 > 0)
@@ -313,7 +313,7 @@ bool STRING_MATCH(const char * str1, const char * str2, int64_t strWidth1)
     return true;
 }
 
-FORCE_INLINE
+RT_FORCEINLINE
 bool UNICODE_MATCH2(const char * str1T, const char * str2T, int64_t strWidth1, int64_t strWidth2)
 {
     const uint32_t * str1 = (const uint32_t *)str1T;
@@ -346,7 +346,7 @@ bool UNICODE_MATCH2(const char * str1T, const char * str2T, int64_t strWidth1, i
     return true;
 }
 
-FORCE_INLINE
+RT_FORCEINLINE
 bool STRING_MATCH2(const char * str1, const char * str2, int64_t strWidth1, int64_t strWidth2)
 {
     while (1)
@@ -442,7 +442,7 @@ void CHashLinear<T, U>::AllocAndZeroBitFields(uint64_t hashSize)
     if (pBitFields)
     {
         // Fill with zeros to indicate no hash position is used yet
-        RtlZeroMemory(pBitFields, BitAllocSize);
+        std::memset(pBitFields, 0, BitAllocSize);
     }
 }
 
@@ -454,10 +454,8 @@ char * CHashLinear<T, U>::AllocHashTable(size_t allocSize)
     HashTableAllocSize = allocSize;
     pHashTableAny = WorkSpaceAllocLarge(HashTableAllocSize);
 
-    return (char *)pHashTableAny;
-
     //// Do not zero it
-    ////RtlZeroMemory(pHashTableAny, HashTableAllocSize);
+    return (char *)pHashTableAny;
 }
 
 //-----------------------------------------------
@@ -552,8 +550,8 @@ void * CHashLinear<T, U>::AllocMemory(int64_t numberOfEntries, int64_t sizeofStr
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLocation, int8_t * pBoolOutput, U * pLocationOutput,
-                                                         T item, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLocation, int8_t * pBoolOutput,
+                                                           U * pLocationOutput, T item, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
 
@@ -592,8 +590,8 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocation(U i, HashLocation * pLo
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLocation * pLocation, U * pLocationOutput, T item,
-                                                                    uint64_t hash, int64_t * missed)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLocation * pLocation, U * pLocationOutput, T item,
+                                                                      uint64_t hash, int64_t * missed)
 {
     uint64_t const h{ hash };
 
@@ -627,7 +625,7 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationCategorical(U i, HashLoc
 // stores the index of the first location
 // remove the forceline to make debugging easier
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash)
 {
     uint64_t const h{ hash };
 
@@ -3682,8 +3680,8 @@ void CHashLinear<T, U>::MakeHashLocationString(int64_t arraySize, const char * p
 // stores the index of the first location
 // remove the forceline to make debugging easier
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation * pLocation, const char * strValue,
-                                                               int64_t strWidth, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation * pLocation, const char * strValue,
+                                                                 int64_t strWidth, uint64_t hash)
 {
     uint64_t const h{ hash };
 
@@ -3718,8 +3716,8 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationString(U i, HashLocation
 // stores the index of the first location
 // remove the forceline to make debugging easier
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocation * pLocation, const char * strValue,
-                                                                int64_t strWidth, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocation * pLocation, const char * strValue,
+                                                                  int64_t strWidth, uint64_t hash)
 {
     uint64_t const h{ hash };
 
@@ -3760,9 +3758,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalSetLocationUnicode(U i, HashLocatio
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
-                                                               U * pLocationOutput, const char * strValue, int64_t strWidth,
-                                                               uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
+                                                                 U * pLocationOutput, const char * strValue, int64_t strWidth,
+                                                                 uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
     uint64_t const h{ hash };
@@ -3801,9 +3799,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString(int64_t i, HashLo
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
-                                                                U * pLocationOutput, const char * strValue, int64_t strWidth,
-                                                                uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
+                                                                  U * pLocationOutput, const char * strValue, int64_t strWidth,
+                                                                  uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
     uint64_t const h{ hash };
@@ -3842,9 +3840,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode(int64_t i, HashL
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
-                                                                U * pLocationOutput, const char * strValue, int64_t strWidth,
-                                                                int64_t strWidth2, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
+                                                                  U * pLocationOutput, const char * strValue, int64_t strWidth,
+                                                                  int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
     uint64_t const h{ hash };
@@ -3887,9 +3885,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2(int64_t i, HashL
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
-                                                                 U * pLocationOutput, const char * strValue, int64_t strWidth,
-                                                                 int64_t strWidth2, uint64_t hash)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, HashLocation * pLocation, int8_t * pBoolOutput,
+                                                                   U * pLocationOutput, const char * strValue, int64_t strWidth,
+                                                                   int64_t strWidth2, uint64_t hash)
 {
     const U BAD_INDEX = (U)(1LL << (sizeof(U) * 8 - 1));
     uint64_t const h{ hash };
@@ -3932,9 +3930,9 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationUnicode2(int64_t i, Hash
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_t i, HashLocation * pLocation, U * pLocationOutput,
-                                                                          const char * strValue, int64_t strWidth, uint64_t hash,
-                                                                          int64_t * missed)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_t i, HashLocation * pLocation,
+                                                                            U * pLocationOutput, const char * strValue,
+                                                                            int64_t strWidth, uint64_t hash, int64_t * missed)
 {
     uint64_t const h{ hash };
     while (IsBitSet(hash))
@@ -3970,10 +3968,10 @@ FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationStringCategorical(int64_
 // Like Matlab IsMember
 // Returns two arrays
 template <typename T, typename U>
-FORCE_INLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64_t i, HashLocation * pLocation,
-                                                                           U * pLocationOutput, const char * strValue,
-                                                                           int64_t strWidth, int64_t strWidth2, uint64_t hash,
-                                                                           int64_t * missed)
+RT_FORCEINLINE void CHashLinear<T, U>::InternalGetLocationString2Categorical(int64_t i, HashLocation * pLocation,
+                                                                             U * pLocationOutput, const char * strValue,
+                                                                             int64_t strWidth, int64_t strWidth2, uint64_t hash,
+                                                                             int64_t * missed)
 {
     uint64_t const h{ hash };
     while (IsBitSet(hash))

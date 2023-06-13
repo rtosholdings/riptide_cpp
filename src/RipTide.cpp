@@ -138,7 +138,6 @@ int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
 #else
     8,                                                                 // NPY_INT32,      7
     8,                                                                 // NPY_UINT32,     8
-
 #endif
     8,                       // NPY_INT64,  9
     8,                       // NPY_UINT64, 10
@@ -148,14 +147,13 @@ int32_t gNumpyTypeToSize[NUMPY_LAST_TYPE] = {
     8,                       // NPY_CFLOAT,    14
     16,                      // NPY_CDOUBLE,   15
     sizeof(long double) * 2, // NPY_CLONGDOUBLE,16
-
-    0, // NPY_OBJECT =   17,
-    0, // NPY_STRING,    18
-    0, // NPY_UNICODE,   19
-    0, // NPY_VOID,      20
-    0, // NPY_DATETIME,  21
-    0, // NPY_TIMEDELTA, 22
-    0  // NPY_HALF,      23
+    0,                       // NPY_OBJECT =   17,
+    0,                       // NPY_STRING,    18
+    0,                       // NPY_UNICODE,   19
+    0,                       // NPY_VOID,      20
+    0,                       // NPY_DATETIME,  21
+    0,                       // NPY_TIMEDELTA, 22
+    0                        // NPY_HALF,      23
 };
 
 //---------------------------------------------------------------

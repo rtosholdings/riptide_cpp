@@ -16,7 +16,7 @@ requirements:
     - abseil-cpp 20220623.*
     - benchmark >=1.7,<1.8
     - "{{ compiler('cxx') }}"
-    - cmake >=3.18
+    - cmake >=3.21
     - setuptools_scm
     - numpy {{ numpy }}
     - tbb-devel 2021.6

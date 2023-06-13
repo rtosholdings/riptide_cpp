@@ -25,17 +25,17 @@ int64_t IsMemberHashCategorical(int64_t size1, void * pInput1, int64_t size2, vo
 int64_t IsMemberHashCategorical64(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
                                   int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int8_t * pOutput,
-                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+RT_DLLEXPORT void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int8_t * pOutput,
+                                   int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int16_t * pOutput,
-                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+RT_DLLEXPORT void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int16_t * pOutput,
+                                   int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int32_t * pOutput,
-                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+RT_DLLEXPORT void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int32_t * pOutput,
+                                   int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
-DllExport void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
-                                int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
+RT_DLLEXPORT void * IsMemberHash32(int64_t size1, void * pInput1, int64_t size2, void * pInput2, int64_t * pOutput,
+                                   int8_t * pBooleanOutput, int32_t sizeType, HASH_MODE hashMode, int64_t hintSize);
 
 int64_t IsMemberCategoricalHashStringPre(PyArrayObject ** indexArray, PyArrayObject * inArr1, int64_t size1, int64_t strWidth1,
                                          const char * pInput1, int64_t size2, int64_t strWidth2, const char * pInput2,
@@ -249,9 +249,9 @@ public:
 public:
     // Parallel hashing does not want memory deallocated so it will set deallocate
     // to false
-    DllExport CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true);
+    RT_DLLEXPORT CHashLinear(HASH_MODE hashMode = HASH_MODE_PRIME, bool deallocate = true);
 
-    DllExport ~CHashLinear();
+    RT_DLLEXPORT ~CHashLinear();
 
     void FreeMemory(bool forceDeallocate);
 
@@ -346,7 +346,7 @@ public:
     //-----------------------------------------------
     void MakeHashLocationMK(int64_t arraySize, T * pInput, int64_t totalItemSize, int64_t hintSize);
 
-    DllExport void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
+    RT_DLLEXPORT void MakeHashLocation(int64_t arraySize, T * pHashList, int64_t hintSize);
 
     void InternalSetLocation(U i, HashLocation * pLocation, T item, uint64_t hash);
 

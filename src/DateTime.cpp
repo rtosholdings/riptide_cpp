@@ -15,7 +15,7 @@ const char PERIOD = '.';
 // pStart updated on return
 //
 template <typename T>
-FORCE_INLINE int64_t ParseDecimal(const T ** ppStart, const T * pEnd)
+RT_FORCEINLINE int64_t ParseDecimal(const T ** ppStart, const T * pEnd)
 {
     const T * pStart = *ppStart;
 
@@ -60,7 +60,7 @@ FORCE_INLINE int64_t ParseDecimal(const T ** ppStart, const T * pEnd)
 // will stop at end, stop at nonnumber, or when places reached
 // pStart updated on return
 template <typename T>
-FORCE_INLINE int64_t ParseNumber(const T ** ppStart, const T * pEnd, int64_t maxplaces)
+RT_FORCEINLINE int64_t ParseNumber(const T ** ppStart, const T * pEnd, int64_t maxplaces)
 {
     const T * pStart = *ppStart;
 

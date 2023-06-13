@@ -2,7 +2,7 @@
 requires = [
     #"abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
     #"benchmark >=1.7,<1.8", # DOES NOT EXIST! We must assume it exists in environment
-    "cmake >=3.18",
+    "cmake >=3.21",
     "ninja; platform_system!='Windows'",
     "numpy >=1.23, <1.25",
     "tbb-devel ==2021.6.*",
