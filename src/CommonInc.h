@@ -2,14 +2,10 @@
 
 #include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <memory>
-
-// TODO: Remove these includes, they don't seem to be used anymore (at least directly within this file).
-#include <cstdio>
-#include <cmath>
-#include <cstring>
 
 #include "Defs.h"
 
@@ -25,68 +21,94 @@
 
 using HANDLE = void *;
 
-#ifdef RtlEqualMemory
-    #undef RtlEqualMemory
-#endif
-#define RtlEqualMemory(Destination, Source, Length) (! memcmp((Destination), (Source), (Length)))
-#ifdef RtlMoveMemory
-    #undef RtlMoveMemory
-#endif
-#define RtlMoveMemory(Destination, Source, Length) memmove((Destination), (Source), (Length))
-#ifdef RtlCopyMemory
-    #undef RtlCopyMemory
-#endif
-#define RtlCopyMemory(Destination, Source, Length) memcpy((Destination), (Source), (Length))
-#ifdef RtlFillMemory
-    #undef RtlFillMemory
-#endif
-#define RtlFillMemory(Destination, Length, Fill) memset((Destination), (Fill), (Length))
-#ifdef RtlZeroMemory
-    #undef RtlZeroMemory
-#endif
-#define RtlZeroMemory(Destination, Length) memset((Destination), 0, (Length))
-
 #if defined(_WIN32) && ! defined(__GNUC__)
     #define WINAPI __stdcall
-    #define InterlockedCompareExchange128 _InterlockedCompareExchange128
     #ifndef InterlockedAdd64
         #define InterlockedAdd64 _InterlockedAdd64
     #endif
     #define InterlockedDecrement64 _InterlockedDecrement64
     #define InterlockedIncrement64 _InterlockedIncrement64
     #define YieldProcessor _mm_pause
-    #define InterlockedIncrement _InterlockedIncrement
 
     #define FMInterlockedOr(X, Y) _InterlockedOr64((int64_t *)X, Y)
 
     #include <intrin.h>
     #ifndef SFW_ALIGN
         #define SFW_ALIGN(x) __declspec(align(x))
-        #define ALIGN(x) __declspec(align(64))
-
-        #define FORCEINLINE __forceinline
-        #define FORCE_INLINE __forceinline
-
-        #define ALIGNED_ALLOC(Size, Alignment) _aligned_malloc(Size, Alignment)
-        #define ALIGNED_FREE(block) _aligned_free(block)
-
-        #define lzcnt_64 _lzcnt_u64
-
-        #define CASE_NPY_INT32 \
-        case NPY_INT32: \
-        case NPY_INT
-        #define CASE_NPY_UINT32 \
-        case NPY_UINT32: \
-        case NPY_UINT
-        #define CASE_NPY_INT64 case NPY_INT64
-        #define CASE_NPY_UINT64 case NPY_UINT64
-        #define CASE_NPY_FLOAT64 \
-        case NPY_DOUBLE: \
-        case NPY_LONGDOUBLE
 
     #endif
 
+    #define ALIGNED_ALLOC(Size, Alignment) _aligned_malloc(Size, Alignment)
+    #define ALIGNED_FREE(block) _aligned_free(block)
+
+    #define lzcnt_64 _lzcnt_u64
+
+    #define CASE_NPY_INT32 \
+    case NPY_INT32: \
+    case NPY_INT
+    #define CASE_NPY_UINT32 \
+    case NPY_UINT32: \
+    case NPY_UINT
+    #define CASE_NPY_INT64 case NPY_INT64
+    #define CASE_NPY_UINT64 case NPY_UINT64
+    #define CASE_NPY_FLOAT64 \
+    case NPY_DOUBLE: \
+    case NPY_LONGDOUBLE
+
 #else
+
+using INT_PTR = ptrdiff_t;
+using DWORD = uint32_t;
+using LPVOID = void *;
+
+    #define WINAPI
+    #include <pthread.h>
+
+// consider sync_add_and_fetch
+    #define InterlockedAdd64(val, len) (__sync_fetch_and_add(val, len) + len)
+    #define InterlockedIncrement64(val) (__sync_fetch_and_add(val, 1) + 1)
+    #define InterlockedDecrement64(val) (__sync_fetch_and_add(val, -1) - 1)
+    #define YieldProcessor _mm_pause
+    #define FMInterlockedOr(val, bitpos) (__sync_fetch_and_or(val, bitpos))
+
+    #ifndef __GNUC_PREREQ
+        #define __GNUC_PREREQ(major, minor) ((((__GNUC__) << 16) + (__GNUC_MINOR__)) >= (((major) << 16) + (minor)))
+    #endif
+    #if __GNUC_PREREQ(4, 4) || (__clang__ > 0 && __clang_major__ >= 3) || ! defined(__GNUC__)
+    /* GCC >= 4.4 or clang or non-GCC compilers */
+        #include <x86intrin.h>
+    #elif __GNUC_PREREQ(4, 1)
+    /* GCC 4.1, 4.2, and 4.3 do not have x86intrin.h, directly include SSE2 header */
+        #include <emmintrin.h>
+    #endif
+    #ifndef SFW_ALIGN
+        #define SFW_ALIGN(x) __attribute__((aligned(x)))
+    #endif
+
+// Workaround for platforms/compilers which don't support C11 aligned_alloc
+// but which do have posix_memalign().
+    #ifndef aligned_alloc
+
+        #ifdef posix_memalign
+RT_FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
+{
+    void * buffer = NULL;
+    posix_memalign(&buffer, alignment, size);
+    return buffer;
+}
+
+        #else
+        // clang compiler does not support so we default to malloc
+        //#warning Unable to determine how to perform aligned allocations on this platform.
+            #define aligned_alloc(alignment, size) malloc(size)
+        #endif // defined(posix_memalign)
+
+    #endif // !defined(aligned_alloc)
+
+    #define ALIGNED_ALLOC(Size, Alignment) aligned_alloc(Alignment, Size)
+    #define ALIGNED_FREE(block) free(block)
+
+    #define lzcnt_64 __builtin_clzll
 
     #define CASE_NPY_INT32 case NPY_INT32
     #define CASE_NPY_UINT32 case NPY_UINT32
@@ -98,84 +120,15 @@ using HANDLE = void *;
     case NPY_ULONGLONG
     #define CASE_NPY_FLOAT64 case NPY_DOUBLE
 
-using INT_PTR = ptrdiff_t;
-using DWORD = uint32_t;
-using LPVOID = void *;
-
-    #define WINAPI
-    #include <pthread.h>
-
-    // consider sync_add_and_fetch
-    #define InterlockedAdd64(val, len) (__sync_fetch_and_add(val, len) + len)
-    #define InterlockedIncrement64(val) (__sync_fetch_and_add(val, 1) + 1)
-    #define InterlockedDecrement64(val) (__sync_fetch_and_add(val, -1) - 1)
-    #define YieldProcessor _mm_pause
-    #define InterlockedIncrement(val) (__sync_fetch_and_add(val, 1) + 1)
-    #define FMInterlockedOr(val, bitpos) (__sync_fetch_and_or(val, bitpos))
-
-    #ifndef __GNUC_PREREQ
-        #define __GNUC_PREREQ(major, minor) ((((__GNUC__) << 16) + (__GNUC_MINOR__)) >= (((major) << 16) + (minor)))
-    #endif
-    #if __GNUC_PREREQ(4, 4) || (__clang__ > 0 && __clang_major__ >= 3) || ! defined(__GNUC__)
-        /* GCC >= 4.4 or clang or non-GCC compilers */
-        #include <x86intrin.h>
-    #elif __GNUC_PREREQ(4, 1)
-        /* GCC 4.1, 4.2, and 4.3 do not have x86intrin.h, directly include SSE2 header */
-        #include <emmintrin.h>
-    #endif
-    #ifndef SFW_ALIGN
-        #define SFW_ALIGN(x) __attribute__((aligned(x)))
-    #endif
-
-    #define FORCEINLINE inline __attribute__((always_inline))
-    #define FORCE_INLINE inline __attribute__((always_inline))
-    //#define FORCE_INLINE __attribute__((always_inline)) inline
-    //#define __forceinline __attribute__((always_inline))
-    #define ALIGN(x) x __attribute__((aligned(64)))
-
-    // Workaround for platforms/compilers which don't support C11 aligned_alloc
-    // but which do have posix_memalign().
-    #ifndef aligned_alloc
-
-        #ifdef posix_memalign
-FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
-{
-    void * buffer = NULL;
-    posix_memalign(&buffer, alignment, size);
-    return buffer;
-}
-
-        #else
-            // clang compiler does not support so we default to malloc
-            //#warning Unable to determine how to perform aligned allocations on this platform.
-            #define aligned_alloc(alignment, size) malloc(size)
-        #endif // defined(posix_memalign)
-
-    #endif // !defined(aligned_alloc)
-
-    #define ALIGNED_ALLOC(Size, Alignment) aligned_alloc(Alignment, Size)
-    #define ALIGNED_FREE(block) free(block)
-
-    #define lzcnt_64 __builtin_clzll
-
-#endif
-
-// add this after memory allocation to help debug
-#define CHECK_MEMORY_ERROR(_X_) \
-    if (! _X_) \
-        printf("!!!Out of MEMORY: File: %s  Line: %d  Function: %s\n", __FILE__, (int)__LINE__, __FUNCTION__);
-
-#ifndef ASSERT
-    #include <cassert>
-    #define ASSERT assert
 #endif
 
 #define LogInform printf
 #define LogError printf
 
-// Uncomment to allow verbose logging
-//#define VERBOSE LogInform
-#define VERBOSE(...)
+// add this after memory allocation to help debug
+#define CHECK_MEMORY_ERROR(_X_) \
+    if (! _X_) \
+        LogError("!!!Out of MEMORY: File: %s  Line: %d  Function: %s\n", __FILE__, (int)__LINE__, __FUNCTION__);
 
 void * FmAlloc(size_t _Size);
 void FmFree(void * _Block);
@@ -408,7 +361,7 @@ typedef void (*I64_I8_FUNC)(int64_t * pDataIn, int8_t * pDataOut, int64_t len);
 //----------------------------------------------------
 // returns pointer to a data type (of same size in memory) that holds the invalid value for the type
 // does not yet handle strings
-DllExport void * GetDefaultForType(int numpyInType);
+RT_DLLEXPORT void * GetDefaultForType(int numpyInType);
 
 // Overloads to handle invalids
 static inline bool GET_INVALID(bool x)

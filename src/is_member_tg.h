@@ -91,7 +91,7 @@ enum struct hash_choice_t
     tbb,
 };
 
-extern DllExport hash_choice_t runtime_hash_choice;
+extern RT_DLLEXPORT hash_choice_t runtime_hash_choice;
 
 namespace
 {

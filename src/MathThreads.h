@@ -46,8 +46,8 @@ typedef void(WINAPI * WakeSingleAddress)(void *);
 typedef void(WINAPI * WakeAllAddress)(void *);
 typedef bool(WINAPI * WaitAddress)(volatile void *, void *, size_t, uint32_t);
 
-extern DllExport WakeSingleAddress g_WakeSingleAddress;
-extern DllExport WakeAllAddress g_WakeAllAddress;
+extern RT_DLLEXPORT WakeSingleAddress g_WakeSingleAddress;
+extern RT_DLLEXPORT WakeAllAddress g_WakeAllAddress;
 extern WaitAddress g_WaitAddress;
 
 // Forward declaration
@@ -201,14 +201,14 @@ struct stMATH_WORKER_ITEM
     OLD_CALLBACK OldCallback;
 
     //==============================================================
-    FORCE_INLINE int64_t GetWorkBlock()
+    RT_FORCEINLINE int64_t GetWorkBlock()
     {
         int64_t val = InterlockedIncrement64(&BlockNext);
         return val - 1;
     }
 
     //==============================================================
-    FORCE_INLINE void CompleteWorkBlock()
+    RT_FORCEINLINE void CompleteWorkBlock()
     {
         // Indicate we completed a block
         InterlockedIncrement64(&BlocksCompleted);
@@ -218,7 +218,7 @@ struct stMATH_WORKER_ITEM
     // Called by routines that work by index
     // returns 0 on failure
     // else returns length of workblock
-    FORCE_INLINE int64_t GetNextWorkIndex(int64_t * workBlock)
+    RT_FORCEINLINE int64_t GetNextWorkIndex(int64_t * workBlock)
     {
         int64_t wBlock = *workBlock = GetWorkBlock();
 
@@ -237,7 +237,7 @@ struct stMATH_WORKER_ITEM
     // Called by routines that work on chunks/blocks of memory
     // returns 0 on failure
     // else returns length of workblock
-    FORCE_INLINE int64_t GetNextWorkBlock(int64_t * workBlock)
+    RT_FORCEINLINE int64_t GetNextWorkBlock(int64_t * workBlock)
     {
         int64_t wBlock = *workBlock = GetWorkBlock();
 
@@ -272,7 +272,7 @@ struct stMATH_WORKER_ITEM
     // Returns TRUE if it did some work
     // Returns FALSE if it did no work
     // If core is -1, it is the main thread
-    FORCE_INLINE bool DoWork(int core, int64_t workIndex)
+    RT_FORCEINLINE bool DoWork(int core, int64_t workIndex)
     {
         return DoWorkCallback(this, core, workIndex);
     }
@@ -318,27 +318,27 @@ struct stWorkerRing
         FutexWakeCount = FUTEX_WAKE_DEFAULT;
     }
 
-    FORCE_INLINE void Cancel()
+    RT_FORCEINLINE void Cancel()
     {
         Cancelled = true;
     }
 
-    FORCE_INLINE bool AnyThreadsAwakened() const
+    RT_FORCEINLINE bool AnyThreadsAwakened() const
     {
         return ThreadsAwakened != 0;
     }
 
-    FORCE_INLINE stMATH_WORKER_ITEM * GetWorkItem()
+    RT_FORCEINLINE stMATH_WORKER_ITEM * GetWorkItem()
     {
         return &WorkerQueue[WorkIndex & RING_BUFFER_MASK];
     }
 
-    FORCE_INLINE stMATH_WORKER_ITEM * GetExistingWorkItem()
+    RT_FORCEINLINE stMATH_WORKER_ITEM * GetExistingWorkItem()
     {
         return &WorkerQueue[(WorkIndex - 1) & RING_BUFFER_MASK];
     }
 
-    FORCE_INLINE void SetWorkItem(int32_t maxThreadsToWake)
+    RT_FORCEINLINE void SetWorkItem(int32_t maxThreadsToWake)
     {
         // This routine will wakup threads on Windows and Linux
         // Once we increment other threads will notice
@@ -383,7 +383,7 @@ struct stWorkerRing
 #endif
     }
 
-    FORCE_INLINE void CompleteWorkItem()
+    RT_FORCEINLINE void CompleteWorkItem()
     {
         InterlockedIncrement64(&WorkIndexCompleted);
     }

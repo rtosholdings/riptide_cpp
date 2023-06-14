@@ -19,3 +19,5 @@ target_link_libraries(${TARGET_NAME}
     rt_common_settings
     sdsfile
     ut)
+
+proj_copy_runtime_deps(TARGET ${TARGET_NAME})

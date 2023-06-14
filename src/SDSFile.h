@@ -765,40 +765,40 @@ extern "C"
     //-------------------------------------------------
     // Main API to write SDS file
     // File only
-    DllExport int32_t SDSWriteFile(const char * fileName,
-                                   const char * shareName, // can be NULL
-                                   SDS_STRING_LIST * folderName,
+    RT_DLLEXPORT int32_t SDSWriteFile(const char * fileName,
+                                      const char * shareName, // can be NULL
+                                      SDS_STRING_LIST * folderName,
 
-                                   // arrays to save information
-                                   SDS_WRITE_INFO * pWriteInfo,
+                                      // arrays to save information
+                                      SDS_WRITE_INFO * pWriteInfo,
 
-                                   SDS_WRITE_CALLBACKS * pWriteCallbacks);
+                                      SDS_WRITE_CALLBACKS * pWriteCallbacks);
 
     //---------------------------------------------
     // Main API to read SDS file
     // Can read or get infomration
-    DllExport void * SDSReadFile(const char * fileName, const char * shareName, SDS_STRING_LIST * pFolderName,
-                                 SDS_STRING_LIST * pSectionsName, // can be NULL
-                                 SDS_READ_INFO * pReadInfo,       // has mode= COMPRESSION_MODE_DECOMPRESS_FILE OR INFO MODE
-                                 SDS_READ_CALLBACKS * pReadCallbacks);
+    RT_DLLEXPORT void * SDSReadFile(const char * fileName, const char * shareName, SDS_STRING_LIST * pFolderName,
+                                    SDS_STRING_LIST * pSectionsName, // can be NULL
+                                    SDS_READ_INFO * pReadInfo,       // has mode= COMPRESSION_MODE_DECOMPRESS_FILE OR INFO MODE
+                                    SDS_READ_CALLBACKS * pReadCallbacks);
 
     //---------------------------------------------
-    DllExport void * SDSReadManyFiles(SDS_MULTI_READ * pMultiRead,
-                                      SDS_STRING_LIST * pInclusionList, // may be set to NULL
-                                      SDS_STRING_LIST * pFolderList,    // may be set to NULL
-                                      SDS_STRING_LIST * pSectionsName,  // can be NULL
-                                      int64_t fileCount,
-                                      int32_t multiMode, // see SDS_MULTI
-                                      SDS_READ_CALLBACKS * pReadCallbacks);
+    RT_DLLEXPORT void * SDSReadManyFiles(SDS_MULTI_READ * pMultiRead,
+                                         SDS_STRING_LIST * pInclusionList, // may be set to NULL
+                                         SDS_STRING_LIST * pFolderList,    // may be set to NULL
+                                         SDS_STRING_LIST * pSectionsName,  // can be NULL
+                                         int64_t fileCount,
+                                         int32_t multiMode, // see SDS_MULTI
+                                         SDS_READ_CALLBACKS * pReadCallbacks);
 
-    DllExport char * SDSGetLastError();
+    RT_DLLEXPORT char * SDSGetLastError();
 
-    DllExport int32_t CloseSharedMemory(void * pMapStruct);
+    RT_DLLEXPORT int32_t CloseSharedMemory(void * pMapStruct);
 
-    DllExport int32_t CloseDecompressFile(void * pSDSDecompressFile);
+    RT_DLLEXPORT int32_t CloseDecompressFile(void * pSDSDecompressFile);
 
     // no longer supported
-    // DllExport void SDSClearBuffers();
+    // RT_DLLEXPORT void SDSClearBuffers();
 
     typedef bool (*SDS_WRITE_FILE)(const char *, const char *, SDS_WRITE_INFO *, SDS_WRITE_CALLBACKS *);
     typedef void * (*SDS_READ_FILE)(const char *, const char *, SDS_READ_INFO *, SDS_READ_CALLBACKS *);

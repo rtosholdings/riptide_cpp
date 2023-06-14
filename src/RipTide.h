@@ -229,19 +229,19 @@ static inline PyArray_Descr * DTypeToDescr(PyObject * inobject)
 
 PyObject * SetFastArrayView(PyArrayObject * pArray);
 
-extern DllExport int GetNumpyType(bool value);
-extern DllExport int GetNumpyType(int8_t value);
-extern DllExport int GetNumpyType(int16_t value);
-extern DllExport int GetNumpyType(int32_t value);
-extern DllExport int GetNumpyType(int64_t value);
-extern DllExport int GetNumpyType(uint8_t value);
-extern DllExport int GetNumpyType(uint16_t value);
-extern DllExport int GetNumpyType(uint32_t value);
-extern DllExport int GetNumpyType(uint64_t value);
-extern DllExport int GetNumpyType(float value);
-extern DllExport int GetNumpyType(double value);
-extern DllExport int GetNumpyType(long double value);
-extern DllExport int GetNumpyType(char * value);
+extern RT_DLLEXPORT int GetNumpyType(bool value);
+extern RT_DLLEXPORT int GetNumpyType(int8_t value);
+extern RT_DLLEXPORT int GetNumpyType(int16_t value);
+extern RT_DLLEXPORT int GetNumpyType(int32_t value);
+extern RT_DLLEXPORT int GetNumpyType(int64_t value);
+extern RT_DLLEXPORT int GetNumpyType(uint8_t value);
+extern RT_DLLEXPORT int GetNumpyType(uint16_t value);
+extern RT_DLLEXPORT int GetNumpyType(uint32_t value);
+extern RT_DLLEXPORT int GetNumpyType(uint64_t value);
+extern RT_DLLEXPORT int GetNumpyType(float value);
+extern RT_DLLEXPORT int GetNumpyType(double value);
+extern RT_DLLEXPORT int GetNumpyType(long double value);
+extern RT_DLLEXPORT int GetNumpyType(char * value);
 
 //---------------------------------------------------------
 // Returns nanoseconds since utc epoch

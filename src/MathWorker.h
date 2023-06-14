@@ -166,7 +166,7 @@ public:
 
     //------------------------------------------------------------------------------
     //
-    DllExport void StartWorkerThreads(int numaNode);
+    RT_DLLEXPORT void StartWorkerThreads(int numaNode);
 
     //------------------------------------------------------------------------------
     //
@@ -790,4 +790,4 @@ public:
 
 //------------------------------------------------------------
 // declare the global math worker
-extern DllExport CMathWorker * g_cMathWorker;
+extern RT_DLLEXPORT CMathWorker * g_cMathWorker;

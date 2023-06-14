@@ -2,8 +2,7 @@
 #include "RipTide.h"
 #include "missing_values.h"
 
-#include "add_typed_tests.h"
-#include "to_type_str.h"
+#include "ut_extensions.h"
 
 #include "boost/ut.hpp"
 
@@ -34,43 +33,74 @@ namespace
         }
     }
 
-    template <typename T>
-    void same_getinvalid_invalid_test()
+    struct same_getinvalid_invalid_tester
     {
-        T const * gotten_invalid{ static_cast<T *>(GetInvalid<T>()) };
-        expect((gotten_invalid) >> fatal) << "Failed null for: " << to_type_str<T>();
-        T const * type_invalid{ &invalid_for_type<T>::value };
-        bool const ok{ compare_invalids(*gotten_invalid, *type_invalid) };
-        expect(ok) << "Failed for: " << to_type_str<T>();
-    }
-    DECL_ADD_TYPED_TESTS(same_getinvalid_invalid_test)
+        template <typename T>
+        void operator()()
+        {
+            T const * gotten_invalid{ static_cast<T *>(GetInvalid<T>()) };
+            typed_expect<T>((gotten_invalid) >> fatal);
+            T const * type_invalid{ &invalid_for_type<T>::value };
+            bool const ok{ compare_invalids(*gotten_invalid, *type_invalid) };
+            typed_expect<T>(ok);
+        }
+    };
 
-    template <typename T>
-    void same_get_invalid_invalid_test()
+    struct same_get_invalid_invalid_tester
     {
-        T const gotten_invalid{ GET_INVALID(T{}) };
-        T const type_invalid{ invalid_for_type<T>::value };
-        bool const ok{ compare_invalids(gotten_invalid, type_invalid) };
-        expect(ok) << "Failed for: " << to_type_str<T>();
-    }
-    DECL_ADD_TYPED_TESTS(same_get_invalid_invalid_test)
+        template <typename T>
+        void operator()()
+        {
+            T const gotten_invalid{ GET_INVALID(T{}) };
+            T const type_invalid{ invalid_for_type<T>::value };
+            bool const ok{ compare_invalids(gotten_invalid, type_invalid) };
+            typed_expect<T>(ok);
+        }
+    };
 
-    template <typename T>
-    void invalid_sentinel_not_valid_test()
+    struct invalid_sentinel_not_valid_tester
     {
-        T const * gotten_invalid{ reinterpret_cast<T *>(GetInvalid<T>()) };
-        expect((gotten_invalid) >> fatal) << "Failed null for: " << to_type_str<T>();
-        bool const actual{ ! invalid_for_type<T>::is_valid(*gotten_invalid) };
-        // invalid_for_type<bool> doesn't treat any bool as invalid. Probably never will.
-        bool const expected{ std::conditional_t<std::is_same_v<T, bool>, std::false_type, std::true_type>::value };
-        expect(actual == expected) << "Failed for: " << to_type_str<T>();
-    }
-    DECL_ADD_TYPED_TESTS(invalid_sentinel_not_valid_test)
+        template <typename T>
+        void operator()()
+        {
+            bool const actual{ ! invalid_for_type<T>::is_valid(invalid_for_type<T>::value) };
+            // invalid_for_type<bool> doesn't treat any bool as invalid. Probably never will.
+            bool const expected{ std::conditional_t<std::is_same_v<T, bool>, std::false_type, std::true_type>::value };
+            typed_expect<T>(actual == expected);
+        }
+    };
+
+    struct valid_is_valid_tester
+    {
+        template <typename T>
+        void operator()()
+        {
+            T const valid{ 0 }; // zero is valid for all types
+            bool const actual{ invalid_for_type<T>::is_valid(valid) };
+            typed_expect<T>(actual == true);
+        }
+    };
+
+    struct getinvalid_sentinel_not_valid_tester
+    {
+        template <typename T>
+        void operator()()
+        {
+            T const * gotten_invalid{ reinterpret_cast<T *>(GetInvalid<T>()) };
+            typed_expect<T>((gotten_invalid) >> fatal);
+            bool const actual{ ! invalid_for_type<T>::is_valid(*gotten_invalid) };
+            // invalid_for_type<bool> doesn't treat any bool as invalid. Probably never will.
+            bool const expected{ std::conditional_t<std::is_same_v<T, bool>, std::false_type, std::true_type>::value };
+            typed_expect<T>(actual == expected);
+        }
+    };
 
     suite invalids_compatibility = []
     {
-        ADD_TYPED_TESTS(same_getinvalid_invalid_test)("same_getinvalid_invalid"_test, SupportedTypes{});
-        ADD_TYPED_TESTS(same_get_invalid_invalid_test)("same_get_invalid_invalid"_test, SupportedTypes{});
-        ADD_TYPED_TESTS(invalid_sentinel_not_valid_test)("invalid_sentinel_not_valid"_test, SupportedTypes{});
+        "same_getinvalid_invalid"_test = same_getinvalid_invalid_tester{} | SupportedTypes{};
+        "same_get_invalid_invalid"_test = same_get_invalid_invalid_tester{} | SupportedTypes{};
+        "invalid_sentinel_not_valid"_test = invalid_sentinel_not_valid_tester{} | SupportedTypes{};
+        "getinvalid_sentinel_not_valid"_test = getinvalid_sentinel_not_valid_tester{} | SupportedTypes{};
+        "valid_is_valid"_test = valid_is_valid_tester{} | SupportedTypes{};
     };
 }

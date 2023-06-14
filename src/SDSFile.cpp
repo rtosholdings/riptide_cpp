@@ -7709,12 +7709,12 @@ extern "C"
     // metaData -- block of bytes to store as metadata
     // metaDataSize --
     //
-    DllExport int32_t SDSWriteFile(const char * fileName,
-                                   const char * shareName,       // can be NULL
-                                   SDS_STRING_LIST * folderName, // can be NULL
+    RT_DLLEXPORT int32_t SDSWriteFile(const char * fileName,
+                                      const char * shareName,       // can be NULL
+                                      SDS_STRING_LIST * folderName, // can be NULL
 
-                                   // arrays to save information
-                                   SDS_WRITE_INFO * pWriteInfo, SDS_WRITE_CALLBACKS * pWriteCallbacks)
+                                      // arrays to save information
+                                      SDS_WRITE_INFO * pWriteInfo, SDS_WRITE_CALLBACKS * pWriteCallbacks)
     {
         ClearErrors();
 
@@ -7730,12 +7730,12 @@ extern "C"
     //  ReadFromSharedMemory   must be provided
     //
     // Returns what the user specified in ReadFinal
-    DllExport void * SDSReadFile(const char * fileName,
-                                 const char * shareName,         // can be NULL
-                                 SDS_STRING_LIST * folderName,   // can be NULL
-                                 SDS_STRING_LIST * sectionsName, // can be NULL
-                                 SDS_READ_INFO * pReadInfo,      // Default to COMPRESSION_MODE_DECOMPRESS_FILE
-                                 SDS_READ_CALLBACKS * pReadCallbacks)
+    RT_DLLEXPORT void * SDSReadFile(const char * fileName,
+                                    const char * shareName,         // can be NULL
+                                    SDS_STRING_LIST * folderName,   // can be NULL
+                                    SDS_STRING_LIST * sectionsName, // can be NULL
+                                    SDS_READ_INFO * pReadInfo,      // Default to COMPRESSION_MODE_DECOMPRESS_FILE
+                                    SDS_READ_CALLBACKS * pReadCallbacks)
     {
         ClearErrors();
 
@@ -7775,11 +7775,11 @@ extern "C"
     //  ReadFromSharedMemory   must be provided
     //
     // Returns what the user specified in ReadFinal
-    DllExport void * SDSReadManyFiles(SDS_MULTI_READ * pMultiRead,
-                                      SDS_STRING_LIST * pInclusionList,        // may be set to NULL
-                                      SDS_STRING_LIST * pFolderInclusionList,  // may be set to NULL
-                                      SDS_STRING_LIST * pSectionInclusionList, // may be set to NULL
-                                      int64_t fileCount, int32_t multiMode, SDS_READ_CALLBACKS * pReadCallbacks)
+    RT_DLLEXPORT void * SDSReadManyFiles(SDS_MULTI_READ * pMultiRead,
+                                         SDS_STRING_LIST * pInclusionList,        // may be set to NULL
+                                         SDS_STRING_LIST * pFolderInclusionList,  // may be set to NULL
+                                         SDS_STRING_LIST * pSectionInclusionList, // may be set to NULL
+                                         int64_t fileCount, int32_t multiMode, SDS_READ_CALLBACKS * pReadCallbacks)
     {
         void * result = NULL;
         ClearErrors();
@@ -7885,12 +7885,12 @@ extern "C"
         return result;
     }
 
-    DllExport char * SDSGetLastError()
+    RT_DLLEXPORT char * SDSGetLastError()
     {
         return g_errorbuffer;
     }
 
-    DllExport int32_t CloseSharedMemory(void * pMapStruct)
+    RT_DLLEXPORT int32_t CloseSharedMemory(void * pMapStruct)
     {
         PMAPPED_VIEW_STRUCT pMappedStruct = (PMAPPED_VIEW_STRUCT)pMapStruct;
         if (pMappedStruct)
@@ -7901,14 +7901,14 @@ extern "C"
         return false;
     }
 
-    DllExport int32_t CloseDecompressFile(void * pInput)
+    RT_DLLEXPORT int32_t CloseDecompressFile(void * pInput)
     {
         SDSDecompressFile * pSDSDecompressFile = (SDSDecompressFile *)pInput;
         delete pSDSDecompressFile;
         return true;
     }
 
-    // DllExport void SDSClearBuffers() {
+    // RT_DLLEXPORT void SDSClearBuffers() {
     //   for (int32_t i = 0; i < SDS_MAX_CORES; i++) {
     //      if (g_DecompressContext[i] != NULL) {
     //         ZSTD_freeDCtx(g_DecompressContext[i]);

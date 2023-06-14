@@ -616,8 +616,8 @@ static const inline __m256i AddOp256(const int32_t z, U256 x, U256 y)
 }
 
 template <typename T, typename MathFunctionPtr>
-FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void * pDataIn1X, void * pDataIn2X, void * pDataOutX, int64_t len,
-                                  int32_t scalarMode)
+RT_FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void * pDataIn1X, void * pDataIn2X, void * pDataOutX, int64_t len,
+                                     int32_t scalarMode)
 {
     T * pDataOut = (T *)pDataOutX;
     T * pDataIn1 = (T *)pDataIn1X;
@@ -668,8 +668,8 @@ FORCEINLINE void SimpleMathOpSlow(MathFunctionPtr MATH_OP, void * pDataIn1X, voi
 //=====================================================================================================
 // Used in division where the output is a double
 template <typename T, typename MathFunctionPtr>
-FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn1X, void * pDataIn2X, void * pDataOutX, int64_t len,
-                                        int32_t scalarMode)
+RT_FORCEINLINE void SimpleMathOpSlowDouble(MathFunctionPtr MATH_OP, void * pDataIn1X, void * pDataIn2X, void * pDataOutX,
+                                           int64_t len, int32_t scalarMode)
 {
     double * pDataOut = (double *)pDataOutX;
     T * pDataIn1 = (T *)pDataIn1X;
