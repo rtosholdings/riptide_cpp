@@ -10,6 +10,7 @@ set(SOURCES
     is_member_tests.cpp
     main.cpp
     math_worker_tests.cpp
+    numpy_traits_tests.cpp
     test_one_input.cpp)
 
 add_executable(${TARGET_NAME}

@@ -1322,10 +1322,10 @@ public:
             for (V j = start; j < last && j < (start + windowSize); j++)
             {
                 V const index{ pGroup[j] };
-                U value = (U)pSrc[index];
+                T value = pSrc[index];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum += value;
+                    currentSum += static_cast<U>(value);
                 }
                 pDest[index] = currentSum;
             }
@@ -1334,17 +1334,17 @@ public:
             {
                 V const index{ pGroup[j] };
 
-                U value = (U)pSrc[index];
+                T value = pSrc[index];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum += value;
+                    currentSum += static_cast<U>(value);
                 }
 
                 // subtract the item leaving the window
-                value = (U)pSrc[pGroup[j - windowSize]];
+                value = pSrc[pGroup[j - windowSize]];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum -= value;
+                    currentSum -= static_cast<U>(value);
                 }
 
                 pDest[index] = currentSum;
@@ -1461,10 +1461,10 @@ public:
             for (V j = start; j < last && j < (start + windowSize); j++)
             {
                 V const index{ pGroup[j] };
-                U value = (U)pSrc[index];
+                T value = pSrc[index];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum += value;
+                    currentSum += static_cast<U>(value);
                     count++;
                 }
                 pDest[index] = count > 0 ? currentSum / count : invalid_out;
@@ -1474,18 +1474,18 @@ public:
             {
                 V const index{ pGroup[j] };
 
-                U value = (U)pSrc[index];
+                T value = pSrc[index];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum += value;
+                    currentSum += static_cast<U>(value);
                     count++;
                 }
 
                 // subtract the item leaving the window
-                value = (U)pSrc[pGroup[j - windowSize]];
+                value = pSrc[pGroup[j - windowSize]];
                 if (riptide::invalid_for_type<T>::is_valid(value))
                 {
-                    currentSum -= value;
+                    currentSum -= static_cast<U>(value);
                     count--;
                 }
 
@@ -4698,15 +4698,18 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
 //---------------------------------------------------------------
 // Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 =iKey = numpy array (int32_t) which has the index
-// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 =iGroup: (int32_t)
-// array size is same as multikey, unique keys are grouped together Arg4
-// =iFirst: (int32_t) array size is number of unique keys, indexes into iGroup
-// Arg5 =nCount: (int32_t) array size is number of unique keys for the group, is
-// how many member of the group (paired with iFirst) Arg6 = integer unique rows
+// columns in a dataset)
+// Arg2 = iKey = numpy array (int32_t) which has the index
+// to the unique keys (ikey from MultiKeyGroupBy32)
+// Arg3 = iGroup: (int32_t) array size is same as multikey, unique keys are grouped together
+// Arg4 = iFirst: (int32_t) array size is number of unique keys, indexes into iGroup
+// Arg5 = nCount: (int32_t) array size is number of unique keys for the group, is
+// how many member of the group (paired with iFirst)
+// Arg6 = integer unique rows
 // Arg7 = LIST of integers (function number to execute for sum,mean,min, max)
 // Arg8 = LIST of integers (binLow -- invalid bin)
-// Arg9 = funcParam (?? should be a list?)
+// Arg9 = LIST of integers (binHigh -- invalid bin)
+// Arg10 = funcParam (?? should be a list?)
 // Example: GroupByOp2(array, ikey, 3, np.float32)
 // Returns AccumBins
 //
@@ -4728,10 +4731,8 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     int64_t funcParam = 0;
 
     if (! PyArg_ParseTuple(args, "OO!O!O!O!LO!O!O!L", &inList1, &PyArray_Type, &iKey, &PyArray_Type, &iGroup, &PyArray_Type,
-                           &iFirst, &PyArray_Type, &nCount,
-
-                           &unique_rows, &PyList_Type, &listFuncNum, &PyList_Type, &listBinLow, &PyList_Type, &listBinHigh,
-                           &funcParam))
+                           &iFirst, &PyArray_Type, &nCount, &unique_rows, &PyList_Type, &listFuncNum, &PyList_Type, &listBinLow,
+                           &PyList_Type, &listBinHigh, &funcParam))
     {
         return NULL;
     }
@@ -4754,8 +4755,8 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     {
     CASE_NPY_INT32:
     CASE_NPY_INT64:
-
         break;
+
     default:
         PyErr_Format(PyExc_ValueError, "GroupByAllPack32 iGroup, iFirstGroup, and nCountGroup params must be int32 or int64");
         return NULL;

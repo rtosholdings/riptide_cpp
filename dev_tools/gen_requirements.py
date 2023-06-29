@@ -41,6 +41,7 @@ if is_linux():
 # Conda-build requirements.
 # Most everything else will be specified in meta.yaml.
 conda_reqs = [
+    "boa",
     "conda-build",
     "setuptools_scm",  # Needed to construct BUILD_VERSION for meta.yaml
 ] + toolchain_reqs
@@ -166,6 +167,7 @@ parser.add_argument(
     "targets", help="requirement targets", choices=target_reqs.keys(), nargs="+"
 )
 parser.add_argument("--out", help="output file", type=str)
+parser.add_argument("--quote", "-q", help="quote entries", action="store_true")
 args = parser.parse_args()
 
 reqs = list({r for t in args.targets for r in target_reqs[t]})
@@ -175,7 +177,7 @@ reqs.sort()
 out = open(args.out, "w") if args.out else sys.stdout
 try:
     for req in reqs:
-        print(req, file=out)
+        print(f'"{req}"' if args.quote else req, file=out)
 finally:
     if args.out:
         out.close()

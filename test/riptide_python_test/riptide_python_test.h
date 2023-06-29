@@ -9,6 +9,7 @@
 // Hack because debug builds force python36_d.lib
 #define MS_NO_COREDLL    // don't add import libs by default
 #define Py_ENABLE_SHARED // but do enable shared libs
+
 #include <pyconfig.h>
 #undef Py_DEBUG // don't use debug Python APIs
 
@@ -25,13 +26,58 @@
     #undef NO_IMPORT_ARRAY
 #endif
 
-#include "numpy/arrayobject.h"
+#include "missing_values.h"
 #include "numpy_traits.h"
+
+#include <numpy/arrayobject.h>
+
+#include <memory>
 
 namespace riptide_python_test::internal
 {
     extern PyObject * get_named_function(PyObject * module_p, char const * name_p);
+
     extern void pyobject_printer(PyObject * printable);
+
+    extern bool no_pyerr(bool print = true);
+}
+
+namespace riptide_python_test::internal
+{
+    namespace details
+    {
+        template <typename PyT>
+        struct pyobject_deleter
+        {
+            void operator()(PyT * obj) const
+            {
+                Py_XDECREF(obj);
+            }
+        };
+    }
+
+    template <typename PyT>
+    using pyobject_any_ptr = std::unique_ptr<PyT, details::pyobject_deleter<PyT>>;
+
+    using pyobject_ptr = pyobject_any_ptr<PyObject>;
+}
+
+namespace riptide_python_test::internal
+{
+    template <typename T>
+    constexpr bool equal_to_nan_aware(T const & x, T const & y)
+    {
+        using invalid_for_type = riptide::invalid_for_type<T>;
+
+        auto const x_valid{ invalid_for_type::is_valid(x) };
+        auto const y_valid{ invalid_for_type::is_valid(y) };
+
+        if (x_valid ^ y_valid)
+        {
+            return false;
+        }
+        return ! x_valid || x == y;
+    }
 }
 
 extern PyObject * riptide_module_p;

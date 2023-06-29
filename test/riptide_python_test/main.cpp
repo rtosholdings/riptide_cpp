@@ -146,6 +146,8 @@ int main(int argc, char const ** argv)
 {
     auto const options{ parse_options(argc, argv) };
 
+    printf("*** Running tests...\n");
+
     auto & runner{ boost::ut::cfg<> };
 
     boost::ut::options ut_options;
