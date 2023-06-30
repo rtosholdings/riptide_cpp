@@ -20,4 +20,18 @@ namespace riptide_python_test::internal
         PyObject * locals{ Py_BuildValue("{}") };
         PyRun_String("print(printable)", Py_single_input, globals, locals);
     }
+
+    bool no_pyerr(bool print)
+    {
+        if (! PyErr_Occurred())
+        {
+            return true;
+        }
+
+        if (print)
+        {
+            PyErr_Print();
+        }
+        return false;
+    }
 }

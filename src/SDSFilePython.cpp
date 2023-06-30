@@ -369,18 +369,28 @@ static bool CheckErrors()
     return false;
 }
 
+// Disable this thread releasing the GIL during MathThread processing.
+// Releasing the GIL provides the opportunity for another Python thread to
+// make progress, presumably while this thread does non-Python work.
+// Unfortunately, that other Python thread could invoke riptide_cpp
+// functions that use the MathThreads processing, and that is not
+// thread-safe.
+// It may be possible to make access to the MathThreads processing
+// single-threaded, so that other Python processing could still continue.
+// However, this is a cheaper fix for now.
+
 //--------------------------------------------------
 //
 void * BeginAllowThreads()
 {
-    return PyEval_SaveThread();
+    return nullptr; //PyEval_SaveThread();
 }
 
 //--------------------------------------------------
 //
 void EndAllowThreads(void * saveObject)
 {
-    return PyEval_RestoreThread((PyThreadState *)saveObject);
+    saveObject; //return PyEval_RestoreThread((PyThreadState *)saveObject);
 }
 
 //--------------------------------------------------

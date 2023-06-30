@@ -1,6 +1,8 @@
 #include "UnaryOps.h"
 #include "MathWorker.h"
 #include "RipTide.h"
+#include "missing_values.h"
+
 #include "ndarray.h"
 
 //#define LOGGING printf

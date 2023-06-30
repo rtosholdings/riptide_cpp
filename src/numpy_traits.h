@@ -5,22 +5,135 @@
 
 #include <numpy/ndarraytypes.h>
 
-// TODO: Remove these once users of this header have switched over.
-#include "missing_values.h"
+namespace riptide
+{
+    // naming conventions:
+    // type_code is the NPY_TYPES enumeration (e.g. NPY_INT16).
+    // cpp_type is the fixed C++ types (e.g. int16_t).
+    // c_type is the NumPy C-type names (e.g. npy_int16)
+
+    /// @brief Template-based, compile-time mapping between C++ fixed types and numpy type
+    /// codes (e.g. int16_t -> NPY_FLOAT64).
+    ///
+    /// @tparam T A C++ fixed primitive type.
+    template <typename T>
+    struct numpy_type_code;
+
+    template <typename T>
+    inline constexpr NPY_TYPES numpy_type_code_v = numpy_type_code<T>::value;
+
+    /// @brief Template-based, compile-time mapping between numpy type codes and C++ fixed types
+    /// (e.g. NPY_INT16 -> int16_t)
+    ///
+    /// @tparam ndarraytype An NPY_TYPES value.
+    template <NPY_TYPES ndarraytype>
+    struct numpy_cpp_type;
+
+    template <NPY_TYPES TypeCode>
+    using numpy_cpp_type_t = typename numpy_cpp_type<TypeCode>::type;
+
+    /// @brief Template-based, compile-time mapping between C++ types and numpy type
+    /// codes (e.g. npy_int16 -> NPY_INT16).
+    ///
+    /// @tparam T A NumPy C primitive type.
+    template <typename T>
+    struct numpy_c_type_code;
+
+    template <typename T>
+    inline constexpr NPY_TYPES numpy_c_type_code_v = numpy_c_type_code<T>::value;
+
+    /// @brief Template-based, compile-time mapping between C++ types and numpy type
+    /// codes (e.g. NPY_INT16 -> npy_int16).
+    ///
+    /// @tparam ndarraytype An NPY_TYPES value.
+    template <NPY_TYPES ndarraytype>
+    struct numpy_c_type;
+
+    template <NPY_TYPES TypeCode>
+    using numpy_c_type_t = typename numpy_c_type<TypeCode>::type;
+}
 
 namespace riptide
 {
-    /**
-     * @brief Template-based, compile-time mapping between C++ types and numpy type
-     * codes (e.g. NPY_FLOAT64).
-     *
-     * @tparam T A C++ primitive type.
-     */
-    template <typename T>
-    struct numpy_type_code
+    template <>
+    struct numpy_c_type_code<bool>
     {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_BOOL;
     };
 
+    template <>
+    struct numpy_c_type_code<npy_int8>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT8;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_int16>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT16;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_int32>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT32;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_int64>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT64;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_uint8>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT8;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_uint16>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT16;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_uint32>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT32;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_uint64>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT64;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_float32>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT32;
+    };
+
+    template <>
+    struct numpy_c_type_code<npy_float64>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT64;
+    };
+
+#if NPY_SIZEOF_LONGDOUBLE != NPY_SIZEOF_DOUBLE
+
+    template <>
+    struct numpy_c_type_code<npy_longdouble>
+    {
+        static constexpr NPY_TYPES value = NPY_TYPES::NPY_LONGDOUBLE;
+    };
+
+#endif
+}
+
+namespace riptide
+{
     template <>
     struct numpy_type_code<bool>
     {
@@ -28,61 +141,61 @@ namespace riptide
     };
 
     template <>
-    struct numpy_type_code<npy_int8>
+    struct numpy_type_code<int8_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT8;
     };
 
     template <>
-    struct numpy_type_code<npy_int16>
+    struct numpy_type_code<int16_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT16;
     };
 
     template <>
-    struct numpy_type_code<npy_int32>
+    struct numpy_type_code<int32_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT32;
     };
 
     template <>
-    struct numpy_type_code<npy_int64>
+    struct numpy_type_code<int64_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT64;
     };
 
     template <>
-    struct numpy_type_code<npy_uint8>
+    struct numpy_type_code<uint8_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT8;
     };
 
     template <>
-    struct numpy_type_code<npy_uint16>
+    struct numpy_type_code<uint16_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT16;
     };
 
     template <>
-    struct numpy_type_code<npy_uint32>
+    struct numpy_type_code<uint32_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT32;
     };
 
     template <>
-    struct numpy_type_code<npy_uint64>
+    struct numpy_type_code<uint64_t>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT64;
     };
 
     template <>
-    struct numpy_type_code<npy_float32>
+    struct numpy_type_code<float>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT32;
     };
 
     template <>
-    struct numpy_type_code<npy_float64>
+    struct numpy_type_code<double>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT64;
     };
@@ -90,111 +203,16 @@ namespace riptide
 #if NPY_SIZEOF_LONGDOUBLE != NPY_SIZEOF_DOUBLE
 
     template <>
-    struct numpy_type_code<npy_longdouble>
+    struct numpy_type_code<long double>
     {
         static constexpr NPY_TYPES value = NPY_TYPES::NPY_LONGDOUBLE;
     };
 
 #endif
+}
 
-    /**
-     * @brief Template-based, compile-time mapping between C++ types and numpy type
-     * codes (e.g. NPY_FLOAT64).
-     *
-     * @tparam T A C++ primitive type.
-     */
-    template <typename T>
-    struct numpy_ctype_code
-    {
-    };
-
-    template <>
-    struct numpy_ctype_code<bool>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_BOOL;
-    };
-
-    template <>
-    struct numpy_ctype_code<int8_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT8;
-    };
-
-    template <>
-    struct numpy_ctype_code<int16_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT16;
-    };
-
-    template <>
-    struct numpy_ctype_code<int32_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT32;
-    };
-
-    template <>
-    struct numpy_ctype_code<int64_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_INT64;
-    };
-
-    template <>
-    struct numpy_ctype_code<uint8_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT8;
-    };
-
-    template <>
-    struct numpy_ctype_code<uint16_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT16;
-    };
-
-    template <>
-    struct numpy_ctype_code<uint32_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT32;
-    };
-
-    template <>
-    struct numpy_ctype_code<uint64_t>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_UINT64;
-    };
-
-    template <>
-    struct numpy_ctype_code<float>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT32;
-    };
-
-    template <>
-    struct numpy_ctype_code<double>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_FLOAT64;
-    };
-
-#if NPY_SIZEOF_LONGDOUBLE != NPY_SIZEOF_DOUBLE
-
-    template <>
-    struct numpy_ctype_code<long double>
-    {
-        static constexpr NPY_TYPES value = NPY_TYPES::NPY_LONGDOUBLE;
-    };
-
-#endif
-
-    /**
-     * @brief Template-based, compile-time mapping between C++ types and numpy type
-     * codes (e.g. NPY_FLOAT64).
-     *
-     * @tparam ndarraytype An NPY_TYPES value.
-     */
-    template <NPY_TYPES ndarraytype>
-    struct numpy_cpp_type
-    {
-    };
-
+namespace riptide
+{
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_BOOL>
     {
@@ -204,73 +222,154 @@ namespace riptide
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_INT8>
     {
-        using type = npy_int8;
+        using type = int8_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_INT16>
     {
-        using type = npy_int16;
+        using type = int16_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_INT32>
     {
-        using type = npy_int32;
+        using type = int32_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_INT64>
     {
-        using type = npy_int64;
+        using type = int64_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_UINT8>
     {
-        using type = npy_uint8;
+        using type = uint8_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_UINT16>
     {
-        using type = npy_uint16;
+        using type = uint16_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_UINT32>
     {
-        using type = npy_uint32;
+        using type = uint32_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_UINT64>
     {
-        using type = npy_uint64;
+        using type = uint64_t;
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_FLOAT32>
     {
-        using type = npy_float32;
+        using type = float; // float32_t
+        static_assert(sizeof(type) == 32 / 8);
     };
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_FLOAT64>
     {
-        using type = npy_float64;
+        using type = double; // float64_t
+        static_assert(sizeof(type) == 64 / 8);
     };
-
-#if NPY_SIZEOF_LONGDOUBLE != NPY_SIZEOF_DOUBLE
 
     template <>
     struct numpy_cpp_type<NPY_TYPES::NPY_LONGDOUBLE>
     {
-        using type = npy_longdouble;
+#if NPY_SIZEOF_LONGDOUBLE != NPY_SIZEOF_DOUBLE
+        using type = long double;
+#else
+        using type = double;
+#endif
+        static_assert(sizeof(type) >= 64 / 8);
+    };
+}
+
+namespace riptide
+{
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_BOOL>
+    {
+        using type = bool;
     };
 
-#endif
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_INT8>
+    {
+        using type = npy_int8;
+    };
 
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_INT16>
+    {
+        using type = npy_int16;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_INT32>
+    {
+        using type = npy_int32;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_INT64>
+    {
+        using type = npy_int64;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_UINT8>
+    {
+        using type = npy_uint8;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_UINT16>
+    {
+        using type = npy_uint16;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_UINT32>
+    {
+        using type = npy_uint32;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_UINT64>
+    {
+        using type = npy_uint64;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_FLOAT32>
+    {
+        using type = npy_float32;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_FLOAT64>
+    {
+        using type = npy_float64;
+    };
+
+    template <>
+    struct numpy_c_type<NPY_TYPES::NPY_LONGDOUBLE>
+    {
+        using type = npy_longdouble;
+    };
+}
+
+namespace riptide
+{
     /**
      * @brief Type trait for getting the cutoff (as a number of elements).
      *

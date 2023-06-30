@@ -1,9 +1,24 @@
 #pragma once
 #include <cstdint>
 #include <limits>
+#include <type_traits>
 
 namespace riptide
 {
+    namespace details
+    {
+#ifdef __cpp_lib_remove_cvref
+        template <typename T>
+        using remove_cvref_t = std::remove_cvref_t<T>;
+#else
+        template <typename T>
+        using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+#endif
+
+        template <typename TExpected, typename TActual>
+        using bool_if_same = std::enable_if_t<std::is_same_v<remove_cvref_t<TExpected>, remove_cvref_t<TActual>>, bool>;
+    }
+
     /**
      * Type trait for getting an invalid value (by the riptide definition) for a
      * given C++ type.
@@ -27,7 +42,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const bool x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             // Return true (always) here until/if we really support invalid/null values
             // for bools.
@@ -52,7 +68,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const int8_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -70,7 +87,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const int16_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -88,7 +106,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const int32_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -106,7 +125,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const int64_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -129,7 +149,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const uint8_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -147,7 +168,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const uint16_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -165,7 +187,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const uint32_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -183,7 +206,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const uint64_t x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             return x != value;
         }
@@ -201,7 +225,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const float x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             // There are multiple NaN values, so the check for floating-point types
             // needs to be done differently than for integers.
@@ -221,7 +246,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const double x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             // There are multiple NaN values, so the check for floating-point types
             // needs to be done differently than for integers.
@@ -241,7 +267,8 @@ namespace riptide
          * @return true The value is 'valid'.
          * @return false The value is invalid / NaN.
          */
-        static constexpr bool is_valid(const long double x)
+        template <typename T>
+        static constexpr details::bool_if_same<T, decltype(value)> is_valid(const T x)
         {
             // There are multiple NaN values, so the check for floating-point types
             // needs to be done differently than for integers.
@@ -250,16 +277,16 @@ namespace riptide
     };
 
     /**
-     * @brief Conversion function which understands riptide invalid/NA values and
+     * @brief Casting function which understands riptide invalid/NA values and
      * preserves them when converting.
      *
-     * @tparam SourceType The type of the source value.
      * @tparam TargetType The type to convert the source value.
+     * @tparam SourceType The type of the source value.
      */
-    template <typename SourceType, typename TargetType>
-    static constexpr TargetType safe_convert(const SourceType value)
+    template <typename TargetType, typename SourceType>
+    inline constexpr TargetType cast_nan_aware(SourceType const value)
     {
-        return invalid_for_type<SourceType>::is_valid
+        return invalid_for_type<SourceType>::is_valid(value)
                    // The value is valid, so perform the conversion normally.
                    // NOTE: Because of the need to preserve values as closely as
                    // possible, this function
@@ -272,9 +299,9 @@ namespace riptide
                    //       bitmask indicating which values are valid) would allow the
                    //       user to decide how to handle these values.
                    ?
-                   TargetType{ value } // The input value is invalid, so return the/an
-                                       // invalid value for the target type.
-                   :
+                   static_cast<TargetType>(value) :
+                   // The input value is invalid, so return the/an
+                   // invalid value for the target type.
                    invalid_for_type<TargetType>::value;
     }
 } // namespace riptide
