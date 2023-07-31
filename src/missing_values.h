@@ -24,9 +24,7 @@ namespace riptide
      * given C++ type.
      */
     template <typename T>
-    struct invalid_for_type
-    {
-    };
+    struct invalid_for_type;
 
     template <>
     struct invalid_for_type<bool>

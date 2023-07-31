@@ -59,7 +59,7 @@ class CMakeBuild(build_ext):
             )
         else:
             if platform.system() == "Windows":
-                cmake_args += ["-GVisual Studio 16 2019"]
+                cmake_args += ["-GVisual Studio 17 2022"]
             elif platform.system() == "Linux":
                 if shutil.which("ninja"):
                     cmake_args += ["-GNinja"]

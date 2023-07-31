@@ -1,11 +1,9 @@
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(TARGET_NAME riptide_test)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
+    buffer_tests.cpp
     invalid_tests.cpp
     is_member_tests.cpp
     main.cpp

@@ -18,34 +18,6 @@
 
 typedef void (*ROLLING_FUNC)(void * pDataIn, void * pDataOut, int64_t len, int64_t windowSize);
 
-// These are non-groupby routine -- straight array
-enum ROLLING_FUNCTIONS
-{
-    ROLLING_SUM = 0,
-    ROLLING_NANSUM = 1,
-
-    // These output a float/double
-    ROLLING_MEAN = 102,
-    ROLLING_NANMEAN = 103,
-    ROLLING_QUANTILE = 104,
-
-    ROLLING_VAR = 106,
-    ROLLING_NANVAR = 107,
-    ROLLING_STD = 108,
-    ROLLING_NANSTD = 109,
-};
-
-// these are functions that output same size
-enum EMA_FUNCTIONS
-{
-    EMA_CUMSUM = 300,
-    EMA_DECAY = 301,
-    EMA_CUMPROD = 302,
-    EMA_FINDNTH = 303,
-    EMA_NORMAL = 304,
-    EMA_WEIGHTED = 305
-};
-
 template <typename T, typename U>
 inline U QUANTILE_SPLIT(T X, T Y)
 {
@@ -921,6 +893,306 @@ static void CumSum(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUn
     WORKSPACE_FREE(pWorkSpace);
 }
 
+// T and U are always the same
+// Compare: std::less<T> for Min, std::greater<T> for Max
+template <typename T, typename K, template <typename...> typename Compare>
+static void CumNanExtreme(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUnique, int64_t totalInputRows,
+                          void * pTime1, // not used
+                          int8_t * pIncludeMask, int8_t * pResetMask, double windowSize1)
+{
+    const static Compare<T> _compare;
+    T const * const pSrc{ (T *)pColumn };
+    T * const pDest{ (T *)pAccumBin };
+    K const * const pKey{ (K *)pKeyT };
+
+    T const Invalid{ riptide::invalid_for_type<T>::value };
+
+    LOGGING("CumNanExtreme %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
+
+    // Alloc a workspace
+    int64_t const numBins = (numUnique + GB_BASE_INDEX);
+    int64_t const size = numBins * sizeof(T);
+    T * const pWorkSpace = (T *)WORKSPACE_ALLOC(size);
+
+    // Default every bin to Invalid, including floats
+    for (ptrdiff_t j = 0; j < numBins; j++)
+    {
+        pWorkSpace[j] = Invalid;
+    }
+
+    if (pIncludeMask != NULL)
+    {
+        if (pResetMask != NULL)
+        {
+            // filter + reset loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pIncludeMask[i] != 0)
+                    {
+                        if (pResetMask[i])
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                        }
+                        // if new value (pSrc[i]) is invalid, do nothing
+                        else if (riptide::invalid_for_type<T>::is_valid(pSrc[i]))
+                        {
+                            // if old value (pWorkSpace[location]) is invalid, OR both values are valid and comparison
+                            // is in favor of new value, set answer to new value.
+                            if ((not riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) ||
+                                _compare(pSrc[i], (T)pWorkSpace[location]))
+                            {
+                                pWorkSpace[location] = pSrc[i];
+                            }
+                        }
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+        else
+        {
+            // filter loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pIncludeMask[i] != 0)
+                    {
+                        // if new value (pSrc[i]) is invalid, do nothing
+                        if (riptide::invalid_for_type<T>::is_valid(pSrc[i]))
+                        {
+                            // if old value (pWorkSpace[location]) is invalid, OR both values are valid and comparison
+                            // is in favor of new value, set answer to new value.
+                            if ((not riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) ||
+                                _compare(pSrc[i], (T)pWorkSpace[location]))
+                            {
+                                pWorkSpace[location] = pSrc[i];
+                            }
+                        }
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+    }
+    else
+    {
+        if (pResetMask != NULL)
+        {
+            // reset loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pResetMask[i])
+                    {
+                        pWorkSpace[location] = pSrc[i];
+                    }
+                    // if new value (pSrc[i]) is invalid, do nothing
+                    else if (riptide::invalid_for_type<T>::is_valid(pSrc[i]))
+                    {
+                        // if old value (pWorkSpace[location]) is invalid, OR both values are valid and comparison
+                        // is in favor of new value, set answer to new value.
+                        if ((not riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) ||
+                            _compare(pSrc[i], pWorkSpace[location]))
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                        }
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+
+        else
+        {
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+
+                // Bin 0 is bad
+                // if new value (pSrc[i]) is invalid, do nothing
+                if (riptide::invalid_for_type<T>::is_valid(pSrc[i]))
+                {
+                    // if old value (pWorkSpace[location]) is invalid, OR both values are valid and comparison
+                    // is in favor of new value, set answer to new value.
+                    if ((not riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) ||
+                        _compare(pSrc[i], pWorkSpace[location]))
+                    {
+                        pWorkSpace[location] = pSrc[i];
+                    }
+                }
+                pDest[i] = pWorkSpace[location];
+            }
+        }
+    }
+
+    WORKSPACE_FREE(pWorkSpace);
+}
+
+// T and U are always the same
+// Compare: std::less<T> for Min, std::greater<T> for Max
+template <typename T, typename K, template <typename...> typename Compare>
+static void CumExtreme(void * pKeyT, void * pAccumBin, void * pColumn, int64_t numUnique, int64_t totalInputRows,
+                       void * pTime1, // not used
+                       int8_t * pIncludeMask, int8_t * pResetMask, double windowSize1)
+{
+    const static Compare<T> _compare;
+    T const * const pSrc{ (T *)pColumn };
+    T * const pDest{ (T *)pAccumBin };
+    K const * const pKey{ (K *)pKeyT };
+
+    T const Invalid{ riptide::invalid_for_type<T>::value };
+
+    LOGGING("CumNanExtreme %lld  %lld  %lld  %p  %p\n", numUnique, totalInputRows, (int64_t)Invalid, pIncludeMask, pResetMask);
+
+    // Alloc a workspace
+    int64_t const numBins = (numUnique + GB_BASE_INDEX);
+    int64_t const size = numBins * sizeof(T);
+    T * const pWorkSpace = (T *)WORKSPACE_ALLOC(size);
+
+    int64_t const flag_size = numBins * sizeof(bool);
+    bool * const pWorkSpaceDataSeen = (bool *)WORKSPACE_ALLOC(flag_size);
+
+    // Default every bin to Invalid, including floats
+    for (ptrdiff_t j = 0; j < numBins; j++)
+    {
+        pWorkSpace[j] = Invalid;
+        pWorkSpaceDataSeen[j] = false;
+    }
+
+    if (pIncludeMask != NULL)
+    {
+        if (pResetMask != NULL)
+        {
+            // filter + reset loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pIncludeMask[i] != 0)
+                    {
+                        if (pResetMask[i] || (not pWorkSpaceDataSeen[location]))
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                            pWorkSpaceDataSeen[location] = true;
+                        }
+                        // if new value (pSrc[i]) is invalid, or old value (pWorkSpace[location]) is valid
+                        // AND new value passes comparison to old value, set answer to new value
+                        else if ((not riptide::invalid_for_type<T>::is_valid(pSrc[i])) ||
+                                 ((riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) &&
+                                  _compare(pSrc[i], pWorkSpace[location])))
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                            pWorkSpaceDataSeen[location] = true;
+                        }
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+        else
+        {
+            // filter loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pIncludeMask[i] != 0)
+                    {
+                        if (not pWorkSpaceDataSeen[location])
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                            pWorkSpaceDataSeen[location] = true;
+                        }
+                        // if new value (pSrc[i]) is invalid, or old value (pWorkSpace[location]) is valid
+                        // AND new value passes comparison to old value, set answer to new value
+                        else if ((not riptide::invalid_for_type<T>::is_valid(pSrc[i])) ||
+                                 ((riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) &&
+                                  _compare(pSrc[i], pWorkSpace[location])))
+                        {
+                            pWorkSpace[location] = pSrc[i];
+                            pWorkSpaceDataSeen[location] = true;
+                        }
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+    }
+    else
+    {
+        if (pResetMask != NULL)
+        {
+            // reset loop
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+
+                // Bin 0 is bad
+                if (location >= GB_BASE_INDEX)
+                {
+                    if (pResetMask[i] || (not pWorkSpaceDataSeen[location]))
+                    {
+                        pWorkSpace[location] = pSrc[i];
+                        pWorkSpaceDataSeen[location] = true;
+                    }
+                    // if new value (pSrc[i]) is invalid, or old value (pWorkSpace[location]) is valid
+                    // AND new value passes comparison to old value, set answer to new value
+                    else if ((not riptide::invalid_for_type<T>::is_valid(pSrc[i])) ||
+                             ((riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) &&
+                              _compare(pSrc[i], pWorkSpace[location])))
+                    {
+                        pWorkSpace[location] = pSrc[i];
+                        pWorkSpaceDataSeen[location] = true;
+                    }
+                    pDest[i] = pWorkSpace[location];
+                }
+            }
+        }
+
+        else
+        {
+            for (ptrdiff_t i = 0; i < totalInputRows; i++)
+            {
+                K const location = pKey[i];
+
+                // Bin 0 is bad
+                if (not pWorkSpaceDataSeen[location])
+                {
+                    pWorkSpace[location] = pSrc[i];
+                    pWorkSpaceDataSeen[location] = true;
+                }
+                // if new value (pSrc[i]) is invalid, or old value (pWorkSpace[location]) is valid
+                // AND new value passes comparison to old value, set answer to new value
+                else if ((not riptide::invalid_for_type<T>::is_valid(pSrc[i])) ||
+                         ((riptide::invalid_for_type<T>::is_valid(pWorkSpace[location])) &&
+                          _compare(pSrc[i], pWorkSpace[location])))
+                {
+                    pWorkSpace[location] = pSrc[i];
+                    pWorkSpaceDataSeen[location] = true;
+                }
+                pDest[i] = pWorkSpace[location];
+            }
+        }
+    }
+
+    WORKSPACE_FREE(pWorkSpace);
+}
+
 //-------------------------------------------------------------------
 // T = data type as input
 // U = data type as output
@@ -1722,7 +1994,7 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int * outputType, int tim
             *outputType = NPY_FLOAT64;
             return CumSum<double, double, K>;
         case NPY_LONGDOUBLE:
-            *outputType = NPY_FLOAT64;
+            *outputType = NPY_LONGDOUBLE;
             return CumSum<long double, long double, K>;
         case NPY_BOOL:
             *outputType = NPY_INT64;
@@ -1756,6 +2028,133 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int * outputType, int tim
             return CumSum<uint64_t, uint64_t, K>;
         }
         break;
+    case EMA_CUMNANMIN:
+        *outputType = inputType;
+        switch (inputType)
+        {
+        case NPY_FLOAT:
+            return CumNanExtreme<float, K, std::less>;
+        case NPY_DOUBLE:
+            return CumNanExtreme<double, K, std::less>;
+        case NPY_LONGDOUBLE:
+            return CumNanExtreme<long double, K, std::less>;
+        case NPY_BOOL:
+            return CumNanExtreme<int8_t, K, std::less>;
+        case NPY_INT8:
+            return CumNanExtreme<int8_t, K, std::less>;
+        case NPY_INT16:
+            return CumNanExtreme<int16_t, K, std::less>;
+        CASE_NPY_INT32:
+            return CumNanExtreme<int32_t, K, std::less>;
+        CASE_NPY_INT64:
+            return CumNanExtreme<int64_t, K, std::less>;
+        case NPY_UINT8:
+            return CumNanExtreme<uint8_t, K, std::less>;
+        case NPY_UINT16:
+            return CumNanExtreme<uint16_t, K, std::less>;
+        CASE_NPY_UINT32:
+            return CumNanExtreme<uint32_t, K, std::less>;
+        CASE_NPY_UINT64:
+            return CumNanExtreme<uint64_t, K, std::less>;
+        }
+        *outputType = -1;
+        break;
+
+    case EMA_CUMNANMAX:
+        *outputType = inputType;
+        switch (inputType)
+        {
+        case NPY_FLOAT:
+            return CumNanExtreme<float, K, std::greater>;
+        case NPY_DOUBLE:
+            return CumNanExtreme<double, K, std::greater>;
+        case NPY_LONGDOUBLE:
+            return CumNanExtreme<long double, K, std::greater>;
+        case NPY_BOOL:
+            return CumNanExtreme<int8_t, K, std::greater>;
+        case NPY_INT8:
+            return CumNanExtreme<int8_t, K, std::greater>;
+        case NPY_INT16:
+            return CumNanExtreme<int16_t, K, std::greater>;
+        CASE_NPY_INT32:
+            return CumNanExtreme<int32_t, K, std::greater>;
+        CASE_NPY_INT64:
+            return CumNanExtreme<int64_t, K, std::greater>;
+        case NPY_UINT8:
+            return CumNanExtreme<uint8_t, K, std::greater>;
+        case NPY_UINT16:
+            return CumNanExtreme<uint16_t, K, std::greater>;
+        CASE_NPY_UINT32:
+            return CumNanExtreme<uint32_t, K, std::greater>;
+        CASE_NPY_UINT64:
+            return CumNanExtreme<uint64_t, K, std::greater>;
+        }
+        *outputType = -1;
+        break;
+
+    case EMA_CUMMIN:
+        *outputType = inputType;
+        switch (inputType)
+        {
+        case NPY_FLOAT:
+            return CumExtreme<float, K, std::less>;
+        case NPY_DOUBLE:
+            return CumExtreme<double, K, std::less>;
+        case NPY_LONGDOUBLE:
+            return CumExtreme<long double, K, std::less>;
+        case NPY_BOOL:
+            return CumExtreme<int8_t, K, std::less>;
+        case NPY_INT8:
+            return CumExtreme<int8_t, K, std::less>;
+        case NPY_INT16:
+            return CumExtreme<int16_t, K, std::less>;
+        CASE_NPY_INT32:
+            return CumExtreme<int32_t, K, std::less>;
+        CASE_NPY_INT64:
+            return CumExtreme<int64_t, K, std::less>;
+        case NPY_UINT8:
+            return CumExtreme<uint8_t, K, std::less>;
+        case NPY_UINT16:
+            return CumExtreme<uint16_t, K, std::less>;
+        CASE_NPY_UINT32:
+            return CumExtreme<uint32_t, K, std::less>;
+        CASE_NPY_UINT64:
+            return CumExtreme<uint64_t, K, std::less>;
+        }
+        *outputType = -1;
+        break;
+
+    case EMA_CUMMAX:
+        *outputType = inputType;
+        switch (inputType)
+        {
+        case NPY_FLOAT:
+            return CumExtreme<float, K, std::greater>;
+        case NPY_DOUBLE:
+            return CumExtreme<double, K, std::greater>;
+        case NPY_LONGDOUBLE:
+            return CumExtreme<long double, K, std::greater>;
+        case NPY_BOOL:
+            return CumExtreme<int8_t, K, std::greater>;
+        case NPY_INT8:
+            return CumExtreme<int8_t, K, std::greater>;
+        case NPY_INT16:
+            return CumExtreme<int16_t, K, std::greater>;
+        CASE_NPY_INT32:
+            return CumExtreme<int32_t, K, std::greater>;
+        CASE_NPY_INT64:
+            return CumExtreme<int64_t, K, std::greater>;
+        case NPY_UINT8:
+            return CumExtreme<uint8_t, K, std::greater>;
+        case NPY_UINT16:
+            return CumExtreme<uint16_t, K, std::greater>;
+        CASE_NPY_UINT32:
+            return CumExtreme<uint32_t, K, std::greater>;
+        CASE_NPY_UINT64:
+            return CumExtreme<uint64_t, K, std::greater>;
+        }
+        *outputType = -1;
+        break;
 
     case EMA_CUMPROD:
         switch (inputType)
@@ -1767,7 +2166,7 @@ static EMA_BY_TWO_FUNC GetEmaByFunction(int inputType, int * outputType, int tim
             *outputType = NPY_FLOAT64;
             return CumProd<double, double, K>;
         case NPY_LONGDOUBLE:
-            *outputType = NPY_FLOAT64;
+            *outputType = NPY_LONGDOUBLE;
             return CumProd<long double, long double, K>;
         case NPY_BOOL:
             *outputType = NPY_INT64;
@@ -1914,13 +2313,12 @@ void EmaByCall(void * pEmaBy, int64_t i)
 }
 
 //---------------------------------------------------------------
-// Arg1 = LIST of numpy arrays which has the values to accumulate (often all the
-// columns in a dataset) Arg2 = iKey = numpy array (int32_t) which has the index
-// to the unique keys (ikey from MultiKeyGroupBy32) Arg3 = integer unique rows
+// Arg1 = LIST of numpy arrays which has the values to accumulate (often all the columns in a dataset)
+// Arg2 = iKey = numpy array (int32_t) which has the index to the unique keys (ikey from MultiKeyGroupBy32)
+// Arg3 = integer unique rows
 // Arg4 = integer (function number to execute for cumsum, ema)
-// Arg5 = params for function must be (decay/window, time, includemask,
-// resetmask) Example: EmaAll32(array, ikey, 3, EMA_DECAY, (5.6, timeArray))
-// Returns entire dataset per column
+// Arg5 = params for function must be (decay/window, time, includemask, resetmask) Example: EmaAll32(array, ikey, 3, EMA_DECAY,
+// (5.6, timeArray)) Returns entire dataset per column
 //
 PyObject * EmaAll32(PyObject * self, PyObject * args)
 {

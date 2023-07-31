@@ -33,8 +33,8 @@ if is_linux():
     toolchain_reqs += [
         "binutils",
         "binutils_linux-64",
-        "gcc==8.*",
-        "gxx==8.*",
+        "gcc==10.*",
+        "gxx==10.*",
         "ninja",
     ]
 
@@ -112,7 +112,7 @@ tests_reqs += [
     "pandas>=1.0,<3.0",
     "python-dateutil",
 ]
-
+4
 # Black formatting requirements.
 black_reqs = [
     "black==23.*",
@@ -125,7 +125,7 @@ flake8_reqs = [
 
 # Clang-format formatting requirements.
 clang_format_reqs = [
-    "clang-format>=15",
+    "clang-format==15.*",
 ]
 
 # Complete developer requirements.
@@ -176,8 +176,9 @@ reqs.sort()
 # Emit plain list to enable usage like: conda install $(gen_requirements.py developer)
 out = open(args.out, "w") if args.out else sys.stdout
 try:
+    quot = '"' if args.quote else ""
     for req in reqs:
-        print(f'"{req}"' if args.quote else req, file=out)
+        print(quot + req + quot, file=out)
 finally:
     if args.out:
         out.close()

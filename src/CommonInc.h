@@ -51,9 +51,6 @@ using HANDLE = void *;
     case NPY_UINT
     #define CASE_NPY_INT64 case NPY_INT64
     #define CASE_NPY_UINT64 case NPY_UINT64
-    #define CASE_NPY_FLOAT64 \
-    case NPY_DOUBLE: \
-    case NPY_LONGDOUBLE
 
 #else
 
@@ -118,7 +115,6 @@ RT_FORCEINLINE void * aligned_alloc(size_t alignment, size_t size)
     #define CASE_NPY_UINT64 \
     case NPY_UINT64: \
     case NPY_ULONGLONG
-    #define CASE_NPY_FLOAT64 case NPY_DOUBLE
 
 #endif
 
@@ -159,39 +155,6 @@ using workspace_mem_ptr = fm_mem_ptr;
 
 #define PYTHON_ALLOC FmAlloc
 #define PYTHON_FREE FmFree
-
-// NAN are ODD NUMBERED! follow this rule
-enum REDUCE_FUNCTIONS
-{
-    REDUCE_SUM = 0,
-    REDUCE_NANSUM = 1,
-
-    // These output a float/double
-    REDUCE_MEAN = 102,
-    REDUCE_NANMEAN = 103,
-
-    // ddof =1 for pandas, matlab   =0 for numpy
-    REDUCE_VAR = 106,
-    REDUCE_NANVAR = 107,
-    REDUCE_STD = 108,
-    REDUCE_NANSTD = 109,
-
-    REDUCE_MIN = 200,
-    REDUCE_NANMIN = 201,
-    REDUCE_MAX = 202,
-    REDUCE_NANMAX = 203,
-
-    REDUCE_ARGMIN = 204,
-    REDUCE_NANARGMIN = 205,
-    REDUCE_ARGMAX = 206,
-    REDUCE_NANARGMAX = 207,
-
-    // For Jack TODO
-    REDUCE_ANY = 208,
-    REDUCE_ALL = 209,
-
-    REDUCE_MIN_NANAWARE = 210,
-};
 
 enum MATH_OPERATION
 {
@@ -290,30 +253,10 @@ enum MATH_OPERATION
     LAST = 999,
 };
 
-struct stScatterGatherFunc
-{
-    // numpy intput ttype
-    int32_t inputType;
-
-    // the core (if any) making this calculation
-    int32_t core;
-
-    // used for nans, how many non nan values
-    int64_t lenOut;
-
-    // !!must be set when used by var and std
-    double meanCalculation;
-
-    double resultOut;
-
-    // Separate output for min/max
-    int64_t resultOutInt64;
-};
-
 // Generic function declarations
 // The first one passes in a vector and returns a vector
 // Used for operations like B = MIN(A)
-typedef double (*ANY_SCATTER_GATHER_FUNC)(void * pDataIn, int64_t len, stScatterGatherFunc * pstScatterGatherFunc);
+typedef double (*ANY_SCATTER_GATHER_FUNC)(void * pDataIn, int64_t len, struct stScatterGatherFunc * pstScatterGatherFunc);
 
 // typedef void(*UNARY_FUNC)(void* pDataIn, void* pDataOut, int64_t len);
 typedef void (*UNARY_FUNC)(void * pDataIn, void * pDataOut, int64_t len, int64_t strideIn, int64_t strideOut);

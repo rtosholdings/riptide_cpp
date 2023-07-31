@@ -7,13 +7,12 @@
 
 namespace riptide
 {
-    // naming conventions:
+    // Naming conventions:
     // type_code is the NPY_TYPES enumeration (e.g. NPY_INT16).
     // cpp_type is the fixed C++ types (e.g. int16_t).
-    // c_type is the NumPy C-type names (e.g. npy_int16)
+    // c_type is the NumPy C storage types (e.g. npy_int16)
 
-    /// @brief Template-based, compile-time mapping between C++ fixed types and numpy type
-    /// codes (e.g. int16_t -> NPY_FLOAT64).
+    /// @brief Mapping between C++ fixed types and numpy type codes (e.g. int16_t -> NPY_FLOAT64).
     ///
     /// @tparam T A C++ fixed primitive type.
     template <typename T>
@@ -22,8 +21,7 @@ namespace riptide
     template <typename T>
     inline constexpr NPY_TYPES numpy_type_code_v = numpy_type_code<T>::value;
 
-    /// @brief Template-based, compile-time mapping between numpy type codes and C++ fixed types
-    /// (e.g. NPY_INT16 -> int16_t)
+    /// @brief Mapping between numpy type codes and C++ fixed types (e.g. NPY_INT16 -> int16_t)
     ///
     /// @tparam ndarraytype An NPY_TYPES value.
     template <NPY_TYPES ndarraytype>
@@ -32,18 +30,16 @@ namespace riptide
     template <NPY_TYPES TypeCode>
     using numpy_cpp_type_t = typename numpy_cpp_type<TypeCode>::type;
 
-    /// @brief Template-based, compile-time mapping between C++ types and numpy type
-    /// codes (e.g. npy_int16 -> NPY_INT16).
+    /// @brief Mapping between C storage types and numpy type codes (e.g. npy_int16 -> NPY_INT16).
     ///
-    /// @tparam T A NumPy C primitive type.
+    /// @tparam T A NumPy C storage type.
     template <typename T>
     struct numpy_c_type_code;
 
     template <typename T>
     inline constexpr NPY_TYPES numpy_c_type_code_v = numpy_c_type_code<T>::value;
 
-    /// @brief Template-based, compile-time mapping between C++ types and numpy type
-    /// codes (e.g. NPY_INT16 -> npy_int16).
+    /// @brief Mapping between numpy type codes and C storage types (e.g. NPY_INT16 -> npy_int16).
     ///
     /// @tparam ndarraytype An NPY_TYPES value.
     template <NPY_TYPES ndarraytype>
@@ -51,6 +47,16 @@ namespace riptide
 
     template <NPY_TYPES TypeCode>
     using numpy_c_type_t = typename numpy_c_type<TypeCode>::type;
+
+    /// @brief Indicates if InT is storable in OutT (same representation and size).
+    /// @tparam InT Fixed C++ type.
+    /// @tparam OutT NumPy C storage type.
+    template <typename InT, typename OutT>
+    inline constexpr bool numpy_is_storable_v =
+        sizeof(InT) == sizeof(OutT) && std::is_arithmetic_v<OutT> && std::is_arithmetic_v<InT> &&
+        std::numeric_limits<OutT>::is_integer == std::numeric_limits<InT>::is_integer &&
+        std::numeric_limits<OutT>::is_signed == std::numeric_limits<InT>::is_signed &&
+        std::numeric_limits<OutT>::digits >= std::numeric_limits<InT>::digits;
 }
 
 namespace riptide
@@ -298,7 +304,7 @@ namespace riptide
     template <>
     struct numpy_c_type<NPY_TYPES::NPY_BOOL>
     {
-        using type = bool;
+        using type = npy_bool;
     };
 
     template <>
