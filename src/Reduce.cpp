@@ -336,6 +336,164 @@ static inline __m128i CAST_256_TO_128_HI(__m256i x)
     return _mm256_extractf128_si256(x, 1);
 }
 
+struct stScatterGatherFunc
+{
+    // numpy intput type
+    int32_t inputType;
+
+    // the core (if any) making this calculation
+    int32_t core;
+
+    // used for nans, how many non nan values
+    int64_t lenOut;
+
+    // !!must be set when used by var and std
+    double meanCalculation;
+
+    double resultOut;
+
+    // Separate output for min/max
+    int64_t resultOutInt64;
+};
+
+bool CMathWorker::AnyScatterGather(struct stMATH_WORKER_ITEM * pstWorkerItem, int core, int64_t workIndex)
+{
+    bool didSomeWork = false;
+    OLD_CALLBACK * OldCallback = &pstWorkerItem->OldCallback;
+
+    int64_t typeSizeIn = OldCallback->FunctionList->InputItemSize;
+    char * pDataInX = (char *)OldCallback->pDataInBase1;
+    int64_t lenX;
+    int64_t workBlock;
+
+    // Get the workspace calculation for this column
+    stScatterGatherFunc * pstScatterGatherFunc = &((stScatterGatherFunc *)(OldCallback->pThreadWorkSpace))[core + 1];
+
+    THREADLOGGING("[%d] DoWork start loop\n", core);
+
+    // As long as there is work to do
+    while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
+    {
+        // workBlock is length of work
+        THREADLOGGING("[%d][%llu] Zero started working on %lld\n", core, workIndex, workBlock);
+
+        int64_t offsetAdj = pstWorkerItem->BlockSize * workBlock * typeSizeIn;
+
+        OldCallback->FunctionList->AnyScatterGatherCall(pDataInX + offsetAdj, lenX, pstScatterGatherFunc);
+
+        // Indicate we completed a block
+        didSomeWork = true;
+
+        // tell others we completed this work block
+        pstWorkerItem->CompleteWorkBlock();
+
+        THREADLOGGING("[%d][%llu] Zero completed working on %lld\n", core, workIndex, workBlock);
+    }
+    return didSomeWork;
+}
+
+//------------------------------------------------------------------------------
+// Designed to scatter gather
+void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, void * pDataIn, int64_t len, int64_t func,
+                                        stScatterGatherFunc * pstScatterGatherFunc)
+{
+    // If it is a small work item, process it immediately
+    if (len < WORK_ITEM_BIG || NoThreading)
+    {
+        anyScatterGatherCall->AnyScatterGatherCall(pDataIn, len, pstScatterGatherFunc);
+        return;
+    }
+
+    // If we take this path, we are attempting to parallelize the operation
+    stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetWorkItem();
+    pWorkItem->DoWorkCallback = AnyScatterGather;
+
+    int32_t numCores = WorkerThreadCount + 1;
+    int64_t sizeToAlloc = numCores * sizeof(stScatterGatherFunc);
+    void * pWorkSpace = WORKSPACE_ALLOC(sizeToAlloc);
+
+    if (pWorkSpace)
+    {
+        // Insert a work item
+        pWorkItem->OldCallback.FunctionList = anyScatterGatherCall;
+        pWorkItem->OldCallback.pDataInBase1 = pDataIn;
+        pWorkItem->OldCallback.pDataInBase2 = NULL;
+        pWorkItem->OldCallback.pDataOutBase1 = NULL;
+        pWorkItem->OldCallback.pThreadWorkSpace = pWorkSpace;
+
+        // Zero all the workspace values
+        memset(pWorkSpace, 0, sizeToAlloc);
+
+        stScatterGatherFunc * pZeroArray = (stScatterGatherFunc *)pWorkSpace;
+
+        // Scatter the work amongst threads
+        for (int i = 0; i < numCores; i++)
+        {
+            pZeroArray[i].inputType = pstScatterGatherFunc->inputType;
+            pZeroArray[i].meanCalculation = pstScatterGatherFunc->meanCalculation;
+
+            // the main thread is assigned core -1
+            pZeroArray[i].core = i - 1;
+        }
+
+        // pWorkItem->TotalElements = len;
+        // Kick off the worker threads for calculation
+        WorkMain(pWorkItem, len, 0, WORK_ITEM_CHUNK, true);
+
+        // Gather the results from all cores
+        if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX)
+        {
+            int32_t calcs = 0;
+            // Collect all the results...
+            for (int i = 0; i < numCores; i++)
+            {
+                pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
+
+                // did we calc something?
+                if (pZeroArray[i].lenOut)
+                {
+                    if (calcs == 0)
+                    {
+                        // We must accept the very first calculation
+                        calcs++;
+                        pstScatterGatherFunc->resultOut = pZeroArray[i].resultOut;
+                        pstScatterGatherFunc->resultOutInt64 = pZeroArray[i].resultOutInt64;
+                    }
+                    else
+                    {
+                        if (func == REDUCE_MIN || func == REDUCE_NANMIN)
+                        {
+                            pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
+                            pstScatterGatherFunc->resultOutInt64 =
+                                MINF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64);
+                        }
+                        else
+                        {
+                            pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
+                            pstScatterGatherFunc->resultOutInt64 =
+                                MAXF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Gather for SUM plus other calculations
+            MATHLOGGING("Gathering from %d cores\n", numCores);
+
+            // Collect all the results...
+            for (int i = 0; i < numCores; i++)
+            {
+                pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
+                pstScatterGatherFunc->resultOut += pZeroArray[i].resultOut;
+                pstScatterGatherFunc->resultOutInt64 += pZeroArray[i].resultOutInt64;
+            }
+        }
+        WORKSPACE_FREE(pWorkSpace);
+    }
+}
+
 struct stArgScatterGatherFunc
 {
     // numpy input type

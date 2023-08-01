@@ -23,7 +23,7 @@ namespace
     {
         if constexpr (std::is_floating_point_v<T>)
         {
-            // Floatint sentinals must be NaNs, which are never comparable,
+            // Floating sentinels must be NaNs, which are never comparable,
             // and may not even be bit comparable (happens with GCC and long double!)
             return isnan(t1) && isnan(t2);
         }

@@ -4,7 +4,6 @@
 
 #include "MathWorker.h"
 #include "RipTide.h"
-#include "basic_ops.h"
 #include "ndarray.h"
 #include "operation_traits.h"
 

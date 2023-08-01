@@ -2,6 +2,7 @@
 #include "RipTide.h"
 #include "numpy_traits.h"
 
+#include "np_util.h"
 #include "ut_extensions.h"
 
 #include "boost/ut.hpp"
@@ -9,24 +10,13 @@
 #include <cmath>
 #include <type_traits>
 
+using namespace riptide_utility::internal;
 using namespace riptide;
 using namespace boost::ut;
 using boost::ut::suite;
 
 namespace
 {
-    template <NPY_TYPES TypeCodeIn>
-    struct typecode_to_type
-    {
-        static constexpr NPY_TYPES value{ TypeCodeIn };
-    };
-
-    template <typename T1, typename T2>
-    inline constexpr bool is_compatible_v = std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2> &&
-                                            std::numeric_limits<T1>::is_integer == std::numeric_limits<T2>::is_integer &&
-                                            std::numeric_limits<T1>::is_signed == std::numeric_limits<T2>::is_signed &&
-                                            std::numeric_limits<T1>::digits == std::numeric_limits<T2>::digits;
-
     using SupportedTypeCodeTypes =
         std::tuple<typecode_to_type<NPY_TYPES::NPY_BOOL>, typecode_to_type<NPY_TYPES::NPY_INT8>,
                    typecode_to_type<NPY_TYPES::NPY_INT16>, typecode_to_type<NPY_TYPES::NPY_INT32>,
@@ -45,18 +35,22 @@ namespace
             using c_type = riptide::numpy_c_type_t<typecode_>;
             using cpp_type = riptide::numpy_cpp_type_t<typecode_>;
 
-            static_assert(is_compatible_v<c_type, cpp_type>);
+            static_assert(numpy_is_storable_v<cpp_type, c_type>);
 
-            constexpr NPY_TYPES remapped_typecode_
-            {
+            // Fixed C++ types must map to expected fixed typecode (respecting long double ambiguity)
+            constexpr NPY_TYPES remapped_typecode_ =
 #if NPY_SIZEOF_LONGDOUBLE == NPY_SIZEOF_DOUBLE
                 typecode_ == NPY_LONGDOUBLE ? NPY_DOUBLE :
 #endif
-                                              typecode_
-            };
+                                              typecode_;
 
-            static_assert(riptide::numpy_c_type_code_v<c_type> == remapped_typecode_);
             static_assert(riptide::numpy_type_code_v<cpp_type> == remapped_typecode_);
+
+            // Storage C types must map to storage typecodes that map to same storage C types.
+            // NOTE: fixed C++ typecodes may map to larger C storage types (e.g. bool -> uint8).
+            constexpr NPY_TYPES remapped_storage_typecode_ = riptide::numpy_c_type_code_v<c_type>;
+            using remapped_storage_type = riptide::numpy_c_type_t<remapped_storage_typecode_>;
+            static_assert(std::is_same_v<remapped_storage_type, c_type>);
         }
     };
 

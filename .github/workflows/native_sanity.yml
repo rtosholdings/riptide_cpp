@@ -79,12 +79,12 @@ jobs:
           echo "PYTHONPATH=$(pwd)/build/src/${{ env.CONFIG_SUBDIR }}" >> $GITHUB_ENV
       - name: Verify riptide_cpp module
         run: |
-          python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
+          python -c "import riptide_cpp; print(riptide_cpp, riptide_cpp.__version__)"
       - name: Install riptable
         run: |
           # Get just the latest riptable package
           pip install -v --no-deps riptable
-          python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
+          python -c "import riptable; print(riptable, riptable.__version__); print(riptable.rc, riptable.rc.__version__)"
       - name: Run the riptide Python tests
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |

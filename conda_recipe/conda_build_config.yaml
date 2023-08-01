@@ -9,13 +9,13 @@ zip_keys:
   - numpy
 
 c_compiler:
-  - vs2019 # [win]
+  - vs2022 # [win]
 
 cxx_compiler:
-  - vs2019 # [win]
+  - vs2022 # [win]
 
 c_compiler_version:
-  - 8 # [linux]
+  - 10 # [linux]
 
 cxx_compiler_version:
-  - 8 # [linux]
+  - 10 # [linux]

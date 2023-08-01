@@ -19,7 +19,7 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019]
+        os: [ubuntu-latest, windows-2022]
         python-version: [3.9, "3.10", "3.11"]
         numpy-version: [1.23, 1.24]
     steps:
@@ -57,7 +57,7 @@ jobs:
         run: |
           python setup.py build --force
       - name: Package wheel
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         run: |
           python setup.py bdist_wheel
       - name: Package sources
@@ -74,12 +74,12 @@ jobs:
         # Test with riptable (using existing env for better performance)
         #
       - name: Install built riptide_cpp (Windows)
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         run: |
           # Pip install the locally built bdist package, along with any dependencies.
           dir ./dist
           pip install -v $(dir ./dist/riptide_cpp*.whl)
-          python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
+          python -c "import riptide_cpp; print(riptide_cpp, riptide_cpp.__version__)"
       - name: Install built riptide_cpp (Linux)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
@@ -88,7 +88,7 @@ jobs:
           # Pin build-constraints for numpy (see https://github.com/pypa/pip/issues/9542#issuecomment-1242347397)
           echo "numpy==${{ matrix.numpy-version }}.*" > constraints.txt
           PIP_CONSTRAINT=constraints.txt pip install -v ./dist/riptide_cpp*.gz
-          python -c "import riptide_cpp; print(riptide_cpp.__version__); print(riptide_cpp.__file__)"
+          python -c "import riptide_cpp; print(riptide_cpp, riptide_cpp.__version__)"
       - name: Setting up riptable tests
         # Get just the latest riptable package (first explicitly install its deps)
         run: |
@@ -97,7 +97,7 @@ jobs:
           pip install -r runtime_reqs.txt -r tests_reqs.txt
           pip install -v --no-deps riptable
           conda list
-          python -c "import riptable; print(riptable.__version__); print(riptable.__file__)"
+          python -c "import riptable; print(riptable, riptable.__version__); print(riptable.rc, riptable.rc.__version__)"
       - name: Riptable test with pytest
         run: |
           python -m riptable.tests.run
@@ -144,7 +144,7 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-2019"]
+        os: ["ubuntu-latest", "windows-2022"]
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips:
           [
@@ -171,12 +171,12 @@ jobs:
           activate-environment: "conda_build"
           python-version: ${{ env.python_version }}
           mamba-version: "*"
-          auto-update-conda: true
+          auto-update-conda: false
           channels: conda-forge
           channel-priority: flexible
           show-channel-urls: true
       - name: Install dependencies (Windows)
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-2022' }}
         run: |
           set -ex
           conda config --set unsatisfiable_hints_check_depth 0 # setting unsatisfiable_hints=False is broken

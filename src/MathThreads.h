@@ -161,9 +161,9 @@ struct stMATH_WORKER_ITEM
     // sum:        52      xx      30 us     xx
 
     // Items larger than this might be worked on in parallel
-    static const int64_t WORK_ITEM_CHUNK = 0x4000;
-    static const int64_t WORK_ITEM_BIG = (WORK_ITEM_CHUNK * 2);
-    static const int64_t WORK_ITEM_MASK = (WORK_ITEM_CHUNK - 1);
+    static constexpr int64_t WORK_ITEM_CHUNK = 0x4000;
+    static constexpr int64_t WORK_ITEM_BIG = (WORK_ITEM_CHUNK * 2);
+    static constexpr int64_t WORK_ITEM_MASK = (WORK_ITEM_CHUNK - 1);
 
     // The callback to the thread routine that does work
     // with the argument to pass
