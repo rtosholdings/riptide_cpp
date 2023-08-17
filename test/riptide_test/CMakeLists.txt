@@ -7,6 +7,7 @@ set(SOURCES
     invalid_tests.cpp
     is_member_tests.cpp
     main.cpp
+    math_tests.cpp
     math_worker_tests.cpp
     numpy_traits_tests.cpp
     test_one_input.cpp)

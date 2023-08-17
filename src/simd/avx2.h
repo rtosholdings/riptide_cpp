@@ -2,8 +2,6 @@
 #ifndef RIPTABLE_CPP_SIMD_AVX2_H
     #define RIPTABLE_CPP_SIMD_AVX2_H
 
-    #include "../rt_math.h"
-
     #include <algorithm>
     #include <cstdint>
     #include <immintrin.h>

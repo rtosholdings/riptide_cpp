@@ -8,6 +8,7 @@ set(SOURCES
     groupby_tests.cpp
     hash_linear_tests.cpp
     main.cpp
+    mkalign_tests.cpp
     tests.cpp
     reduce_tests.cpp
     utility_functions.cpp)
