@@ -866,7 +866,16 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
     U j = 0;
     while (i < arraySize1 && j < arraySize2)
     {
-        if (pVal1[i] < pVal2[j] || (! allowExact && pVal1[i] == pVal2[j]))
+        if (not riptide::invalid_for_type<V>::is_valid(pVal1[i]))
+        {
+            pLocationOutput[i] = BAD_INDEX;
+            i++;
+        }
+        else if (not riptide::invalid_for_type<V>::is_valid(pVal2[j]))
+        {
+            j++;
+        }
+        else if (pVal1[i] < pVal2[j] || (! allowExact && pVal1[i] == pVal2[j]))
         {
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
@@ -957,6 +966,13 @@ void CHashLinear<T, U>::FindLastMatchMK(int64_t arraySize1, int64_t arraySize2, 
     }
     while (i < arraySize1)
     {
+        if (not riptide::invalid_for_type<V>::is_valid(pVal1[i]))
+        {
+            pLocationOutput[i] = BAD_INDEX;
+            i++;
+            continue;
+        }
+
         const char * pMatch1 = pKey1 + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
         hash = hash & (HashSize - 1);
@@ -1024,7 +1040,16 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
     U j = (U)(arraySize2 - 1);
     while (i >= 0 && j >= 0)
     {
-        if (pVal1[i] > pVal2[j] || (! allowExact && pVal1[i] == pVal2[j]))
+        if (not riptide::invalid_for_type<V>::is_valid(pVal1[i]))
+        {
+            pLocationOutput[i] = BAD_INDEX;
+            i--;
+        }
+        else if (not riptide::invalid_for_type<V>::is_valid(pVal2[j]))
+        {
+            j--;
+        }
+        else if (pVal1[i] > pVal2[j] || (! allowExact && pVal1[i] == pVal2[j]))
         {
             const char * pMatch1 = pKey1 + (totalItemSize * i);
             uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
@@ -1116,6 +1141,13 @@ void CHashLinear<T, U>::FindNextMatchMK(int64_t arraySize1, int64_t arraySize2, 
     }
     while (i >= 0)
     {
+        if (not riptide::invalid_for_type<V>::is_valid(pVal1[i]))
+        {
+            pLocationOutput[i] = BAD_INDEX;
+            i--;
+            continue;
+        }
+
         const char * pMatch1 = pKey1 + (totalItemSize * i);
         uint64_t hash = DEFAULT_HASH64(pMatch1, totalItemSize);
         hash = hash & (HashSize - 1);
@@ -4883,6 +4915,31 @@ bool AlignHashMK32(int64_t size1, void * pInput1, void * pInVal1, int64_t size2,
                                                   (int32_t *)pInVal2, pOutput, totalItemSize, allowExact);
         }
         break;
+    CASE_NPY_UINT64:
+
+        if (isForward)
+        {
+            pHashLinear->FindNextMatchMK<uint64_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint64_t *)pInVal1,
+                                                   (uint64_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        else
+        {
+            pHashLinear->FindLastMatchMK<uint64_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint64_t *)pInVal1,
+                                                   (uint64_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        break;
+    CASE_NPY_UINT32:
+        if (isForward)
+        {
+            pHashLinear->FindNextMatchMK<uint32_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint32_t *)pInVal1,
+                                                   (uint32_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        else
+        {
+            pHashLinear->FindLastMatchMK<uint32_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint32_t *)pInVal1,
+                                                   (uint32_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        break;
     case NPY_FLOAT64:
         if (isForward)
         {
@@ -4949,6 +5006,31 @@ bool AlignHashMK64(int64_t size1, void * pInput1, void * pInVal1, int64_t size2,
         {
             pHashLinear->FindLastMatchMK<int32_t>(size1, size2, (char *)pInput1, (char *)pInput2, (int32_t *)pInVal1,
                                                   (int32_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        break;
+    CASE_NPY_UINT64:
+
+        if (isForward)
+        {
+            pHashLinear->FindNextMatchMK<uint64_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint64_t *)pInVal1,
+                                                   (uint64_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        else
+        {
+            pHashLinear->FindLastMatchMK<uint64_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint64_t *)pInVal1,
+                                                   (uint64_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        break;
+    CASE_NPY_UINT32:
+        if (isForward)
+        {
+            pHashLinear->FindNextMatchMK<uint32_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint32_t *)pInVal1,
+                                                   (uint32_t *)pInVal2, pOutput, totalItemSize, allowExact);
+        }
+        else
+        {
+            pHashLinear->FindLastMatchMK<uint32_t>(size1, size2, (char *)pInput1, (char *)pInput2, (uint32_t *)pInVal1,
+                                                   (uint32_t *)pInVal2, pOutput, totalItemSize, allowExact);
         }
         break;
     case NPY_FLOAT64:

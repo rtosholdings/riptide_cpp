@@ -1685,10 +1685,12 @@ PyObject * MultiKeyIsMember32(PyObject * self, PyObject * args)
 
 //-----------------------------------------------------------------------------------
 // Called when 4 arrays are used as input params
-// First arg: a tuple of numpy arrays representing the keys of the target
-// ((key1,key2), hashmode, filter) Second arg: another tuple of numpy arrays
-// representing keys of object to align Third arg: a numpy object that are
-// target alignment values Fourth arg: another numpy object the values to align
+// Arg 1: a tuple of numpy arrays representing the keys of the target ((key1,key2), hashmode, filter)
+// Arg 2: another tuple of numpy arrays representing keys of object to align
+// Arg 3: a numpy object that are target alignment values
+// Arg 4: another numpy object the values to align
+// Arg 5: indicates forward search, else backward
+// Arg 6: indicates if exact match is allowed
 // Returns two arrays bool and index
 PyObject * MultiKeyAlign32(PyObject * self, PyObject * args)
 {
@@ -1819,15 +1821,17 @@ PyObject * MultiKeyAlign32(PyObject * self, PyObject * args)
 
             if (! success)
             {
-                PyErr_Format(PyExc_ValueError,
-                             "MultiKeyAlign failed.  Only accepts "
-                             "int32_t,int64_t,FLOAT32,FLOAT64");
+                return PyErr_Format(PyExc_ValueError,
+                                    "MultiKeyAlign failed.  Only accepts "
+                                    "int32,int64,uint32,uint64,FLOAT32,FLOAT64");
             }
         }
         catch (const std::exception & e)
         {
             LogError("Exception thrown %s\n", e.what());
+            return PyErr_Format(PyExc_ValueError, "MultiKeyAlign failed. Exception: %s", e.what());
         }
+
         return (PyObject *)indexArray;
     }
 
