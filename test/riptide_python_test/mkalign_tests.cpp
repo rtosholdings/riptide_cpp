@@ -222,7 +222,7 @@ namespace
     suite mkalign_ops = []
     {
         "mkalign_valid"_test = mkalign_tests::test<test_case_id::VALID>{} | SupportedParams{};
-        //badimpl//"mkalign_mixed"_test = mkalign_tests::test<test_case_id::MIXED>{} | SupportedParams{};
-        //badimpl//"mkalign_invalid"_test = mkalign_tests::test<test_case_id::INVALID>{} | SupportedParams{};
+        "mkalign_mixed"_test = mkalign_tests::test<test_case_id::MIXED>{} | SupportedParams{};
+        "mkalign_invalid"_test = mkalign_tests::test<test_case_id::INVALID>{} | SupportedParams{};
     };
 }
