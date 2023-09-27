@@ -4,6 +4,8 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES
     basic_math_tests.cpp
+    bins_bsearch_tests.cpp
+    bins_sorted_tests.cpp
     ema_test.cpp
     groupby_tests.cpp
     hash_linear_tests.cpp

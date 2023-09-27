@@ -3,10 +3,11 @@
 #include "boost/ut.hpp"
 
 #include <sstream>
+#include <string_view>
 
-/// @brief Decorates any failed expect's with the specified type
+/// @brief Decorates any failed expect's with the specified type and optional description
 template <typename Type, typename TExpr>
-auto typed_expect(TExpr const & expr,
+auto typed_expect(std::string_view const desc, TExpr const & expr,
                   boost::ut::reflection::source_location const & sloc = boost::ut::reflection::source_location::current())
 {
     using namespace boost::ut;
@@ -30,7 +31,12 @@ auto typed_expect(TExpr const & expr,
     std::ostringstream msg;
     if (! ok)
     {
-        msg << "(Type:" << reflection::type_name<Type>() << ')';
+        msg << "(Type:" << reflection::type_name<Type>();
+        if (! desc.empty())
+        {
+            msg << "; " << desc;
+        }
+        msg << ')';
     }
     auto result{ expect(ok, sloc) << (exception ? "*fatal*" : "") << msg.str() };
     if (exception)
@@ -38,4 +44,12 @@ auto typed_expect(TExpr const & expr,
         throw std::runtime_error("stopping test due to fatal failure");
     }
     return result;
+}
+
+/// @brief Decorates any failed expect's with the specified type
+template <typename Type, typename TExpr>
+auto typed_expect(TExpr const & expr,
+                  boost::ut::reflection::source_location const & sloc = boost::ut::reflection::source_location::current())
+{
+    return typed_expect<Type, TExpr>(std::string_view{}, expr, sloc);
 }

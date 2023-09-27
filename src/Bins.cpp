@@ -433,7 +433,6 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
         result = NanInfCount<int32_t, U>;
         break;
     CASE_NPY_INT64:
-
         result = NanInfCount<int64_t, U>;
         break;
     case NPY_UINT8:
@@ -446,7 +445,6 @@ NAN_INF_COUNT GetNanInfCount(int numpyInType)
         result = NanInfCount<uint32_t, U>;
         break;
     CASE_NPY_UINT64:
-
         result = NanInfCount<uint64_t, U>;
         break;
     case NPY_FLOAT:
@@ -491,7 +489,6 @@ PyObject * NanInfCountFromSort(PyObject * self, PyObject * args)
                 func = GetNanInfCount<int32_t>(numpyInType);
                 break;
             CASE_NPY_INT64:
-
                 func = GetNanInfCount<int64_t>(numpyInType);
                 break;
             }
@@ -656,7 +653,6 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
         result = MakeBinsSorted<int32_t, U, V>;
         break;
     CASE_NPY_INT64:
-
         result = MakeBinsSorted<int64_t, U, V>;
         break;
     case NPY_UINT8:
@@ -669,7 +665,6 @@ MAKE_BINS_SORTED GetMakeBinsSorted(int numpyInType)
         result = MakeBinsSorted<uint32_t, U, V>;
         break;
     CASE_NPY_UINT64:
-
         result = MakeBinsSorted<uint64_t, U, V>;
         break;
     case NPY_FLOAT:
@@ -844,7 +839,7 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
     const T verylast = (const T)pBin1[lastbin];
     const T veryfirst = (const T)pBin1[0];
 
-    LOGGING("SearchSortedLeft Array length %lld   bin length %lld\n", length, (long long)maxbin);
+    LOGGING("SearchSortedRight Array length %lld   bin length %lld\n", length, (long long)maxbin);
 
     // Now assign a valid bin to the good data in the middle
     for (int64_t i = 0; i < length; i++)
@@ -866,19 +861,14 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
                 if (pBin1[middle] > val)      // if it's in the lower half
                 {
                     last = middle - 1;
-                    if (first >= last)
+                    if (first > last)
                         break;
                 }
-                else if (pBin1[middle] < val)
+                else if (pBin1[middle] <= val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if (first >= last)
+                    if (first > last)
                         break;
-                }
-                else
-                {
-                    first = middle;
-                    break;
                 }
             }
             while (1);
@@ -886,15 +876,7 @@ void SearchSortedRight(void * pDataIn1, void * pOut1, const int64_t start, const
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last,
             // (double)value, (double)pBin1[first]); if (first > last) first = last;
 
-            if (val < pBin1[first])
-            {
-                pOut[i] = first;
-            }
-            else
-            {
-                // edge test
-                pOut[i] = first + 1;
-            }
+            pOut[i] = first;
         }
         else
         {
@@ -956,22 +938,17 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
             do
             {
                 middle = (first + last) >> 1; // this finds the mid point
-                if (pBin1[middle] > val)      // if it's in the lower half
+                if (pBin1[middle] >= val)     // if it's in the lower half
                 {
                     last = middle - 1;
-                    if (first >= last)
+                    if (first > last)
                         break;
                 }
                 else if (pBin1[middle] < val)
                 {
                     first = middle + 1; // if it's in the upper half
-                    if (first >= last)
+                    if (first > last)
                         break;
-                }
-                else
-                {
-                    first = middle;
-                    break;
                 }
             }
             while (1);
@@ -979,15 +956,7 @@ void SearchSortedLeft(void * pDataIn1, void * pOut1, const int64_t start, const 
             // printf("bin %d  %d  %d  %lf %lf\n", (int)first, (int)middle, (int)last,
             // (double)value, (double)pBin1[first]); if (first > last) first = last;
 
-            if (val <= pBin1[first])
-            {
-                pOut[i] = first;
-            }
-            else
-            {
-                // edge test
-                pOut[i] = first + 1;
-            }
+            pOut[i] = first;
         }
         else
         {
@@ -1594,7 +1563,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = MakeBinsBSearch<int32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_INT64:
-
             result = MakeBinsBSearch<int64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_UINT8:
@@ -1607,7 +1575,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = MakeBinsBSearch<uint32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_UINT64:
-
             result = MakeBinsBSearch<uint64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_FLOAT:
@@ -1640,7 +1607,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = SearchSortedLeft<int32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_INT64:
-
             result = SearchSortedLeft<int64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_UINT8:
@@ -1653,7 +1619,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = SearchSortedLeft<uint32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_UINT64:
-
             result = SearchSortedLeft<uint64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_FLOAT:
@@ -1686,7 +1651,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = SearchSortedRight<int32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_INT64:
-
             result = SearchSortedRight<int64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_UINT8:
@@ -1699,7 +1663,6 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearchPart2(int numpyInType, int searchMode)
             result = SearchSortedRight<uint32_t, OUT_TYPE, BINTYPE>;
             break;
         CASE_NPY_UINT64:
-
             result = SearchSortedRight<uint64_t, OUT_TYPE, BINTYPE>;
             break;
         case NPY_FLOAT:
@@ -1738,11 +1701,9 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearch(int numpyInType, int binType, int searchMod
         break;
         // NO UINT8/16/32?
     CASE_NPY_INT64:
-
         result = GetMakeBinsBSearchPart2<OUT_TYPE, int64_t>(numpyInType, searchMode);
         break;
     CASE_NPY_UINT64:
-
         result = GetMakeBinsBSearchPart2<OUT_TYPE, uint64_t>(numpyInType, searchMode);
         break;
     case NPY_FLOAT:
@@ -1760,9 +1721,10 @@ MAKE_BINS_BSEARCH GetMakeBinsBSearch(int numpyInType, int binType, int searchMod
 }
 
 //===============================================================================
-// 1st arg: values (e.g. array of ints or floats) <-- this array needs to be
-// binned 2nd arg: bin array of float64 (values to split on) <-- this array must
-// be sorted 3rd arg: mode (0= for bin cuts, left =1, right =2) Returns BINS -
+// 1st arg: values (e.g. array of ints or floats) <-- this array needs to be binned
+// 2nd arg: bin array of float64 (values to split on) <-- this array must be sorted
+// 3rd arg: mode (0= for bin cuts, left =1, right =2)
+// Returns BINS -
 // NOTE: When out of bounds, it will insert 0
 // if < first bin -- you will get 0
 // if == first bin -- you will get 1
