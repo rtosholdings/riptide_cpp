@@ -21,8 +21,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.11"] #[3.9, "3.10", "3.11"]
-        numpy-version: [1.24] #[1.23, 1.24]
+        python-version: [3.9, "3.10", "3.11"]
+        numpy-version: [1.23, 1.24]
         build-config: ["Debug", "Release"]
     steps:
       - uses: actions/checkout@v3
@@ -37,8 +37,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_build"
-          #python-version: ${{ matrix.python-version }}
-          python-version: 3.9
+          python-version: 3.9 # workaround for odd mamba install problems with latest (py311)
           mamba-version: "*"
           auto-update-conda: false
           channels: conda-forge,defaults
