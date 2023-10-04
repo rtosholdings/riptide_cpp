@@ -13,7 +13,7 @@ on:
 jobs:
   native-build:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash -l {0}
@@ -37,8 +37,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_build"
-          python-version: ${{ matrix.python-version }}
-          mamba-version: "1.0.*"
+          #python-version: ${{ matrix.python-version }}
+          mamba-version: "*"
           auto-update-conda: false
           channels: conda-forge,defaults
           channel-priority: flexible
