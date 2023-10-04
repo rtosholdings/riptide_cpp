@@ -20,8 +20,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2022]
-        python-version: [3.9, "3.10", "3.11"]
-        numpy-version: [1.23, 1.24]
+        python-version: ["3.11"] #[3.9, "3.10", "3.11"]
+        numpy-version: [1.24] #[1.23, 1.24]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -38,7 +38,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           mamba-version: "1.1.0"
           auto-update-conda: false
-          channels: conda-forge
+          channels: conda-forge,defaults
           channel-priority: flexible
           show-channel-urls: true
       - name: Configure Conda
@@ -148,11 +148,11 @@ jobs:
         # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
         zips:
           [
-            { python: "3.9", numpy: "1.23" },
-            { python: "3.9", numpy: "1.24" },
-            { python: "3.10", numpy: "1.23" },
-            { python: "3.10", numpy: "1.24" },
-            { python: "3.11", numpy: "1.23" },
+            #{ python: "3.9", numpy: "1.23" },
+            #{ python: "3.9", numpy: "1.24" },
+            #{ python: "3.10", numpy: "1.23" },
+            #{ python: "3.10", numpy: "1.24" },
+            #{ python: "3.11", numpy: "1.23" },
             { python: "3.11", numpy: "1.24" },
           ]
     env:
@@ -172,7 +172,7 @@ jobs:
           python-version: ${{ env.python_version }}
           mamba-version: "1.1.0"
           auto-update-conda: false
-          channels: conda-forge
+          channels: conda-forge,defaults
           channel-priority: flexible
           show-channel-urls: true
       - name: Install dependencies (Windows)
@@ -223,7 +223,7 @@ jobs:
           activate-environment: "conda_deploy"
           mamba-version: "1.1.0"
           auto-update-conda: false
-          channels: conda-forge
+          channels: conda-forge,defaults
           channel-priority: flexible
           show-channel-urls: true
       - name: Install dependencies
