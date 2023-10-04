@@ -38,6 +38,7 @@ jobs:
         with:
           activate-environment: "conda_build"
           #python-version: ${{ matrix.python-version }}
+          python-version: 3.9
           mamba-version: "*"
           auto-update-conda: false
           channels: conda-forge,defaults
