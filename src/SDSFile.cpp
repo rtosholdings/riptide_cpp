@@ -715,7 +715,7 @@ SDS_FILE_HANDLE SDSFileOpen(const char * fileName, bool writeOption, bool overla
         }
         else
         {
-            createFlags = O_WRONLY | O_CREAT;
+            createFlags = O_WRONLY | O_CREAT | O_TRUNC;
             filehandle = open(fileName, createFlags, 0666);
         }
     }
