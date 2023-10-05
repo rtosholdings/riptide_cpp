@@ -27,7 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
           fetch-depth: 0
@@ -38,7 +37,8 @@ jobs:
         with:
           activate-environment: "conda_build"
           python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
+          miniforge-version: latest
+          use-mamba: true
           auto-update-conda: true
           channels: conda-forge
           channel-priority: flexible

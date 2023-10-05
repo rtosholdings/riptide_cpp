@@ -25,7 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
           fetch-depth: 0
@@ -36,7 +35,8 @@ jobs:
         with:
           activate-environment: "pypi_build"
           python-version: ${{ matrix.python-version }}
-          mamba-version: "*"
+          miniforge-version: latest
+          use-mamba: true
           auto-update-conda: false
           channels: conda-forge
           channel-priority: flexible
@@ -155,13 +155,10 @@ jobs:
             { python: "3.11", numpy: "1.23" },
             { python: "3.11", numpy: "1.24" },
           ]
-    env:
-      python_version: 3.9
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
-          submodules: recursive
           fetch-depth: 0
       - name: Setup Miniconda
         env:
@@ -169,8 +166,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_build"
-          python-version: ${{ env.python_version }}
-          mamba-version: "*"
+          miniforge-version: latest
+          use-mamba: true
           auto-update-conda: false
           channels: conda-forge
           channel-priority: flexible
@@ -221,7 +218,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: "conda_deploy"
-          mamba-version: "*"
+          miniforge-version: latest
+          use-mamba: true
           auto-update-conda: false
           channels: conda-forge
           channel-priority: flexible
