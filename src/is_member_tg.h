@@ -20,7 +20,8 @@
 #include "oneapi/tbb/flow_graph.h"
 #include "oneapi/tbb.h"
 
-#include "absl/container/flat_hash_map.h"
+// If desired, restore flat_hash_map option by including it header-only.
+//#include "absl/container/flat_hash_map.h"
 
 #include <cstdint>
 #include <variant>
@@ -142,9 +143,9 @@ namespace
     {
         using map_key_t = key_t;
 
-        using std_type = typename std::map<map_key_t, index_t>;
-        using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
-        using my_hasher_t = absl_type;
+        using std_type = typename std::unordered_map<map_key_t, index_t>;
+        //using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
+        using my_hasher_t = std_type;
         using local_hashes_t = std::vector<my_hasher_t>;
     };
 
@@ -153,9 +154,9 @@ namespace
     {
         using map_key_t = riptide_cpp::simple_span<key_t>;
 
-        using std_type = typename std::map<map_key_t, index_t>;
-        using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
-        using my_hasher_t = absl_type;
+        using std_type = typename std::unordered_map<map_key_t, index_t>;
+        //using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
+        using my_hasher_t = std_type;
         using local_hashes_t = std::vector<my_hasher_t>;
     };
 
@@ -164,9 +165,9 @@ namespace
     {
         using map_key_t = riptide_cpp::simple_span<key_t>;
 
-        using std_type = typename std::map<map_key_t, index_t>;
-        using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
-        using my_hasher_t = absl_type;
+        using std_type = typename std::unordered_map<map_key_t, index_t>;
+        //using absl_type = typename absl::flat_hash_map<map_key_t, index_t>;
+        using my_hasher_t = std_type;
         using local_hashes_t = std::vector<my_hasher_t>;
     };
 

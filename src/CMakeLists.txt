@@ -17,6 +17,7 @@ set(HEADERS
     HashLinear.h
     Hook.h
     is_member_tg.h
+    Logger.h
     MathThreads.h
     MathWorker.h
     Merge.h
@@ -51,6 +52,7 @@ set(SOURCES
     HashLinear.cpp
     Hook.cpp
     is_member_tg.cpp
+    Logger.cpp
     MathThreads.cpp
     MathWorker.cpp
     Merge.cpp
@@ -83,8 +85,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
 target_compile_options(${TARGET_NAME} PRIVATE
     $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>:-bigobj>)
 
-# Match MSVC debug compile settings to those used in release static abseil libs.
-# See recipe at https://github.com/conda-forge/abseil-cpp-feedstock/blob/main/recipe/meta.yaml
+# Match MSVC debug compile settings to those used in external release libs.
 target_compile_definitions(${TARGET_NAME} PUBLIC
     $<$<AND:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>>:_ITERATOR_DEBUG_LEVEL=0>)
 target_compile_options(${TARGET_NAME} PUBLIC
@@ -96,7 +97,6 @@ target_link_libraries(${TARGET_NAME}
     zstd::libzstd_shared
     TBB::tbb
     TBB::tbbmalloc
-    absl::flat_hash_map
     $<$<PLATFORM_ID:Linux>:rt>
 )
 

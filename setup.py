@@ -15,7 +15,6 @@ version_path = "src/_version.d"
 
 # Runtime install requirements (build requirements are in pyproject.toml)
 install_requires = [
-    # "abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
     "numpy >=1.23, <1.25",
     "tbb ==2021.6.*",
     "zstd >=1.5.2,<1.6",
@@ -164,9 +163,9 @@ setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],

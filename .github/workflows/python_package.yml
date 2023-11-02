@@ -192,6 +192,8 @@ jobs:
       - name: Build package
         run: |
           set -ex
+          conda config --set conda_build.pkg_format 2 # create .conda package format
+          conda config --set conda_build.zstd_compression_level 19 # set .conda package format compression level
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
           mkdir conda_pkgs_output
           echo "python: " ${{ matrix.zips.python }} > ./conda_variant.yaml
@@ -201,7 +203,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: conda-build-artifacts
-          path: conda_pkgs_output/*/riptide_cpp-*.tar.bz2
+          path: conda_pkgs_output/*/riptide_cpp-*.conda
           if-no-files-found: "error"
 
   conda_deploy:
@@ -240,4 +242,4 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.tar.bz2
+          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda

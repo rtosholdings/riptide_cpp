@@ -9,6 +9,7 @@ set(SOURCES
     ema_test.cpp
     groupby_tests.cpp
     hash_linear_tests.cpp
+    lexsort_tests.cpp
     main.cpp
     mkalign_tests.cpp
     tests.cpp

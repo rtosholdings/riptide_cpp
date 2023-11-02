@@ -24,16 +24,16 @@ PyObject * SortInPlace(PyObject * self, PyObject * args);
 PyObject * SortInPlaceIndirect(PyObject * self, PyObject * args);
 
 //-----------------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending = true>
 int heapsort_(T * start, int64_t n);
 
-template <typename T>
+template <typename T, bool Ascending = true>
 int quicksort_(T * start, int64_t num);
 
-template <typename T>
+template <typename T, bool Ascending = true>
 void mergesort0_(T * pl, T * pr, T * pw);
 
-template <typename T>
+template <typename T, bool Ascending = true>
 int mergesort_(T * start, int64_t num);
 
 //===============================================================================
