@@ -272,7 +272,7 @@ PyObject * CompressDecompressArrays(PyObject * self, PyObject * args)
                     char * pCompressedData = (char *)(&pstNumpyHeader[1]);
 
                     int64_t totalCompressedBytes = pstNumpyHeader->compressedSize + sizeof(NUMPY_HEADERSIZE);
-                    int64_t uncomp = (int64_t)ZSTD_getFrameContentSize(pCompressedData, (size_t)totalCompressedBytes);
+                    auto const uncomp = ZSTD_getFrameContentSize(pCompressedData, (size_t)totalCompressedBytes);
                     switch (uncomp)
                     {
                     case ZSTD_CONTENTSIZE_UNKNOWN:

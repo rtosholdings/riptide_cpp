@@ -1,6 +1,5 @@
 [build-system]
 requires = [
-    #"abseil-cpp ==20220623.*", # DOES NOT EXIST! We must assume it exists in environment
     #"benchmark >=1.7,<1.8", # DOES NOT EXIST! We must assume it exists in environment
     "cmake >=3.21",
     "ninja; platform_system!='Windows'",

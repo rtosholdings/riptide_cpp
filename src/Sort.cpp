@@ -4,6 +4,7 @@
 #include "MultiKey.h"
 #include "MathWorker.h"
 #include "Recycler.h"
+#include "missing_values.h"
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -74,51 +75,26 @@ static __inline int npy_get_msb(uint64_t unum)
 // Anything compared to a nan will return 0
 #define FLOAT_LT(_X_, _Y_) (_X_ < _Y_ || (_Y_ != _Y_ && _X_ == _X_))
 
-__inline bool COMPARE_LT(float X, float Y)
+template <typename T, bool Ascending>
+__inline bool COMPARE_LT(T X, T Y)
 {
-    return (X < Y || (Y != Y && X == X));
-}
-__inline bool COMPARE_LT(double X, double Y)
-{
-    return (X < Y || (Y != Y && X == X));
-}
-__inline bool COMPARE_LT(long double X, long double Y)
-{
-    return (X < Y || (Y != Y && X == X));
-}
-__inline bool COMPARE_LT(int32_t X, int32_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(int64_t X, int64_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(uint32_t X, uint32_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(uint64_t X, uint64_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(int8_t X, int8_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(int16_t X, int16_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(uint8_t X, uint8_t Y)
-{
-    return (X < Y);
-}
-__inline bool COMPARE_LT(uint16_t X, uint16_t Y)
-{
-    return (X < Y);
+    if constexpr (std::is_floating_point_v<T>)
+    {
+        // check if we're comparing to an invalid value
+        auto const is_invalid = ! riptide::invalid_for_type<T>::is_valid(Y) && riptide::invalid_for_type<T>::is_valid(X);
+        if constexpr (Ascending)
+            return (X < Y || is_invalid);
+        else
+            return (X > Y || is_invalid);
+    }
+
+    if constexpr (Ascending)
+        return X < Y;
+    else
+        return X > Y;
 }
 
+template <bool Ascending>
 NPY_INLINE static int STRING_LT(const char * s1, const char * s2, size_t len)
 {
     const unsigned char * c1 = (unsigned char *)s1;
@@ -129,7 +105,7 @@ NPY_INLINE static int STRING_LT(const char * s1, const char * s2, size_t len)
     {
         if (c1[i] != c2[i])
         {
-            return c1[i] < c2[i];
+            return COMPARE_LT<unsigned char, Ascending>(c1[i], c2[i]);
         }
     }
     return 0;
@@ -138,6 +114,7 @@ NPY_INLINE static int STRING_LT(const char * s1, const char * s2, size_t len)
 //---------------------------------
 // Assumes Py_UCS4
 // Assumes int is 32bits
+template <bool Ascending>
 NPY_INLINE static int UNICODE_LT(const char * s1, const char * s2, size_t len)
 {
     const unsigned int * c1 = (unsigned int *)s1;
@@ -150,12 +127,13 @@ NPY_INLINE static int UNICODE_LT(const char * s1, const char * s2, size_t len)
     {
         if (c1[i] != c2[i])
         {
-            return c1[i] < c2[i];
+            return COMPARE_LT<unsigned int, Ascending>(c1[i], c2[i]);
         }
     }
     return 0;
 }
 
+template <bool Ascending>
 NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
 {
     const unsigned char * c1 = (unsigned char *)s1;
@@ -166,19 +144,19 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     case 1:
         if (*c1 != *c2)
         {
-            return *c1 < *c2;
+            return COMPARE_LT<unsigned char, Ascending>(*c1, *c2);
         }
         return 0;
     case 2:
         if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
-            return *(uint16_t *)c1 < *(uint16_t *)c2;
+            return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
         }
         return 0;
     case 3:
         if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
-            return *(uint16_t *)c1 < *(uint16_t *)c2;
+            return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
         }
         c1 += 2;
         c2 += 2;
@@ -190,13 +168,13 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     case 4:
         if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
-            return *(uint32_t *)c1 < *(uint32_t *)c2;
+            return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
         }
         return 0;
     case 5:
         if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
-            return *(uint32_t *)c1 < *(uint32_t *)c2;
+            return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
         }
         c1 += 4;
         c2 += 4;
@@ -208,25 +186,25 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     case 6:
         if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
-            return *(uint32_t *)c1 < *(uint32_t *)c2;
+            return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
         }
         c1 += 4;
         c2 += 4;
         if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
-            return *(uint16_t *)c1 < *(uint16_t *)c2;
+            return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
         }
         return 0;
     case 7:
         if (*(uint32_t *)c1 != *(uint32_t *)c2)
         {
-            return *(uint32_t *)c1 < *(uint32_t *)c2;
+            return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
         }
         c1 += 4;
         c2 += 4;
         if (*(uint16_t *)c1 != *(uint16_t *)c2)
         {
-            return *(uint16_t *)c1 < *(uint16_t *)c2;
+            return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
         }
         c1 += 2;
         c2 += 2;
@@ -238,7 +216,7 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
     case 8:
         if (*(uint64_t *)c1 != *(uint64_t *)c2)
         {
-            return *(uint64_t *)c1 < *(uint64_t *)c2;
+            return COMPARE_LT<uint64_t, Ascending>(*(uint64_t *)c1, *(uint64_t *)c2);
         }
         return 0;
     default:
@@ -248,7 +226,7 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
             {
                 if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
-                    return *(uint64_t *)c1 < *(uint64_t *)c2;
+                    return COMPARE_LT<uint64_t, Ascending>(*(uint64_t *)c1, *(uint64_t *)c2);
                 }
                 c1 += 8;
                 c2 += 8;
@@ -265,13 +243,13 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
             case 2:
                 if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
-                    return *(uint16_t *)c1 < *(uint16_t *)c2;
+                    return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
                 }
                 return 0;
             case 3:
                 if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
-                    return *(uint16_t *)c1 < *(uint16_t *)c2;
+                    return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
                 }
                 c1 += 2;
                 c2 += 2;
@@ -283,13 +261,13 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
             case 4:
                 if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
-                    return *(uint32_t *)c1 < *(uint32_t *)c2;
+                    return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
                 }
                 return 0;
             case 5:
                 if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
-                    return *(uint32_t *)c1 < *(uint32_t *)c2;
+                    return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
                 }
                 c1 += 4;
                 c2 += 4;
@@ -301,25 +279,25 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
             case 6:
                 if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
-                    return *(uint32_t *)c1 < *(uint32_t *)c2;
+                    return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
                 }
                 c1 += 4;
                 c2 += 4;
                 if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
-                    return *(uint16_t *)c1 < *(uint16_t *)c2;
+                    return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
                 }
                 return 0;
             case 7:
                 if (*(uint32_t *)c1 != *(uint32_t *)c2)
                 {
-                    return *(uint32_t *)c1 < *(uint32_t *)c2;
+                    return COMPARE_LT<uint32_t, Ascending>(*(uint32_t *)c1, *(uint32_t *)c2);
                 }
                 c1 += 4;
                 c2 += 4;
                 if (*(uint16_t *)c1 != *(uint16_t *)c2)
                 {
-                    return *(uint16_t *)c1 < *(uint16_t *)c2;
+                    return COMPARE_LT<uint16_t, Ascending>(*(uint16_t *)c1, *(uint16_t *)c2);
                 }
                 c1 += 2;
                 c2 += 2;
@@ -331,7 +309,7 @@ NPY_INLINE static int VOID_LT(const char * s1, const char * s2, size_t len)
             case 8:
                 if (*(uint64_t *)c1 != *(uint64_t *)c2)
                 {
-                    return *(uint64_t *)c1 < *(uint64_t *)c2;
+                    return COMPARE_LT<uint64_t, Ascending>(*(uint64_t *)c1, *(uint64_t *)c2);
                 }
                 return 0;
             default:
@@ -556,7 +534,7 @@ NPY_INLINE static int BINARY_LT(const char * s1, const char * s2, size_t len)
 //}
 
 // NPY_INLINE static int
-// FLOAT_LT(npy_float a, npy_float b)
+// COMPARE_LT<float, Ascending>(npy_float a, npy_float b)
 //{
 //   return a < b || (b != b && a == a);
 //}
@@ -747,7 +725,7 @@ NPY_INLINE static int BINARY_LT(const char * s1, const char * s2, size_t len)
 //
 
 //-----------------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending>
 /*static*/ int heapsort_(T * start, int64_t n)
 {
     T tmp, *a;
@@ -761,11 +739,11 @@ template <typename T>
         tmp = a[l];
         for (i = l, j = l << 1; j <= n;)
         {
-            if (j < n && T_LT(a[j], a[j + 1]))
+            if (j < n && COMPARE_LT<T, Ascending>(a[j], a[j + 1]))
             {
                 j += 1;
             }
-            if (T_LT(tmp, a[j]))
+            if (COMPARE_LT<T, Ascending>(tmp, a[j]))
             {
                 a[i] = a[j];
                 i = j;
@@ -786,11 +764,11 @@ template <typename T>
         n -= 1;
         for (i = 1, j = 2; j <= n;)
         {
-            if (j < n && T_LT(a[j], a[j + 1]))
+            if (j < n && COMPARE_LT<T, Ascending>(a[j], a[j + 1]))
             {
                 j++;
             }
-            if (T_LT(tmp, a[j]))
+            if (COMPARE_LT<T, Ascending>(tmp, a[j]))
             {
                 a[i] = a[j];
                 i = j;
@@ -808,7 +786,7 @@ template <typename T>
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
 {
     T * v = vv;
@@ -821,11 +799,11 @@ static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
         tmp = a[l];
         for (i = l, j = l << 1; j <= n;)
         {
-            if (j < n && T_LT(v[a[j]], v[a[j + 1]]))
+            if (j < n && COMPARE_LT<T, Ascending>(v[a[j]], v[a[j + 1]]))
             {
                 j += 1;
             }
-            if (T_LT(v[tmp], v[a[j]]))
+            if (COMPARE_LT<T, Ascending>(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -846,11 +824,11 @@ static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
         n -= 1;
         for (i = 1, j = 2; j <= n;)
         {
-            if (j < n && T_LT(v[a[j]], v[a[j + 1]]))
+            if (j < n && COMPARE_LT<T, Ascending>(v[a[j]], v[a[j + 1]]))
             {
                 j++;
             }
-            if (T_LT(v[tmp], v[a[j]]))
+            if (COMPARE_LT<T, Ascending>(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -868,7 +846,7 @@ static int aheapsort_(T * vv, UINDEX * tosort, UINDEX n)
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
 {
     T * v = vv;
@@ -881,11 +859,11 @@ static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
         tmp = a[l];
         for (i = l, j = l << 1; j <= n;)
         {
-            if (j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]))
+            if (j < n && COMPARE_LT<float, Ascending>(v[a[j]], v[a[j + 1]]))
             {
                 j += 1;
             }
-            if (FLOAT_LT(v[tmp], v[a[j]]))
+            if (COMPARE_LT<float, Ascending>(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -906,11 +884,11 @@ static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
         n -= 1;
         for (i = 1, j = 2; j <= n;)
         {
-            if (j < n && FLOAT_LT(v[a[j]], v[a[j + 1]]))
+            if (j < n && COMPARE_LT<float, Ascending>(v[a[j]], v[a[j + 1]]))
             {
                 j++;
             }
-            if (FLOAT_LT(v[tmp], v[a[j]]))
+            if (COMPARE_LT<float, Ascending>(v[tmp], v[a[j]]))
             {
                 a[i] = a[j];
                 i = j;
@@ -930,7 +908,7 @@ static int aheapsort_float(T * vv, UINDEX * tosort, UINDEX n)
 //--------------------------------------------------------------------------------------
 // N.B. This function isn't static like the others because it's used in a couple
 // of places in GroupBy.cpp.
-template <typename T>
+template <typename T, bool Ascending>
 /*static*/ int quicksort_(T * start, int64_t num)
 {
     T vp;
@@ -948,18 +926,18 @@ template <typename T>
     {
         if (NPY_UNLIKELY(cdepth < 0))
         {
-            heapsort_<T>(pl, pr - pl + 1);
+            heapsort_<T, Ascending>(pl, pr - pl + 1);
             goto stack_pop;
         }
         while ((pr - pl) > SMALL_QUICKSORT)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if (COMPARE_LT(*pm, *pl))
+            if (COMPARE_LT<T, Ascending>(*pm, *pl))
                 T_SWAP(*pm, *pl);
-            if (COMPARE_LT(*pr, *pm))
+            if (COMPARE_LT<T, Ascending>(*pr, *pm))
                 T_SWAP(*pr, *pm);
-            if (COMPARE_LT(*pm, *pl))
+            if (COMPARE_LT<T, Ascending>(*pm, *pl))
                 T_SWAP(*pm, *pl);
             vp = *pm;
             pi = pl;
@@ -969,10 +947,10 @@ template <typename T>
             {
                 do
                     ++pi;
-                while (COMPARE_LT(*pi, vp));
+                while (COMPARE_LT<T, Ascending>(*pi, vp));
                 do
                     --pj;
-                while (COMPARE_LT(vp, *pj));
+                while (COMPARE_LT<T, Ascending>(vp, *pj));
                 if (pi >= pj)
                 {
                     break;
@@ -1003,7 +981,7 @@ template <typename T>
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && COMPARE_LT(vp, *pk))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1023,7 +1001,7 @@ template <typename T>
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
 {
     T * v = vv;
@@ -1041,7 +1019,7 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
     {
         if (NPY_UNLIKELY(cdepth < 0))
         {
-            aheapsort_<T, UINDEX>(vv, pl, (UINDEX)(pr - pl + 1));
+            aheapsort_<T, UINDEX, Ascending>(vv, pl, (UINDEX)(pr - pl + 1));
             goto stack_pop;
         }
 
@@ -1049,11 +1027,11 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if (COMPARE_LT(v[*pm], v[*pl]))
+            if (COMPARE_LT<T, Ascending>(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
-            if (COMPARE_LT(v[*pr], v[*pm]))
+            if (COMPARE_LT<T, Ascending>(v[*pr], v[*pm]))
                 INTP_SWAP(*pr, *pm);
-            if (COMPARE_LT(v[*pm], v[*pl]))
+            if (COMPARE_LT<T, Ascending>(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
             vp = v[*pm];
             pi = pl;
@@ -1063,10 +1041,10 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
             {
                 do
                     ++pi;
-                while (COMPARE_LT(v[*pi], vp));
+                while (COMPARE_LT<T, Ascending>(v[*pi], vp));
                 do
                     --pj;
-                while (COMPARE_LT(vp, v[*pj]));
+                while (COMPARE_LT<T, Ascending>(vp, v[*pj]));
                 if (pi >= pj)
                 {
                     break;
@@ -1098,7 +1076,7 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && COMPARE_LT(vp, v[*pk]))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1118,7 +1096,7 @@ static int aquicksort_(T * vv, UINDEX * tosort, UINDEX num)
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
 {
     T * v = vv;
@@ -1136,7 +1114,7 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
     {
         if (NPY_UNLIKELY(cdepth < 0))
         {
-            aheapsort_float<T, UINDEX>(vv, pl, (UINDEX)(pr - pl + 1));
+            aheapsort_float<T, UINDEX, Ascending>(vv, pl, (UINDEX)(pr - pl + 1));
             goto stack_pop;
         }
 
@@ -1144,11 +1122,11 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
         {
             /* quicksort partition */
             pm = pl + ((pr - pl) >> 1);
-            if (FLOAT_LT(v[*pm], v[*pl]))
+            if (COMPARE_LT<float, Ascending>(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
-            if (FLOAT_LT(v[*pr], v[*pm]))
+            if (COMPARE_LT<float, Ascending>(v[*pr], v[*pm]))
                 INTP_SWAP(*pr, *pm);
-            if (FLOAT_LT(v[*pm], v[*pl]))
+            if (COMPARE_LT<float, Ascending>(v[*pm], v[*pl]))
                 INTP_SWAP(*pm, *pl);
             vp = v[*pm];
             pi = pl;
@@ -1158,10 +1136,10 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
             {
                 do
                     ++pi;
-                while (FLOAT_LT(v[*pi], vp));
+                while (COMPARE_LT<float, Ascending>(v[*pi], vp));
                 do
                     --pj;
-                while (FLOAT_LT(vp, v[*pj]));
+                while (COMPARE_LT<float, Ascending>(vp, v[*pj]));
                 if (pi >= pj)
                 {
                     break;
@@ -1193,7 +1171,7 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && FLOAT_LT(vp, v[*pk]))
+            while (pj > pl && COMPARE_LT<float, Ascending>(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1213,7 +1191,7 @@ static int aquicksort_float(T * vv, UINDEX * tosort, UINDEX num)
 }
 
 //--------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending>
 /*static*/ void mergesort0_(T * pl, T * pr, T * pw)
 {
     T vp, *pi, *pj, *pk, *pm;
@@ -1222,8 +1200,8 @@ template <typename T>
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        mergesort0_(pl, pm, pw);
-        mergesort0_(pm, pr, pw);
+        mergesort0_<T, Ascending>(pl, pm, pw);
+        mergesort0_<T, Ascending>(pm, pr, pw);
 
 #ifndef USE_MEMCPY
         memcpy(pw, pl, (pm - pl) * sizeof(T));
@@ -1241,7 +1219,7 @@ template <typename T>
         pk = pl;
         while (pj < pi && pm < pr)
         {
-            if (T_LT(*pm, *pj))
+            if (COMPARE_LT<T, Ascending>(*pm, *pj))
             {
                 *pk++ = *pm++;
             }
@@ -1273,7 +1251,7 @@ template <typename T>
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && T_LT(vp, *pk))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1283,7 +1261,7 @@ template <typename T>
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending>
 /*static*/ int mergesort_(T * start, int64_t num)
 {
     T *pl, *pr, *pw;
@@ -1295,7 +1273,7 @@ template <typename T>
     {
         return -1;
     }
-    mergesort0_(pl, pr, pw);
+    mergesort0_<T, Ascending>(pl, pr, pw);
 
     WORKSPACE_FREE(pw);
     return 0;
@@ -1304,7 +1282,7 @@ template <typename T>
 //-----------------------------------------------------------------------------------------------
 // binary mergesort with no recursion (num must be power of 2)
 // TJD NOTE: Does not appear much faster
-template <typename T>
+template <typename T, bool Ascending>
 static int mergesort_binary_norecursion(T * start, int64_t num)
 {
     T *pl, *pr, *pw, *pm, *pk, *pi, *pj;
@@ -1334,7 +1312,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && T_LT(vp, *pk))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1359,7 +1337,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && T_LT(vp, *pk))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1393,7 +1371,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
 
             while (pj < pi && pm < pr)
             {
-                if (T_LT(*pm, *pj))
+                if (COMPARE_LT<T, Ascending>(*pm, *pj))
                 {
                     *pk++ = *pm++;
                 }
@@ -1426,7 +1404,7 @@ static int mergesort_binary_norecursion(T * start, int64_t num)
 }
 
 //--------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending>
 static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
 {
     T vp, *pi, *pj, *pk, *pm;
@@ -1435,8 +1413,8 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        mergesort0_float(pl, pm, pw, head);
-        mergesort0_float(pm, pr, pw, head);
+        mergesort0_float<T, Ascending>(pl, pm, pw, head);
+        mergesort0_float<T, Ascending>(pm, pr, pw, head);
 
         pi = pw;
         pj = pl;
@@ -1459,7 +1437,7 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
         pk = pl;
         while (pj < pi && pm < pr)
         {
-            if (FLOAT_LT(*pm, *pj))
+            if (COMPARE_LT<float, Ascending>(*pm, *pj))
             {
                 *pk++ = *pm++;
             }
@@ -1492,7 +1470,7 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
             vp = *pi;
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && FLOAT_LT(vp, *pk))
+            while (pj > pl && COMPARE_LT<float, Ascending>(vp, *pk))
             {
                 *pj-- = *pk--;
             }
@@ -1502,7 +1480,7 @@ static void mergesort0_float(T * pl, T * pr, T * pw, T * head)
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T>
+template <typename T, bool Ascending>
 static int mergesort_float(T * start, int64_t num)
 {
     T *pl, *pr, *pw;
@@ -1514,14 +1492,14 @@ static int mergesort_float(T * start, int64_t num)
     {
         return -1;
     }
-    mergesort0_float(pl, pr, pw, start);
+    mergesort0_float<T, Ascending>(pl, pr, pw, start);
 
     WORKSPACE_FREE(pw);
     return 0;
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, UINDEX * pw, int64_t strlen)
 {
     const char * vp;
@@ -1531,8 +1509,8 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        amergesort0_string(pl, pm, strItem, pw, strlen);
-        amergesort0_string(pm, pr, strItem, pw, strlen);
+        amergesort0_string<UINDEX, Ascending>(pl, pm, strItem, pw, strlen);
+        amergesort0_string<UINDEX, Ascending>(pm, pr, strItem, pw, strlen);
         for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
@@ -1542,7 +1520,7 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
         pk = pl;
         while (pj < pi && pm < pr)
         {
-            if (STRING_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
+            if (STRING_LT<Ascending>(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1565,7 +1543,7 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && STRING_LT(vp, strItem + (*pk) * strlen, strlen))
+            while (pj > pl && STRING_LT<Ascending>(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1575,7 +1553,7 @@ static void amergesort0_string(UINDEX * pl, UINDEX * pr, const char * strItem, U
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, UINDEX * pw, int64_t strlen)
 {
     const char * vp;
@@ -1585,8 +1563,8 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        amergesort0_unicode(pl, pm, strItem, pw, strlen);
-        amergesort0_unicode(pm, pr, strItem, pw, strlen);
+        amergesort0_unicode<UINDEX, Ascending>(pl, pm, strItem, pw, strlen);
+        amergesort0_unicode<UINDEX, Ascending>(pm, pr, strItem, pw, strlen);
         for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
@@ -1596,7 +1574,7 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
         pk = pl;
         while (pj < pi && pm < pr)
         {
-            if (UNICODE_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
+            if (UNICODE_LT<Ascending>(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1619,7 +1597,7 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && UNICODE_LT(vp, strItem + (*pk) * strlen, strlen))
+            while (pj > pl && UNICODE_LT<Ascending>(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1629,7 +1607,7 @@ static void amergesort0_unicode(UINDEX * pl, UINDEX * pr, const char * strItem, 
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UINDEX * pw, int64_t strlen)
 {
     const char * vp;
@@ -1639,8 +1617,8 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        amergesort0_void(pl, pm, strItem, pw, strlen);
-        amergesort0_void(pm, pr, strItem, pw, strlen);
+        amergesort0_void<UINDEX, Ascending>(pl, pm, strItem, pw, strlen);
+        amergesort0_void<UINDEX, Ascending>(pm, pr, strItem, pw, strlen);
         for (pi = pw, pj = pl; pj < pm;)
         {
             *pi++ = *pj++;
@@ -1650,7 +1628,7 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
         pk = pl;
         while (pj < pi && pm < pr)
         {
-            if (VOID_LT(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
+            if (VOID_LT<Ascending>(strItem + (*pm) * strlen, strItem + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -1673,7 +1651,7 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
             vp = strItem + (vi * strlen);
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && VOID_LT(vp, strItem + (*pk) * strlen, strlen))
+            while (pj > pl && VOID_LT<Ascending>(vp, strItem + (*pk) * strlen, strlen))
             {
                 *pj-- = *pk--;
             }
@@ -1683,7 +1661,7 @@ static void amergesort0_void(UINDEX * pl, UINDEX * pr, const char * strItem, UIN
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static void
 // T= data type == float32/float64
 // UINDEX = int32_t or int64_t
@@ -1698,10 +1676,10 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        amergesort0_float(pl, pm, v, pw);
-        amergesort0_float(pm, pr, v, pw);
+        amergesort0_float<T, UINDEX, Ascending>(pl, pm, v, pw);
+        amergesort0_float<T, UINDEX, Ascending>(pm, pr, v, pw);
 
-        // if (COMPARE_LT(v[*pm], v[*(pm - 1)])) {
+        // if (COMPARE_LT<T, Ascending>(v[*pm], v[*(pm - 1)])) {
         {
             // MERGES DATA, memcpy
 #ifdef USE_MEMCPY
@@ -1732,7 +1710,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
 
             while (pj < pi && pm < pr)
             {
-                if (COMPARE_LT(v[*pm], v[*pj]))
+                if (COMPARE_LT<T, Ascending>(v[*pm], v[*pj]))
                 {
                     *pk++ = *pm++;
                 }
@@ -1756,7 +1734,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && COMPARE_LT(vp, v[*pk]))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1768,7 +1746,7 @@ amergesort0_float(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw, int64_t strlen =
 //-----------------------------------------------------------------------------------------------
 // T= data type == int16,int32,uint32,int64.uint64
 // UINDEX = int32_t or int64_t
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
 {
     T vp;
@@ -1778,14 +1756,14 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
     {
         /* merge sort */
         pm = pl + ((pr - pl) >> 1);
-        amergesort0_(pl, pm, v, pw);
-        amergesort0_(pm, pr, v, pw);
+        amergesort0_<T, UINDEX, Ascending>(pl, pm, v, pw);
+        amergesort0_<T, UINDEX, Ascending>(pm, pr, v, pw);
 
         // check if already sorted
         // if the first element on the right is less than the last element on the
         // left
         // printf("comparing %d to %d ", (int)pm[0], (int)pm[-1]);
-        if (T_LT(v[*pm], v[*(pm - 1)]))
+        if (COMPARE_LT<T, Ascending>(v[*pm], v[*(pm - 1)]))
         {
             for (pi = pw, pj = pl; pj < pm;)
             {
@@ -1796,7 +1774,7 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
             pk = pl;
             while (pj < pi && pm < pr)
             {
-                if (T_LT(v[*pm], v[*pj]))
+                if (COMPARE_LT<T, Ascending>(v[*pm], v[*pj]))
                 {
                     *pk++ = *pm++;
                 }
@@ -1820,7 +1798,7 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
             vp = v[vi];
             pj = pi;
             pk = pi - 1;
-            while (pj > pl && T_LT(vp, v[*pk]))
+            while (pj > pl && COMPARE_LT<T, Ascending>(vp, v[*pk]))
             {
                 *pj-- = *pk--;
             }
@@ -1831,7 +1809,7 @@ static void amergesort0_(UINDEX * pl, UINDEX * pr, T * v, UINDEX * pw)
 
 //-----------------------------------------------------------------------------------------------
 // allocates workspace
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int amergesort_(T * v, UINDEX * tosort, UINDEX num)
 {
     UINDEX *pl, *pr, *pworkspace;
@@ -1844,13 +1822,13 @@ static int amergesort_(T * v, UINDEX * tosort, UINDEX num)
     {
         return -1;
     }
-    amergesort0_(pl, pr, v, pworkspace);
+    amergesort0_<T, UINDEX, Ascending>(pl, pr, v, pworkspace);
     WORKSPACE_FREE(pworkspace);
 
     return 0;
 }
 
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int amergesort_float(T * v, UINDEX * tosort, UINDEX num)
 {
     UINDEX *pl, *pr, *pworkspace;
@@ -1863,7 +1841,7 @@ static int amergesort_float(T * v, UINDEX * tosort, UINDEX num)
     {
         return -1;
     }
-    amergesort0_float(pl, pr, v, pworkspace);
+    amergesort0_float<T, UINDEX, Ascending>(pl, pr, v, pworkspace);
     WORKSPACE_FREE(pworkspace);
 
     return 0;
@@ -1871,7 +1849,7 @@ static int amergesort_float(T * v, UINDEX * tosort, UINDEX num)
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeString(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1885,12 +1863,12 @@ static void ParMergeString(void * pValue1, void * pToSort1, int64_t totalLen, in
 
     // PLOGGING("string calling with %llu   %p  %p  %p  %p\n", totalLen, pl, pr,
     // pValue, pWorkSpace);
-    amergesort0_string(pl, pr, pValue, pWorkSpace, strlen);
+    amergesort0_string<UINDEX, Ascending>(pl, pr, pValue, pWorkSpace, strlen);
 }
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeUnicode(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1904,12 +1882,12 @@ static void ParMergeUnicode(void * pValue1, void * pToSort1, int64_t totalLen, i
 
     // PLOGGING("unicode calling with %llu   %p  %p  %p  %p\n", totalLen, pl, pr,
     // pValue, pWorkSpace);
-    amergesort0_unicode(pl, pr, pValue, pWorkSpace, strlen);
+    amergesort0_unicode<UINDEX, Ascending>(pl, pr, pValue, pWorkSpace, strlen);
 }
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1923,12 +1901,12 @@ static void ParMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen, int6
 
     // PLOGGING("void calling with %llu   %p  %p  %p  %p\n", totalLen, pl, pr,
     // pValue, pWorkSpace);
-    amergesort0_void(pl, pr, pValue, pWorkSpace, strlen);
+    amergesort0_void<UINDEX, Ascending>(pl, pr, pValue, pWorkSpace, strlen);
 }
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static void ParMergeNormal(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1941,12 +1919,12 @@ static void ParMergeNormal(void * pValue1, void * pToSort1, int64_t totalLen, in
     pr = pl + totalLen;
 
     PLOGGING("normal calling with %llu   %p  %p  %p  %p\n", totalLen, pl, pr, pValue, pWorkSpace);
-    amergesort0_(pl, pr, pValue, pWorkSpace);
+    amergesort0_<T, UINDEX, Ascending>(pl, pr, pValue, pWorkSpace);
 }
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static void ParMergeFloat(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1959,12 +1937,12 @@ static void ParMergeFloat(void * pValue1, void * pToSort1, int64_t totalLen, int
     pr = pl + totalLen;
 
     PLOGGING("float calling with %llu   %p  %p  %p  %p\n", totalLen, pl, pr, pValue, pWorkSpace);
-    amergesort0_float(pl, pr, pValue, pWorkSpace);
+    amergesort0_float<T, UINDEX, Ascending>(pl, pr, pValue, pWorkSpace);
 }
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -1979,7 +1957,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
     UINDEX *pi, *pj, *pk, *pm;
     pm = pl + ((pr - pl) >> 1);
 
-    // if (COMPARE_LT(v[*pm], v[*(pm - 1)])) {
+    // if (COMPARE_LT<T, Ascending>(v[*pm], v[*(pm - 1)])) {
 
     //   for (pi = pw, pj = pl; pj < pm;) {
     //      *pi++ = *pj++;
@@ -1988,7 +1966,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
     //   pj = pw;
     //   pk = pl;
     //   while (pj < pi && pm < pr) {
-    //      if (COMPARE_LT(v[*pm], v[*pj])) {
+    //      if (COMPARE_LT<T, Ascending>(v[*pm], v[*pj])) {
     //         *pk++ = *pm++;
     //      }
     //      else {
@@ -2002,7 +1980,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
 
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting
     // does not work.
-    if (true || STRING_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
+    if (true || STRING_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl],
         // (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr -
@@ -2018,7 +1996,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
 
         while (pj < pi && pm < pr)
         {
-            if (STRING_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
+            if (STRING_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2042,7 +2020,7 @@ static void ParMergeMergeString(void * pValue1, void * pToSort1, int64_t totalLe
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -2057,7 +2035,7 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
     UINDEX *pi, *pj, *pk, *pm;
     pm = pl + ((pr - pl) >> 1);
 
-    if (true || UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
+    if (true || UNICODE_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl],
         // (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr -
@@ -2073,7 +2051,7 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
 
         while (pj < pi && pm < pr)
         {
-            if (UNICODE_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
+            if (UNICODE_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2097,7 +2075,7 @@ static void ParMergeMergeUnicode(void * pValue1, void * pToSort1, int64_t totalL
 
 //---------------------------------------------------------------------------
 // Called to combine the result of the left and right merge
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -2114,7 +2092,7 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
 
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting
     // does not work.
-    if (true || VOID_LT(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
+    if (true || VOID_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pm - 1) * strlen, strlen))
     {
         memcpy(pWorkSpace, pl, (pm - pl) * sizeof(UINDEX));
 
@@ -2125,7 +2103,7 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
 
         while (pj < pi && pm < pr)
         {
-            if (VOID_LT(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
+            if (VOID_LT<Ascending>(pValue + (*pm) * strlen, pValue + (*pj) * strlen, strlen))
             {
                 *pk++ = *pm++;
             }
@@ -2152,7 +2130,7 @@ static void ParMergeMergeVoid(void * pValue1, void * pToSort1, int64_t totalLen,
 // T is type to sort -- int32_t, Float64, etc.
 // UINDEX is the argsort index -- int32_t or int64_t often
 //
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int64_t strlen, void * pWorkSpace1)
 {
     UINDEX *pl, *pr;
@@ -2167,7 +2145,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
     UINDEX *pi, *pj, *pk, *pm;
     pm = pl + ((pr - pl) >> 1);
 
-    // if (COMPARE_LT(v[*pm], v[*(pm - 1)])) {
+    // if (COMPARE_LT<T, Ascending>(v[*pm], v[*(pm - 1)])) {
 
     //   for (pi = pw, pj = pl; pj < pm;) {
     //      *pi++ = *pj++;
@@ -2176,7 +2154,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
     //   pj = pw;
     //   pk = pl;
     //   while (pj < pi && pm < pr) {
-    //      if (COMPARE_LT(v[*pm], v[*pj])) {
+    //      if (COMPARE_LT<T, Ascending>(v[*pm], v[*pj])) {
     //         *pk++ = *pm++;
     //      }
     //      else {
@@ -2191,7 +2169,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
     // quickcheck to see if we have to copy
     // BUG BUG doing lexsort on two arrays: string, int.  Once sorted, resorting
     // does not work.
-    if (true || COMPARE_LT(pValue[*pm], pValue[*(pm - 1)]))
+    if (true || COMPARE_LT<T, Ascending>(pValue[*pm], pValue[*(pm - 1)]))
     {
         // printf("%lld %lld %lld %lld\n", (int64_t)pValue[*pl],
         // (int64_t)pValue[*(pm - 1)], (int64_t)pValue[*pm], (int64_t)pValue[*(pr -
@@ -2207,7 +2185,7 @@ static void ParMergeMerge(void * pValue1, void * pToSort1, int64_t totalLen, int
 
         while (pj < pi && pm < pr)
         {
-            if (COMPARE_LT(pValue[*pm], pValue[*pj]))
+            if (COMPARE_LT<T, Ascending>(pValue[*pm], pValue[*pj]))
             {
                 *pk++ = *pm++;
             }
@@ -2439,7 +2417,7 @@ typedef int (*SINGLE_MERGESORT)(void * pValuesT, void * pToSortU, int64_t arrayL
 // T is the dtype int32/float32/float64/etc.
 // UINDEX is either int32_t or int64_t
 // Returns -1 on failure
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int single_amergesort(void * pValuesT, void * pToSortU, int64_t arrayLength, int64_t strlen, PAR_SORT_TYPE sortType)
 {
     T * pValues = (T *)pValuesT;
@@ -2457,19 +2435,19 @@ static int single_amergesort(void * pValuesT, void * pToSortU, int64_t arrayLeng
     switch (sortType)
     {
     case PAR_SORT_TYPE::Float:
-        amergesort0_float(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
+        amergesort0_float<T, UINDEX, Ascending>(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
         break;
     case PAR_SORT_TYPE::String:
-        amergesort0_string(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
+        amergesort0_string<UINDEX, Ascending>(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
         break;
     case PAR_SORT_TYPE::Unicode:
-        amergesort0_unicode(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
+        amergesort0_unicode<UINDEX, Ascending>(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
         break;
     case PAR_SORT_TYPE::Void:
-        amergesort0_void(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
+        amergesort0_void<UINDEX, Ascending>(pToSort, pToSort + arrayLength, (const char *)pValues, pWorkSpace, strlen);
         break;
     default:
-        amergesort0_(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
+        amergesort0_<T, UINDEX, Ascending>(pToSort, pToSort + arrayLength, pValues, pWorkSpace);
     }
 
     WORKSPACE_FREE(pWorkSpace);
@@ -2483,7 +2461,7 @@ static int single_amergesort(void * pValuesT, void * pToSortU, int64_t arrayLeng
 // If pCutOffs is null, the entire array is sorted
 // If the array is large enough, a parallel merge sort is invoked
 // Returns -1 on failure
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partitions)
                           int64_t cutOffLength,
 
@@ -2511,7 +2489,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 
         } psort;
 
-        psort.funcSingleMerge = single_amergesort<T, UINDEX>;
+        psort.funcSingleMerge = single_amergesort<T, UINDEX, Ascending>;
         psort.pCutOffs = pCutOffs;
         psort.cutOffLength = cutOffLength;
         psort.pValues = (char *)pValues;
@@ -2587,19 +2565,19 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
             switch (sortType)
             {
             case PAR_SORT_TYPE::Float:
-                mergeStepOne = ParMergeFloat<T, UINDEX>;
+                mergeStepOne = ParMergeFloat<T, UINDEX, Ascending>;
                 break;
             case PAR_SORT_TYPE::String:
-                mergeStepOne = ParMergeString<UINDEX>;
+                mergeStepOne = ParMergeString<UINDEX, Ascending>;
                 break;
             case PAR_SORT_TYPE::Unicode:
-                mergeStepOne = ParMergeUnicode<UINDEX>;
+                mergeStepOne = ParMergeUnicode<UINDEX, Ascending>;
                 break;
             case PAR_SORT_TYPE::Void:
-                mergeStepOne = ParMergeVoid<UINDEX>;
+                mergeStepOne = ParMergeVoid<UINDEX, Ascending>;
                 break;
             default:
-                mergeStepOne = ParMergeNormal<T, UINDEX>;
+                mergeStepOne = ParMergeNormal<T, UINDEX, Ascending>;
             }
 
             stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItem(arrayLength);
@@ -2619,17 +2597,17 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
                 switch (sortType)
                 {
                 case PAR_SORT_TYPE::String:
-                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX>;
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeString<UINDEX, Ascending>;
                     break;
                 case PAR_SORT_TYPE::Unicode:
-                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX>;
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeUnicode<UINDEX, Ascending>;
                     break;
                 case PAR_SORT_TYPE::Void:
-                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX>;
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMergeVoid<UINDEX, Ascending>;
                     break;
                 default:
                     // Last Merge
-                    stParMergeCallback.MergeCallbackTwo = ParMergeMerge<T, UINDEX>;
+                    stParMergeCallback.MergeCallbackTwo = ParMergeMerge<T, UINDEX, Ascending>;
                 };
 
                 stParMergeCallback.pValues = pValues;
@@ -2698,7 +2676,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
         else
         {
             // single threaded sort
-            return single_amergesort<T, UINDEX>(pValues, pToSort, arrayLength, strlen, sortType);
+            return single_amergesort<T, UINDEX, Ascending>(pValues, pToSort, arrayLength, strlen, sortType);
         }
 
     return 0;
@@ -2707,7 +2685,7 @@ static int par_amergesort(int64_t * pCutOffs, // May be NULL (if so no partition
 //-----------------------------------------------------------------------------------------------
 // Sorts in place
 // TODO: Make multithreaded like
-template <typename T>
+template <typename T, bool Ascending>
 static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 {
     int result = 0;
@@ -2715,15 +2693,15 @@ static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
     switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT:
-        result = quicksort_((T *)pDataIn1, arraySize1);
+        result = quicksort_<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
 
     case SORT_MODE::SORT_MODE_MERGE:
-        result = mergesort_((T *)pDataIn1, arraySize1);
+        result = mergesort_<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
 
     case SORT_MODE::SORT_MODE_HEAP:
-        result = heapsort_<T>((T *)pDataIn1, arraySize1);
+        result = heapsort_<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
     }
 
@@ -2737,7 +2715,7 @@ static int SortInPlace(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 
 //-----------------------------------------------------------------------------------------------
 // Sorts in place
-template <typename T>
+template <typename T, bool Ascending>
 static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 {
     int result = 0;
@@ -2745,15 +2723,15 @@ static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
     switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT:
-        result = quicksort_((T *)pDataIn1, arraySize1);
+        result = quicksort_<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
 
     case SORT_MODE::SORT_MODE_MERGE:
-        result = mergesort_float((T *)pDataIn1, arraySize1);
+        result = mergesort_float<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
 
     case SORT_MODE::SORT_MODE_HEAP:
-        result = heapsort_<T>((T *)pDataIn1, arraySize1);
+        result = heapsort_<T, Ascending>((T *)pDataIn1, arraySize1);
         break;
     }
 
@@ -2766,7 +2744,7 @@ static int SortInPlaceFloat(void * pDataIn1, int64_t arraySize1, SORT_MODE mode)
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, UINDEX * toSort, UINDEX arraySize1, SORT_MODE mode)
 {
     int result = 0;
@@ -2774,19 +2752,19 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
     switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT:
-        result = aquicksort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        result = aquicksort_<T, UINDEX, Ascending>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
         break;
 
     // case SORT_MODE::SORT_MODE_MERGE:
     //   result = amergesort_<T, UINDEX>((T*)pDataIn1, (UINDEX*)toSort,
     //   arraySize1); break;
     case SORT_MODE::SORT_MODE_MERGE:
-        result = par_amergesort<T, UINDEX>(pCutOffs, cutOffLength, (T *)pDataIn1, (UINDEX *)toSort, arraySize1, 0,
-                                           PAR_SORT_TYPE::Normal);
+        result = par_amergesort<T, UINDEX, Ascending>(pCutOffs, cutOffLength, (T *)pDataIn1, (UINDEX *)toSort, arraySize1, 0,
+                                                      PAR_SORT_TYPE::Normal);
         break;
 
     case SORT_MODE::SORT_MODE_HEAP:
-        result = aheapsort_<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        result = aheapsort_<T, UINDEX, Ascending>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
         break;
     }
 
@@ -2799,7 +2777,7 @@ static int SortIndex(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, 
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pDataIn1, UINDEX * toSort, UINDEX arraySize1,
                           SORT_MODE mode)
 {
@@ -2808,16 +2786,16 @@ static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pData
     switch (mode)
     {
     case SORT_MODE::SORT_MODE_QSORT:
-        result = aquicksort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        result = aquicksort_float<T, UINDEX, Ascending>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
         break;
 
     case SORT_MODE::SORT_MODE_MERGE:
-        result = par_amergesort<T, UINDEX>(pCutOffs, cutOffLength, (T *)pDataIn1, (UINDEX *)toSort, arraySize1, 0,
-                                           PAR_SORT_TYPE::Float);
+        result = par_amergesort<T, UINDEX, Ascending>(pCutOffs, cutOffLength, (T *)pDataIn1, (UINDEX *)toSort, arraySize1, 0,
+                                                      PAR_SORT_TYPE::Float);
         break;
 
     case SORT_MODE::SORT_MODE_HEAP:
-        result = aheapsort_float<T, UINDEX>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
+        result = aheapsort_float<T, UINDEX, Ascending>((T *)pDataIn1, (UINDEX *)toSort, arraySize1);
         break;
     }
 
@@ -2830,7 +2808,7 @@ static int SortIndexFloat(int64_t * pCutOffs, int64_t cutOffLength, void * pData
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static int SortIndexString(int64_t * pCutOffs, int64_t cutOffLength, const char * pDataIn1, UINDEX * toSort, UINDEX arraySize1,
                            SORT_MODE mode, UINDEX strlen)
 {
@@ -2839,8 +2817,8 @@ static int SortIndexString(int64_t * pCutOffs, int64_t cutOffLength, const char 
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
-        result = par_amergesort<char, UINDEX>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1, strlen,
-                                              PAR_SORT_TYPE::String);
+        result = par_amergesort<char, UINDEX, Ascending>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1,
+                                                         strlen, PAR_SORT_TYPE::String);
         break;
     }
 
@@ -2848,7 +2826,7 @@ static int SortIndexString(int64_t * pCutOffs, int64_t cutOffLength, const char 
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static int SortIndexUnicode(int64_t * pCutOffs, int64_t cutOffLength, const char * pDataIn1, UINDEX * toSort, UINDEX arraySize1,
                             SORT_MODE mode, UINDEX strlen)
 {
@@ -2857,8 +2835,8 @@ static int SortIndexUnicode(int64_t * pCutOffs, int64_t cutOffLength, const char
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
-        result = par_amergesort<char, UINDEX>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1, strlen,
-                                              PAR_SORT_TYPE::Unicode);
+        result = par_amergesort<char, UINDEX, Ascending>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1,
+                                                         strlen, PAR_SORT_TYPE::Unicode);
         break;
     }
 
@@ -2866,7 +2844,7 @@ static int SortIndexUnicode(int64_t * pCutOffs, int64_t cutOffLength, const char
 }
 
 //-----------------------------------------------------------------------------------------------
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static int SortIndexVoid(int64_t * pCutOffs, int64_t cutOffLength, const char * pDataIn1, UINDEX * toSort, UINDEX arraySize1,
                          SORT_MODE mode, UINDEX strlen)
 {
@@ -2875,8 +2853,8 @@ static int SortIndexVoid(int64_t * pCutOffs, int64_t cutOffLength, const char * 
     {
     default:
     case SORT_MODE::SORT_MODE_MERGE:
-        result = par_amergesort<char, UINDEX>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1, strlen,
-                                              PAR_SORT_TYPE::Void);
+        result = par_amergesort<char, UINDEX, Ascending>(pCutOffs, cutOffLength, (char *)pDataIn1, (UINDEX *)toSort, arraySize1,
+                                                         strlen, PAR_SORT_TYPE::Void);
         break;
     }
 
@@ -2885,48 +2863,49 @@ static int SortIndexVoid(int64_t * pCutOffs, int64_t cutOffLength, const char * 
 
 //================================================================================================
 //===============================================================================
+template <bool Ascending = true>
 static void SortArray(void * pDataIn1, int64_t arraySize1, int32_t arrayType1, SORT_MODE mode)
 {
     switch (arrayType1)
     {
     case NPY_STRING:
-        SortInPlace<char>(pDataIn1, arraySize1, mode);
+        SortInPlace<char, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_BOOL:
-        SortInPlace<bool>(pDataIn1, arraySize1, mode);
+        SortInPlace<bool, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_INT8:
-        SortInPlace<int8_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<int8_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_INT16:
-        SortInPlace<int16_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<int16_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     CASE_NPY_INT32:
-        SortInPlace<int32_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<int32_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     CASE_NPY_INT64:
-        SortInPlace<int64_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<int64_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_UINT8:
-        SortInPlace<uint8_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<uint8_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_UINT16:
-        SortInPlace<uint16_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<uint16_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     CASE_NPY_UINT32:
-        SortInPlace<uint32_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<uint32_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     CASE_NPY_UINT64:
-        SortInPlace<uint64_t>(pDataIn1, arraySize1, mode);
+        SortInPlace<uint64_t, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_FLOAT:
-        SortInPlaceFloat<float>(pDataIn1, arraySize1, mode);
+        SortInPlaceFloat<float, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_DOUBLE:
-        SortInPlaceFloat<double>(pDataIn1, arraySize1, mode);
+        SortInPlaceFloat<double, Ascending>(pDataIn1, arraySize1, mode);
         break;
     case NPY_LONGDOUBLE:
-        SortInPlaceFloat<long double>(pDataIn1, arraySize1, mode);
+        SortInPlaceFloat<long double, Ascending>(pDataIn1, arraySize1, mode);
         break;
     default:
         printf("SortArray does not understand type %d\n", arrayType1);
@@ -3093,7 +3072,7 @@ PyObject * Sort(PyObject * self, PyObject * args)
 // Internal and can be called from groupby
 // caller must allocate the pDataOut1 as int64_t with size arraySize1
 // UINDEX = int32_t or int64_t
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending>
 static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
 
                       void * pDataIn1, UINDEX arraySize1, UINDEX * pDataOut1, SORT_MODE mode, int32_t arrayType1, UINDEX strlen)
@@ -3101,47 +3080,47 @@ static void SortIndex(int64_t * pCutOffs, int64_t cutOffLength,
     switch (arrayType1)
     {
     case NPY_UNICODE:
-        SortIndexUnicode<UINDEX>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
+        SortIndexUnicode<UINDEX, Ascending>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
         break;
     case NPY_VOID:
-        SortIndexVoid<UINDEX>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
+        SortIndexVoid<UINDEX, Ascending>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
         break;
     case NPY_STRING:
-        SortIndexString<UINDEX>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
+        SortIndexString<UINDEX, Ascending>(pCutOffs, cutOffLength, (const char *)pDataIn1, pDataOut1, arraySize1, mode, strlen);
         break;
     case NPY_BOOL:
     case NPY_INT8:
-        SortIndex<int8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<int8_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_INT16:
-        SortIndex<int16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<int16_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     CASE_NPY_INT32:
-        SortIndex<int32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<int32_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     CASE_NPY_INT64:
-        SortIndex<int64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<int64_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_UINT8:
-        SortIndex<uint8_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<uint8_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_UINT16:
-        SortIndex<uint16_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<uint16_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     CASE_NPY_UINT32:
-        SortIndex<uint32_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<uint32_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     CASE_NPY_UINT64:
-        SortIndex<uint64_t, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndex<uint64_t, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_FLOAT:
-        SortIndexFloat<float, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndexFloat<float, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_DOUBLE:
-        SortIndexFloat<double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndexFloat<double, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     case NPY_LONGDOUBLE:
-        SortIndexFloat<long double, UINDEX>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
+        SortIndexFloat<long double, UINDEX, Ascending>(pCutOffs, cutOffLength, pDataIn1, pDataOut1, arraySize1, mode);
         break;
     default:
         printf("SortIndex does not understand type %d\n", arrayType1);
@@ -3196,7 +3175,7 @@ static int IsSortedString(const char * pData, int64_t arraySize1, int64_t strlen
 
     int64_t i = arraySize1 - 1;
 
-    while ((i > 0) && ! (STRING_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
+    while ((i > 0) && ! (STRING_LT<true>(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3211,7 +3190,7 @@ static int IsSortedUnicode(const char * pData, int64_t arraySize1, int64_t strle
 
     int64_t i = arraySize1 - 1;
 
-    while ((i > 0) && ! (UNICODE_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
+    while ((i > 0) && ! (UNICODE_LT<true>(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3226,7 +3205,7 @@ static int IsSortedVoid(const char * pData, int64_t arraySize1, int64_t strlen)
 
     int64_t i = arraySize1 - 1;
 
-    while ((i > 0) && ! (VOID_LT(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
+    while ((i > 0) && ! (VOID_LT<true>(&pData[i * strlen], &pData[(i - 1) * strlen], strlen)))
     {
         i--;
     }
@@ -3401,6 +3380,31 @@ int64_t * GetCutOffs(PyObject * kwargs, int64_t & cutoffLength)
     return NULL;
 }
 
+bool * GetAscending(PyObject * kwargs, int64_t & ascLen, bool & scalarVal)
+{
+    if (! (kwargs && PyDict_Check(kwargs)))
+        return nullptr;
+
+    auto const asc_item = PyDict_GetItemString(kwargs, "ascending");
+    if (! asc_item)
+        return nullptr;
+
+    if (PyBool_Check(asc_item))
+    {
+        scalarVal = PyObject_IsTrue(asc_item);
+        return nullptr;
+    }
+
+    if (PyArray_Check((PyArrayObject *)asc_item))
+    {
+        auto const ascending = (PyArrayObject *)asc_item;
+        ascLen = ArrayLength(ascending);
+        return (bool *)PyArray_BYTES(ascending);
+    }
+
+    return nullptr;
+}
+
 //===============================================================================
 
 template <typename UINDEX>
@@ -3483,9 +3487,18 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
         int64_t cutOffLength = 0;
         int64_t * pCutOffs = GetCutOffs(kwargs, cutOffLength);
 
+        bool scalar_val = true;
+        int64_t ascLen = -1;
+        bool * ascending = GetAscending(kwargs, ascLen, scalar_val);
+
         if (pCutOffs && pCutOffs[cutOffLength - 1] != arraySize1)
         {
             PyErr_Format(PyExc_ValueError, "LexSort last cutoff length does not match array length %lld", arraySize1);
+            return NULL;
+        }
+        if (ascending && ascLen != mlp.tupleSize)
+        {
+            PyErr_Format(PyExc_ValueError, "Lexsort: 'ascending' length does not match number of arrays %lld", mlp.tupleSize);
             return NULL;
         }
         if (cutOffLength == -1)
@@ -3582,9 +3595,18 @@ PyObject * LexSort(PyObject * self, PyObject * args, PyObject * kwargs)
             // primary sort order
             for (UINDEX i = 0; i < mlp.tupleSize; i++)
             {
+                auto asc{ ascLen < 0 ? scalar_val : ascending[i] };
                 // For each array...
-                SortIndex<UINDEX>(pCutOffs, cutOffLength, mlp.aInfo[i].pData, (UINDEX)arraySize1, pDataOut,
-                                  SORT_MODE::SORT_MODE_MERGE, mlp.aInfo[i].NumpyDType, (UINDEX)mlp.aInfo[i].ItemSize);
+                if (asc)
+                {
+                    SortIndex<UINDEX, true>(pCutOffs, cutOffLength, mlp.aInfo[i].pData, (UINDEX)arraySize1, pDataOut,
+                                            SORT_MODE::SORT_MODE_MERGE, mlp.aInfo[i].NumpyDType, (UINDEX)mlp.aInfo[i].ItemSize);
+                }
+                else
+                {
+                    SortIndex<UINDEX, false>(pCutOffs, cutOffLength, mlp.aInfo[i].pData, (UINDEX)arraySize1, pDataOut,
+                                             SORT_MODE::SORT_MODE_MERGE, mlp.aInfo[i].NumpyDType, (UINDEX)mlp.aInfo[i].ItemSize);
+                }
             }
 
             if (pCutOffs)
@@ -3667,7 +3689,7 @@ static int64_t GetBaseIndex(PyObject * kwargs)
 //================================================================================
 // typedef int64_t *(GROUP_INDEX_FUNC)()
 
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int64_t GroupIndexStep2(void * pDataIn1, UINDEX arraySize1, UINDEX * pDataIndexIn, UINDEX * pGroupOut, UINDEX * pFirstOut,
                                UINDEX * pCountOut, bool * pFilter, int64_t base_index, UINDEX strlen = 0)
 {
@@ -3801,7 +3823,7 @@ static int64_t GroupIndexStep2(void * pDataIn1, UINDEX arraySize1, UINDEX * pDat
     }
 }
 
-template <typename T, typename UINDEX>
+template <typename T, typename UINDEX, bool Ascending>
 static int64_t GroupIndexStep2String(void * pDataIn1, UINDEX arraySize1, UINDEX * pDataIndexIn, UINDEX * pGroupOut,
                                      UINDEX * pFirstOut, UINDEX * pCountOut, bool * pFilter, int64_t base_index, int64_t strlen)
 {
@@ -3852,7 +3874,7 @@ typedef int64_t (*GROUP_INDEX_FUNC)(void * pDataIn1, int64_t arraySize1V, void *
 // Internal and can be called from groupby
 // caller must allocate the pGroupOut as int32_t or int64_t with size arraySize1
 // UINDEX = int32_t or int64_t
-template <typename UINDEX>
+template <typename UINDEX, bool Ascending = true>
 static int64_t GroupIndex(void * pDataIn1, int64_t arraySize1V, void * pDataIndexInV, void * pGroupOutV, void * pFirstOutV,
                           void * pCountOutV,
                           bool * pFilter, // optional
@@ -3869,24 +3891,24 @@ static int64_t GroupIndex(void * pDataIn1, int64_t arraySize1V, void * pDataInde
     switch (strlen)
     {
     case 1:
-        uniqueCount = GroupIndexStep2<int8_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut, pFilter,
-                                                      base_index, 0);
+        uniqueCount = GroupIndexStep2<int8_t, UINDEX, Ascending>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut,
+                                                                 pCountOut, pFilter, base_index, 0);
         break;
     case 2:
-        uniqueCount = GroupIndexStep2<int16_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut,
-                                                       pFilter, base_index, 0);
+        uniqueCount = GroupIndexStep2<int16_t, UINDEX, Ascending>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut,
+                                                                  pCountOut, pFilter, base_index, 0);
         break;
     case 4:
-        uniqueCount = GroupIndexStep2<int32_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut,
-                                                       pFilter, base_index, 0);
+        uniqueCount = GroupIndexStep2<int32_t, UINDEX, Ascending>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut,
+                                                                  pCountOut, pFilter, base_index, 0);
         break;
     case 8:
-        uniqueCount = GroupIndexStep2<int64_t, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut, pCountOut,
-                                                       pFilter, base_index, 0);
+        uniqueCount = GroupIndexStep2<int64_t, UINDEX, Ascending>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut,
+                                                                  pCountOut, pFilter, base_index, 0);
         break;
     default:
-        uniqueCount = GroupIndexStep2String<const char, UINDEX>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut, pFirstOut,
-                                                                pCountOut, pFilter, base_index, strlen);
+        uniqueCount = GroupIndexStep2String<const char, UINDEX, Ascending>(pDataIn1, arraySize1, pDataIndexIn, pGroupOut,
+                                                                           pFirstOut, pCountOut, pFilter, base_index, strlen);
         break;
     }
 

@@ -56,10 +56,8 @@ if(PROJ_COMPILER_ID STREQUAL "MSVC")
     endif()
 elseif(PROJ_COMPILER_ID STREQUAL "GNU")
     # No toolset variants
-    # Remove warnings from absl compilation
 elseif(PROJ_COMPILER_ID STREQUAL "LLVM")
     # No toolset variants
-    # Remove warnings from absl compilation
 else()
     message(FATAL_ERROR "Unexpected proj compiler ID, ${PROJ_COMPILER_ID}")
 endif()
@@ -87,7 +85,6 @@ macro(verbose_find_package)
     message("Found package ${ARGV0} config: ${${ARGV0}_CONFIG}")
 endmacro()
 
-verbose_find_package(absl CONFIG REQUIRED)
 verbose_find_package(benchmark CONFIG REQUIRED)
 verbose_find_package(TBB CONFIG REQUIRED)
 verbose_find_package(zstd REQUIRED)

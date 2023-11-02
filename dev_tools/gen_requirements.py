@@ -18,7 +18,6 @@ def is_python(major: int, minor: int) -> bool:
     return ver.major == major and ver.minor == minor
 
 
-_ABSEIL_REQ = "abseil-cpp==20220623.*"
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
 _CMAKE_REQ = "cmake>=3.21"
 _NUMPY_REQ = "numpy>=1.23,<1.25"
@@ -33,8 +32,9 @@ if is_linux():
     toolchain_reqs += [
         "binutils",
         "binutils_linux-64",
-        "gcc==10.*",
-        "gxx==10.*",
+        "gcc==13.*",
+        "gxx==13.*",
+        "libstdcxx-ng=13.*",
         "ninja",
     ]
 
@@ -50,7 +50,6 @@ conda_reqs = [
 # Most everything else *should* be in pyproject.toml, but since we run
 # setup.py directly we need to set up build environment manually here.
 pypi_reqs = [
-    _ABSEIL_REQ,  # PyPI package doesn't exist
     _BENCHMARK_REQ,  # PyPI package doesn't exist
     _CMAKE_REQ,
     _TBB_DEVEL_REQ,  # needed because PyPI tbb-devel pkg doesn't contain CMake files yet
@@ -60,7 +59,6 @@ pypi_reqs = [
 
 # Native CMake build requirements.
 native_reqs = [
-    _ABSEIL_REQ,
     _BENCHMARK_REQ,
     _CMAKE_REQ,
     _NUMPY_REQ,
@@ -74,9 +72,6 @@ extras_reqs = native_reqs
 # Runtime requirements for riptide_cpp.
 # Replicates runtime requirements in meta.yaml and setup.py.
 runtime_reqs = [
-    # Disable abseil-cpp requirements to avoid pip install failures (no PyPI package exists)
-    # Assume it's conda install'ed as part of build-level requirements.
-    # _ABSEIL_REQ,
     _NUMPY_REQ,
     _TBB_REQ,
     _ZSTD_REQ,

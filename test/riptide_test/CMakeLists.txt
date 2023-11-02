@@ -6,6 +6,7 @@ set(SOURCES
     buffer_tests.cpp
     invalid_tests.cpp
     is_member_tests.cpp
+    logging_test.cpp
     main.cpp
     math_tests.cpp
     math_worker_tests.cpp

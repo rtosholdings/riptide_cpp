@@ -26,6 +26,7 @@
 #include "Hook.h"
 #include "Array.h"
 #include "is_member_tg.h"
+#include "Logger.h"
 
 namespace
 {
@@ -1793,9 +1794,16 @@ static PyMethodDef CSigMathUtilMethods[] = {
       "Parse string in YYYYMMDD or YYYY-MM-DD format  then HH:MM:SS.mmm to UTC "
       "epoch nanos" },
     { "StrptimeToNanos", StrptimeToNanos, METH_VARARGS, "Parse string in strptime  then .mmm to UTC epoch nanos" },
+    { "EnableLogging", EnableLogging, METH_VARARGS, "Enable logging with the specified parameters." },
+    { "DisableLogging", DisableLogging, METH_VARARGS, "Disable the logger and shutdown all associated threads" },
     //{ "addf32x", addf32x, METH_VARARGS, "addf32 with output calculation" },
     { NULL, NULL, 0, NULL } /* Sentinel - marks the end of this structure */
 };
+
+void Riptide_Free(void * self)
+{
+    CleanupLogging();
+}
 
 static PyModuleDef CSigMathUtilModule = {
     PyModuleDef_HEAD_INIT,
@@ -1806,13 +1814,16 @@ static PyModuleDef CSigMathUtilModule = {
     NULL,                // slots
     NULL,                // GC traverse
     NULL,                // GC
-    NULL                 // freefunc
+    Riptide_Free         // freefunc
 };
 
 // For Python version 3,  PyInit_{module_name} must be used as this function is
 // called when the module is imported
 PyMODINIT_FUNC PyInit_riptide_cpp()
 {
+    // import logging module
+    SetupLogging();
+
     int32_t count = 0;
 
     // Count up the
