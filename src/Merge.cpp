@@ -855,7 +855,7 @@ static void GetItemUInt(void * aValues, void * aIndex, void * aDataOut, int64_t 
             const INDEX index = *pIndex;
             *pDataOut =
                 // Make sure the item is in range
-                index < valLength ? pValues[index] : defaultVal;
+                index >= 0 && index < valLength ? pValues[index] : defaultVal;
             pIndex++;
             pDataOut++;
         }
@@ -868,7 +868,7 @@ static void GetItemUInt(void * aValues, void * aIndex, void * aDataOut, int64_t 
             const INDEX index = *pIndex;
             // Make sure the item is in range; if the index is negative -- but
             // otherwise still in range -- mimic Python's negative-indexing support.
-            if (index < valLength)
+            if (index >= 0 && index < valLength)
             {
                 *pDataOut = *(VALUE *)((char *)pValues + (strideValue * index));
             }

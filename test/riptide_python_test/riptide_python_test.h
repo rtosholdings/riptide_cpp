@@ -44,11 +44,11 @@
 
 namespace riptide_python_test::internal
 {
-    extern PyObject * get_named_function(PyObject * module_p, char const * name_p);
+    [[nodiscard]] PyObject * get_named_function(PyObject * module_p, char const * name_p);
 
-    extern void pyobject_printer(PyObject * printable);
+    void pyobject_printer(PyObject * printable);
 
-    extern bool no_pyerr(bool print = true);
+    [[nodiscard]] bool no_pyerr(bool print = true);
 }
 
 namespace riptide_python_test::internal
@@ -69,27 +69,33 @@ namespace riptide_python_test::internal
     using pyobject_any_ptr = std::unique_ptr<PyT, details::pyobject_deleter<PyT>>;
 
     using pyobject_ptr = pyobject_any_ptr<PyObject>;
+
+    [[nodiscard]] inline PyObject * pyobject_newref(PyObject * obj)
+    {
+        Py_XINCREF(obj);
+        return obj;
+    }
 }
 
 namespace riptide_python_test::internal
 {
     template <typename T>
-    auto to_out(T && t)
+    [[nodiscard]] auto to_out(T && t)
     {
         return std::forward<T>(t);
     }
 
-    inline auto to_out(char const t)
+    [[nodiscard]] inline auto to_out(char const t)
     {
         return static_cast<int>(t);
     }
 
-    inline auto to_out(signed char const t)
+    [[nodiscard]] inline auto to_out(signed char const t)
     {
         return static_cast<int>(t);
     }
 
-    inline auto to_out(unsigned char const t)
+    [[nodiscard]] inline auto to_out(unsigned char const t)
     {
         return static_cast<unsigned int>(t);
     }
@@ -102,7 +108,7 @@ namespace riptide_python_test::internal
     {
         T const tolerance_{};
 
-        bool operator()(T const & x, T const & y) const
+        [[nodiscard]] bool operator()(T const & x, T const & y) const
         {
             T const delta{ x - y };
             T const abs_delta{ delta < 0 ? -delta : delta };
@@ -111,7 +117,7 @@ namespace riptide_python_test::internal
     };
 
     template <typename T, typename Predicate = std::equal_to<T>>
-    constexpr bool equal_to_nan_aware(T const & x, T const & y, Predicate const pred = {})
+    [[nodiscard]] constexpr bool equal_to_nan_aware(T const & x, T const & y, Predicate const pred = {})
     {
         using invalid_for_type = riptide::invalid_for_type<T>;
 
@@ -129,7 +135,7 @@ namespace riptide_python_test::internal
 namespace riptide_python_test::internal
 {
     template <NPY_TYPES TypeCode, typename Container>
-    pyobject_ptr pyarray_from_array(Container const & data)
+    [[nodiscard]] pyobject_ptr pyarray_from_array(Container const & data)
     {
         using cpp_type = riptide::numpy_cpp_type_t<TypeCode>;
         using storage_type = riptide::numpy_c_type_t<TypeCode>;
@@ -168,7 +174,7 @@ namespace riptide_python_test::internal
 namespace riptide_python_test::internal
 {
     template <NPY_TYPES TypeCode, typename CppType = riptide::numpy_cpp_type_t<TypeCode>>
-    riptide_utility::internal::const_buffer<CppType> cast_pyarray_values_as(pyobject_ptr * const ptr)
+    [[nodiscard]] riptide_utility::internal::const_buffer<CppType> cast_pyarray_values_as(pyobject_ptr * const ptr)
     {
         using result_t = riptide_utility::internal::const_buffer<CppType>;
 
@@ -209,7 +215,7 @@ namespace riptide_python_test::internal
 namespace riptide_python_test::internal
 {
     template <typename CppType>
-    auto get_mixed_values(size_t const N = 3)
+    [[nodiscard]] auto get_mixed_values(size_t const N = 3)
     {
         riptide_utility::internal::mem_buffer<CppType> arr(N);
         size_t const midpoint{ N / 2 };
@@ -220,7 +226,7 @@ namespace riptide_python_test::internal
     }
 
     template <typename CppType, typename VT>
-    auto get_same_values(size_t const N, VT const V)
+    [[nodiscard]] auto get_same_values(size_t const N, VT const V)
     {
         riptide_utility::internal::mem_buffer<CppType> arr(N);
         std::fill_n(arr.data(), N, static_cast<CppType>(V));
@@ -228,19 +234,19 @@ namespace riptide_python_test::internal
     }
 
     template <typename CppType>
-    auto get_zeroes_values(size_t const N)
+    [[nodiscard]] auto get_zeroes_values(size_t const N)
     {
         return get_same_values<CppType>(N, 0);
     }
 
     template <typename CppType>
-    auto get_invalid_values(size_t const N)
+    [[nodiscard]] auto get_invalid_values(size_t const N)
     {
         return get_same_values<CppType>(N, riptide::invalid_for_type<CppType>::value);
     }
 
     template <typename CppType, typename VT>
-    auto get_iota_values(size_t const N, VT const V)
+    [[nodiscard]] auto get_iota_values(size_t const N, VT const V)
     {
         riptide_utility::internal::mem_buffer<CppType> arr(N);
         std::iota(arr.data(), arr.data() + N, V);

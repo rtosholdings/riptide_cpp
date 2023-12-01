@@ -95,6 +95,7 @@ tests_reqs += [
     "ipykernel",
     "ipython<8.13" if is_python(3, 8) else "ipython",
     "matplotlib",
+    "pillow==10.1.0",  # latest conda-forge version that works with matplotlib
     "nose",
     "pyarrow",
     "pytest",
