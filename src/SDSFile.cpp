@@ -6604,9 +6604,10 @@ public:
 
     //=====================================================
     // In: strOutputFilename: full path filename to create
-    // Uses pSDSDecompressFile
+    // Uses pSDSDecompressFile.
+    // Sets g_lastexception upon error.
     //
-    void * SDSConcatFiles(const char * strOutputFilename, int64_t validCount)
+    void SDSConcatFiles(const char * strOutputFilename, int64_t validCount)
     {
         LOGGING("concat mode!  found %lld files\n", FileCount);
 
@@ -6616,7 +6617,7 @@ public:
                           "Concat error cannot find any valid files to concat to "
                           "file: %s.  Error: %s",
                           strOutputFilename, "None");
-            return BAD_SDS_HANDLE;
+            return;
         }
 
         SDS_FILE_HANDLE fileHandle = DefaultFileIO.FileOpen(strOutputFilename, true, true, false, false);
@@ -6624,7 +6625,7 @@ public:
         if (! fileHandle)
         {
             SetErr_Format(SDS_VALUE_ERROR, "Concat error cannot create/open file: %s.  Error: %s", strOutputFilename, "none");
-            return BAD_SDS_HANDLE;
+            return;
         }
 
         // The very first valid file is copied as is
@@ -6700,7 +6701,7 @@ public:
             DefaultFileIO.FileWriteChunk(NULL, fileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), 0);
         }
 
-        return NULL;
+        DefaultFileIO.FileClose(fileHandle);
     }
 
     //========================================
@@ -6752,7 +6753,8 @@ public:
         // Check if concat mode
         if (multiMode == SDS_MULTI_MODE_CONCAT_MANY)
         {
-            result = SDSConcatFiles(pReadCallbacks->strOutputFilename, validCount);
+            SDSConcatFiles(pReadCallbacks->strOutputFilename, validCount);
+            result = nullptr; // no return value
         }
         else
         {

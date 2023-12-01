@@ -6,12 +6,14 @@ set(SOURCES
     basic_math_tests.cpp
     bins_bsearch_tests.cpp
     bins_sorted_tests.cpp
+    combine_accum_tests.cpp
     ema_test.cpp
     groupby_tests.cpp
     hash_linear_tests.cpp
     lexsort_tests.cpp
     main.cpp
     mkalign_tests.cpp
+    mbget_tests.cpp
     tests.cpp
     reduce_tests.cpp
     utility_functions.cpp)

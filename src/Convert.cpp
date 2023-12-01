@@ -2090,7 +2090,7 @@ int64_t Combine1Filter(void * pInputIndex,
                 INDEX index = pInput[i];
                 // printf("[%lld] got index for %lld\n", (int64_t)index, i);
 
-                if (index != 0)
+                if (index > 0 && index < hashLength)
                 {
                     // Check hash
                     if (pHash[index] == 0)
@@ -2135,7 +2135,7 @@ int64_t Combine1Filter(void * pInputIndex,
             INDEX index = pInput[i];
             // printf("[%lld] got index\n", (int64_t)index);
 
-            if (index != 0)
+            if (index > 0 && index < hashLength)
             {
                 // Check hash
                 if (pHash[index] == 0)
@@ -2176,8 +2176,8 @@ int64_t Combine1Filter(void * pInputIndex,
 // Output:
 // New Index Array
 // New First Array (can use to pull in key names)
-// UniqueCount (should be size of FirstArray)... possibly 0 if everything
-// removed Returns new index array and unique count array
+// UniqueCount (should be size of FirstArray)... possibly 0 if everything removed
+// Returns new index array and unique count array
 PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
 {
     PyArrayObject * inArr1 = NULL;
@@ -2240,8 +2240,10 @@ PyObject * CombineAccum1Filter(PyObject * self, PyObject * args)
         pFunction = Combine1Filter<int32_t>;
         break;
     CASE_NPY_INT64:
-
         pFunction = Combine1Filter<int64_t>;
+        break;
+    default:
+        PyErr_Format(PyExc_ValueError, "CombineAccum1Filter: Unsupported index type, %d", dtype);
         break;
     }
 
