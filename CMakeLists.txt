@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.26.1)
 
-project(riptide_cpp)
+project(riptide_cpp LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(CheckIPOSupported)
@@ -71,7 +71,7 @@ include(CopyRuntimeDeps)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Under setupbuild, exclude all dependencies from install target to avoid polluting distribution.
-if(SETUPBUILD)
+if(SETUPBUILD OR SKBUILD)
     set(EXLUSION_SPECIFIER EXCLUDE_FROM_ALL)
 else()
     unset(EXCLUSION_SPECIFIER)

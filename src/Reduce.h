@@ -29,8 +29,8 @@ enum REDUCE_FUNCTIONS
     REDUCE_NANARGMAX = 207,
 
     // For Jack TODO
-    REDUCE_ANY = 208,
-    REDUCE_ALL = 209,
+    //REDUCE_ANY = 208,
+    //REDUCE_ALL = 209,
 
     REDUCE_MIN_NANAWARE = 210,
 };

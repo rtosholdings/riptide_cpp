@@ -1,12 +1,103 @@
+[project]
+name = "riptide_cpp"
+description = "Python Package with fast math util functions"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "RTOS Holdings", email = "rtosholdings-bot@sig.com" }]
+requires-python = ">=3.9"
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: BSD License",
+]
+
+[project.urls]
+Repository = "https://github.com/rtosholdings/riptide_cpp"
+Documentation = "https://riptable.readthedocs.io/en/stable/"
+
 [build-system]
 requires = [
     #"benchmark >=1.7,<1.8", # DOES NOT EXIST! We must assume it exists in environment
-    "cmake >=3.21",
+    "cmake >=3.26.1",
     "ninja; platform_system!='Windows'",
-    "numpy >=1.23, <1.25",
+    "numpy >=1.23,<1.25",
+    "scikit-build-core >=0.7,<0.8",
+    "setuptools >=65",
+    "setuptools_scm[toml] >=7.1",
     "tbb-devel ==2021.6.*",
-    "setuptools >=42",
     "wheel",
-    "zstd> =1.5.2,<1.6",
+    "zstd >=1.5.2,<1.6",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-timestamp"
+write_to = "src/_version.d"
+write_to_template = '"{version}"'
+
+[tool.scikit-build]
+minimum-version = "0.7"
+cmake.minimum-version = "3.26.1"
+ninja.minimum-version = "1.11"
+ninja.make-fallback = false
+
+# setuptools_scm integration
+metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+
+logging.level = "DEBUG"
+
+cmake.verbose = true
+cmake.build-type = "Release"
+cmake.args = ["--=SEE_OVERRIDES_BELOW=--"]
+
+sdist.include = ["src/_version.d"]
+
+# Disable Python file inclusion and rely only on CMake's install mechanism.
+wheel.packages = []
+wheel.exclude = [ #
+    "bench",
+    "extras",
+    "test",
+]
+wheel.license-files = ["LICENSE"]
+# Don't strip symbols from binaries; we want to preserve them
+# to get better backtraces if/when something fails.
+install.strip = false
+
+[[tool.scikit-build.overrides]]
+if.platform-system = "linux"
+cmake.args = [
+    # Force CMake to re-run the configuration step each time this build runs. Useful for local builds.
+    "--fresh",
+    # Use the Ninja generator.
+    "-GNinja",
+]
+
+[[tool.scikit-build.overrides]]
+if.platform-system = "win32"
+cmake.args = [
+    # Force CMake to re-run the configuration step each time this build runs. Useful for local builds.
+    "--fresh",
+    # Use the VS2022 generator.
+    "-GVisual Studio 17 2022",
+]
+
+# Tedious way of passing current Python version to CMake.
+
+[[tool.scikit-build.overrides]]
+if.python-version = "~=3.9"
+cmake.define = { "RIPTIDE_PYTHON_VER" = "3.9" }
+
+[[tool.scikit-build.overrides]]
+if.python-version = "~=3.10"
+cmake.define = { "RIPTIDE_PYTHON_VER" = "3.10" }
+
+[[tool.scikit-build.overrides]]
+if.python-version = "~=3.11"
+cmake.define = { "RIPTIDE_PYTHON_VER" = "3.11" }

@@ -53,17 +53,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools-scm wheel
           python -m pip install numpy==${{ matrix.numpy-version }}.*
-      - name: Build with python setup.py
-        run: |
-          python setup.py build --force
       - name: Package wheel
         if: ${{ matrix.os == 'windows-2022' }}
         run: |
-          python setup.py bdist_wheel
+          python -m build --wheel
       - name: Package sources
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          python setup.py sdist
+          python -m build --sdist
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:

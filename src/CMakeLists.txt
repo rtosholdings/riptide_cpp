@@ -103,7 +103,8 @@ target_link_libraries(${TARGET_NAME}
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES
     PREFIX ""
-    SUFFIX ${PYTHON_EXT_LIB_SUFFIX})
+    SUFFIX "${PYTHON_EXT_LIB_SUFFIX}"
+    )
 
 if(WIN32)
     set(RUNTIME_SPECIFIER RUNTIME)
@@ -113,4 +114,4 @@ else()
     message(FATAL_ERROR "Cannot specify runtime component")
 endif()
 
-install(TARGETS riptide_cpp ${RUNTIME_SPECIFIER} DESTINATION .)
+install(TARGETS ${TARGET_NAME} ${RUNTIME_SPECIFIER} DESTINATION .)
