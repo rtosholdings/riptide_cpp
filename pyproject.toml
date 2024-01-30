@@ -7,7 +7,7 @@ authors = [{ name = "RTOS Holdings", email = "rtosholdings-bot@sig.com" }]
 requires-python = ">=3.9"
 dynamic = ["version"]
 classifiers = [
-    "Development Status :: Beta",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
