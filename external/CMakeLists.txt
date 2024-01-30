@@ -3,7 +3,7 @@
 # It's not yet available via find_package().
 add_library(ut INTERFACE)
 
-set(UT_VERSION c3ed7a21a18a4de3fc807451ae86c9f51e706a11)
+set(UT_VERSION 2.0.1)
 
 # Extract the archive to the build location, so we can reference it from there.
 file(ARCHIVE_EXTRACT INPUT ${CMAKE_CURRENT_SOURCE_DIR}/ut-${UT_VERSION}.zip

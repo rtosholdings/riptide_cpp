@@ -7,6 +7,7 @@ if(PROJ_COMPILER_FRONTEND STREQUAL "MSVC")
     target_compile_options(rt_common_settings INTERFACE -FC -Zc:__cplusplus "-MP${BLD_MP_MAX}")
     target_compile_options(rt_common_settings INTERFACE "$<$<CONFIG:Debug>:-Od>")
     target_compile_options(rt_common_settings INTERFACE "$<$<CONFIG:Release>:-Ox;-Ob2;-Oi;-Ot>")
+    target_compile_options(rt_common_settings INTERFACE -bigobj)
     target_compile_options(rt_common_settings INTERFACE -Z7) # generate symbols for all configs
     target_link_options(rt_common_settings INTERFACE "$<$<CONFIG:Release>:-DEBUG>") # generate PDB for all configs
     target_compile_options(rt_common_settings INTERFACE -W4 -WX)

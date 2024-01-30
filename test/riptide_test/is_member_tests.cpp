@@ -2,7 +2,7 @@
 #include "HashLinear.h"
 #include "platform_detect.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <array>
 #include <vector>
@@ -13,7 +13,7 @@
 #include <type_traits>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -71,7 +71,7 @@ namespace
         size_t item_size_{ 0 };
     };
 
-    suite is_member_ops = []
+    file_suite is_member_ops = []
     {
         "is_member_uint64_tbb"_test = [&]
         {

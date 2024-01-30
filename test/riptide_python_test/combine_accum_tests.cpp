@@ -9,7 +9,7 @@
 #include "tuple_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <algorithm>
 #include <array>
@@ -23,7 +23,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -226,7 +226,7 @@ namespace
         };
     };
 
-    suite combine_accum_ops = []
+    file_suite combine_accum_ops = []
     {
         "combine_accum_all_unique"_test = combine_accum_tests::test<test_case_id::ALL_UNIQUE>{} | SupportedParams{};
         "combine_accum_all_same"_test = combine_accum_tests::test<test_case_id::ALL_SAME>{} | SupportedParams{};

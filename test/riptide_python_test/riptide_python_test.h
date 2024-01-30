@@ -49,6 +49,8 @@ namespace riptide_python_test::internal
     void pyobject_printer(PyObject * printable);
 
     [[nodiscard]] bool no_pyerr(bool print = true);
+
+    [[nodiscard]] bool yes_pyerr(PyObject * expected_error, bool print = true);
 }
 
 namespace riptide_python_test::internal
@@ -222,6 +224,16 @@ namespace riptide_python_test::internal
         std::fill_n(arr.data(), midpoint, CppType{ 0 });
         *(arr.data() + midpoint) = riptide::invalid_for_type<CppType>::value;
         std::fill_n(arr.data() + midpoint + 1, N - midpoint - 1, CppType{ 1 });
+        return arr;
+    }
+
+    template <typename CppType, typename VT1, typename VT2>
+    [[nodiscard]] auto get_split_values(size_t const N, VT1 const leftv, VT2 const rightv)
+    {
+        riptide_utility::internal::mem_buffer<CppType> arr(N);
+        size_t const midpoint{ N / 2 };
+        std::fill_n(arr.data(), midpoint, static_cast<CppType>(leftv));
+        std::fill_n(arr.data() + midpoint, N - midpoint, static_cast<CppType>(rightv));
         return arr;
     }
 

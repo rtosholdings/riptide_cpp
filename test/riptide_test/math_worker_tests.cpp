@@ -1,13 +1,13 @@
 #include "MathWorker.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <mutex>
 #include <condition_variable>
 #include <thread>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -119,7 +119,7 @@ namespace
         }
     }
 
-    suite math_worker_ops = []
+    file_suite math_worker_ops = []
     {
         "work_main_joins_workers"_test = [&]
         {

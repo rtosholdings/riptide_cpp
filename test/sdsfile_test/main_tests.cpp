@@ -1,8 +1,8 @@
-#include "boost/ut.hpp"
+#include "ut_core.h"
 #include <thread>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 struct stReadSharedMemory;
 
@@ -25,7 +25,7 @@ namespace
 {
     bool dummy{ 0 };
 
-    suite stsfile_tests = []
+    file_suite stsfile_tests = []
     {
         "test_main"_test = [&]
         {

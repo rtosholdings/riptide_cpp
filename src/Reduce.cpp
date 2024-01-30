@@ -19,6 +19,9 @@ using namespace riptide;
 //#define LOGGING OutputDebugStringA
 #define LOGGING(...)
 
+#define MINF(x, y) ((x) < (y) ? (x) : (y))
+#define MAXF(x, y) ((x) > (y) ? (x) : (y))
+
 #if ! RT_TARGET_VECTOR_MEMOP_DEFAULT_ALIGNED
     // MSVC compiler by default assumed unaligned loads
     #define LOADU(X) *(X)
@@ -443,6 +446,18 @@ void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, vo
         // Gather the results from all cores
         if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX)
         {
+            // Must do min/max with proper signedness.
+            bool is_unsigned = false;
+            switch (pstScatterGatherFunc->inputType)
+            {
+            case NPY_UINT8:
+            case NPY_UINT16:
+            case NPY_UINT32:
+            case NPY_UINT64:
+                is_unsigned = true;
+                break;
+            }
+
             int32_t calcs = 0;
             // Collect all the results...
             for (int i = 0; i < numCores; i++)
@@ -465,13 +480,17 @@ void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, vo
                         {
                             pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
                             pstScatterGatherFunc->resultOutInt64 =
-                                MINF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64);
+                                is_unsigned ? (int64_t)(MINF((uint64_t)pstScatterGatherFunc->resultOutInt64,
+                                                             (uint64_t)pZeroArray[i].resultOutInt64)) :
+                                              (MINF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64));
                         }
                         else
                         {
                             pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
                             pstScatterGatherFunc->resultOutInt64 =
-                                MAXF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64);
+                                is_unsigned ? (int64_t)(MAXF((uint64_t)pstScatterGatherFunc->resultOutInt64,
+                                                             (uint64_t)pZeroArray[i].resultOutInt64)) :
+                                              (MAXF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64));
                         }
                     }
                 }

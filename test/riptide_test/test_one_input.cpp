@@ -1,13 +1,13 @@
 #include "../../src/one_input_impl.h"
 #include "../../src/platform_detect.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <type_traits>
 #include <cfloat>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -41,7 +41,7 @@ namespace
     float const * p_norm = input_data_normal_f.data();
     int32_t const * p_int32 = input_data_simple_i.data();
 
-    suite one_input = []
+    file_suite one_input = []
     {
         size_t len{ sizeof(input_data_simple_f) };
         "expected_array_len_f"_test = [len]

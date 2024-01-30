@@ -4,14 +4,14 @@
 
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <cmath>
 #include <type_traits>
 
 using namespace riptide;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -95,7 +95,7 @@ namespace
         }
     };
 
-    suite invalids_compatibility = []
+    file_suite invalids_compatibility = []
     {
         "same_getinvalid_invalid"_test = same_getinvalid_invalid_tester{} | SupportedTypes{};
         "same_get_invalid_invalid"_test = same_get_invalid_invalid_tester{} | SupportedTypes{};

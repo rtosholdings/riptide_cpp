@@ -8,7 +8,7 @@
 #include "np_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <algorithm>
 #include <array>
@@ -21,7 +21,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -247,7 +247,7 @@ namespace
         }
     };
 
-    suite groupby_ops = []
+    file_suite groupby_ops = []
     {
         // TODO: Add all the other tests for >GB_FIRST and <300.
 

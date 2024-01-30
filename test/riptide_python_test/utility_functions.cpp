@@ -34,4 +34,27 @@ namespace riptide_python_test::internal
         }
         return false;
     }
+
+    bool yes_pyerr(PyObject * expected_error, bool print)
+    {
+        auto const actual_error{ PyErr_Occurred() };
+        if (! actual_error)
+        {
+            return false;
+        }
+
+        auto const result{ actual_error == expected_error };
+
+        if (! result)
+        {
+            if (print)
+            {
+                PyErr_Print();
+            }
+        }
+
+        PyErr_Clear();
+
+        return result;
+    }
 }

@@ -1,17 +1,17 @@
 #include "riptide_python_test.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <array>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 using riptide_python_test::internal::get_named_function;
 
 namespace
 {
-    suite riptide_ops = []
+    file_suite riptide_ops = []
     {
         "test_numpy_float"_test = [&]
         {

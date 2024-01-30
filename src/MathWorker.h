@@ -71,10 +71,6 @@ extern "C"
 
 THANDLE StartThread(stWorkerRing * pWorkerRing);
 
-// Move to reduce
-#define MINF(x, y) x < y ? x : y
-#define MAXF(x, y) x > y ? x : y
-
 class CMathWorker
 {
 public:

@@ -5,7 +5,7 @@
 #include "np_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <cmath>
 #include <type_traits>
@@ -13,7 +13,7 @@
 using namespace riptide_utility::internal;
 using namespace riptide;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -54,7 +54,7 @@ namespace
         }
     };
 
-    suite invalids_compatibility = []
+    file_suite invalids_compatibility = []
     {
         "numpy_traits"_test = numpy_traits_tester{} | SupportedTypeCodeTypes{};
     };

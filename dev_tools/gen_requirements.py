@@ -19,7 +19,7 @@ def is_python(major: int, minor: int) -> bool:
 
 
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
-_CMAKE_REQ = "cmake>=3.21"
+_CMAKE_REQ = "cmake>=3.26.1"
 _NUMPY_REQ = "numpy>=1.23,<1.25"
 _TBB_VER = "==2021.6.*"
 _TBB_REQ = "tbb" + _TBB_VER
@@ -47,13 +47,13 @@ conda_reqs = [
 ] + toolchain_reqs
 
 # PyPI setup build requirements.
-# Most everything else *should* be in pyproject.toml, but since we run
-# setup.py directly we need to set up build environment manually here.
+# Most everything *should* be in pyproject.toml, but some packages
+# need to be set up manually here.
 pypi_reqs = [
+    "build",  # PEP-517 py build frontend
     _BENCHMARK_REQ,  # PyPI package doesn't exist
     _CMAKE_REQ,
     _TBB_DEVEL_REQ,  # needed because PyPI tbb-devel pkg doesn't contain CMake files yet
-    "wheel",
     _ZSTD_REQ,  # PyPI package doesn't exist
 ] + toolchain_reqs
 

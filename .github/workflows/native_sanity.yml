@@ -92,4 +92,4 @@ jobs:
       - name: Run the Windows riptide Python tests
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          ctest --test-dir build -C ${{ matrix.build-config }} -R test_riptide_cpp_python
+          ctest --test-dir build -C ${{ matrix.build-config }} -R "(test_riptide_cpp_python|riptide_python_test\..*)"

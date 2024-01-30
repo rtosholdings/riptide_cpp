@@ -1,7 +1,7 @@
 #define PYTHON_TEST_MAIN (1)
 #include "riptide_python_test.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #ifdef WIN32
     #include <Windows.h>
@@ -14,46 +14,6 @@ extern "C"
 
 namespace
 {
-    struct options
-    {
-        bool list_tests{ false };
-        std::string test_filter{};
-    };
-
-    options parse_options(int const argc, char const ** const argv)
-    {
-        options options;
-
-        for (int ac{ 1 }; ac < argc; ++ac)
-        {
-            std::string_view const arg{ argv[ac] };
-
-            if (arg == "--ut_list_tests")
-            {
-                options.list_tests = true;
-            }
-
-            else if (arg == "--ut_filter")
-            {
-                if (ac == argc - 1)
-                {
-                    fprintf(stderr, "Fatal error: missing filter argument");
-                    exit(1);
-                }
-
-                options.test_filter = argv[++ac];
-            }
-
-            else
-            {
-                fprintf(stderr, "Fatal error: unrecognized option, %s\n", std::string(arg).c_str());
-                exit(1);
-            }
-        }
-
-        return options;
-    }
-
     int start_python(int const argc, char const ** const argv)
     {
         wchar_t * program = Py_DecodeLocale(argv[0], NULL);
@@ -131,6 +91,7 @@ namespace
         {
             PyErr_Print();
             fprintf(stderr, "Error: Could not import module 'riptable'\n");
+            return -1;
         }
 
         return 0;
@@ -144,31 +105,24 @@ namespace
 
 int main(int argc, char const ** argv)
 {
-    auto const options{ parse_options(argc, argv) };
+    auto const ut_options{ riptide_utility::ut::parse_options(argc, argv) };
 
-    printf("*** Running tests...\n");
+    boost::ut::cfg<boost::ut::override> = ut_options;
 
-    auto & runner{ boost::ut::cfg<> };
-
-    boost::ut::options ut_options;
-    if (options.list_tests)
+    if (! ut_options.dry_run)
     {
-        ut_options.dry_run = true;
-    }
-    if (! options.test_filter.empty())
-    {
-        ut_options.filter = options.test_filter;
-    }
-    runner = ut_options;
-
-    if (start_python(argc, argv) != 0)
-    {
-        exit(1);
+        if (start_python(argc, argv) != 0)
+        {
+            exit(1);
+        }
     }
 
-    auto result{ runner.run() };
+    auto result{ boost::ut::cfg<boost::ut::override>.run() };
 
-    stop_python();
+    if (! ut_options.dry_run)
+    {
+        stop_python();
+    }
 
     return result;
 }

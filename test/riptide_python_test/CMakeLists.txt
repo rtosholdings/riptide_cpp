@@ -36,16 +36,15 @@ target_link_libraries(${TARGET_NAME}
     test_utility
     ${Python3_LIBRARIES})
 
-add_test(NAME test_riptide_cpp_python
-    COMMAND ${TARGET_NAME}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-set_tests_properties(test_riptide_cpp_python PROPERTIES
-    ENVIRONMENT "PYTHONHOME=${Python3_RUNTIME_LIBRARY_DIRS}")
-
 proj_copy_runtime_deps(TARGET ${TARGET_NAME})
 
 target_link_libraries(${TARGET_NAME}
     Python3::Python
     riptide_cpp
     ut)
+
+gtest_discover_tests(${TARGET_NAME}
+    COMMAND ${TARGET_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DISCOVERY_TIMEOUT 10
+    PROPERTIES ENVIRONMENT "PYTHONHOME=${Python3_LIBRARY_DIRS}/..")

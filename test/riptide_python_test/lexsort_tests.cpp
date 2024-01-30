@@ -9,7 +9,7 @@
 #include "ut_extensions.h"
 #include "vector_util.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <algorithm>
 #include <array>
@@ -23,7 +23,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -226,7 +226,7 @@ namespace
         };
     };
 
-    suite lex_sort = []
+    file_suite lex_sort = []
     {
         "lexsort_valid"_test = lexsort_tests::test<test_case_id::VALID>{} | SupportedParamsValid{};
         "lexsort_invalid"_test = lexsort_tests::test<test_case_id::INVALID>{} | SupportedParamsInvalid{};

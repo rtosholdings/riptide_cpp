@@ -4,7 +4,7 @@
 
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <optional>
 #include <tuple>
@@ -12,7 +12,7 @@
 
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -116,6 +116,8 @@ namespace
 
     struct buffer_ctor_tester
     {
+        buffer_ctor_tester() {}
+
         template <typename KindT>
         void operator()()
         {
@@ -179,7 +181,7 @@ namespace
         }
     };
 
-    suite invalids_compatibility = []
+    file_suite invalids_compatibility = []
     {
         "buffer_ctor"_test = buffer_ctor_tester{} | SupportedTypes{};
         "buffer_empty"_test = buffer_empty_tester{} | SupportedTypes{};

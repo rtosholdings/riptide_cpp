@@ -1,3 +1,5 @@
+include(GoogleTest)
+
 add_subdirectory(utility)
 
 add_subdirectory(riptide_test)
