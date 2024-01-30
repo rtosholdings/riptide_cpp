@@ -97,7 +97,7 @@ jobs:
           python -c "import riptable; print(riptable, riptable.__version__); print(riptable.rc, riptable.rc.__version__)"
       - name: Riptable test with pytest
         run: |
-          python -m riptable.tests.run
+          python -m pytest --pyargs riptable.tests
       #- name: Riptable tooling integration tests
       #  run: |
       #    ipython -m pytest riptable/test_tooling_integration
