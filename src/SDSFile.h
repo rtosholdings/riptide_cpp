@@ -680,10 +680,8 @@ struct SDS_READ_CALLBACKS
 {
     SDS_READ_FINAL_CALLBACK ReadFinalCallback;
     SDS_STACK_FINAL_CALLBACK StackFinalCallback;
-    SDS_READ_SHARED_MEMORY_CALLBACK
-    ReadMemoryCallback; // Only called for shared memory
-    SDS_ALLOCATE_ARRAY_CALLBACK
-    AllocateArrayCallback; // NULL now allowed?  needs testing
+    SDS_READ_SHARED_MEMORY_CALLBACK ReadMemoryCallback; // Only called for shared memory
+    SDS_ALLOCATE_ARRAY_CALLBACK AllocateArrayCallback;  // NULL now allowed?  needs testing
 
     SDS_BEGIN_ALLOW_THREADS BeginAllowThreads; // Must be set even if does nothing
     SDS_END_ALLOW_THREADS EndAllowThreads;     // Must be set even if does nothing
@@ -768,11 +766,8 @@ extern "C"
     RT_DLLEXPORT int32_t SDSWriteFile(const char * fileName,
                                       const char * shareName, // can be NULL
                                       SDS_STRING_LIST * folderName,
-
                                       // arrays to save information
-                                      SDS_WRITE_INFO * pWriteInfo,
-
-                                      SDS_WRITE_CALLBACKS * pWriteCallbacks);
+                                      SDS_WRITE_INFO * pWriteInfo, SDS_WRITE_CALLBACKS * pWriteCallbacks);
 
     //---------------------------------------------
     // Main API to read SDS file

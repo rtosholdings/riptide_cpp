@@ -82,9 +82,6 @@ target_include_directories(${TARGET_NAME} PRIVATE
     ${Python3_NumPy_INCLUDE_DIRS}
 )
 
-target_compile_options(${TARGET_NAME} PRIVATE
-    $<$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>:-bigobj>)
-
 # Match MSVC debug compile settings to those used in external release libs.
 target_compile_definitions(${TARGET_NAME} PUBLIC
     $<$<AND:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_CXX_COMPILER_ID},MSVC>>:_ITERATOR_DEBUG_LEVEL=0>)
@@ -103,7 +100,8 @@ target_link_libraries(${TARGET_NAME}
 # Configure the library name to identify it as a Python extension module.
 set_target_properties(${TARGET_NAME} PROPERTIES
     PREFIX ""
-    SUFFIX ${PYTHON_EXT_LIB_SUFFIX})
+    SUFFIX "${PYTHON_EXT_LIB_SUFFIX}"
+    )
 
 if(WIN32)
     set(RUNTIME_SPECIFIER RUNTIME)
@@ -113,4 +111,4 @@ else()
     message(FATAL_ERROR "Cannot specify runtime component")
 endif()
 
-install(TARGETS riptide_cpp ${RUNTIME_SPECIFIER} DESTINATION .)
+install(TARGETS ${TARGET_NAME} ${RUNTIME_SPECIFIER} DESTINATION .)

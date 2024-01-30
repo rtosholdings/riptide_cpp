@@ -3184,9 +3184,8 @@ void CopyFromBlockToInfo(SDS_ARRAY_BLOCK * pBlock, SDSArrayInfo * pDestInfo)
 
 struct SDS_COMPATIBLE
 {
-    int8_t IsCompatible;     // set to false if conversion required
-    int8_t NeedsStringFixup; // set to 1 if conversion required, or in 2 for mtlab
-                             // conversion
+    int8_t IsCompatible;     // set to false if not compatible
+    int8_t NeedsStringFixup; // set to 1 if conversion required, or in 2 for mtlab conversion
     int8_t NeedsConversion;  // if flag set, dtype conversion called
     int8_t NeedsRotation;
 };
@@ -5688,6 +5687,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
 #endif
         }
         else
+        {
             // dtypes MATCH, and are NOT STRINGS, but itemsize does not match (is
             // this a void)?
             if (pMasterArrayBlock->ItemSize != pArrayBlock->ItemSize)
@@ -5695,31 +5695,55 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                 LOGGING("!!!Incompat due to itemsize\n");
                 c.IsCompatible = false;
             }
+        }
     }
+
     if (pMasterArrayBlock->NDim != pArrayBlock->NDim)
     {
-        LOGGING("!!!Incompat due to ndim %d not macthing\n", pMasterArrayBlock->NDim);
+        LOGGING("!!!Incompat due to ndim %d not matching\n", pMasterArrayBlock->NDim);
         c.IsCompatible = false;
     }
-    if (pMasterArrayBlock->NDim > 1)
+
+    else if (pMasterArrayBlock->NDim > 1)
     {
         for (int32_t i = 1; i < pMasterArrayBlock->NDim; i++)
         {
             if (pMasterArrayBlock->Dimensions[i] != pArrayBlock->Dimensions[i])
             {
-                LOGGING("!!!Incompat due to dim %d not macthing\n", i);
+                LOGGING("!!!Incompat due to dim %d not matching\n", i);
                 c.IsCompatible = false;
             }
         }
-        int32_t mflag = (pMasterArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
-        int32_t oflag = (pArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS);
 
-        if (mflag != oflag)
+        int32_t mflags = pMasterArrayBlock->Flags & (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS);
+        int32_t oflags = pArrayBlock->Flags & (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS);
+
+        int32_t mflag = mflags & SDS_ARRAY_F_CONTIGUOUS;
+        int32_t oflag = pArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS;
+
+        // If the other array is both C and F contiguous, it never needs no rotation.
+        if (oflags != (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS))
         {
-            // possibly incompatible
-            c.NeedsRotation = true;
+            if (mflag != oflag)
+            {
+                // possibly incompatible
+                bool needsRotation = true;
+
+                // If the master block is C and F contiguous, and fixing up, adopt the other's order.
+                if (doFixup)
+                {
+                    if (mflags == (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS))
+                    {
+                        pMasterArrayBlock->Flags = pArrayBlock->Flags;
+                        needsRotation = false;
+                    }
+                }
+
+                c.NeedsRotation = needsRotation;
+            }
         }
     }
+
     return c;
 }
 
@@ -6069,8 +6093,7 @@ public:
         int32_t FileRow;   // first file that had this column
         int32_t ArrayEnum; // enum of first file that had this column
 
-        SDS_ARRAY_BLOCK
-        KingBlock;                        // the king block (master block that determines array dtype)
+        SDS_ARRAY_BLOCK KingBlock;        // the king block (master block that determines array dtype)
         SDS_ARRAY_BLOCK ** ppArrayBlocks; // allocate array of these
         int64_t * pArrayOffsets;          // must be deleted separately 0:5:10:15:20
         int64_t * pOriginalArrayOffsets;  // must be deleted separately 0:5:10:15:20
@@ -6176,7 +6199,6 @@ public:
     // input - new or existing column
     // if new, a new ColumnVector will be created
     //
-    //
     // if the name is not found, the unique count goes up
     void AddColumnList(int64_t validPos, int64_t validCount, const char * columnName,
                        int32_t arrayEnum, // DATASET, OTHER
@@ -6189,6 +6211,14 @@ public:
 
         std::string item = std::string(columnName);
         auto columnFind = ColumnExists.find(item);
+
+        // Check for irregularly-strided inputs.
+        // Stacking irregularly-strided inputs is unsupported.
+        if (! (pArrayBlock->Flags & (SDS_ARRAY_C_CONTIGUOUS | SDS_ARRAY_F_CONTIGUOUS)))
+        {
+            printf("Column '%s' is irregularly strided and currently this is not allowed\n", columnName);
+            TotalDimensionProblems++;
+        }
 
         // Is this a new column name?
         if (columnFind == ColumnExists.end())
@@ -6235,19 +6265,13 @@ public:
             if (compat.NeedsRotation)
             {
                 // cannot handle
-                printf(
-                    "Column '%s' needs rotation from col or row major and currently "
-                    "this is not allowed\n",
-                    columnName);
+                printf("Column '%s' needs rotation from col or row major and currently this is not allowed\n", columnName);
                 TotalDimensionProblems++;
             }
             if (! compat.IsCompatible)
             {
-                printf(
-                    "Warning: Column '%s' has both string and unicode. Support for "
-                    "this is experimental\n",
-                    columnName);
-                //++;
+                printf("Warning: Column '%s' is not compatible\n", columnName);
+                TotalDimensionProblems++;
             }
             if (compat.NeedsStringFixup)
             {
@@ -7060,19 +7084,19 @@ public:
                     // If ONEFILE and NO FOLDERS
                     if (IsNameIncluded(pIncludeList, pFolderList, columnName, isOneFile))
                     {
-                        // if ((!pIncludeList || pIncludeList->IsIncluded(columnName)) &&
-                        //   (!pFolderList || pFolderList->IsIncluded(columnName))
-                        //   )
-                        //{
-
                         // if this column is not in the hash, it will be added
-                        // The very first column has the proper attributes
+                        // The very first column has the proper attributes.
+                        //
+                        // In addition, the first column ArrayBlock will be master/king and dictate the result format.
+                        // All subsequent ArrayBlocks will need to be converted to that master block format.
+
                         LOGGING("[%d][%lld] %s", t, c, columnName);
 
                         SDS_ARRAY_BLOCK * pArrayBlock = &pSDSDecompress->pArrayBlocks[c];
                         int32_t arrayEnum = pSDSDecompress->pArrayEnums[c];
 
                         // If the column is new, SDS_COLUMN_KING will be allocated
+                        // Subsequent blocks will be checked for convertibility.
                         AddColumnList(validPos, validCount, columnName, arrayEnum,
                                       t, // file row (for all files, valid or not)
                                       c, // column pos
@@ -7115,10 +7139,9 @@ public:
                         }
                     }
                 }
+
                 // increment for every valid file
                 validPos++;
-
-                // pSDSDecompress->pNameData;
             }
         }
 
@@ -7443,20 +7466,22 @@ public:
                 // pData is valid for shared memory
                 if (pReadCallbacks->AllocateArrayCallback)
                 {
+                    // Update master block to total length for caller allocation
                     dimensions[0] = rowLengthToAlloc;
 
-                    // Check dims and fortran vs cstyle
-                    // NOTE: use absolute value of last stride vs first stride to
-                    // determine C or F
-                    if (pMasterBlock->NDim > 1 && pMasterBlock->Flags & SDS_ARRAY_F_CONTIGUOUS)
+                    // Update contiguous strides for caller allocation.
+                    bool const is_f{ (pMasterBlock->Flags & SDS_ARRAY_F_CONTIGUOUS) != 0 };
+                    int const begin{ is_f ? 0 : pMasterBlock->NDim - 1 };
+                    int const end{ is_f ? pMasterBlock->NDim : -1 };
+                    int const step{ is_f ? 1 : -1 };
+
+                    int64_t stride = pMasterBlock->ItemSize;
+                    for (int j = begin; j != end; j += step)
                     {
-                        // printf("!!!likely internal error with fortran array > dim 1 and
-                        // upgrading dtype!\n");
-                        int64_t isize = pMasterBlock->ItemSize;
-                        strides[0] = isize;
-                        for (int32_t j = 1; j < pMasterBlock->NDim; j++)
+                        strides[j] = stride;
+                        if (dimensions[j])
                         {
-                            strides[j] = dimensions[j - 1] * strides[j - 1];
+                            stride *= dimensions[j];
                         }
                     }
 

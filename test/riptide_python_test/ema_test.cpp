@@ -7,7 +7,7 @@
 #include "np_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <array>
 #include <type_traits>
@@ -15,7 +15,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -378,7 +378,7 @@ namespace
         }
     };
 
-    suite ema_ops = []
+    file_suite ema_ops = []
     {
         // TODO: Add all the other tests for >GB_FIRST and <300.
         "ema_cumsum_valid"_test = ema_tests<EMA_CUMSUM>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};

@@ -5,7 +5,7 @@
 #include "ut_extensions.h"
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -59,7 +59,7 @@ namespace
         }
     };
 
-    suite reduce_ops = []
+    file_suite reduce_ops = []
     {
         "min_with_nan_passthru"_test = min_with_nan_passthru_tester{} | SupportedTypes{};
         "max_with_nan_passthru"_test = max_with_nan_passthru_tester{} | SupportedTypes{};

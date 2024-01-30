@@ -1,4 +1,4 @@
-#include "boost/ut.hpp"
+#include "ut_core.h"
 #include "logging/logger.h"
 #include "tuple_util.h"
 
@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 using namespace riptide::logging;
 using namespace riptide_utility::internal;
 
@@ -111,7 +111,7 @@ namespace
         }
     };
 
-    suite riptide_ops = []
+    file_suite riptide_ops = []
     {
         // TODO: move this to riptide_python_test
         "test_logging_normal"_test = logging_tester{} | SupportedArgs{};

@@ -9,7 +9,7 @@
 #include "tuple_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <algorithm>
 #include <array>
@@ -22,7 +22,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -241,7 +241,7 @@ namespace
         };
     };
 
-    suite bins_ops = []
+    file_suite bins_ops = []
     {
         "bins_to_cuts_bsearch_basic"_test = bins_tests::test<test_case_id::BASIC>{} | SupportedParams{};
         "bins_to_cuts_bsearch_dups"_test = bins_tests::test<test_case_id::DUPS>{} | SupportedParams{};

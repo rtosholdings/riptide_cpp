@@ -1,7 +1,7 @@
 #include "riptide_python_test.h"
 #include "platform_detect.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <array>
 #include <vector>
@@ -12,14 +12,14 @@
 #include <exception>
 
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
     std::array<int32_t, 1024ULL * 1024ULL> output;
     std::array<int8_t, 1024ULL * 1024ULL> bools;
 
-    suite hash_linear_ops = []
+    file_suite hash_linear_ops = []
     {
 #ifndef RT_OS_WINDOWS
         skip /

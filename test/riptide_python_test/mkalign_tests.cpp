@@ -8,7 +8,7 @@
 #include "tuple_util.h"
 #include "ut_extensions.h"
 
-#include "boost/ut.hpp"
+#include "ut_core.h"
 
 #include <array>
 #include <tuple>
@@ -17,7 +17,7 @@
 using namespace riptide_python_test::internal;
 using namespace riptide_utility::internal;
 using namespace boost::ut;
-using boost::ut::suite;
+using riptide_utility::ut::file_suite;
 
 namespace
 {
@@ -219,7 +219,7 @@ namespace
         }
     };
 
-    suite mkalign_ops = []
+    file_suite mkalign_ops = []
     {
         "mkalign_valid"_test = mkalign_tests::test<test_case_id::VALID>{} | SupportedParams{};
         "mkalign_mixed"_test = mkalign_tests::test<test_case_id::MIXED>{} | SupportedParams{};
