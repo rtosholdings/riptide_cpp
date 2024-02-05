@@ -108,12 +108,12 @@ jobs:
 
   pypi_deploy:
     # deploys build artifacts to PyPI
-    #NOPE#if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
     needs: [pypi_build, conda_build]
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies
@@ -132,7 +132,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           set -ex
-          echo _NOPE_twine upload dist/* --verbose
+          twine upload dist/* --verbose
 
   conda_build:
     runs-on: ${{ matrix.os }}
@@ -205,7 +205,7 @@ jobs:
           if-no-files-found: "error"
 
   conda_deploy:
-    #NOPE#if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
     needs: [pypi_build, conda_build]
     runs-on: ubuntu-latest
     env:
@@ -241,4 +241,4 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          echo _NOPE_anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
+          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
