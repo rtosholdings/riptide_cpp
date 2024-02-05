@@ -23,7 +23,7 @@ jobs:
         python-version: [3.9, "3.10", "3.11"]
         numpy-version: [1.23, 1.24]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "pypi_build"
           python-version: ${{ matrix.python-version }}
@@ -62,9 +62,9 @@ jobs:
         run: |
           python -m build --sdist
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: build-artifacts-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.numpy-version }}
           path: dist/
           if-no-files-found: error
         #
@@ -108,7 +108,7 @@ jobs:
 
   pypi_deploy:
     # deploys build artifacts to PyPI
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
+    #NOPE#if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
     needs: [pypi_build, conda_build]
     runs-on: ubuntu-latest
     steps:
@@ -121,9 +121,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel twine
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          pattern: build-artifacts-*
+          merge-multiple: true
           path: dist/
       - name: Publish artifacts to PyPI
         env:
@@ -131,7 +132,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           set -ex
-          twine upload dist/* --verbose
+          echo _NOPE_twine upload dist/* --verbose
 
   conda_build:
     runs-on: ${{ matrix.os }}
@@ -154,13 +155,13 @@ jobs:
           ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_build"
           miniforge-version: latest
@@ -197,14 +198,14 @@ jobs:
           echo "numpy: " ${{ matrix.zips.numpy }} >> ./conda_variant.yaml
           conda mambabuild conda_recipe --override-channels -c conda-forge -c defaults --output-folder ./conda_pkgs_output --variant-config-files ./conda_variant.yaml
       - name: Publish artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: conda-build-artifacts
+          name: conda-build-artifacts-${{ matrix.os }}-${{ matrix.zips.python }}-${{ matrix.zips.numpy }}
           path: conda_pkgs_output/*/riptide_cpp-*.conda
           if-no-files-found: "error"
 
   conda_deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
+    #NOPE#if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
     needs: [pypi_build, conda_build]
     runs-on: ubuntu-latest
     env:
@@ -216,7 +217,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_deploy"
           python-version: ${{ env.python_version }}
@@ -231,12 +232,13 @@ jobs:
         run: |
           mamba install anaconda-client -q -y
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: conda-build-artifacts
+          pattern: conda-build-artifacts-*
+          merge-multiple: true
           path: conda_pkgs_output/
       - name: Upload to Anaconda
         shell: bash -l {0}
         run: |
           set -ex
-          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
+          echo _NOPE_anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda

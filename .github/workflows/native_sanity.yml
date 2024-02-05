@@ -25,7 +25,7 @@ jobs:
         numpy-version: [1.23, 1.24]
         build-config: ["Debug", "Release"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_build"
           python-version: ${{ matrix.python-version }}
