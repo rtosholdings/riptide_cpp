@@ -20,10 +20,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2022]
-        python-version: [3.9, "3.10", "3.11"]
-        numpy-version: [1.23, 1.24]
+        python-version: ["3.9", "3.10", "3.11"]
+        numpy-version: [1.23]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "pypi_build"
           python-version: ${{ matrix.python-version }}
@@ -62,9 +62,9 @@ jobs:
         run: |
           python -m build --sdist
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: build-artifacts-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.numpy-version }}
           path: dist/
           if-no-files-found: error
         #
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies
@@ -121,9 +121,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel twine
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          pattern: build-artifacts-*
+          merge-multiple: true
           path: dist/
       - name: Publish artifacts to PyPI
         env:
@@ -142,25 +143,17 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-2022"]
-        # matrix of aggregates works but is undocumented: https://stackoverflow.com/a/68940067
-        zips:
-          [
-            { python: "3.9", numpy: "1.23" },
-            { python: "3.9", numpy: "1.24" },
-            { python: "3.10", numpy: "1.23" },
-            { python: "3.10", numpy: "1.24" },
-            { python: "3.11", numpy: "1.23" },
-            { python: "3.11", numpy: "1.24" },
-          ]
+        python-version: ["3.9", "3.10", "3.11"]
+        numpy-version: [1.23]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_build"
           miniforge-version: latest
@@ -193,13 +186,13 @@ jobs:
           conda config --set conda_build.zstd_compression_level 19 # set .conda package format compression level
           export BUILD_VERSION=$(python -c "from setuptools_scm import get_version; print(get_version(version_scheme='post-release'))")
           mkdir conda_pkgs_output
-          echo "python: " ${{ matrix.zips.python }} > ./conda_variant.yaml
-          echo "numpy: " ${{ matrix.zips.numpy }} >> ./conda_variant.yaml
+          echo "python: " ${{ matrix.python-version }} > ./conda_variant.yaml
+          echo "numpy: " ${{ matrix.numpy-version }} >> ./conda_variant.yaml
           conda mambabuild conda_recipe --override-channels -c conda-forge -c defaults --output-folder ./conda_pkgs_output --variant-config-files ./conda_variant.yaml
       - name: Publish artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: conda-build-artifacts
+          name: conda-build-artifacts-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.numpy-version }}
           path: conda_pkgs_output/*/riptide_cpp-*.conda
           if-no-files-found: "error"
 
@@ -216,7 +209,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_deploy"
           python-version: ${{ env.python_version }}
@@ -231,9 +224,10 @@ jobs:
         run: |
           mamba install anaconda-client -q -y
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: conda-build-artifacts
+          pattern: conda-build-artifacts-*
+          merge-multiple: true
           path: conda_pkgs_output/
       - name: Upload to Anaconda
         shell: bash -l {0}
