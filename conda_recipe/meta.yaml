@@ -28,7 +28,8 @@ requirements:
     - zstd >=1.5,<1.6
   run:
     - python {{ python }}
-    # Pins numpy>=x.x.x,<x (see https://conda-forge.org/docs/maintainer/knowledge_base.html#building-against-numpy)
+    # Pins like numpy>=x.x.x,<x but without adding np to build string.
+    # (see https://conda-forge.org/docs/maintainer/knowledge_base.html#building-against-numpy)
     - "{{ pin_compatible('numpy') }}"
     - "{{ pin_compatible('tbb', min_pin='x.x', max_pin='x.x') }}"
     - "{{ pin_compatible('zstd', min_pin='x.x', max_pin='x.x') }}"

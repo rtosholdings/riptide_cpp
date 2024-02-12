@@ -68,7 +68,7 @@ jobs:
           cmake --build build -j --config ${{ matrix.build-config }}
       - name: Run the riptide tests
         run: |
-          build/test/riptide_test/${{ env.CONFIG_SUBDIR }}/riptide_test
+          ctest --test-dir build -C ${{ matrix.build-config }} --output-on-failure -V -R "(test_riptide_cpp|riptide_test\..*)"
       - name: Run the riptide benchmarks
         if: ${{ matrix.build-config == 'Release' }}
         run: |
@@ -85,11 +85,9 @@ jobs:
           # Get just the latest riptable package
           pip install -v --no-deps riptable
           python -c "import riptable; print(riptable, riptable.__version__); print(riptable.rc, riptable.rc.__version__)"
+      - name: Setup python home
+        run: |
+          echo "PYTHONHOME=$CONDA_PREFIX" >> $GITHUB_ENV
       - name: Run the riptide Python tests
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          build/test/riptide_python_test/${{ env.CONFIG_SUBDIR }}/riptide_python_test
-      - name: Run the Windows riptide Python tests
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          ctest --test-dir build -C ${{ matrix.build-config }} -R "(test_riptide_cpp_python|riptide_python_test\..*)"
+          ctest --test-dir build -C ${{ matrix.build-config }} --output-on-failure -V -R "(test_riptide_cpp_python|riptide_python_test\..*)"
