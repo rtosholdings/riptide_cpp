@@ -15,7 +15,7 @@
 
 #include <Python.h>
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_23_API_VERSION
 
 //#define PY_ARRAY_UNIQUE_SYMBOL riptide_python_test_global
 #define PY_ARRAY_UNIQUE_SYMBOL sharedata_ARRAY_API

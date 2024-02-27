@@ -21,11 +21,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.9, "3.10", "3.11"]
-        numpy-version: [1.23, 1.24]
+        python-version: ["3.9", "3.10", "3.11"]
+        numpy-version: [1.23]
         build-config: ["Debug", "Release"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set fetch-depth to 0 so all history is retrieved; this is needed so we get the git tags
           # which we use for setting the package version (via setuptools-scm).
@@ -33,7 +33,7 @@ jobs:
       - name: Setup Miniconda
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: "conda_build"
           python-version: ${{ matrix.python-version }}
@@ -68,7 +68,7 @@ jobs:
           cmake --build build -j --config ${{ matrix.build-config }}
       - name: Run the riptide tests
         run: |
-          build/test/riptide_test/${{ env.CONFIG_SUBDIR }}/riptide_test
+          ctest --test-dir build -C ${{ matrix.build-config }} --output-on-failure -V -R "^riptide_test\..*"
       - name: Run the riptide benchmarks
         if: ${{ matrix.build-config == 'Release' }}
         run: |
@@ -86,10 +86,6 @@ jobs:
           pip install -v --no-deps riptable
           python -c "import riptable; print(riptable, riptable.__version__); print(riptable.rc, riptable.rc.__version__)"
       - name: Run the riptide Python tests
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          build/test/riptide_python_test/${{ env.CONFIG_SUBDIR }}/riptide_python_test
-      - name: Run the Windows riptide Python tests
-        if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-          ctest --test-dir build -C ${{ matrix.build-config }} -R "(test_riptide_cpp_python|riptide_python_test\..*)"
+          echo "CONDA_PREFIX=${CONDA_PREFIX}"
+          PYTHONHOME=${CONDA_PREFIX} ctest --test-dir build -C ${{ matrix.build-config }} --output-on-failure -V -R "^riptide_python_test\..*"

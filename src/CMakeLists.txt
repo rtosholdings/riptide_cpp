@@ -1,6 +1,9 @@
 set(TARGET_NAME riptide_cpp)
 
+include(SetVersion.cmake)
+
 set(HEADERS
+    ${VERSION_D}
     Array.h
     BasicMath.h
     Bins.h

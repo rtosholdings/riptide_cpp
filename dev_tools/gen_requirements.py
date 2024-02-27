@@ -21,13 +21,16 @@ def is_python(major: int, minor: int) -> bool:
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
 _CMAKE_REQ = "cmake>=3.26.1"
 _NUMPY_REQ = "numpy>=1.23,<1.25"
+_NUMPY_MIN_REQ = "numpy>=1.23"
 _TBB_VER = "==2021.6.*"
 _TBB_REQ = "tbb" + _TBB_VER
 _TBB_DEVEL_REQ = "tbb-devel" + _TBB_VER
 _ZSTD_REQ = "zstd>=1.5.2,<1.6"
 
 # Host toolchain requirements to build riptide_cpp.
-toolchain_reqs = []
+toolchain_reqs = [
+    "setuptools_scm",  # Needed to determine version
+]
 if is_linux():
     toolchain_reqs += [
         "binutils",
@@ -43,7 +46,6 @@ if is_linux():
 conda_reqs = [
     "boa",
     "conda-build",
-    "setuptools_scm",  # Needed to construct BUILD_VERSION for meta.yaml
 ] + toolchain_reqs
 
 # PyPI setup build requirements.
@@ -70,9 +72,9 @@ native_reqs = [
 extras_reqs = native_reqs
 
 # Runtime requirements for riptide_cpp.
-# Replicates runtime requirements in meta.yaml and setup.py.
+# Replicates runtime requirements in meta.yaml and pyproject.toml.
 runtime_reqs = [
-    _NUMPY_REQ,
+    _NUMPY_MIN_REQ,
     _TBB_REQ,
     _ZSTD_REQ,
 ]
@@ -80,6 +82,7 @@ runtime_reqs = [
 # Complete test requirements for riptide_cpp tests.
 # Needed to engage all features and their tests (including riptable/python tests).
 tests_reqs = [
+    _CMAKE_REQ,  # for ctest
     # Disable benchmark requirement to avoid pip install failures (PyPI pkg is 'google-benchmark')
     # Assume it's conda install'ed as part of build-level requirements.
     # TODO: Can extend this script to support PyPI vs Conda requirements to map correct names
@@ -104,7 +107,7 @@ tests_reqs += [
 tests_reqs += [
     "ansi2html>=1.5.2",
     "numba>=0.56.2",
-    _NUMPY_REQ,
+    _NUMPY_MIN_REQ,
     "pandas>=1.0,<3.0",
     "python-dateutil",
 ]
@@ -127,13 +130,11 @@ clang_format_reqs = [
 # Complete developer requirements.
 # Union of all above requuirements plus those needed for code contributions.
 developer_reqs = (
-    [
-        "setuptools_scm",
-    ]
-    + black_reqs
+    black_reqs
     + clang_format_reqs
     + conda_reqs
     + flake8_reqs
+    + native_reqs
     + pypi_reqs
     + runtime_reqs
     + tests_reqs

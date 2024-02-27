@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.26.1)
 
 project(riptide_cpp LANGUAGES C CXX)
 
+enable_testing()
+include(CTest)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(CheckIPOSupported)
-enable_testing()
-set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

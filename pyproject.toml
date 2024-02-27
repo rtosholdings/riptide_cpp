@@ -37,9 +37,7 @@ build-backend = "scikit_build_core.build"
 
 [tool.setuptools_scm]
 version_scheme = "post-release"
-local_scheme = "node-and-timestamp"
-write_to = "src/_version.d"
-write_to_template = '"{version}"'
+local_scheme = "no-local-version"
 
 [tool.scikit-build]
 logging.level = "INFO"           # Set to DEBUG for detailed logs.
