@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <span>
 #include <stdio.h>
 #include <vector>
 
@@ -258,17 +259,18 @@ public:
                               int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         float const * const pIn{ (float *)pDataIn };
+        float * const pOut{ (float *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
         double * const pOutAccum{ static_cast<double *>(pDataTmp) };
 
         W * const pCountOut{ (W *)pCountOutT };
 
-        double const invalid_double{ riptide::invalid_for_type<double>::value };
         float const invalid_float{ riptide::invalid_for_type<float>::value };
 
         if (pass <= 0)
         {
             // Clear out memory for our range
+            memset(pOut + binLow, 0, sizeof(float) * (binHigh - binLow));
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
@@ -290,24 +292,44 @@ public:
                     }
                     else
                     {
-                        pOutAccum[index - binLow] = invalid_double;
                         pCountOut[index] = -1;
                     }
                 }
             }
         }
 
-        // Downcast from double to single
-        float * const pOut{ (float *)pDataOut };
-        for (int64_t i = binLow; i < binHigh; i++)
+        // Copy intermediate values to output.
+        // If the number of bins is less than len, its more efficient to copy by iterating over
+        // all bins. Otherwise, its more efficient to copy by iterating over all indexes
+        if (binHigh - binLow < len)
         {
-            if (pCountOut[i] >= 0)
+            for (int64_t i = binLow; i < binHigh; i++)
             {
-                pOut[i] = (float)pOutAccum[i - binLow];
+                if (pCountOut[i] >= 0)
+                {
+                    pOut[i] = static_cast<float>(pOutAccum[i - binLow]);
+                }
+                else
+                {
+                    pOut[i] = invalid_float;
+                }
             }
-            else
+        }
+        else
+        {
+            for (V const index : std::span(pIndex, pIndex + len))
             {
-                pOut[i] = invalid_float;
+                ACCUM_INNER_LOOP(index, binLow, binHigh)
+                {
+                    if (pCountOut[index] >= 0)
+                    {
+                        pOut[index] = static_cast<float>(pOutAccum[index - binLow]);
+                    }
+                    else
+                    {
+                        pOut[index] = invalid_float;
+                    }
+                }
             }
         }
     }
@@ -349,12 +371,16 @@ public:
                                  int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         float const * const pIn{ (float *)pDataIn };
+        float * const pOut{ (float *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
+
+        // Pre-allocated memory to store intermediate fp64 result
         double * const pOutAccum{ static_cast<double *>(pDataTmp) };
 
         if (pass <= 0)
         {
             // Clear out memory for our range
+            memset(pOut, 0, sizeof(U) * (binHigh - binLow));
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
@@ -373,11 +399,25 @@ public:
             }
         }
 
-        // Downcast from double to single
-        float * const pOut{ (float *)pDataOut };
-        for (int64_t i = binLow; i < binHigh; i++)
+        // Copy intermediate values to output
+        // If the number of bins is less than len, its more efficient to copy by iterating over
+        // all bins. Otherwise, its more efficient to copy by iterating over all indexes
+        if (binHigh - binLow < len)
         {
-            pOut[i] = (float)pOutAccum[i - binLow];
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                pOut[i] = static_cast<float>(pOutAccum[i - binLow]);
+            }
+        }
+        else
+        {
+            for (V const index : std::span(pIndex, pIndex + len))
+            {
+                ACCUM_INNER_LOOP(index, binLow, binHigh)
+                {
+                    pOut[index] = static_cast<float>(pOutAccum[index - binLow]);
+                }
+            }
         }
     }
 
@@ -640,7 +680,7 @@ public:
     // Just for float32 since we can upcast
     //-------------------------------------------------------------------------------
     static void AccumMeanFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
-                               int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+                               int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOriginalOut{ (U *)pDataOut };
@@ -650,79 +690,92 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
         double const invalid_double{ riptide::invalid_for_type<double>::value };
 
-        // Allocate pOut
-        double * const pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-        if (pOut)
+        // Pre-allocated memory to store intermediate result
+        double * const pOut = static_cast<double *>(pDataTmp);
+
+        if (pass <= 0)
         {
-            if (pass <= 0)
+            // Clear out memory for our range
+            memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+            memset(pOut, 0, sizeof(double) * (binHigh - binLow));
+        }
+
+        for (int64_t i = 0; i < len; i++)
+        {
+            V const index{ pIndex[i] };
+
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                // Clear out memory for our range
-                memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+                // pCountOut = -1 means the answer for this bin is already invalid
+                // (encountered invalid value before)
+                if (pCountOut[index] >= 0)
+                {
+                    double const temp{ pIn[i] };
+                    if (not riptide::invalid_for_type<double>::is_valid(temp))
+                    {
+                        // output invalid value and set pCountOut to -1
+                        pOut[index - binLow] = invalid_double;
+                        pCountOut[index] = -1;
+                    }
+                    else
+                    {
+                        pOut[index - binLow] += (double)temp;
+                        pCountOut[index]++;
+                    }
+                }
             }
-            // copy over original values
+        }
+
+        // Copy intermediate values to output
+        // If the number of bins is less than len, its more efficient to copy by iterating over
+        // all bins. Otherwise, its more efficient to copy by iterating over all indexes
+        if (binHigh - binLow < len)
+        {
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                pOut[i - binLow] = (double)pOriginalOut[i];
+                if (pCountOut[i] >= 0)
+                {
+                    pOriginalOut[i] = static_cast<U>(pOut[i - binLow]);
+                }
+                else
+                {
+                    pOriginalOut[i] = invalid;
+                }
             }
-
-            for (int64_t i = 0; i < len; i++)
+        }
+        else
+        {
+            for (V const index : std::span(pIndex, pIndex + len))
             {
-                V const index{ pIndex[i] };
-
-                //--------------------------------------
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
-                    // pCountOut = -1 means the answer for this bin is already invalid
-                    // (encountered invalid value before)
                     if (pCountOut[index] >= 0)
                     {
-                        double const temp{ pIn[i] };
-                        if (not riptide::invalid_for_type<double>::is_valid(temp))
-                        {
-                            // output invalid value and set pCountOut to -1
-                            pOut[index - binLow] = invalid_double;
-                            pCountOut[index] = -1;
-                        }
-                        else
-                        {
-                            pOut[index - binLow] += (double)temp;
-                            pCountOut[index]++;
-                        }
-                    }
-                }
-            }
-
-            if (pass < 0)
-            {
-                for (int64_t i = binLow; i < binHigh; i++)
-                {
-                    if (pCountOut[i] > 0)
-                    {
-                        pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
+                        pOriginalOut[index] = static_cast<U>(pOut[index - binLow]);
                     }
                     else
                     {
-                        pOriginalOut[i] = invalid;
+                        pOriginalOut[index] = invalid;
                     }
                 }
             }
-            else
-            {
-                // copy over original values
-                for (int64_t i = binLow; i < binHigh; i++)
-                {
-                    if (pCountOut[i] >= 0)
-                    {
-                        pOriginalOut[i] = (U)pOut[i - binLow];
-                    }
-                    else
-                    {
-                        pOriginalOut[i] = invalid;
-                    }
-                }
-            }
+        }
 
-            WORKSPACE_FREE(pOut);
+        // Gather function won't be called, so compute the mean here
+        if (pass < 0)
+        {
+            for (int64_t i = binLow; i < binHigh; i++)
+            {
+                if (pCountOut[i] > 0)
+                {
+                    pOriginalOut[i] = static_cast<U>(pOut[i - binLow] / (double)(pCountOut[i]));
+                }
+                else
+                {
+                    pOriginalOut[i] = invalid;
+                }
+            }
         }
     }
 
@@ -777,7 +830,7 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumNanMeanFloat(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
-                                  int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+                                  int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
         T const * const pIn{ (T *)pDataIn };
         U * const pOriginalOut{ (U *)pDataOut };
@@ -785,59 +838,69 @@ public:
         W * const pCountOut{ (W *)pCountOutT };
 
         U const invalid{ riptide::invalid_for_type<U>::value };
-        // Allocate pOut
-        double * const pOut = (double *)WORKSPACE_ALLOC(sizeof(double) * (binHigh - binLow));
-        if (pOut)
+
+        // Pre-allocated memory to store intermediate fp64 result
+        double * const pOut = static_cast<double *>(pDataTmp);
+
+        // This is the first (0) or only (-1) pass and we need to zero this memory
+        if (pass <= 0)
         {
-            if (pass <= 0)
+            // Clear out memory for our range
+            memset(pOriginalOut, 0, sizeof(U) * (binHigh - binLow));
+            memset(pOut, 0, sizeof(double) * (binHigh - binLow));
+        }
+
+        for (int64_t i = 0; i < len; i++)
+        {
+            V const index{ pIndex[i] };
+
+            //--------------------------------------
+            ACCUM_INNER_LOOP(index, binLow, binHigh)
             {
-                // Clear out memory for our range
-                memset(pOriginalOut + binLow, 0, sizeof(U) * (binHigh - binLow));
+                T const temp{ pIn[i] };
+                if (riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    pOut[index - binLow] += (double)temp;
+                    pCountOut[index]++;
+                }
             }
-            // copy over original values
+        }
+
+        // Copy intermediate values to output
+        // If the number of bins is less than len, its more efficient to copy by iterating over
+        // all bins. Otherwise, its more efficient to copy by iterating over all indexes
+        if (binHigh - binLow < len)
+        {
             for (int64_t i = binLow; i < binHigh; i++)
             {
-                pOut[i - binLow] = (double)pOriginalOut[i];
+                pOriginalOut[i] = static_cast<U>(pOut[i - binLow]);
             }
-
-            for (int64_t i = 0; i < len; i++)
+        }
+        else
+        {
+            for (V const index : std::span(pIndex, pIndex + len))
             {
-                V const index{ pIndex[i] };
-
-                //--------------------------------------
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
-                    T const temp{ pIn[i] };
-                    if (riptide::invalid_for_type<T>::is_valid(temp))
-                    {
-                        pOut[index - binLow] += (double)temp;
-                        pCountOut[index]++;
-                    }
+                    pOriginalOut[index] = static_cast<U>(pOut[index - binLow]);
                 }
             }
-            if (pass < 0)
+        }
+
+        // Gather function won't be called, so compute the mean here
+        if (pass < 0)
+        {
+            for (int64_t i = binLow; i < binHigh; i++)
             {
-                for (int64_t i = binLow; i < binHigh; i++)
+                if (pCountOut[i] > 0)
                 {
-                    if (pCountOut[i] > 0)
-                    {
-                        pOriginalOut[i] = (U)(pOut[i - binLow] / (double)(pCountOut[i]));
-                    }
-                    else
-                    {
-                        pOriginalOut[i] = invalid;
-                    }
+                    pOriginalOut[i] = static_cast<U>(pOut[i - binLow] / (double)pCountOut[i]);
+                }
+                else
+                {
+                    pOriginalOut[i] = invalid;
                 }
             }
-            else
-            {
-                // copy over original values
-                for (int64_t i = binLow; i < binHigh; i++)
-                {
-                    pOriginalOut[i] = (U)pOut[i - binLow];
-                }
-            }
-            WORKSPACE_FREE(pOut);
         }
     }
 
@@ -2546,7 +2609,14 @@ static void GatherNanMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, voi
     // calculate the mean
     for (int64_t i = binLow; i < binHigh; i++)
     {
-        pDataOut[i] = pDataOut[i] / pCountOut[i];
+        if (pCountOut[i] > 0)
+        {
+            pDataOut[i] = pDataOut[i] / pCountOut[i];
+        }
+        else
+        {
+            pDataOut[i] = riptide::invalid_for_type<U>::value;
+        }
     }
 
     WORKSPACE_FREE(pCountOut);
@@ -3298,6 +3368,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumMean;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumMeanFloat;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -3342,6 +3413,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumNanMean;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumNanMeanFloat;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;

@@ -1666,6 +1666,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
     { "CompareNumpyMemAddress", CompareNumpyMemAddress, METH_VARARGS,
       "Compare two numpy arrays to see if same underlying memory address" },
 
+    { "SetZstdChecksumming", SetZstdChecksumming, METH_VARARGS, "Set (enable or disable) Zstandard checksumming" },
     { "CompressString", CompressString, METH_VARARGS, "Compress a string" },
     { "DecompressString", DecompressString, METH_VARARGS, "Decompress a string" },
     { "CompressDecompressArrays", CompressDecompressArrays, METH_VARARGS, "CompressDecompressArrays one or more arrays" },

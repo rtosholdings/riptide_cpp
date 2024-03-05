@@ -34,7 +34,8 @@ set(HEADERS
     TileRepeat.h
     TimeWindow.h
     TypeSystem.h
-    UnaryOps.h)
+    UnaryOps.h
+    ZstdCompress.h)
 
 set(SOURCES
     Array.cpp
@@ -69,7 +70,8 @@ set(SOURCES
     TileRepeat.cpp
     TimeWindow.cpp
     TypeSystem.cpp
-    UnaryOps.cpp)
+    UnaryOps.cpp
+    ZstdCompress.cpp)
 
 add_library(${TARGET_NAME} SHARED
     ${HEADERS}

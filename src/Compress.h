@@ -16,6 +16,7 @@
 
 #define DISCARD_PARAMETER (void)
 
+PyObject * SetZstdChecksumming(PyObject * self, PyObject * args);
 PyObject * CompressString(PyObject * self, PyObject * args);
 PyObject * DecompressString(PyObject * self, PyObject * args);
 PyObject * CompressDecompressArrays(PyObject * self, PyObject * args);
@@ -89,6 +90,7 @@ struct COMPRESS_NUMPY_TO_NUMPY
 };
 
 //--------------- COMPRESSION ROUTINES --------------------
+size_t ZstdCompressData(void * dst, size_t dstCapacity, const void * src, size_t srcSize, int32_t compressionLevel);
 // size_t CompressGetBound(int compMode, size_t srcSize);
 
 // size_t CompressData(int compMode, void* dst, size_t dstCapacity,

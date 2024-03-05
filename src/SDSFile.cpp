@@ -3,7 +3,8 @@
 #include <stdlib.h>
 
 #include "zstd.h"
-//#include "Compress.h"
+// #include "Compress.h"
+#include "ZstdCompress.h"
 #include "FileReadWrite.h"
 #include "SDSFile.h"
 #include "SharedMemory.h"
@@ -225,7 +226,7 @@ static size_t CompressData(int32_t compMode, void * dst, size_t dstCapacity, con
 {
     if (compMode == COMPRESSION_TYPE_ZSTD)
     {
-        return ZSTD_compress(dst, dstCapacity, src, srcSize, compressionLevel);
+        return ZstdCompressData(dst, dstCapacity, src, srcSize, compressionLevel);
     }
 
     printf("!!internal CompressData error\n");

@@ -20,7 +20,8 @@ set(HEADERS
     ../../src/MathThreads.h
     ../../src/MathWorker.h
     ../../src/SDSFile.h
-    ../../src/SharedMemory.h)
+    ../../src/SharedMemory.h
+    ../../src/ZstdCompress.h)
 
 set(SOURCES
     dllmain.cpp
@@ -28,7 +29,8 @@ set(SOURCES
     ../../src/MathThreads.cpp
     ../../src/MathWorker.cpp
     ../../src/SDSFile.cpp
-    ../../src/SharedMemory.cpp)
+    ../../src/SharedMemory.cpp
+    ../../src/ZstdCompress.cpp)
 
 add_library(${TARGET_NAME} SHARED
     ${HEADERS}

@@ -47,9 +47,10 @@
 // TJD added version low = 2 May  2019 for "folders"
 // TJD added version low = 3 July 2019 for "bandsize"
 // TJD added version low = 4 August 2019 for "section"
-// TJD added version low = 5 March 2020 for timestamps and better section,
+// TJD added version low = 5 March 2020 for timestamps and better section
+// TG added version low = 6 Feb 2024 for zstandard checksumming
 // boolean bitmasks
-#define SDS_VERSION_LOW 5
+#define SDS_VERSION_LOW 6
 
 #define SDS_VALUE_ERROR 1
 

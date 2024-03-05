@@ -3888,6 +3888,12 @@ static int64_t GroupIndex(void * pDataIn1, int64_t arraySize1V, void * pDataInde
     UINDEX * pCountOut = (UINDEX *)pCountOutV;
     UINDEX arraySize1 = (UINDEX)arraySize1V;
 
+    // Short-circuit processing empty arrays.
+    if (arraySize1 == 0)
+    {
+        return 0;
+    }
+
     switch (strlen)
     {
     case 1:
