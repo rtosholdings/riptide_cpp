@@ -2429,21 +2429,21 @@ public:
 };
 
 //-------------------------------------------------------------------
-typedef void (*GROUPBY_GATHER_FUNC)(stGroupBy32 * pstGroupBy32, void const * pDataIn, void * pDataOut, void * pCountOutT,
-                                    int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh);
+typedef void (*GROUPBY_GATHER_FUNC)(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIn, void * pDataOut,
+                                    cache_aligned_buffer_array const & pCountOutT, int64_t numUnique, int64_t numCores,
+                                    int64_t binLow, int64_t binHigh);
 
 template <typename U, typename W>
-static void GatherSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherSum(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                      cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                      int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
-    W * const pCountOutBase = (W *)pCountOutBaseT;
 
     // Array indicating if the final answer for a bin will be invalid
     // if one thread saw data and returned invalid, answer is fixed to be invalid.
     // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
-    W * const pInvFinal{ pCountOutBase };
+    W * const pInvFinal{ pCountOuts.get_buffer<W>(0) };
     // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     U const invalid{ riptide::invalid_for_type<U>::value };
@@ -2456,8 +2456,8 @@ static void GatherSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * 
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
-            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
+            W const * const pCountOut{ pCountOuts.get_buffer<W>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2486,10 +2486,10 @@ static void GatherSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * 
 }
 
 template <typename U, typename W>
-static void GatherNanSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutT, int64_t numUnique,
-                         int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanSum(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                         cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                         int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
 
     memset(pDataOut, 0, sizeof(U) * numUnique);
@@ -2499,7 +2499,7 @@ static void GatherNanSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2510,14 +2510,13 @@ static void GatherNanSum(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
 }
 
 template <typename U, typename W>
-static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                       int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMean(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                       cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                       int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
-    W * const pCountOutBase{ (W *)pCountOutBaseT };
 
-    W * const pInvFinal{ pCountOutBase };
+    W * const pInvFinal{ pCountOuts.get_buffer<W>(0) };
 
     U const invalid{ riptide::invalid_for_type<U>::value };
 
@@ -2532,8 +2531,8 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
-            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
+            W const * const pCountOut{ pCountOuts.get_buffer<W>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2577,12 +2576,11 @@ static void GatherMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void *
 }
 
 template <typename U, typename W>
-static void GatherNanMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                          int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMean(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                          cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                          int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
-    W const * const pCountOutBase{ (W *)pCountOutBaseT };
 
     int64_t allocSize = sizeof(W) * numUnique;
     W * const pCountOut = (W *)WORKSPACE_ALLOC(allocSize);
@@ -2595,8 +2593,8 @@ static void GatherNanMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, voi
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn = &pDataInBase[j * numUnique];
-            W const * const pCountOutCore = &pCountOutBase[j * numUnique];
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
+            W const * const pCountOutCore{ pCountOuts.get_buffer<W>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2623,10 +2621,10 @@ static void GatherNanMean(stGroupBy32 * pstGroupBy32, void const * pDataInT, voi
 }
 
 template <typename U, typename W>
-static void GatherNanMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                         int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMin(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                         cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                         int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
@@ -2641,7 +2639,7 @@ static void GatherNanMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2661,17 +2659,16 @@ static void GatherNanMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
 }
 
 template <typename U, typename W>
-static void GatherMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMin(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                      cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                      int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
-    W * const pCountOutBase = (W *)pCountOutBaseT;
 
     // Array indicating if the final answer for each bin will be invalid
     // if one thread saw data and returned invalid, answer is fixed to be invalid.
     // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
-    W * const pInvFinal{ pCountOutBase };
+    W * const pInvFinal{ pCountOuts.get_buffer<W>(0) };
     // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     // Fill with invalid
@@ -2687,8 +2684,8 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * 
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
-            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
+            W const * const pCountOut{ pCountOuts.get_buffer<W>(j) };
             // pCountOut[i] = 0 means worker j did not see any value for bin i
             // pCountOut[i] = 1 means worker j saw a value, and did not see any invalid for bin i
             // pCountOut[i] = -1 means worker j saw an invalid value for bin i
@@ -2729,10 +2726,10 @@ static void GatherMin(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * 
 }
 
 template <typename U, typename W>
-static void GatherNanMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBase,
-                         int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherNanMax(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                         cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                         int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
 
     // Fill with invalid
@@ -2747,7 +2744,7 @@ static void GatherNanMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
 
             for (int64_t i = binLow; i < binHigh; i++)
             {
@@ -2767,17 +2764,16 @@ static void GatherNanMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void
 }
 
 template <typename U, typename W>
-static void GatherMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * pDataOutT, void * pCountOutBaseT,
-                      int64_t numUnique, int64_t numCores, int64_t binLow, int64_t binHigh)
+static void GatherMax(stGroupBy32 * pstGroupBy32, cache_aligned_buffer_array const & pDataIns, void * pDataOutT,
+                      cache_aligned_buffer_array const & pCountOuts, int64_t numUnique, int64_t numCores, int64_t binLow,
+                      int64_t binHigh)
 {
-    U const * const pDataInBase{ (U *)pDataInT };
     U * const pDataOut{ (U *)pDataOutT };
-    W * const pCountOutBase = (W *)pCountOutBaseT;
 
     // Array indicating if the final answer for each bin will be invalid
     // if one thread saw data and returned invalid, answer is fixed to be invalid.
     // Let's just reuse pCountOut of worker 0 to avoid allocating/freeing more memory.
-    W * const pInvFinal{ pCountOutBase };
+    W * const pInvFinal{ pCountOuts.get_buffer<W>(0) };
     // pInvFinal[i] == -1 means the naswer must remain invalid till the end
 
     // Fill with invalid
@@ -2793,8 +2789,8 @@ static void GatherMax(stGroupBy32 * pstGroupBy32, void const * pDataInT, void * 
     {
         if (pstGroupBy32->returnObjects[j].didWork)
         {
-            U const * const pDataIn{ &pDataInBase[j * numUnique] };
-            W const * const pCountOut{ &pCountOutBase[j * numUnique] };
+            U const * const pDataIn{ pDataIns.get_buffer<U>(j) };
+            W const * const pCountOut{ pCountOuts.get_buffer<W>(j) };
             // pCountOut[i] = 0 means worker j did not see any value for bin i
             // pCountOut[i] = 1 means worker j saw a value, and did not see any invalid for bin i
             // pCountOut[i] = -1 means worker j saw an invalid value for bin i
@@ -4364,8 +4360,6 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
         if (pWorkItem != NULL)
         {
-            std::vector<workspace_mem_ptr> workspaceMemList;
-
             int32_t numCores = g_cMathWorker->WorkerThreadCount + 1;
 
             PyArrayObject * outArray = NULL;
@@ -4380,45 +4374,37 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             }
 
             int64_t itemSize = PyArray_ITEMSIZE(outArray);
-            void * pCountOut = NULL;
 
-            // Allocate room for all the threads to participate, this will be gathered
-            // later
-            workspaceMemList.emplace_back(WORKSPACE_ALLOC(unique_rows * itemSize * numCores));
-            char * pWorkspace = (char *)workspaceMemList.back().get();
-
-            LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", pWorkspace, unique_rows, itemSize, numCores);
-
-            if (pWorkspace == NULL)
+            // Allocate room for all the threads to participate, this will be gathered later
+            cache_aligned_buffer_array workspace_buffers;
+            if (! workspace_buffers.allocate(numCores, unique_rows * itemSize))
             {
                 return NULL;
             }
 
+            LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", workspace.data(), unique_rows, itemSize,
+                    numCores);
+
+            cache_aligned_buffer_array count_buffers;
             if (hasCounts)
             {
-                // Zero out for them
-                int64_t allocSize = pCountOutTypeSize * unique_rows * numCores;
-
-                workspaceMemList.emplace_back(WORKSPACE_ALLOC(allocSize));
-                pCountOut = (void *)workspaceMemList.back().get();
-                if (pCountOut == NULL)
+                if (! count_buffers.allocate(numCores, unique_rows * pCountOutTypeSize))
                 {
                     return NULL;
                 }
-                memset(pCountOut, 0, allocSize);
-                LOGGING("***pCountOut %p   unique:%lld  allocsize:%lld   cores:%d\n", pCountOut, unique_rows, allocSize, numCores);
+                memset(count_buffers.data(), 0, count_buffers.get_total_size());
+                LOGGING("***pCountOut %p   unique:%lld  allocsize:%lld   cores:%d\n", count_buffers.data(), unique_rows, allocSize,
+                        numCores);
             }
 
-            void * pTmpWorkspace{ nullptr };
             int32_t tempItemSize{ 0 };
+            cache_aligned_buffer_array temp_workspace_buffers;
 
-            if (numpyTmpType >= 0)
+            bool hasTemp = numpyTmpType >= 0;
+            if (hasTemp)
             {
                 tempItemSize = NpyToSize(numpyTmpType);
-                int64_t tempSize = tempItemSize * (binHigh - binLow) * numCores;
-                workspaceMemList.emplace_back(WORKSPACE_ALLOC(tempSize));
-                pTmpWorkspace = workspaceMemList.back().get();
-                if (! pTmpWorkspace)
+                if (! temp_workspace_buffers.allocate(numCores, (binHigh - binLow) * tempItemSize))
                 {
                     return NULL;
                 }
@@ -4426,8 +4412,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             // Allocate the struct + ROOM at the end of struct for all the tuple
             // objects being produced
-            workspaceMemList.emplace_back(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn))));
-            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)workspaceMemList.back().get();
+            workspace_mem_ptr pstGroupBy32_(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (numCores * sizeof(stGroupByReturn))));
+            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)pstGroupBy32_.get();
 
             if (pstGroupBy32 == NULL)
             {
@@ -4454,12 +4440,9 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                 pstGroupBy32->returnObjects[i].didWork = 0;
 
                 // Assign working memory per call
-                pstGroupBy32->returnObjects[i].pOutArray = &pWorkspace[unique_rows * i * itemSize];
-                pstGroupBy32->returnObjects[i].pTmpArray =
-                    pTmpWorkspace ? &(static_cast<char *>(pTmpWorkspace)[(binHigh - binLow) * i * tempItemSize]) : nullptr;
-
-                pstGroupBy32->returnObjects[i].pCountOut =
-                    pCountOut ? (void *)&(static_cast<char *>(pCountOut)[(unique_rows * i) * pCountOutTypeSize]) : nullptr;
+                pstGroupBy32->returnObjects[i].pOutArray = workspace_buffers.get_buffer<void>(i);
+                pstGroupBy32->returnObjects[i].pTmpArray = hasTemp ? temp_workspace_buffers.get_buffer<void>(i) : nullptr;
+                pstGroupBy32->returnObjects[i].pCountOut = hasCounts ? count_buffers.get_buffer<void>(i) : nullptr;
 
                 pstGroupBy32->returnObjects[i].pFunction = pFunction;
                 pstGroupBy32->returnObjects[i].returnObject = Py_None;
@@ -4491,7 +4474,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             if (pGather)
             {
                 void * pDataOut = PyArray_BYTES(outArray);
-                pGather(pstGroupBy32, pWorkspace, pDataOut, pCountOut, unique_rows, numCores, binLow, binHigh);
+                pGather(pstGroupBy32, workspace_buffers, pDataOut, count_buffers, unique_rows, numCores, binLow, binHigh);
             }
             else
             {

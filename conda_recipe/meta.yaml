@@ -8,8 +8,9 @@ source:
 build:
   number: 0
   script: "pip install -v --no-deps --no-build-isolation ."
-  # will provide manual run requirements for these
+  # Will provide explicit run requirements for these, below
   ignore_run_exports_from:
+    - numpy
     - tbb-devel
     - zstd
 
@@ -27,10 +28,9 @@ requirements:
     - tbb 2021.6.*
     - zstd >=1.5,<1.6
   run:
+    # NOTE: Avoiding the max_pin=x.x pinning expr prevents adding np to build string.
+    - numpy >=1.23,<1.25
     - python {{ python }}
-    # Pins like numpy>=x.x.x,<x but without adding np to build string.
-    # (see https://conda-forge.org/docs/maintainer/knowledge_base.html#building-against-numpy)
-    - "{{ pin_compatible('numpy') }}"
     - "{{ pin_compatible('tbb', min_pin='x.x', max_pin='x.x') }}"
     - "{{ pin_compatible('zstd', min_pin='x.x', max_pin='x.x') }}"
 
