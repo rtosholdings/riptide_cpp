@@ -1,8 +1,10 @@
 #include "Compress.h"
+#include "ZstdCompress.h"
 #include "FileReadWrite.h"
 #include "SharedMemory.h"
 #include "bytesobject.h"
 #include "zstd.h"
+#include "zstd_errors.h"
 #include <Python.h>
 #include <stdlib.h>
 
@@ -125,7 +127,7 @@ bool CompressMemoryArray(void * pstCompressArraysV, int core, int64_t t)
         LOGGING("[%d] started %lld %p\n", (int)t, source_size, pstNumpyHeader);
 
         // data to compress is after the header
-        size_t cSize = ZSTD_compress(&pstNumpyHeader[1], dest_size, aInfo[t].pData, source_size, pstCompressArrays->compLevel);
+        size_t cSize = ZstdCompressData(&pstNumpyHeader[1], dest_size, aInfo[t].pData, source_size, pstCompressArrays->compLevel);
 
         pstNumpyHeader->compressedSize = cSize;
 
@@ -140,6 +142,23 @@ bool CompressMemoryArray(void * pstCompressArraysV, int core, int64_t t)
     }
 
     return true;
+}
+
+//----------------------------------------------------
+// Enable Zstandard checksumming. This is only for compression.
+// Decompression will automatically verify checksum if it's present
+PyObject * SetZstdChecksumming(PyObject * self, PyObject * args)
+{
+    int value;
+
+    if (! PyArg_ParseTuple(args, "p", &value))
+    {
+        return NULL;
+    }
+
+    ZstdSetChecksumming(bool(value));
+
+    Py_RETURN_NONE;
 }
 
 //----------------------------------------------------
@@ -392,7 +411,7 @@ PyObject * CompressString(PyObject * self, PyObject * args)
 
         printf("trying to compress %s  size:%zu  dest_size:%zu %d\n", source, source_size, dest_size, level);
 
-        cSize = ZSTD_compress(dest, dest_size, source, source_size, level);
+        cSize = ZstdCompressData(dest, dest_size, source, source_size, level);
 
         printf("compressed to %zu\n", cSize);
 

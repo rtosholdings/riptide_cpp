@@ -1,12 +1,10 @@
+# The python and numpy variants are only used for local conda builds.
+# They are overridden by the CI scripts.
 python:
   - 3.9
 
 numpy:
   - 1.23
-
-zip_keys:
-  - python
-  - numpy
 
 c_compiler:
   - vs2022 # [win]

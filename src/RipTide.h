@@ -10,21 +10,7 @@
 
 #include <Python.h>
 
-//#include <x86intrin.h>
-//#include "zmmintrin.h"
-//#include "immintrin.h"
-//#include <intrin.h>
-
-//#define NPY_1_7_API_VERSION 0x00000007
-//#define NPY_1_8_API_VERSION 0x00000008
-//#define NPY_1_9_API_VERSION 0x00000008
-//#define NPY_1_10_API_VERSION 0x00000008
-//#define NPY_1_11_API_VERSION 0x00000008
-
-// TJD: Comment out this define to use newer numpy apis
-// Such as PyArray_NDIM
-//
-#define NPY_NO_DEPRECATED_API 0x00000008
+#define NPY_NO_DEPRECATED_API NPY_1_23_API_VERSION
 
 // NOTE: See PY_ARRAY_UNIQUE_SYMBOL
 // If this is not included, calling PY_ARRAY functions will have a null value

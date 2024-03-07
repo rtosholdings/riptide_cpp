@@ -21,5 +21,4 @@ target_link_libraries(${TARGET_NAME}
 proj_copy_runtime_deps(TARGET ${TARGET_NAME})
 
 gtest_discover_tests(${TARGET_NAME}
-    COMMAND ${TARGET_NAME}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    COMMAND ${TARGET_NAME})

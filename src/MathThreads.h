@@ -391,3 +391,61 @@ struct stWorkerRing
 
 WakeSingleAddress InitWakeCalls();
 // DWORD WINAPI WorkerThreadFunction(void* lpParam);
+
+// RAII object for allocating cache aligned buffers for multithreaded workers
+// Avoids potential false sharing between buffers
+class cache_aligned_buffer_array
+{
+    workspace_mem_ptr buffer;
+    void * aligned = nullptr; // Start of aligned buffer
+    size_t buffer_size = 0;   // Size of each buffer
+    size_t num_buffers = 0;   // Number of buffers
+
+public:
+    // Allocate num_cores buffers of size buffer_size
+    // Each buffer will be cache aligned
+    bool allocate(size_t num_buffers_, size_t buffer_size_)
+    {
+        size_t cache_line_size = std::hardware_destructive_interference_size;
+
+        buffer_size = buffer_size_;
+        num_buffers = num_buffers_;
+
+        // Round up buffer size to a multiple of cache line size
+        if (buffer_size % cache_line_size != 0)
+            buffer_size += cache_line_size - buffer_size % cache_line_size;
+
+        // Pad buffer so we can align it
+        size_t total_size = buffer_size * num_buffers;
+        size_t padded_size = total_size + cache_line_size;
+
+        buffer.reset(WORKSPACE_ALLOC(padded_size));
+        if (buffer == nullptr)
+            return false;
+
+        // Get a cache aligned pointer
+        aligned = buffer.get();
+        if (std::align(cache_line_size, total_size, aligned, padded_size) == nullptr)
+            return false;
+
+        return true;
+    }
+
+    template <typename T>
+    T * get_buffer(size_t index) const
+    {
+        // We need this reinterpret cast to go from char * to T *
+        void * buffer = static_cast<char *>(aligned) + buffer_size * index;
+        return static_cast<T *>(buffer);
+    }
+
+    void * data() const
+    {
+        return aligned;
+    }
+
+    size_t get_total_size() const
+    {
+        return num_buffers * buffer_size;
+    }
+};
