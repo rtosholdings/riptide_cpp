@@ -287,7 +287,7 @@ jobs:
 
   conda_deploy:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
-    needs: [conda_build, conda_test, pypi_build]
+    needs: [conda_build, conda_test, pypi_test]
     runs-on: ubuntu-latest
     env:
       # pin to py3.11, as anaconda-client broken on py3.12 (see https://github.com/Anaconda-Platform/anaconda-client/issues/689)
@@ -322,12 +322,12 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          echo NOPE_anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
+          echo anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
 
   pypi_deploy:
     # deploys build artifacts to PyPI
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref_type == 'tag' }}
-    needs: [pypi_build, pypi_test, conda_build]
+    needs: [pypi_build, pypi_test, conda_test]
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
@@ -350,4 +350,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           set -ex
-          echo NOPE_twine upload dist/* --verbose
+          echo twine upload dist/* --verbose
