@@ -322,7 +322,7 @@ jobs:
         shell: bash -l {0}
         run: |
           set -ex
-          echo anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
+          anaconda --token "${ANACONDA_TOKEN}" upload --label main --user ${ANACONDA_USER} ./conda_pkgs_output/*/riptide_cpp-*.conda
 
   pypi_deploy:
     # deploys build artifacts to PyPI
@@ -350,4 +350,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           set -ex
-          echo twine upload dist/* --verbose
+          twine upload dist/* --verbose
