@@ -906,8 +906,11 @@ public:
 
     //-------------------------------------------------------------------------------
     static void AccumVar(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
-                         int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+                         int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
+        constexpr auto InputIsFloat = std::is_same_v<T, float>;
+        using TempType = std::conditional<InputIsFloat, double, U>::type;
+
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
@@ -921,9 +924,21 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
+        // There's no gather implementation for this group by operation, so its always run single threaded
+        // That means we will only ever do a single pass and the allocations below are a one time cost
+
         // TODO: optimize this for our range
-        U * const sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
-        memset(sumsquares, 0, sizeof(U) * binHigh);
+        TempType * mean;
+        if constexpr (InputIsFloat)
+        {
+            mean = static_cast<TempType *>(pDataTmp);
+            memset(mean, 0, sizeof(TempType) * (binHigh - binLow));
+        }
+        else
+        {
+            // Offset by binLow so that we can access the correct element via mean[index - binLow]
+            mean = pOut + binLow;
+        }
 
         for (int64_t i = 0; i < len; i++)
         {
@@ -940,12 +955,11 @@ public:
                     if (not riptide::invalid_for_type<T>::is_valid(temp))
                     {
                         // output invalid value and set pCountOut to -1
-                        pOut[index] = invalid;
                         pCountOut[index] = -1;
                     }
                     else
                     {
-                        pOut[index] += (U)temp;
+                        mean[index - binLow] += (TempType)temp;
                         pCountOut[index]++;
                     }
                 }
@@ -956,9 +970,13 @@ public:
         {
             if (pCountOut[i] >= 0)
             {
-                pOut[i] /= (U)(pCountOut[i]);
+                mean[i - binLow] /= (TempType)(pCountOut[i]);
             }
         }
+
+        workspace_mem_ptr sumsquares_owner{ WORKSPACE_ALLOC(sizeof(TempType) * binHigh) };
+        TempType * const sumsquares{ reinterpret_cast<TempType *>(sumsquares_owner.get()) };
+        memset(sumsquares, 0, sizeof(TempType) * binHigh);
 
         for (int64_t i = 0; i < len; i++)
         {
@@ -971,7 +989,7 @@ public:
                 {
                     // since this is a second pass, already nothing is invalid in `index` bin
                     T const temp{ pIn[i] };
-                    U diff = (U)temp - pOut[index];
+                    TempType diff = (TempType)temp - mean[index - binLow];
                     sumsquares[index] += (diff * diff);
                 }
             }
@@ -981,20 +999,22 @@ public:
         {
             if (pCountOut[i] > 1)
             {
-                pOut[i] = sumsquares[i] / (U)(pCountOut[i] - 1);
+                pOut[i] = (U)(sumsquares[i] / (TempType)(pCountOut[i] - 1));
             }
             else
             {
                 pOut[i] = invalid;
             }
         }
-        WORKSPACE_FREE(sumsquares);
     }
 
     //-------------------------------------------------------------------------------
     static void AccumNanVar(void const * pDataIn, void const * pIndexT, void * pCountOutT, void * pDataOut, int64_t len,
-                            int64_t binLow, int64_t binHigh, int64_t pass, void * /*pDataTmp*/)
+                            int64_t binLow, int64_t binHigh, int64_t pass, void * pDataTmp)
     {
+        constexpr auto InputIsFloat = std::is_same_v<T, float>;
+        using TempType = std::conditional<InputIsFloat, double, U>::type;
+
         T const * const pIn{ (T *)pDataIn };
         U * const pOut{ (U *)pDataOut };
         V const * const pIndex{ (V *)pIndexT };
@@ -1008,8 +1028,20 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        U * sumsquares = (U *)WORKSPACE_ALLOC(sizeof(U) * binHigh);
-        memset(sumsquares, 0, sizeof(U) * binHigh);
+        // There's no gather implementation for this group by operation, so its always run single threaded
+        // That means we will only ever do a single pass and the allocations below are a one time cost
+
+        TempType * mean;
+        if constexpr (InputIsFloat)
+        {
+            mean = static_cast<TempType *>(pDataTmp);
+            memset(mean, 0, sizeof(TempType) * (binHigh - binLow));
+        }
+        else
+        {
+            // Offset by binLow so that we can access the correct element via mean[index - binLow]
+            mean = pOut + binLow;
+        }
 
         for (int64_t i = 0; i < len; i++)
         {
@@ -1021,7 +1053,7 @@ public:
                 T const temp{ pIn[i] };
                 if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    pOut[index] += (U)temp;
+                    mean[index - binLow] += (TempType)temp;
                     pCountOut[index]++;
                 }
             }
@@ -1029,8 +1061,12 @@ public:
 
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            pOut[i] /= (U)(pCountOut[i]);
+            mean[i - binLow] /= (TempType)(pCountOut[i]);
         }
+
+        workspace_mem_ptr sumsquares_owner{ WORKSPACE_ALLOC(sizeof(TempType) * binHigh) };
+        TempType * const sumsquares{ reinterpret_cast<TempType *>(sumsquares_owner.get()) };
+        memset(sumsquares, 0, sizeof(TempType) * binHigh);
 
         for (int64_t i = 0; i < len; i++)
         {
@@ -1042,7 +1078,7 @@ public:
                 T const temp{ pIn[i] };
                 if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    U diff = (U)temp - pOut[index];
+                    TempType diff = (TempType)temp - mean[index - binLow];
                     sumsquares[index] += (diff * diff);
                 }
             }
@@ -1052,14 +1088,13 @@ public:
         {
             if (pCountOut[i] > 1)
             {
-                pOut[i] = sumsquares[i] / (U)(pCountOut[i] - 1);
+                pOut[i] = (U)(sumsquares[i] / (TempType)(pCountOut[i] - 1));
             }
             else
             {
                 pOut[i] = invalid;
             }
         }
-        WORKSPACE_FREE(sumsquares);
     }
 
     //-------------------------------------------------------------------------------
@@ -3454,6 +3489,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumVar;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumVar;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -3498,6 +3534,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumNanVar;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumNanVar;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -3542,6 +3579,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumStd;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumStd;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
@@ -3586,6 +3624,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
             return GroupByBase<int8_t, double, V, W>::AccumNanStd;
         case NPY_FLOAT:
             *wantedOutputType = NPY_FLOAT;
+            *wantedTempType = NPY_DOUBLE;
             return GroupByBase<float, float, V, W>::AccumNanStd;
         case NPY_DOUBLE:
             *wantedOutputType = NPY_DOUBLE;
