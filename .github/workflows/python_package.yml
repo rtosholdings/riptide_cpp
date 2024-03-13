@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-2022"]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
         numpy-version: [1.23]
     steps:
       - name: Checkout repo
@@ -86,12 +86,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2022]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
         numpy-version: [1.23]
         exclude:
-          # only latest needed for sdist, so exlude others
-          - os: ubuntu-latest
-            python-version: "3.9"
+          # only latest needed for sdist, so exlude all others
           - os: ubuntu-latest
             python-version: "3.10"
     steps:
@@ -151,7 +149,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-2022"]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24]
     env:
       ANACONDA_USER: rtosholdings
@@ -215,7 +213,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-2022]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24]
     steps:
       - name: Checkout repo (sparse)

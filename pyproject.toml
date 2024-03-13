@@ -4,13 +4,12 @@ description = "Python Package with fast math util functions"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "RTOS Holdings", email = "rtosholdings-bot@sig.com" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dynamic = ["version"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: BSD License",
@@ -87,10 +86,6 @@ cmake.args = [
 ]
 
 # Static way of passing current Python version to CMake.
-[[tool.scikit-build.overrides]]
-if.python-version = "~=3.9"
-cmake.define = { "RIPTIDE_PYTHON_VER" = "3.9" }
-
 [[tool.scikit-build.overrides]]
 if.python-version = "~=3.10"
 cmake.define = { "RIPTIDE_PYTHON_VER" = "3.10" }

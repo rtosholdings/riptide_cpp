@@ -8,6 +8,7 @@
 #include "FileReadWrite.h"
 #include "SDSFile.h"
 #include "SharedMemory.h"
+#include "logging/logging.h"
 
 #include "MathWorker.h"
 #include <stdarg.h>
@@ -47,6 +48,12 @@ extern int64_t SumBooleanMask(const int8_t * pIn, int64_t length);
 //
 
 #define SDS_MAX_CORES 65
+
+namespace
+{
+    static auto logger = riptide::logging::get_logger("SDSFile");
+    using loglevel = riptide::logging::loglevel;
+}
 
 #define LOGGING(...)
 //#define LOGGING printf
@@ -165,7 +172,7 @@ void * SDSGetDefaultType(int32_t numpyInType)
         pgDefault = &gString;
         break;
     default:
-        printf("!!! likely problem in SDSGetDefaultType\n");
+        logger->error("!!! likely problem in SDSGetDefaultType\n");
     }
 
     return pgDefault;
@@ -188,14 +195,14 @@ void SetErr_Format(int32_t exception, const char * format, ...)
     vsnprintf(g_errorbuffer, sizeof(g_errorbuffer), format, args);
     va_end(args);
 
-    LOGGING(g_errorbuffer);
-    LOGGING("\n");
+    logger->error("{}", g_errorbuffer);
+    logger->error("{}", "\n");
 }
 
 // Call to clear any previous errors
 static void ClearErrors()
 {
-    LOGGING("Clearing errors\n");
+    logger->debug("Clearing errors");
     g_lastexception = 0;
     g_errorbuffer[0] = 0;
 }
@@ -204,7 +211,7 @@ static void PrintIfErrors()
 {
     if (g_errorbuffer[0] != 0)
     {
-        printf("Existing error: %s\n", g_errorbuffer);
+        logger->error("Existing error: {}", g_errorbuffer);
     }
 }
 
@@ -216,7 +223,7 @@ static size_t CompressGetBound(int32_t compMode, size_t srcSize)
         return ZSTD_compressBound(srcSize);
     }
 
-    printf("!!internal CompressBound error\n");
+    logger->debug("!!internal CompressBound error");
     return srcSize;
 }
 
@@ -229,7 +236,7 @@ static size_t CompressData(int32_t compMode, void * dst, size_t dstCapacity, con
         return ZstdCompressData(dst, dstCapacity, src, srcSize, compressionLevel);
     }
 
-    printf("!!internal CompressData error\n");
+    logger->debug("!!internal CompressBound error");
     return srcSize;
 }
 
@@ -559,7 +566,8 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
             if (! bReadDone)
             {
                 LastError = GetLastError();
-                printf("!!Read failed in getoverlapped %p %p %p %d\n", (void *)Handle, (void *)eventHandle, buffer, LastError);
+                logger->error("!!Read failed in getoverlapped {} {} {} {}", (void *)Handle, (void *)eventHandle, buffer,
+                              LastError);
                 return 0;
             }
             else
@@ -567,7 +575,7 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
                 bool extraCheck = HasOverlappedIoCompleted(pos);
                 if (! extraCheck)
                 {
-                    printf("!! internal error reading... complete but not really\n");
+                    logger->error("!! internal error reading... complete but not really");
                 }
             }
         }
@@ -576,7 +584,7 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, v
     if (! bReadDone)
     {
         DWORD LastError = GetLastError();
-        printf("!!Read failed at end %p %p %p %d\n", (void *)Handle, (void *)eventHandle, buffer, LastError);
+        logger->error("!!Read failed at end {} {} {} {}", (void *)Handle, (void *)eventHandle, buffer, LastError);
         return 0;
     }
     // printf("Read %lld bytes\n",(long long) n);
@@ -635,7 +643,7 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
         if (! bWriteDone)
         {
             LastError = GetLastError();
-            printf("!!Write failed ovr buff:%p  size:%lld  pos:%lld  error:%d\n", buffer, bufferSize, BufferPos, LastError);
+            logger->error("!!Write failed ovr buff:{}  size:{}  pos:{}  error:{}", buffer, bufferSize, BufferPos, LastError);
             return 0;
         }
     }
@@ -643,14 +651,14 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
     if (! bWriteDone)
     {
         LastError = GetLastError();
-        printf("!!Write failed done  buff:%p  size:%lld  pos:%lld  error:%d\n", buffer, bufferSize, BufferPos, LastError);
+        logger->error("!!Write failed done  buff:{}  size:{}  pos:{}  error:{}", buffer, bufferSize, BufferPos, LastError);
         return 0;
     }
 
     if (n != count)
     {
         LastError = GetLastError();
-        printf("write chunk error  buff:%p  size:%lld  pos:%lld  error:%d\n", buffer, bufferSize, BufferPos, LastError);
+        logger->error("write chunk error  buff:{}  size:{}  pos:{}  error:{}", buffer, bufferSize, BufferPos, LastError);
     }
     // TODO: n not always filled in... due to delayed write?
     return n;
@@ -659,7 +667,7 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE Handle, 
 //---------------------------------------------------
 void SDSFileClose(SDS_FILE_HANDLE handle)
 {
-    LOGGING("File closed %p\n", handle);
+    logger->debug("File closed {}", (void *)handle);
     CloseHandle(handle);
 }
 
@@ -709,7 +717,7 @@ SDS_FILE_HANDLE SDSFileOpen(const char * fileName, bool writeOption, bool overla
 
             if (filehandle < 0)
             {
-                LOGGING("openning with CREAT\n");
+                logger->debug("openning with CREAT");
                 createFlags = O_RDWR | O_CREAT;
                 filehandle = open(fileName, createFlags, 0666);
             }
@@ -726,10 +734,10 @@ SDS_FILE_HANDLE SDSFileOpen(const char * fileName, bool writeOption, bool overla
         filehandle = open(fileName, createFlags);
     }
 
-    LOGGING("linux handle open\n");
+    logger->debug("linux handle open");
     if (filehandle < 0)
     {
-        printf("error opening file %s -- error %s\n", fileName, strerror(errno));
+        logger->error("error opening file {} -- error {}", fileName, strerror(errno));
         return BAD_SDS_HANDLE;
     }
     return filehandle;
@@ -772,7 +780,7 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandl
 
         if (totalRead != origSize)
         {
-            printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, origSize, totalRead, errno);
+            logger->error("!!readchunk failed for fd {} -- {} vs {} (errno {})", fileHandle, origSize, totalRead, errno);
             return 0;
         }
         return totalRead;
@@ -784,13 +792,13 @@ int64_t SDSFileReadChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHandl
         // pread() returns -1 on error; make sure the read actually succeeded.
         if (bytes_read == -1)
         {
-            printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, bufferSize, bytes_read, errno);
+            logger->error("!!readchunk failed for fd {} -- {} vs {} (errno {})", fileHandle, bufferSize, bytes_read, errno);
             return 0;
         }
 
         if (bytes_read != bufferSize)
         {
-            printf("!!readchunk failed for fd %d -- %lld vs %lld (errno %d)\n", fileHandle, bufferSize, bytes_read, errno);
+            logger->error("!!readchunk failed for fd {} -- {} vs {} (errno {})", fileHandle, bufferSize, bytes_read, errno);
             return 0;
         }
         return bytes_read;
@@ -824,7 +832,7 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHand
 
         if (totalWritten != origSize)
         {
-            printf("write chunk error  buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+            logger->error("write chunk error  buff:{}  size:{}  pos:{}  errno:{}", buffer, bufferSize, bufferPos, errno);
             return 0;
         }
 
@@ -837,13 +845,13 @@ int64_t SDSFileWriteChunk(SDS_EVENT_HANDLE eventHandle, SDS_FILE_HANDLE fileHand
         // pwrite() returns -1 on error; make sure the write actually succeeded.
         if (bytes_written == -1)
         {
-            printf("!!Write failed done  buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+            logger->error("!!Write failed done  buff:{}  size:{}  pos:{}  errno:{}", buffer, bufferSize, bufferPos, errno);
             return 0;
         }
 
         if (bytes_written != bufferSize)
         {
-            printf("!!Write failed small buff:%p  size:%lld  pos:%lld  errno:%d\n", buffer, bufferSize, bufferPos, errno);
+            logger->error("!!Write failed small buff:{}  size:{}  pos:{}  errno:{}", buffer, bufferSize, bufferPos, errno);
             return 0;
         }
 
@@ -858,7 +866,7 @@ void SDSFileClose(SDS_FILE_HANDLE handle)
     int32_t result = close(handle);
     if (result < 0)
     {
-        printf("Error closing file %s\n", strerror(errno));
+        logger->error("Error closing file {}", strerror(errno));
     }
 }
 
@@ -959,7 +967,7 @@ public:
         {
             return (SDS_FILE_HEADER *)pMapStruct->BaseAddress;
         }
-        printf("!!internal shared memory error\n");
+        logger->error("!!internal shared memory error");
         return NULL;
     }
 
@@ -971,7 +979,7 @@ public:
         {
             return ((char *)pMapStruct->BaseAddress) + offset;
         }
-        printf("!!internal shared memory GetMemoryOffset error\n");
+        logger->error("!!internal shared memory GetMemoryOffset error");
         return NULL;
     }
 
@@ -987,13 +995,13 @@ public:
     //
     HRESULT Begin(int64_t Size)
     {
-        LOGGING("Allocating mem share %s with size %lld\n", SharedMemoryName, Size);
+        logger->debug("Allocating mem share {} with size {}", SharedMemoryName, Size);
 
         HRESULT hr = SharedMemoryBegin(SharedMemoryName, Size, &pMapStruct);
 
         if (hr < 0)
         {
-            printf("!!!Failed to allocate shared memory share %s with size %lld\n", SharedMemoryName, Size);
+            logger->error("!!!Failed to allocate shared memory share {} with size {}", SharedMemoryName, Size);
             pMapStruct = NULL;
         }
         else
@@ -1054,7 +1062,7 @@ public:
                 pTemp++;
             }
 
-            LOGGING("Orig filename:%s -- mapping: %s\n", pszFilename, pMappingName);
+            logger->debug("Orig filename:{} -- mapping: {}", pszFilename, pMappingName);
 
             char * pStart = SharedMemoryName;
 
@@ -1081,7 +1089,7 @@ public:
             // copy over filename part
             while ((*pStart++ = *pMappingName++))
                 ;
-            LOGGING("Shared memory name is %s\n", SharedMemoryName);
+            logger->debug("Shared memory name is {}", SharedMemoryName);
         }
     }
 
@@ -1116,7 +1124,7 @@ public:
         // loop over all included items
         for (const char * includeItem : *pItems)
         {
-            LOGGING("Including item: %s\n", includeItem);
+            logger->debug("Including item: {}", includeItem);
             AddItem(includeItem);
         }
     }
@@ -1174,8 +1182,7 @@ private:
         // Check if we matched
         if (FindItem<HasSingleListMember>(item))
         {
-            LOGGING("Simple match %s\n", std::string(item).c_str());
-
+            logger->error("Simple match {}", std::string(item).c_str());
             return 1;
         }
 
@@ -1188,7 +1195,7 @@ private:
 
             if (separator_pos != std::string_view::npos)
             {
-                LOGGING("Failed to match, has bang %s\n", std::string(item).c_str());
+                logger->error("Failed to match, has bang {}", std::string(item).c_str());
 
                 // ignore bang
                 std::string_view const newitem{ item.substr(0, separator_pos) };
@@ -1227,7 +1234,7 @@ private:
                 // ignore chars after sep
                 std::string_view const newitem{ item.substr(0, separator_pos + 1) };
 
-                LOGGING("Failed to match, has sep %s   folder: %s\n", std::string(item).c_str(), std::string(newitem).c_str());
+                logger->debug("Failed to match, has sep {}   folder: {}", std::string(item).c_str(), std::string(newitem).c_str());
 
                 // if we matched return true
                 if (FindItem<HasSingleListMember>(newitem))
@@ -1317,7 +1324,7 @@ static size_t DecompressWithFilter(int64_t compressedSize, // pBlockInfo->ArrayC
         int64_t firstBand = 0;
         int64_t firstData = bytesPerRow * firstBand;
 
-        LOGGING("special read: %lld  lastData:%lld\n", lastRow, lastData);
+        logger->debug("special read: {}  lastData:{}", lastRow, lastData);
 
         if (compressedSize == uncompressedSize)
         {
@@ -1333,7 +1340,7 @@ static size_t DecompressWithFilter(int64_t compressedSize, // pBlockInfo->ArrayC
             // enough
             int64_t worstCase = CompressGetBound(compMode, lastData) + (2 * 65536);
 
-            LOGGING("[%d][%lld] worst case %lld v %lld  <-- DecompressWithFilter\n", core, stackIndex, worstCase, compressedSize);
+            logger->debug("[{}][{}] worst case {} v {}  <-- DecompressWithFilter", core, stackIndex, worstCase, compressedSize);
             if (worstCase < compressedSize)
             {
                 // can do this with ZSTD
@@ -1359,9 +1366,9 @@ static size_t DecompressWithFilter(int64_t compressedSize, // pBlockInfo->ArrayC
 
                 if (dcSize != uncompressedSize)
                 {
-                    printf(
-                        "[%d][%lld] MTDecompression band error direct size %lld vs "
-                        "%lld\n",
+                    logger->error(
+                        "[{}][{}] MTDecompression band error direct size {} vs "
+                        "{}",
                         core, stackIndex, dcSize, uncompressedSize);
                     result = -1;
                 }
@@ -1378,12 +1385,12 @@ static size_t DecompressWithFilter(int64_t compressedSize, // pBlockInfo->ArrayC
         if (rowOffset > lastRow)
         {
             // nothing to do
-            LOGGING("nothing to read all filtered out!\n");
+            logger->debug("nothing to read all filtered out!");
             return result;
         }
-        LOGGING(
-            "Boolmask bpr:%lld  ai:%lld  rowOffset:%lld  fixup:%lld  "
-            "masklength:%lld\n",
+        logger->debug(
+            "Boolmask bpr:{}  ai:{}  rowOffset:{}  fixup:{}  "
+            "masklength:{}",
             bytesPerRow, stackIndex, rowOffset, 0LL, pFilter->BoolMaskLength);
 
         // Make sure something to read
@@ -1439,9 +1446,9 @@ static size_t DecompressWithFilter(int64_t compressedSize, // pBlockInfo->ArrayC
                             sectionLength = pFilter->BoolMaskLength - rowOffset;
                         }
 
-                        LOGGING(
-                            "sifting through %lld bytes with fixup %lld  bpr:%lld  "
-                            "rowOffset: %lld  to dest:%p\n",
+                        logger->debug(
+                            "sifting through {} bytes with fixup {}  bpr:{}  "
+                            "rowOffset: {}  to dest:{}",
                             sectionLength, 0LL, bytesPerRow, rowOffset, pDest);
 
                         switch (bytesPerRow)
@@ -1549,9 +1556,9 @@ int64_t ReadAndDecompressBandWithFilter(SDS_ARRAY_BLOCK * pBlockInfo, // may con
     int64_t result = -1;
     int64_t runningTrueCount = 0;
 
-    LOGGING(
-        "[%lld] seek to %lld  compsz:%lld  uncompsz:%lld  stackIndex:%lld  "
-        "bytesPerRow:%lld  <-- ReadAndDecompressBandWithFilter\n",
+    logger->debug(
+        "[{}] seek to {}  compsz:{}  uncompsz:{}  stackIndex:{}  "
+        "bytesPerRow:{}  <-- ReadAndDecompressBandWithFilter",
         rowOffset, pBlockInfo->ArrayDataOffset, pBlockInfo->ArrayCompressedSize, pBlockInfo->ArrayUncompressedSize, stackIndex,
         bytesPerRow);
 
@@ -1609,8 +1616,8 @@ int64_t ReadAndDecompressBandWithFilter(SDS_ARRAY_BLOCK * pBlockInfo, // may con
             tempFilter.pBoolMask = pFilter->pBoolMask;
             tempFilter.pFilterInfo = &sfi;
 
-            LOGGING("want band start:%lld  masklength:%lld  compsize:%lld  decomp:%lld\n", rowOffset, trueCount, compressedSize,
-                    uncompressedSize);
+            logger->debug("want band start:{}  masklength:{}  compsize:{}  decomp:{}", rowOffset, trueCount, compressedSize,
+                          uncompressedSize);
 
             result = DecompressWithFilter(compressedSize, uncompressedSize, arrayDataOffset, bytesPerRow, eventHandle, fileHandle,
                                           tempBuffer, destBandBuffer, &tempFilter, rowOffset,
@@ -1653,7 +1660,7 @@ static size_t ReadAndDecompressArrayBlockWithFilter(SDS_ARRAY_BLOCK * pBlockInfo
 
     if (! tempBuffer)
     {
-        LOGGING("Allocating tempbuffer of %lld\n", pBlockInfo->ArrayCompressedSize);
+        logger->debug("Allocating tempbuffer of {}", pBlockInfo->ArrayCompressedSize);
         tempBuffer = WORKSPACE_ALLOC(pBlockInfo->ArrayCompressedSize);
         didAlloc = true;
     }
@@ -1664,8 +1671,8 @@ static size_t ReadAndDecompressArrayBlockWithFilter(SDS_ARRAY_BLOCK * pBlockInfo
         if (pBlockInfo->ArrayBandCount > 0)
         {
             // we have bands
-            LOGGING("bandcount:%d  bandsize:%d  uncomp size: %lld\n", pBlockInfo->ArrayBandCount, pBlockInfo->ArrayBandSize,
-                    pBlockInfo->ArrayUncompressedSize);
+            logger->debug("bandcount:{}  bandsize:{}  uncomp size: {}", pBlockInfo->ArrayBandCount, pBlockInfo->ArrayBandSize,
+                          pBlockInfo->ArrayUncompressedSize);
 
             // read in band header
             // allocate memory on the stack
@@ -1684,7 +1691,7 @@ static size_t ReadAndDecompressArrayBlockWithFilter(SDS_ARRAY_BLOCK * pBlockInfo
             }
             else
             {
-                printf("!!!Error reading in band header\n");
+                logger->error("!!!Error reading in band header");
             }
         }
         else
@@ -1698,9 +1705,9 @@ static size_t ReadAndDecompressArrayBlockWithFilter(SDS_ARRAY_BLOCK * pBlockInfo
     }
     else
     {
-        printf(
-            "out of mem no temp buffer  bandcount:%d  bandsize:%d  uncomp size: "
-            "%lld\n",
+        logger->debug(
+            "out of mem no temp buffer  bandcount:{}  bandsize:{}  uncomp size: "
+            "{}",
             pBlockInfo->ArrayBandCount, pBlockInfo->ArrayBandSize, pBlockInfo->ArrayUncompressedSize);
     }
     if (didAlloc && tempBuffer)
@@ -1730,8 +1737,8 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
     int64_t result = -1;
     int64_t compressedSize = pBlockInfo->ArrayCompressedSize;
 
-    LOGGING("[%lld] seek to %lld  sz: %lld  <-- ReadAndDecompressArrayBlock\n", arrayIndex, pBlockInfo->ArrayDataOffset,
-            pBlockInfo->ArrayCompressedSize);
+    logger->debug("[{}] seek to {}  sz: {}  <-- ReadAndDecompressArrayBlock", arrayIndex, pBlockInfo->ArrayDataOffset,
+                  pBlockInfo->ArrayCompressedSize);
 
     // Check if uncompressed
     if (compressedSize == pBlockInfo->ArrayUncompressedSize)
@@ -1741,7 +1748,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
 
         if (result != compressedSize)
         {
-            printf("[%d][%lld] error while reading into uncompressed  sz: %lld\n", core, arrayIndex, compressedSize);
+            logger->error("[{}][{}] error while reading into uncompressed  sz: {}", core, arrayIndex, compressedSize);
             result = -1;
         }
     }
@@ -1791,9 +1798,9 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
                                                              arrayDataOffset);
                         if (result != uncompressedSize)
                         {
-                            printf(
-                                "[%d][%lld][%d] MTDecompression (uncompressed) band error "
-                                "size %lld vs %lld\n",
+                            logger->error(
+                                "[{}][{}][{}] MTDecompression (uncompressed) band error "
+                                "size {} vs {}",
                                 core, arrayIndex, i, uncompressedSize, compressedSize);
                             result = -1;
                             break;
@@ -1808,9 +1815,9 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
                             DecompressData(NULL, compMode, destBandBuffer, uncompressedSize, tempBuffer, compressedSize);
                         if (dcSize != uncompressedSize)
                         {
-                            printf(
-                                "[%d][%lld][%d] MTDecompression band error size %lld vs "
-                                "%lld vs %lld\n",
+                            logger->error(
+                                "[{}][{}][{}] MTDecompression band error size {} vs "
+                                "{} vs {}",
                                 core, arrayIndex, i, dcSize, uncompressedSize, compressedSize);
                             result = -1;
                             break;
@@ -1823,7 +1830,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
             }
             else
             {
-                printf("!!!Error reading in band header\n");
+                logger->error("!!!Error reading in band header");
             }
         }
         else
@@ -1833,7 +1840,7 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
 
             if (result != compressedSize)
             {
-                printf("[%d][%lld] error while reading into decompressed  sz: %lld\n", core, arrayIndex, compressedSize);
+                logger->error("[{}][{}] error while reading into decompressed  sz: {}", core, arrayIndex, compressedSize);
                 result = -1;
             }
             else
@@ -1844,17 +1851,17 @@ static size_t ReadAndDecompressArrayBlock(SDS_ARRAY_BLOCK * pBlockInfo, // may c
 
                 if (CompressIsError(compMode, dcSize))
                 {
-                    printf("[%d][%lld] MTDecompression error\n", core, arrayIndex);
+                    logger->error("[{}][{}] MTDecompression error", core, arrayIndex);
                     result = -1;
                 }
                 else if (dcSize != uncompressedSize)
                 {
-                    printf("[%d][%lld] MTDecompression error size\n", core, arrayIndex);
+                    logger->error("[{}][{}] MTDecompression error size", core, arrayIndex);
                     result = -1;
                 }
                 else
                 {
-                    LOGGING("[%d][%lld] decomp success\n", core, arrayIndex);
+                    logger->debug("[{}][{}] decomp success", core, arrayIndex);
                 }
             }
         }
@@ -1900,8 +1907,8 @@ void FillFileHeader(SDS_FILE_HEADER * pFileHeader, int64_t fileOffset, int16_t c
     pFileHeader->ArraysWritten = 0;
     pFileHeader->ArrayFirstOffset = pFileHeader->ArrayBlockOffset + SDS_PAD_NUMBER(pFileHeader->ArrayBlockSize);
 
-    LOGGING("main offsets %lld  %lld  %lld\n", pFileHeader->MetaBlockOffset, pFileHeader->ArrayBlockOffset,
-            pFileHeader->ArrayFirstOffset);
+    logger->debug("main offsets {}  {}  {}", pFileHeader->MetaBlockOffset, pFileHeader->ArrayBlockOffset,
+                  pFileHeader->ArrayFirstOffset);
 
     pFileHeader->TotalArrayCompressedSize = 0;
     pFileHeader->TotalArrayUncompressedSize = 0;
@@ -2038,7 +2045,7 @@ void SDSSectionName::AllocateSectionData(int64_t sectionBlockCount, int64_t sect
     SectionCount = sectionBlockCount;
     if (pSectionData != NULL)
     {
-        printf("Double Allocation sectionData!!\n");
+        logger->debug("Double Allocation sectionData!!");
     }
     pSectionData = (char *)WORKSPACE_ALLOC(sectionSize);
 
@@ -2098,7 +2105,7 @@ void SDSSectionName::MakeListSections(const int64_t sectionBlockCount, const int
         int64_t value = *(int64_t *)pSections;
         pSections += sizeof(int64_t);
 
-        LOGGING("makelist section is %s, %d, offset at %lld\n", pStart, i, value);
+        logger->debug("makelist section is {}, {}, offset at {}", pStart, i, value);
 
         // The appended named
         pSectionNames[i] = pStart;
@@ -2116,7 +2123,7 @@ void SDSSectionName::MakeListSections(const int64_t sectionBlockCount, const int
 // So we create a dummy section nameed '0'
 char * SDSSectionName::MakeFirstSectionName()
 {
-    LOGGING("**First time appending  %p\n", pSectionNames);
+    logger->debug("**First time appending  {}", (void *)pSectionNames);
     if (SectionCount == 0)
     {
         // Will allocate pSectionData for us
@@ -2127,7 +2134,7 @@ char * SDSSectionName::MakeFirstSectionName()
         memcpy(pSectionData, g_firstsectiondata, sizeof(g_firstsectiondata));
         return pSectionData;
     }
-    printf("This code path should not be hit\n");
+    logger->warn("This code path should not be hit");
     return pSectionData;
 }
 
@@ -2144,8 +2151,8 @@ char * SDSSectionName::ReadListSections(SDS_FILE_HANDLE SDSFile, SDS_FILE_HEADER
 
     if (sectionSize)
     {
-        LOGGING("Section Block Count %lld,  sectionSize %lld, reserved %lld\n", pFileHeader->SectionBlockCount, sectionSize,
-                pFileHeader->SectionBlockReservedSize);
+        logger->debug("Section Block Count {},  sectionSize {}, reserved {}", pFileHeader->SectionBlockCount, sectionSize,
+                      pFileHeader->SectionBlockReservedSize);
 
         AllocateSectionData(pFileHeader->SectionBlockCount, sectionSize);
 
@@ -2165,7 +2172,7 @@ char * SDSSectionName::ReadListSections(SDS_FILE_HANDLE SDSFile, SDS_FILE_HEADER
 
         // Run through Section list and setup pointers
         MakeListSections(SectionCount, sectionSize);
-        LOGGING("Returning sections: %s\n", pSectionData);
+        logger->debug("Returning sections: {}", pSectionData);
         return pSectionData;
     }
     return NULL;
@@ -2210,7 +2217,7 @@ SDS_FILE_HANDLE StartCompressedFile(const char * fileName, SDS_FILE_HEADER * pFi
         fileOffset = DefaultFileIO.FileSize(fileName);
         if (fileOffset > 0)
         {
-            LOGGING("File already existed with append section %s, filesize: %lld\n", pWriteInfo->sectionName, fileOffset);
+            logger->debug("File already existed with append section {}, filesize: {}", pWriteInfo->sectionName, fileOffset);
             fileOffset = SDS_PAD_NUMBER(fileOffset);
             mode = COMPRESSION_MODE_COMPRESS_APPEND_FILE;
         }
@@ -2282,7 +2289,7 @@ SDS_FILE_HANDLE StartCompressedFile(const char * fileName, SDS_FILE_HEADER * pFi
     // If folder does not exist, seek to end of file and get offset
     // PAD To 512
     // Fill FileHeader with
-    LOGGING("Using fileOffset %lld\n", fileOffset);
+    logger->debug("Using fileOffset {}", fileOffset);
 
     FillFileHeader(pFileHeader, fileOffset, COMPRESSION_MODE_COMPRESS_FILE, compType, compLevel, fileType, stackType, authorId,
                    listNameLength, listNameCount, cSize, arrayCount, bandSize);
@@ -2291,7 +2298,7 @@ SDS_FILE_HANDLE StartCompressedFile(const char * fileName, SDS_FILE_HEADER * pFi
     pFileHeader->TotalMetaUncompressedSize = strMetaLength;
     DefaultFileIO.FileWriteChunk(NULL, fileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
 
-    LOGGING("meta compressed to %llu vs %lld  %llu\n", cSize, strMetaLength, sizeof(SDS_FILE_HEADER));
+    logger->debug("meta compressed to {} vs {}  {}", cSize, strMetaLength, sizeof(SDS_FILE_HEADER));
 
     if (listNameLength)
     {
@@ -2332,8 +2339,8 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
 {
     // close it out
 
-    LOGGING("SDS: Array first offset --- %lld   Total comp size %lld\n", pFileHeader->ArrayFirstOffset,
-            pFileHeader->TotalArrayCompressedSize);
+    logger->debug("SDS: Array first offset --- {}   Total comp size {}", pFileHeader->ArrayFirstOffset,
+                  pFileHeader->TotalArrayCompressedSize);
 
     int64_t LastFileOffset = pFileHeader->GetEndOfFileOffset();
 
@@ -2348,7 +2355,7 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
         // Are we the first entry?
         if (pFileHeader->FileOffset == 0)
         {
-            LOGGING("SDS: Writing first section %s at %lld\n", pWriteInfo->sectionName, LastFileOffset);
+            logger->debug("SDS: Writing first section {} at {}", pWriteInfo->sectionName, LastFileOffset);
 
             int64_t sectionSize =
                 cSDSSectionName.BuildSectionNamesAndOffsets(&pListNames, pWriteInfo->sectionName, pFileHeader->FileOffset);
@@ -2394,9 +2401,9 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
 
                 int64_t blockCount = fileHeader.SectionBlockCount;
 
-                LOGGING(
-                    "SDS: Writing section %s with blockcount:%lld at %lld (%lld) "
-                    "at %lld\n",
+                logger->debug(
+                    "SDS: Writing section {} with blockcount:{} at {} ({}) "
+                    "at {}",
                     pWriteInfo->sectionName, blockCount, pFileHeader->FileOffset, fileHeader.FileOffset, LastFileOffset);
                 int64_t sectionSize =
                     cSDSSectionName.BuildSectionNamesAndOffsets(&pListNames, pWriteInfo->sectionName, pFileHeader->FileOffset);
@@ -2405,7 +2412,7 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
                 fileHeader.SectionBlockCount = blockCount + 1;
                 fileHeader.SectionBlockSize = sectionSize;
 
-                LOGGING("SDS: new section size %lld vs %lld\n", sectionSize, fileHeader.SectionBlockReservedSize);
+                logger->debug("SDS: new section size {} vs {}", sectionSize, fileHeader.SectionBlockReservedSize);
 
                 if (fileHeader.SectionBlockReservedSize < sectionSize)
                 {
@@ -2445,14 +2452,14 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
     {
         SetErr_Format(SDS_VALUE_ERROR, "Compression error cannot write fileheader at offset %lld\n", pFileHeader->FileOffset);
     }
-    LOGGING("Total arrays written %lld  --- %llu %lld\n", pFileHeader->ArraysWritten, sizeof(SDS_FILE_HEADER), result);
+    logger->debug("Total arrays written {}  --- {} {}", pFileHeader->ArraysWritten, sizeof(SDS_FILE_HEADER), result);
 
     result = DefaultFileIO.FileWriteChunk(NULL, sdsFile, pArrayBlocks, pFileHeader->ArrayBlockSize, pFileHeader->ArrayBlockOffset);
-    LOGGING("array block offset --- %lld %lld  %lld\n", pFileHeader->ArrayBlockOffset, pFileHeader->ArrayBlockSize,
-            pArrayBlocks[0].ArrayDataOffset);
+    logger->debug("array block offset --- {} {}  {}", pFileHeader->ArrayBlockOffset, pFileHeader->ArrayBlockSize,
+                  pArrayBlocks[0].ArrayDataOffset);
     if (result != pFileHeader->ArrayBlockSize)
     {
-        printf("!!!Internal error closing compressed file\n");
+        logger->error("!!!Internal error closing compressed file");
     }
 
     DefaultFileIO.FileClose(sdsFile);
@@ -2469,13 +2476,13 @@ void EndCompressedFile(SDS_FILE_HANDLE sdsFile, SDS_FILE_HEADER * pFileHeader, S
 //
 bool DecompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
 {
-    LOGGING("[%lld] Start of decompress array: core %d   compress: %p\n", t, core, pstCompressArraysV);
+    logger->debug("[{}] Start of decompress array: core {}   compress: {}", t, core, pstCompressArraysV);
     SDS_READ_DECOMPRESS_ARRAYS * pstCompressArrays = (SDS_READ_DECOMPRESS_ARRAYS *)pstCompressArraysV;
     SDS_FILE_HANDLE sdsFile = pstCompressArrays->fileHandle;
 
     // point32_t to blocks
     SDS_ARRAY_BLOCK * pBlockInfo = &pstCompressArrays->pBlockInfo[t];
-    // LOGGING("[%lld] Step 2 of decompress array: core %d  blockinfo %p\n", t,
+    // logger->debug("[{}] Step 2 of decompress array: core {}  blockinfo {}", t,
     // core, pBlockInfo);
 
     int64_t source_size = pBlockInfo->ArrayCompressedSize;
@@ -2487,13 +2494,13 @@ bool DecompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
     {
         SDS_ARRAY_BLOCK * pArrayBlock = pstCompressArrays->pMemoryIO->GetArrayBlock(t);
         destBuffer = pstCompressArrays->pMemoryIO->GetMemoryOffset(pArrayBlock->ArrayDataOffset);
-        LOGGING("[%lld] decompressing shared memory %p\n", t, destBuffer);
+        logger->debug("[{}] decompressing shared memory {}", t, destBuffer);
     }
     else
     {
         // Use callback to get to array buffer
         destBuffer = pstCompressArrays->ArrayInfo[t].pData;
-        LOGGING("[%lld] decompressing into %p\n", t, destBuffer);
+        logger->debug("[{}] decompressing into {}", t, destBuffer);
     }
 
     // Make sure we have a valid buffer
@@ -2515,7 +2522,7 @@ bool DecompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
             pstCompressArrays->pCoreMemory[core] = WORKSPACE_ALLOC(source_size);
 
             // Log that we were forced to reallocate
-            LOGGING("-");
+            logger->debug("forced to reallocate...");
         }
 
         void * tempBuffer = pstCompressArrays->pCoreMemory[core];
@@ -2594,11 +2601,11 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pstCompressArrays->pCoreMemorySize[core] = wantedSize;
         pstCompressArrays->pCoreMemory[core] = WORKSPACE_ALLOC(wantedSize);
 
-        LOGGING("-");
+        logger->debug("-");
     }
     else
     {
-        LOGGING("+");
+        logger->debug("+");
     }
 
     void * pTempMemory = pstCompressArrays->pCoreMemory[core];
@@ -2606,7 +2613,7 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
     // Make sure we were able to alloc memory
     if (pTempMemory)
     {
-        LOGGING("[%d] started %lld %p\n", (int)t, source_size, pTempMemory);
+        logger->debug("[{}] started {} {}", (int)t, source_size, pTempMemory);
 
         // data to compress is after the header
         size_t cSize = source_size;
@@ -2618,7 +2625,7 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
 
             if (bandCount > 0)
             {
-                LOGGING("[%d] banding bytesperband:%lld   bandcount:%lld\n", (int)t, bytesPerBand, bandCount);
+                logger->debug("[{}] banding bytesperband:{}   bandcount:{}", (int)t, bytesPerBand, bandCount);
 
                 int64_t * pBandOffsets = (int64_t *)pTempMemory;
                 char * pWriteMemory = (char *)(pBandOffsets + bandCount);
@@ -2712,7 +2719,7 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         int32_t ndim = pArrayInfo->NDim;
         if (ndim > SDS_MAX_DIMS)
         {
-            printf("!!!SDS: array dimensions too high: %d\n", ndim);
+            logger->warn("!!!SDS: array dimensions too high: {}", ndim);
             ndim = SDS_MAX_DIMS;
         }
 
@@ -2736,7 +2743,7 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
         pArrayBlock->HeaderLength = sizeof(SDS_ARRAY_BLOCK);
         pArrayBlock->Magic = COMPRESSION_MAGIC;
 
-        LOGGING("[%lld][%lld] seek to fileOffset %lld  sz: %lld\n", t, arrayNumber, fileOffset, pArrayBlock->ArrayCompressedSize);
+        logger->debug("[{}][{}] seek to fileOffset {}  sz: {}", t, arrayNumber, fileOffset, pArrayBlock->ArrayCompressedSize);
 
         //===========================
         // Write compressed chunk
@@ -2745,9 +2752,9 @@ bool CompressFileArray(void * pstCompressArraysV, int32_t core, int64_t t)
 
         if ((size_t)result != cSize)
         {
-            printf(
-                "[%lld] error while writing into compressed  offset:%lld  sz: %zu "
-                " vs %lld\n",
+            logger->error(
+                "[{}] error while writing into compressed  offset:{}  sz: {} "
+                " vs {}",
                 t, fileOffset, cSize, result);
         }
     }
@@ -2781,7 +2788,7 @@ int64_t CalculateSharedMemorySize(SDS_FILE_HEADER * pFileHeader, SDS_ARRAY_BLOCK
 
         if (arraycount != pFileHeader->ArraysWritten)
         {
-            printf("possibly incomplete file %lld %lld\n", arraycount, pFileHeader->ArraysWritten);
+            logger->warn("possibly incomplete file {} {}", arraycount, pFileHeader->ArraysWritten);
         }
     }
     return totalSize;
@@ -2874,7 +2881,7 @@ bool SDSWriteFileInternal(const char * fileName,
     {
         if (shareName)
         {
-            LOGGING("Trying to store in shared memory\n");
+            logger->debug("Trying to store in shared memory");
 
             // Fill in fake so that we can calculate size
             FillFileHeader(pFileHeader, 0, COMPRESSION_MODE_SHAREDMEMORY, COMPRESSION_TYPE_NONE, 0, sdsFileType, 0, authorId,
@@ -2883,7 +2890,7 @@ bool SDSWriteFileInternal(const char * fileName,
 
             pFileHeader->ArraysWritten = arrayCount;
 
-            LOGGING("Making sharedname %s\n", shareName);
+            logger->debug("Making sharedname {}", shareName);
 
             // Try to allocate sharename
             DefaultMemoryIO.MakeShareName(fileName, shareName);
@@ -2897,7 +2904,7 @@ bool SDSWriteFileInternal(const char * fileName,
                 totalSize += SDS_PAD_NUMBER(aInfo[t].ArrayLength * aInfo[t].ItemSize);
             }
 
-            LOGGING("trying to allocate %lld\n", totalSize);
+            logger->debug("trying to allocate {}", totalSize);
 
             // Make sure we can allocate it
             HRESULT hr = DefaultMemoryIO.Begin(totalSize);
@@ -2917,16 +2924,16 @@ bool SDSWriteFileInternal(const char * fileName,
                     // Reach here, then shared memory allocated
                     SDS_FILE_HEADER * pMemoryFileHeader = DefaultMemoryIO.GetFileHeader();
 
-                    LOGGING("Writing header to %p from %p\n", pMemoryFileHeader, pFileHeader);
+                    logger->debug("Writing header to {} from {}", (void *)pMemoryFileHeader, (void *)pFileHeader);
                     // Step 1: copy fileheader
                     memcpy(pMemoryFileHeader, pFileHeader, sizeof(SDS_FILE_HEADER));
 
-                    LOGGING("Step 2\n");
+                    logger->debug("Step 2");
 
                     // Step 2: copy names
                     memcpy(DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->NameBlockOffset), pListNames, listNameSize);
 
-                    LOGGING("Copying metadata  size:%lld \n", (long long)metaDataSize);
+                    logger->debug("Copying metadata  size:{} ", (long long)metaDataSize);
 
                     // Step 3: copy metadata
                     memcpy(DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->MetaBlockOffset), metaData, metaDataSize);
@@ -2941,7 +2948,7 @@ bool SDSWriteFileInternal(const char * fileName,
                     // Step 4: have to fill in arrayblocks
                     for (int32_t arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++)
                     {
-                        LOGGING("start offset %d %lld\n", arrayNumber, startOffset);
+                        logger->debug("start offset {} {}", arrayNumber, startOffset);
 
                         // same size since uncompressed
                         pDestArrayBlock[arrayNumber].ArrayCompressedSize = pDestArrayBlock[arrayNumber].ArrayUncompressedSize =
@@ -2979,7 +2986,7 @@ bool SDSWriteFileInternal(const char * fileName,
                         startOffset += SDS_PAD_NUMBER(pDestArrayBlock[arrayNumber].ArrayUncompressedSize);
                     }
 
-                    LOGGING("Copying array data  %lld\n", arrayCount);
+                    logger->debug("Copying array data  {}", arrayCount);
 
                     // Step 5 (can make multithreaded) -- copy array blocks
                     for (int32_t arrayNumber = 0; arrayNumber < arrayCount; arrayNumber++)
@@ -2993,16 +3000,16 @@ bool SDSWriteFileInternal(const char * fileName,
                                aInfo[arrayNumber].pData, pDestArrayBlock[arrayNumber].ArrayUncompressedSize);
                     }
 
-                    LOGGING("Succeeded in copying memory\n");
+                    logger->debug("Succeeded in copying memory");
                     // Keep handle open?
                 }
                 catch (...)
                 {
                     // NOTE this does not catch bus errors which occur when out of disk
                     // space
-                    printf(
+                    logger->error(
                         "!!!Failed to write all of shared memory.  May be out of "
-                        "shared memory.\n");
+                        "shared memory.");
                 }
 #if defined(_WIN32)
                 // For windows we cannot close it since that will free the memory back
@@ -3010,7 +3017,7 @@ bool SDSWriteFileInternal(const char * fileName,
                 }
                 else
                 { // the else is hit when the SIGBUS signal was sent
-                    printf("BUS Error while writing to shared memory, check swap space.\n");
+                    logger->error("BUS Error while writing to shared memory, check swap space.");
                 }
                 // For linux restore signal handler
                 signal(SIGBUS, sigbus_orighandler);
@@ -3020,7 +3027,7 @@ bool SDSWriteFileInternal(const char * fileName,
             }
             else
             {
-                printf("!!Failed to create shared memory\n");
+                logger->error("!!Failed to create shared memory");
             }
         }
         else
@@ -3037,7 +3044,7 @@ bool SDSWriteFileInternal(const char * fileName,
                                                           authorId, pListNames, listNameSize, listNameCount, metaData,
                                                           metaDataSize, arrayCount, mode, pFolderName, bandSize, pWriteInfo);
 
-            LOGGING("Current fileoffset is %lld\n", pFileHeader->FileOffset);
+            logger->debug("Current fileoffset is {}", pFileHeader->FileOffset);
             if (sdsFile)
             {
                 // Allocate an arrayblock and zero it out
@@ -3085,7 +3092,7 @@ bool SDSWriteFileInternal(const char * fileName,
                     g_cMathWorker->DoMultiThreadedWork((int)arrayCount, CompressFileArray, pstCompressArrays);
                     pWriteCallbacks->EndAllowThreads(saveState);
 
-                    LOGGING("End of compressing\n");
+                    logger->debug("End of compressing");
 
                     for (int32_t j = 0; j < numCores; j++)
                     {
@@ -3105,7 +3112,7 @@ bool SDSWriteFileInternal(const char * fileName,
             }
             else
             {
-                LOGGING("Failure to start compressed file %s\n", fileName);
+                logger->debug("Failure to start compressed file {}", fileName);
             }
         }
     }
@@ -3378,9 +3385,9 @@ bool PossiblyShrinkArray(SDS_ALLOCATE_ARRAY * pArrayCallback, SDS_READ_CALLBACKS
                     newLength = dim0Length;
                 }
 
-                LOGGING(
-                    "-->Allocation reduction for %s filter: %lld  vs %lld  "
-                    "bool:%lld  flags:%d\n",
+                logger->debug(
+                    "-->Allocation reduction for {} filter: {}  vs {}  "
+                    "bool:{}  flags:{}",
                     pArrayCallback->pArrayName, newLength, dim0Length, pReadCallbacks->Filter.BoolMaskTrueCount,
                     pArrayCallback->sdsFlags);
                 pArrayCallback->dims[0] = newLength;
@@ -3518,8 +3525,8 @@ public:
         if (isSharedMemory)
         {
             pDestInfo->pData = sdsArrayCallback.data = DefaultMemoryIO.GetMemoryOffset(pBlock->ArrayDataOffset);
-            LOGGING("Shared memory set to %p  %lld  memoryoffset: %p\n", sdsArrayCallback.data, pBlock->ArrayDataOffset,
-                    DefaultMemoryIO.GetMemoryOffset(0));
+            logger->debug("Shared memory set to {}  {}  memoryoffset: {}", sdsArrayCallback.data, pBlock->ArrayDataOffset,
+                          DefaultMemoryIO.GetMemoryOffset(0));
         }
 
         //-----------------------------
@@ -3530,7 +3537,7 @@ public:
 
         bool wasFiltered = false;
 
-        // LOGGING("Checking to allocate name %s\n", pAllocateArray->pArrayName);
+        // logger->debug("Checking to allocate name {}", pAllocateArray->pArrayName);
         // Include exclude check
         if (! pArrayNames || IsNameIncluded(pInclude, pFolderName, sdsArrayCallback.pArrayName, isOneFile))
         {
@@ -3545,12 +3552,12 @@ public:
 
                 pReadCallbacks->AllocateArrayCallback(&sdsArrayCallback);
 
-                LOGGING(
-                    "Allocating dims:%d -- %lld %lld %lld   flags:%d  itemsize:%d  "
-                    "wasFiltered: %d\n",
+                logger->debug(
+                    "Allocating dims:{} -- {} {} {}   flags:{}  itemsize:{}  "
+                    "wasFiltered: {}",
                     (int)pBlock->NDim, pBlock->Dimensions[0], pBlock->Dimensions[1], pBlock->Dimensions[2], pBlock->Flags,
                     pBlock->ItemSize, wasFiltered);
-                LOGGING("Strides  %lld %lld %lld  \n", pBlock->Strides[0], pBlock->Strides[1], pBlock->Strides[2]);
+                logger->debug("Strides  {} {} {}  ", pBlock->Strides[0], pBlock->Strides[1], pBlock->Strides[2]);
             }
         }
 
@@ -3659,7 +3666,7 @@ public:
     {
         if (pArrayBlocks != NULL)
         {
-            printf("Double Allocation array blocks!!\n");
+            logger->warn("Double Allocation array blocks!!");
         }
         pArrayBlocks = (SDS_ARRAY_BLOCK *)WORKSPACE_ALLOC(pFileHeader->ArrayBlockSize);
 
@@ -3687,7 +3694,7 @@ public:
     {
         if (MetaData != NULL)
         {
-            printf("Double Allocation meta data!!\n");
+            logger->warn("Double Allocation meta data!!");
         }
         MetaData = (char *)WORKSPACE_ALLOC(size);
         if (MetaData)
@@ -3717,7 +3724,7 @@ public:
         NameCount = nameBlockCount;
         if (pNameData != NULL)
         {
-            printf("Double Allocation nameData!!\n");
+            logger->warn("Double Allocation nameData!!");
         }
         pNameData = (char *)WORKSPACE_ALLOC(nameSize);
 
@@ -3761,7 +3768,7 @@ public:
     // Close file handle
     void EndDecompressedFile()
     {
-        LOGGING("End decompressed file\n");
+        logger->debug("End decompressed file");
 
         if (SDSFile != BAD_SDS_HANDLE)
         {
@@ -3785,8 +3792,8 @@ public:
     int64_t GetTotalArraysWritten()
     {
         // todo:
-        LOGGING("Section offsets %p   psectiondata %p   sectioncount: %lld\n", cSectionName.pSectionOffsets,
-                cSectionName.pSectionData, cSectionName.SectionCount);
+        logger->debug("Section offsets {}   psectiondata {}   sectioncount: {}", (void *)cSectionName.pSectionOffsets,
+                      cSectionName.pSectionData, cSectionName.SectionCount);
 
         return pFileHeader->ArraysWritten;
     }
@@ -3850,8 +3857,8 @@ public:
         // Read in metadata from disk/network
         int64_t bytesRead = 0;
 
-        LOGGING("in decompress meta %lld vs %lld  offset:%lld  handle:%p\n", metaCompressedSize,
-                pFileHeader->TotalMetaUncompressedSize, pFileHeader->MetaBlockOffset, SDSFile);
+        logger->debug("in decompress meta {} vs {}  offset:{}  handle:{}", metaCompressedSize,
+                      pFileHeader->TotalMetaUncompressedSize, pFileHeader->MetaBlockOffset, SDSFile);
 
         // Did we compress the meta data?
         // If the decompressed size is the same as uncompressed, then it was never
@@ -3920,7 +3927,7 @@ public:
             int64_t metaUncompressedSize = metaCompressedSize;
 
             // meta was never compressed
-            LOGGING("meta was not compressed\n");
+            logger->debug("meta was not compressed");
 
             // user supplying buffer?
             if (! metaDataUncompressed)
@@ -3942,7 +3949,7 @@ public:
                                                     pFileHeader->MetaBlockOffset);
         }
 
-        LOGGING("out decompress meta\n");
+        logger->debug("out decompress meta");
         return true;
     }
 
@@ -3978,7 +3985,7 @@ public:
             int64_t totalSize = CalculateSharedMemorySize(pFileHeader, pArrayBlocks);
             int64_t arrayCount = pFileHeader->ArraysWritten;
 
-            LOGGING("CopyIntoSharedMem: trying to allocate %lld\n", totalSize);
+            logger->debug("CopyIntoSharedMem: trying to allocate {}", totalSize);
 
             // Make sure we can allocate it
             HRESULT hr = DefaultMemoryIO.Begin(totalSize);
@@ -3989,10 +3996,10 @@ public:
                 // Fileheader for shared memory
                 SDS_FILE_HEADER * pMemoryFileHeader = DefaultMemoryIO.GetFileHeader();
 
-                LOGGING(
-                    "Fill file header   namecount:%lld   arrayswritten:%lld  "
-                    "address %p\n",
-                    pFileHeader->NameBlockCount, pFileHeader->ArraysWritten, pMemoryFileHeader);
+                logger->debug(
+                    "Fill file header   namecount:{}   arrayswritten:{}  "
+                    "address {}",
+                    pFileHeader->NameBlockCount, pFileHeader->ArraysWritten, (void *)pMemoryFileHeader);
 
                 // The memory header
                 // Shared memory is stored uncompressed
@@ -4003,7 +4010,7 @@ public:
                                pFileHeader->AuthorId, pFileHeader->NameBlockSize, pFileHeader->NameBlockCount,
                                pFileHeader->TotalMetaUncompressedSize, pFileHeader->ArraysWritten, 0);
 
-                LOGGING("Fill name block\n");
+                logger->debug("Fill name block");
 
                 // Read name block
                 DefaultFileIO.FileReadChunk(NULL, SDSFile, DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->NameBlockOffset),
@@ -4016,7 +4023,7 @@ public:
                     // goto EXIT_DECOMPRESS;
                 }
 
-                LOGGING("Fill meta block\n");
+                logger->debug("Fill meta block");
 
                 // Read from file and write to shared memory
                 bool bResult =
@@ -4024,7 +4031,7 @@ public:
 
                 if (bResult)
                 {
-                    LOGGING("Meta string is %s\n", DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->MetaBlockOffset));
+                    logger->debug("Meta string is {}", DefaultMemoryIO.GetMemoryOffset(pMemoryFileHeader->MetaBlockOffset));
 
                     SDS_ARRAY_BLOCK * pDestArrayBlock = DefaultMemoryIO.GetArrayBlock(0);
 
@@ -4038,7 +4045,7 @@ public:
                     // NOTE: have to fixup arrayblocks
                     for (int32_t i = 0; i < arrayCount; i++)
                     {
-                        LOGGING("start offset %d %lld\n", i, startOffset);
+                        logger->debug("start offset {} {}", i, startOffset);
 
                         // same size since uncompressed
                         pDestArrayBlock[i].ArrayCompressedSize = pDestArrayBlock[i].ArrayUncompressedSize;
@@ -4057,7 +4064,7 @@ public:
                         startOffset += SDS_PAD_NUMBER(pDestArrayBlock[i].ArrayUncompressedSize);
                     }
 
-                    LOGGING("last offset %lld\n", startOffset);
+                    logger->debug("last offset {}", startOffset);
 
                     bool oneFile = (pFileHeader->FileType == SDS_FILE_TYPE_ONEFILE);
                     int32_t fileType = pFileHeader->FileType;
@@ -4102,7 +4109,7 @@ public:
                     }
 
                     pMemoryFileHeader->ArraysWritten = arrayCount;
-                    LOGGING("End fill array block %lld\n", arrayCount);
+                    logger->debug("End fill array block {}", arrayCount);
                     ;
                     return true;
                 }
@@ -4180,7 +4187,7 @@ public:
 
         if (nameSize)
         {
-            LOGGING("Name Block Count %lld,  namesize %lld\n", pFileHeader->NameBlockCount, nameSize);
+            logger->debug("Name Block Count {},  namesize {}", pFileHeader->NameBlockCount, nameSize);
 
             AllocateNameData(pFileHeader->NameBlockCount, nameSize);
 
@@ -4211,7 +4218,7 @@ public:
     // new ver 4.3: handles filter=
     bool DecompressFileInternal(SDS_READ_CALLBACKS * pReadCallbacks, int32_t core, int64_t startOffset)
     {
-        LOGGING("Reading filename %s normally.  Offset: %lld\n", FileName, startOffset);
+        logger->debug("Reading filename {} normally.  Offset: {}", FileName, startOffset);
 
         // read into pFileHeader
         // Fills in pFileHeader
@@ -4254,8 +4261,8 @@ public:
                 goto EXIT_DECOMPRESS;
             }
 
-            LOGGING("Reading array block at offset:%lld   size: %lld \n", pFileHeader->ArrayBlockOffset,
-                    pFileHeader->ArrayBlockSize);
+            logger->debug("Reading array block at offset:{}   size: {} ", pFileHeader->ArrayBlockOffset,
+                          pFileHeader->ArrayBlockSize);
             int64_t bytesRead = DefaultFileIO.FileReadChunk(NULL, SDSFile, pArrayBlocks, pFileHeader->ArrayBlockSize,
                                                             pFileHeader->ArrayBlockOffset);
             if (bytesRead != pFileHeader->ArrayBlockSize)
@@ -4265,7 +4272,7 @@ public:
             }
 
             int64_t tupleSize = pFileHeader->ArraysWritten;
-            LOGGING("Arrays to read %lld  %p\n", tupleSize, pArrayBlocks);
+            logger->debug("Arrays to read {}  {}", tupleSize, (void *)pArrayBlocks);
 
             // If we got this far, the file is good
             IsFileValid = true;
@@ -4289,7 +4296,7 @@ public:
             pstCompressArrays->fileHandle = SDSFile;
             pstCompressArrays->pFileHeader = pFileHeader;
 
-            LOGGING("Done allocating arrays %lld\n", tupleSize);
+            logger->debug("Done allocating arrays {}", tupleSize);
 
             // ---- ALLOCATE EVENT HANDLES
             int32_t numCores = g_cMathWorker->GetNumCores();
@@ -4355,7 +4362,7 @@ public:
     //
     void * DecompressFile(SDS_READ_CALLBACKS * pReadCallbacks, int32_t core, int64_t fileOffset)
     {
-        LOGGING("Start of DCF %s [%lld]  %s\n", FileName, InstanceIndex, ShareName);
+        logger->debug("Start of DCF {} [{}]  {}", FileName, InstanceIndex, ShareName);
 
         //------------------------------------------------------
         // CHECK FOR SHARED MEMORY
@@ -4371,7 +4378,7 @@ public:
 
             if (result < 0)
             {
-                LOGGING("Failed to find existing share name %s\n", DefaultMemoryIO.SharedMemoryName);
+                logger->debug("Failed to find existing share name {}", DefaultMemoryIO.SharedMemoryName);
 
                 if (Mode == COMPRESSION_MODE_INFO)
                 {
@@ -4385,7 +4392,7 @@ public:
 
                     if (! bResult)
                     {
-                        LOGGING("Failed to alloc shared memory for %s\n", FileName);
+                        logger->debug("Failed to alloc shared memory for {}", FileName);
                         DefaultMemoryIO.Destroy();
                     }
                 }
@@ -4393,7 +4400,7 @@ public:
 
             if (bResult)
             {
-                LOGGING("Success with find existing share... read from there %s\n", DefaultMemoryIO.SharedMemoryName);
+                logger->debug("Success with find existing share... read from there {}", DefaultMemoryIO.SharedMemoryName);
 
                 SDS_SHARED_MEMORY_CALLBACK SMCB;
                 SMCB.pFileHeader = DefaultMemoryIO.GetFileHeader();
@@ -4410,7 +4417,8 @@ public:
             }
             else
             {
-                LOGGING("Failed to find existing share: %s... going to try file %s\n", DefaultMemoryIO.SharedMemoryName, FileName);
+                logger->debug("Failed to find existing share: {}... going to try file {}", DefaultMemoryIO.SharedMemoryName,
+                              FileName);
             }
 
             // Drop into normal file reading
@@ -4498,16 +4506,16 @@ void UpgradeType(SDS_ARRAY_BLOCK * pMasterArrayBlock, int32_t newdtype, int64_t 
         }
     }
 
-    LOGGING("Upgrading master dtype to %d  from %d  size:%d\n", newdtype, pMasterArrayBlock->DType, isize);
+    logger->debug("Upgrading master dtype to {}  from {}  size:{}", newdtype, pMasterArrayBlock->DType, isize);
     pMasterArrayBlock->DType = newdtype;
     pMasterArrayBlock->ItemSize = isize;
 
     // Check dims and fortran vs cstyle
     if (pMasterArrayBlock->NDim > 1 && pMasterArrayBlock->Flags & SDS_ARRAY_F_CONTIGUOUS)
     {
-        printf(
+        logger->error(
             "!!!likely internal error with fortran array > dim 1 and upgrading "
-            "dtype!\n");
+            "dtype!");
         pMasterArrayBlock->Strides[pMasterArrayBlock->NDim - 1] = isize;
     }
     else
@@ -4527,9 +4535,9 @@ typedef void (*CONVERT_INPLACE)(void * pDataIn, void * pDataOut, int64_t dataOut
 template <typename T, typename U>
 static void ConvertInplace(void * pDataIn, void * pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout)
 {
-    LOGGING(
-        "**conversion %p %p   inLenSize: %lld   inItemSize:%lld  "
-        "outItemSize:%lld\n",
+    logger->debug(
+        "**conversion {} {}   inLenSize: {}   inItemSize:{}  "
+        "outItemSize:{}",
         pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
     T * pIn = (T *)pDataIn;
     U * pOut = (U *)pDataOut;
@@ -4541,7 +4549,7 @@ static void ConvertInplace(void * pDataIn, void * pDataOut, int64_t dataInSize, 
 
     if (dataInSize > dataOutSize)
     {
-        printf("!! internal error in convertinplace\n");
+        logger->error("!! internal error in convertinplace");
         return;
     }
 
@@ -4576,9 +4584,9 @@ static void ConvertInplace(void * pDataIn, void * pDataOut, int64_t dataInSize, 
 template <typename T, typename U>
 static void ConvertInplaceFloat(void * pDataIn, void * pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout)
 {
-    LOGGING(
-        "**conversionf %p %p   inLenSize: %lld   inItemSize:%lld  "
-        "outItemSize:%lld\n",
+    logger->debug(
+        "**conversionf {} {}   inLenSize: {}   inItemSize:{}  "
+        "outItemSize:{}",
         pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
     T * pIn = (T *)pDataIn;
     U * pOut = (U *)pDataOut;
@@ -4589,7 +4597,7 @@ static void ConvertInplaceFloat(void * pDataIn, void * pDataOut, int64_t dataInS
 
     if (dataInSize > dataOutSize)
     {
-        printf("!! internal error in convertinplace\n");
+        logger->error("!! internal error in convertinplace");
         return;
     }
 
@@ -4622,9 +4630,9 @@ static void ConvertInplaceFloat(void * pDataIn, void * pDataOut, int64_t dataInS
 template <typename T, typename U>
 static void ConvertInplaceString(void * pDataIn, void * pDataOut, int64_t dataInSize, int32_t dtypein, int32_t dtypeout)
 {
-    LOGGING(
-        "**conversions %p %p   inLenSize: %lld   inItemSize:%lld  "
-        "outItemSize:%lld\n",
+    logger->debug(
+        "**conversions {} {}   inLenSize: {}   inItemSize:{}  "
+        "outItemSize:{}",
         pDataIn, pDataOut, dataInSize, sizeof(T), sizeof(U));
     T * pIn = (T *)pDataIn;
     U * pOut = (U *)pDataOut;
@@ -4634,7 +4642,7 @@ static void ConvertInplaceString(void * pDataIn, void * pDataOut, int64_t dataIn
 
     if (dataInSize > dataOutSize)
     {
-        printf("!! internal error in convertinplace\n");
+        logger->error("!! internal error in convertinplace");
         return;
     }
 
@@ -4757,10 +4765,10 @@ static CONVERT_INPLACE GetInplaceConversionFunction(int32_t inputType, int32_t o
 // Invalid fill when a column exist in one file but not the other
 void GapFill(void * destBuffer, SDSArrayInfo * pDestInfo)
 {
-    LOGGING(">>> gap fill in decompress multi array  length:%lld   dtype:%d  %p\n", pDestInfo->ArrayLength, pDestInfo->NumpyDType,
-            destBuffer);
-    LOGGING(">>> more gap dims: %d  itemsz:%d  dim0:%lld  strides0:%lld\n", pDestInfo->NDim, pDestInfo->ItemSize,
-            pDestInfo->Dimensions[0], pDestInfo->Strides[0]);
+    logger->debug(">>> gap fill in decompress multi array  length:{}   dtype:{}  {}", pDestInfo->ArrayLength,
+                  pDestInfo->NumpyDType, destBuffer);
+    logger->debug(">>> more gap dims: {}  itemsz:{}  dim0:{}  strides0:{}", pDestInfo->NDim, pDestInfo->ItemSize,
+                  pDestInfo->Dimensions[0], pDestInfo->Strides[0]);
 
     int64_t oneRowSize = pDestInfo->ItemSize;
     // Calc oneRowSize for multidimensional
@@ -4902,8 +4910,8 @@ void ConvertDType(char * destBuffer, SDS_ARRAY_BLOCK * pMasterBlock, SDS_ARRAY_B
     int32_t sdtype = FixupDType(pSlaveBlock->DType, pSlaveBlock->ItemSize);
     int32_t mdtype = FixupDType(pMasterBlock->DType, pMasterBlock->ItemSize);
 
-    LOGGING("Convert dtype from:%d  to: %d  buffer:%p  size: %lld   %d vs %d\n", sdtype, mdtype, destBuffer,
-            slaveRows * slaveItemSize, pSlaveBlock->NDim, pMasterBlock->NDim);
+    logger->debug("Convert dtype from:{}  to: {}  buffer:{}  size: {}   {} vs {}", sdtype, mdtype, destBuffer,
+                  slaveRows * slaveItemSize, pSlaveBlock->NDim, pMasterBlock->NDim);
     CONVERT_INPLACE pConvert = GetInplaceConversionFunction(sdtype, mdtype);
 
     // Code below to be deleted when bugs in filtering while loading are gone
@@ -4923,7 +4931,7 @@ void ConvertDType(char * destBuffer, SDS_ARRAY_BLOCK * pMasterBlock, SDS_ARRAY_B
     }
     else
     {
-        printf("!!Internal error cannot convert %d to %d\n", sdtype, mdtype);
+        logger->error("!!Internal error cannot convert {} to {}", sdtype, mdtype);
     }
 }
 
@@ -5432,7 +5440,7 @@ void StringFixup(char * destBuffer, SDS_ARRAY_BLOCK * pMasterBlock, SDS_ARRAY_BL
     {
         if (pMasterBlock->DType == SDS_STRING)
         {
-            LOGGING("string gap: %lld  rows: %lld  smallerSize:%lld  oneRowSize:%lld\n", gap, rows, slaveItemSize, oneRowSize);
+            logger->debug("string gap: {}  rows: {}  smallerSize:{}  oneRowSize:{}", gap, rows, slaveItemSize, oneRowSize);
 
             char * pEndString1 = destBuffer + (slaveItemSize * rows);
             char * pEndString2 = destBuffer + (oneRowSize * rows);
@@ -5459,7 +5467,7 @@ void StringFixup(char * destBuffer, SDS_ARRAY_BLOCK * pMasterBlock, SDS_ARRAY_BL
         }
         else
         {
-            LOGGING("unicode gap: %lld  rows: %lld  smallerSize:%lld  oneRowSize:%lld\n", gap, rows, slaveItemSize, oneRowSize);
+            logger->debug("unicode gap: {}  rows: {}  smallerSize:{}  oneRowSize:{}", gap, rows, slaveItemSize, oneRowSize);
             // Unicode loop
             oneRowSize /= 4;
             slaveItemSize /= 4;
@@ -5517,9 +5525,9 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
         {
             // String to UNICODE happens here
             c.NeedsConversion = true;
-            LOGGING(
-                "step1 conversion %s  %d  %d  masteritemsize:%d vs  %d  length: "
-                "%lld %lld\n",
+            logger->debug(
+                "step1 conversion {}  {}  {}  masteritemsize:{} vs  {}  length: "
+                "{} {}",
                 colName, odtype, mdtype, pMasterArrayBlock->ItemSize, pArrayBlock->ItemSize, pMasterArrayBlock->Dimensions[0],
                 pArrayBlock->Dimensions[0]);
             // pick the higher type
@@ -5528,7 +5536,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                 if (doFixup)
                 {
                     // upgrade the dtype
-                    LOGGING("step2 conversion %d\n", pArrayBlock->ItemSize);
+                    logger->debug("step2 conversion {}", pArrayBlock->ItemSize);
                     UpgradeType(pMasterArrayBlock, odtype, pArrayBlock->ItemSize);
                 }
             }
@@ -5537,7 +5545,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                 // Special case when unicode to string
                 if (mdtype == SDS_UNICODE && odtype == SDS_STRING)
                 {
-                    LOGGING("step2 special conversion %d\n", pArrayBlock->ItemSize);
+                    logger->debug("step2 special conversion {}", pArrayBlock->ItemSize);
                     if ((pArrayBlock->ItemSize * 4) > pMasterArrayBlock->ItemSize)
                     {
                         UpgradeType(pMasterArrayBlock, mdtype, pArrayBlock->ItemSize * 4);
@@ -5556,9 +5564,9 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
             if (cwhole.w.isFloat && (cwhole.w.isInt || cwhole.w.isUInt))
             {
                 c.NeedsConversion = true;
-                LOGGING(
+                logger->debug(
                     "Conversion: possible upgrade to float32/64 from int/uint32_t "
-                    "for col %s  %d to %d\n",
+                    "for col {}  {} to {}",
                     colName, mdtype, odtype);
 
                 if (doFixup)
@@ -5575,7 +5583,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                         else
                         {
                             // we are ok here...
-                            LOGGING("Conversion: did nothing\n");
+                            logger->debug("Conversion: did nothing");
                         }
                     }
                     else
@@ -5598,7 +5606,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
             {
                 bool handleInt64ToUInt64 = true;
                 c.NeedsConversion = true;
-                LOGGING("Conversion: int32_t /  uint32_t for col %s  %d to %d  fixup: %d\n", colName, mdtype, odtype, doFixup);
+                logger->debug("Conversion: int32_t /  uint32_t for col {}  {} to {}  fixup: {}", colName, mdtype, odtype, doFixup);
 
                 if (doFixup)
                 {
@@ -5616,9 +5624,9 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                         // here... precision loss This should be an option
                         if (handleInt64ToUInt64)
                         {
-                            printf(
+                            logger->warn(
                                 "Warning: ignoring sign loss going to from int/uint64 for "
-                                "col: %s\n",
+                                "col: {}",
                                 colName);
                             // flip it back off
                             c.NeedsConversion = false;
@@ -5626,9 +5634,9 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
                         else
                         {
                             // This is the old code
-                            printf(
+                            logger->warn(
                                 "Warning: precision loss going to float64 from int/uint64 "
-                                "for col: %s\n",
+                                "for col: {}",
                                 colName);
                             UpgradeType(pMasterArrayBlock, SDS_DOUBLE, 8);
                         }
@@ -5657,7 +5665,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
             else
             {
                 // NOTE possible string to unicode conversion here.. unicode
-                LOGGING("!!!Incompat due to dtypes %d %d\n", mdtype, odtype);
+                logger->debug("!!!Incompat due to dtypes {} {}", mdtype, odtype);
                 c.IsCompatible = false;
             }
         }
@@ -5668,9 +5676,9 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
         {
             if (pMasterArrayBlock->ItemSize != pArrayBlock->ItemSize)
             {
-                LOGGING(
-                    "Conversion: String width mismatch on col: %s   master "
-                    "itemsize:%d  vs  itemsize: %d\n",
+                logger->debug(
+                    "Conversion: String width mismatch on col: {}   master "
+                    "itemsize:{}  vs  itemsize: {}",
                     colName, pMasterArrayBlock->ItemSize, pArrayBlock->ItemSize);
                 if (doFixup)
                 {
@@ -5693,7 +5701,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
             // this a void)?
             if (pMasterArrayBlock->ItemSize != pArrayBlock->ItemSize)
             {
-                LOGGING("!!!Incompat due to itemsize\n");
+                logger->debug("!!!Incompat due to itemsize");
                 c.IsCompatible = false;
             }
         }
@@ -5701,7 +5709,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
 
     if (pMasterArrayBlock->NDim != pArrayBlock->NDim)
     {
-        LOGGING("!!!Incompat due to ndim %d not matching\n", pMasterArrayBlock->NDim);
+        logger->debug("!!!Incompat due to ndim {} not macthing", pMasterArrayBlock->NDim);
         c.IsCompatible = false;
     }
 
@@ -5711,7 +5719,7 @@ SDS_COMPATIBLE IsArrayCompatible(const char * colName, SDS_ARRAY_BLOCK * pMaster
         {
             if (pMasterArrayBlock->Dimensions[i] != pArrayBlock->Dimensions[i])
             {
-                LOGGING("!!!Incompat due to dim %d not matching\n", i);
+                logger->debug("!!!Incompat due to dim {} not macthing", i);
                 c.IsCompatible = false;
             }
         }
@@ -5767,7 +5775,7 @@ void * CheckRotationalFixup(SDS_IO_PACKET * pIOPacket)
         {
             if (pMasterBlock->NDim > 2)
             {
-                printf("!!! error cannot rotate above two dimensions\n");
+                logger->error("!!! error cannot rotate above two dimensions");
             }
             int64_t allocSize = pBlockInfo->ItemSize;
             for (int32_t j = 0; j < pBlockInfo->NDim; j++)
@@ -5784,7 +5792,7 @@ void * CheckRotationalFixup(SDS_IO_PACKET * pIOPacket)
                 // pick up more string dimensions
                 if (pBlockInfo->NDim > 1)
                 {
-                    printf("!!! error cannot handle multid strings\n");
+                    logger->error("!!! error cannot handle multid strings");
                 }
                 // Allocate a temporary buffer to load 1 or 4 byte string into
                 // This buffer will have to be copied into
@@ -5970,9 +5978,9 @@ bool DecompressMultiArray(void * pstCompressArraysV,
                 //}
                 // Stacking plus filtering
                 // printf("**step2 %p\n", pMultiIOPackets->pFilter->pFilterInfo);
-                LOGGING(
-                    "***stacking  plus filter  stack position: %lld  buffer: %p  "
-                    "TrueCount: %lld\n",
+                logger->debug(
+                    "***stacking  plus filter  stack position: {}  buffer: {}  "
+                    "TrueCount: {}",
                     pIOPacket->StackPosition, destBuffer,
                     pMultiIOPackets->pFilter->pFilterInfo ?
                         pMultiIOPackets->pFilter->pFilterInfo[pIOPacket->StackPosition].TrueCount :
@@ -5997,9 +6005,9 @@ bool DecompressMultiArray(void * pstCompressArraysV,
             }
             else
             {
-                LOGGING(
-                    "[%lld]***stacking no filter  stack position: %lld  buffer: %p "
-                    " rowlength: %lld  colname: %s\n",
+                logger->debug(
+                    "[{}]***stacking no filter  stack position: {}  buffer: {} "
+                    " rowlength: {}  colname: {}",
                     t, pIOPacket->StackPosition, destBuffer, pBlockInfo->Dimensions[0], pIOPacket->ColName);
 
                 result = ReadAndDecompressArrayBlock(pBlockInfo, pMultiIOPackets->eventHandles[core], sdsFile, tempFileBuffer,
@@ -6028,10 +6036,10 @@ bool DecompressMultiArray(void * pstCompressArraysV,
                     if (pIOPacket->Compatible.NeedsConversion)
                     {
                         // done inplace (no need for extra buffer)
-                        LOGGING(
-                            "Needs conversion  mb dtype:%d  mb itemsize: %d    dim0: "
-                            "%lld   slaveRowLength:%lld  needs stringfixup: %d  "
-                            "filterflags: %d\n",
+                        logger->debug(
+                            "Needs conversion  mb dtype:{}  mb itemsize: {}    dim0: "
+                            "{}   slaveRowLength:{}  needs stringfixup: {}  "
+                            "filterflags: {}",
                             pIOPacket->pMasterBlock->DType, pIOPacket->pMasterBlock->ItemSize,
                             pIOPacket->pMasterBlock->Dimensions[0], slaveRowLength, pIOPacket->Compatible.NeedsStringFixup,
                             pMasterBlock->Flags);
@@ -6230,7 +6238,7 @@ public:
                 TotalColumnGaps++;
             }
 
-            LOGGING("%s ** %lld   enum: %d\n", columnName, validCount, arrayEnum);
+            logger->debug("{} ** {}   enum: {}", columnName, validCount, arrayEnum);
             ColumnExists.emplace(item, TotalUniqueColumns);
 
             // Brand new column
@@ -6266,13 +6274,12 @@ public:
             if (compat.NeedsRotation)
             {
                 // cannot handle
-                printf("Column '%s' needs rotation from col or row major and currently this is not allowed\n", columnName);
+                logger->warn("Column '{}' needs rotation from col or row major and currently this is not allowed", columnName);
                 TotalDimensionProblems++;
             }
             if (! compat.IsCompatible)
             {
-                printf("Warning: Column '%s' is not compatible\n", columnName);
-                TotalDimensionProblems++;
+                logger->warn("Warning: Column '{}' has both string and unicode. Support for this is experimental", columnName);
             }
             if (compat.NeedsStringFixup)
             {
@@ -6362,7 +6369,7 @@ public:
             }
         }
 
-        LOGGING("Total IO Packet %lld\n", totalIOPackets);
+        logger->debug("Total IO Packet {}", totalIOPackets);
 
         // Allocate MultiIO PACKETS!!
         SDS_MULTI_IO_PACKETS * pMultiIOPackets = SDS_MULTI_IO_PACKETS::Allocate(totalIOPackets, &pReadCallbacks->Filter);
@@ -6377,7 +6384,7 @@ public:
             {
                 int64_t tupleSize = pSDSDecompress->pFileHeader->ArraysWritten;
 
-                LOGGING("Allocating %lld arrays\n", tupleSize);
+                logger->debug("Allocating {} arrays", tupleSize);
 
                 SDS_IO_PACKET * pIOPacket = &pMultiIOPackets->pIOPacket[currentPos];
                 SDSArrayInfo * pArrayInfo = &pMultiIOPackets->pDestInfo[currentPos];
@@ -6425,7 +6432,7 @@ public:
     static int64_t AppendToFile(SDS_FILE_HANDLE outFileHandle, SDSDecompressFile * pSDSDecompress, int64_t fileOffset,
                                 int64_t fileSize, char * pSectionData, int64_t & currentSection)
     {
-        LOGGING("files %s has size %lld\n", pSDSDecompress->FileName, fileSize);
+        logger->debug("files {} has size {}", pSDSDecompress->FileName, fileSize);
         SDS_FILE_HEADER * pFileHeader = &pSDSDecompress->FileHeader;
         int64_t currentOffset = fileOffset;
 
@@ -6436,7 +6443,7 @@ public:
 
         if (pFileHeader->SectionBlockOffset)
         {
-            LOGGING("!!warning file %s has section within section when concat\n", pSDSDecompress->FileName);
+            logger->debug("!!warning file {} has section within section when concat", pSDSDecompress->FileName);
             hasSections = true;
         }
 
@@ -6448,7 +6455,7 @@ public:
         //   fileSize = calculatedSize;
         //}
 
-        LOGGING("sds_concat %lld  vs  %lld   fileoffset:%lld\n", fileSize, pFileHeader->GetEndOfFileOffset(), fileOffset);
+        logger->debug("sds_concat {}  vs  {}   fileoffset:{}", fileSize, pFileHeader->GetEndOfFileOffset(), fileOffset);
 
         // Fixup header offsets
         if (pFileHeader->NameBlockOffset)
@@ -6469,7 +6476,7 @@ public:
         int64_t bytesXfer = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pFileHeader, sizeof(SDS_FILE_HEADER), fileOffset);
         if (bytesXfer != sizeof(SDS_FILE_HEADER))
         {
-            LOGGING("!!warning file %s failed to write header at offset %lld\n", pSDSDecompress->FileName, fileOffset);
+            logger->debug("!!warning file {} failed to write header at offset {}", pSDSDecompress->FileName, fileOffset);
         }
 
         UpdateSectionData(pSectionData, currentSection++, currentOffset);
@@ -6499,7 +6506,7 @@ public:
             int64_t sizeWritten = DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pBuffer, copySize, currentOffset);
             if (sizeRead != sizeWritten || sizeRead != copySize)
             {
-                printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, currentOffset, localOffset);
+                logger->warn("!!Failed to copy file {} at offset {} and {}", pSDSDecompress->FileName, currentOffset, localOffset);
             }
             currentOffset += copySize;
             localOffset += copySize;
@@ -6514,8 +6521,8 @@ public:
         bytesXfer = DefaultFileIO.FileReadChunk(NULL, inFile, pDestArrayBlock, pFileHeader->ArrayBlockSize, origArrayBlockOffset);
         if (bytesXfer != pFileHeader->ArrayBlockSize)
         {
-            printf("!!warning file %s failed to read array block at offset %lld\n", pSDSDecompress->FileName,
-                   origArrayBlockOffset);
+            logger->warn("!!warning file {} failed to read array block at offset {}", pSDSDecompress->FileName,
+                         origArrayBlockOffset);
         }
 
         // fixup arrayblocks
@@ -6546,22 +6553,22 @@ public:
                 int64_t bytesRead =
                     DefaultFileIO.FileReadChunk(NULL, inFile, &tempFileHeader, sizeof(SDS_FILE_HEADER), sectionOffset);
 
-                LOGGING("concat: reading section at %lld for output fileoffset %lld\n", sectionOffset, fileOffset);
+                logger->debug("concat: reading section at {} for output fileoffset {}", sectionOffset, fileOffset);
 
                 if (bytesRead != sizeof(SDS_FILE_HEADER))
                 {
-                    printf(
-                        "!!warning file %s failed to read section header at offset "
-                        "%lld\n",
+                    logger->warn(
+                        "!!warning file {} failed to read section header at offset "
+                        "{}",
                         pSDSDecompress->FileName, sectionOffset);
                     return 0;
                 }
 
                 origArrayBlockOffset = tempFileHeader.ArrayBlockOffset;
 
-                LOGGING("concat: Some offsets %lld %lld %lld  sbo:%lld  fo:%lld\n", tempFileHeader.NameBlockOffset,
-                        tempFileHeader.MetaBlockOffset, tempFileHeader.ArrayBlockOffset, tempFileHeader.SectionBlockOffset,
-                        tempFileHeader.FileOffset);
+                logger->debug("concat: Some offsets {} {} {}  sbo:{}  fo:{}", tempFileHeader.NameBlockOffset,
+                              tempFileHeader.MetaBlockOffset, tempFileHeader.ArrayBlockOffset, tempFileHeader.SectionBlockOffset,
+                              tempFileHeader.FileOffset);
                 // Fixup header offsets
                 if (tempFileHeader.NameBlockOffset)
                     tempFileHeader.NameBlockOffset += fileOffset;
@@ -6579,16 +6586,16 @@ public:
 
                 int64_t newOffset = fileOffset + sectionOffset;
 
-                LOGGING("concat: newoffset: %lld   %lld + %lld\n", newOffset, fileOffset, sectionOffset);
+                logger->debug("concat: newoffset: {}   {} + {}", newOffset, fileOffset, sectionOffset);
                 UpdateSectionData(pSectionData, currentSection++, newOffset);
 
                 int64_t sizeWritten =
                     DefaultFileIO.FileWriteChunk(NULL, outFileHandle, &tempFileHeader, sizeof(SDS_FILE_HEADER), newOffset);
-                LOGGING("Wrote subsect fileheader %lld bytes at offset %lld\n", sizeof(SDS_FILE_HEADER), newOffset);
+                logger->debug("Wrote subsect fileheader {} bytes at offset {}", sizeof(SDS_FILE_HEADER), newOffset);
                 if (sizeof(SDS_FILE_HEADER) != sizeWritten)
                 {
-                    printf("!!Failed to copy file %s at offset %lld and %lld\n", pSDSDecompress->FileName, newOffset,
-                           sectionOffset);
+                    logger->warn("!!Failed to copy file {} at offset {} and {}", pSDSDecompress->FileName, newOffset,
+                                 sectionOffset);
                 }
 
                 // NEW CODE
@@ -6601,8 +6608,8 @@ public:
                                                         origArrayBlockOffset);
                 if (bytesXfer != tempFileHeader.ArrayBlockSize)
                 {
-                    printf("!!warning file %s failed to read array block at offset %lld\n", pSDSDecompress->FileName,
-                           origArrayBlockOffset);
+                    logger->warn("!!warning file {} failed to read array block at offset {}", pSDSDecompress->FileName,
+                                 origArrayBlockOffset);
                 }
 
                 // fixup arrayblocks
@@ -6615,8 +6622,8 @@ public:
                 // Write the array block with offsets fixed up
                 DefaultFileIO.FileWriteChunk(NULL, outFileHandle, pDestArrayBlock2, tempFileHeader.ArrayBlockSize,
                                              fileOffset + origArrayBlockOffset);
-                LOGGING("Wrote arrayblock %lld bytes at offset %lld from orig: %lld\n", tempFileHeader.ArrayBlockSize,
-                        fileOffset + origArrayBlockOffset, origArrayBlockOffset);
+                logger->debug("Wrote arrayblock {} bytes at offset {} from orig: {}", tempFileHeader.ArrayBlockSize,
+                              fileOffset + origArrayBlockOffset, origArrayBlockOffset);
 
                 WORKSPACE_FREE(pDestArrayBlock2);
             }
@@ -6634,7 +6641,7 @@ public:
     //
     void SDSConcatFiles(const char * strOutputFilename, int64_t validCount)
     {
-        LOGGING("concat mode!  found %lld files\n", FileCount);
+        logger->debug("concat mode!  found {} files", FileCount);
 
         if (validCount == 0)
         {
@@ -6766,11 +6773,11 @@ public:
             // Find first missing file
             SetErr_Format(SDS_VALUE_ERROR, "Not all files found : Expected %lld files.  Missing %s\n", FileCount,
                           pSDSDecompressFile[missingfile]->FileName);
-            printf("ReadManyFiles failed!  FileCount %lld. valid %lld.\n", FileCount, validCount);
+            logger->error("ReadManyFiles failed!  FileCount {}. valid {}.", FileCount, validCount);
             return NULL;
         }
 
-        LOGGING(
+        logger->warn(
             "GetInfo ReadManyFiles complete.  FileCount %lld. valid %lld.  "
             "mode:%d \n",
             FileCount, validCount, multiMode);
@@ -6855,7 +6862,7 @@ public:
                 {
                     // invalid file path
                     // zero out data
-                    LOGGING("[%lld] Zeroing bad file\n", t);
+                    logger->debug("[{}] Zeroing bad file", t);
                     // memset(&pReadFinalCallback[t], 0, sizeof(SDS_READ_FINAL_CALLBACK));
                     pReadFinalCallback[t].pFileHeader = NULL;
                     pReadFinalCallback[t].arraysWritten = 0;
@@ -6944,7 +6951,7 @@ public:
             }
         }
 
-        LOGGING("In scan for sections: %lld vs  %lld\n", FileWithSectionsCount, FileWithSectionsCount);
+        logger->debug("In scan for sections: {} vs  {}", FileWithSectionsCount, FileWithSectionsCount);
         // If we found sections then we have to re-expand
         if (FileWithSectionsCount > FileCount)
         {
@@ -6992,14 +6999,14 @@ public:
                 }
             }
 
-            LOGGING("Found more sections. %lld vs %lld\n", FileCount, FileWithSectionsCount);
+            logger->debug("Found more sections. {} vs {}", FileCount, FileWithSectionsCount);
 
             // Swap in the expanded decompressfile with the sections
             pSDSDecompressFile = pSDSDecompressFileExtra;
             FileCount = FileWithSectionsCount;
             return pSDSDecompressFileExtra;
         }
-        LOGGING("Did not find more sections. %lld\n", FileCount);
+        logger->debug("Did not find more sections. {}", FileCount);
         return NULL;
     }
 
@@ -7044,13 +7051,13 @@ public:
             // Find first missing file
             SetErr_Format(SDS_VALUE_ERROR, "Not all files found : Expected %lld files.  Missing %s\n", FileCount,
                           pSDSDecompressFile[missingfile]->FileName);
-            printf("ReadAndStackFiles failed!  FileCount %lld. valid %lld.\n", FileCount, validCount);
+            logger->error("ReadAndStackFiles failed!  FileCount {}. valid {}.", FileCount, validCount);
             return NULL;
         }
 
-        LOGGING(
-            "GetInfo ReadAndStackFiles complete.  FileCount %lld. valid %lld. "
-            "reserve space set to %lf\n",
+        logger->debug(
+            "GetInfo ReadAndStackFiles complete.  FileCount {}. valid {}. "
+            "reserve space set to {}",
             FileCount, validCount, reserveSpace);
 
         // Allocate dataset row length for blank rows (gaps)
@@ -7091,7 +7098,7 @@ public:
                         // In addition, the first column ArrayBlock will be master/king and dictate the result format.
                         // All subsequent ArrayBlocks will need to be converted to that master block format.
 
-                        LOGGING("[%d][%lld] %s", t, c, columnName);
+                        logger->debug("[{}][{}] {}", t, c, columnName);
 
                         SDS_ARRAY_BLOCK * pArrayBlock = &pSDSDecompress->pArrayBlocks[c];
                         int32_t arrayEnum = pSDSDecompress->pArrayEnums[c];
@@ -7119,7 +7126,7 @@ public:
                                     {
                                         if (pDatasets[validPos].Length != dlength)
                                         {
-                                            printf(
+                                            logger->warn(
                                                 "WARNING: datasets not same length %lld v. %lld "
                                                 "for column %s\n",
                                                 pDatasets[validPos].Length, dlength, columnName);
@@ -7128,13 +7135,11 @@ public:
 
                                     if (validPos > validCount)
                                     {
-                                        printf("!! internal error on validPos\n");
+                                        logger->error("!! internal error on validPos");
                                     }
 
                                     // Remember the length of this dataset
                                     pDatasets[validPos].Length = dlength;
-                                    LOGGING("Thomas band %lld %lld\n", pSDSDecompress->FileHeader.BandBlockCount,
-                                            pSDSDecompress->FileHeader.BandSize);
                                 }
                             }
                         }
@@ -7146,9 +7151,9 @@ public:
             }
         }
 
-        LOGGING(
-            "\nTotal column stats  uniq:%d, first:%d, conv:%d, strfix:%d, "
-            "dim:%d, colgaps:%d, valid: %lld\n",
+        logger->debug(
+            "Total column stats  uniq:{}, first:{}, conv:{}, strfix:{}, "
+            "dim:{}, colgaps:{}, valid: {}",
             TotalUniqueColumns, TotalFirstColumns, TotalConversions, TotalStringFixups, TotalDimensionProblems, TotalColumnGaps,
             validCount);
 
@@ -7217,7 +7222,7 @@ public:
             if (pReadCallbacks->Filter.pBoolMask)
             {
                 // Worst case allocation (only valid files calculated)
-                LOGGING("~ALLOCATING for filtering\n");
+                logger->debug("~ALLOCATING for filtering");
                 pFilterInfo = (SDSFilterInfo *)WORKSPACE_ALLOC(sizeof(SDSFilterInfo) * FileCount);
                 pReadCallbacks->Filter.pFilterInfo = pFilterInfo;
             }
@@ -7244,7 +7249,7 @@ public:
                 }
             }
 
-            LOGGING("Filter info: boolmasklength:%lld  stackable: %d \n", boolMaskLength, fileTypeStackable);
+            logger->debug("Filter info: boolmasklength:{}  stackable: {} ", boolMaskLength, fileTypeStackable);
 
             // Fill in all the IOPACKETs
             // Skip over invalid files, loop over all valid filenames
@@ -7257,10 +7262,11 @@ public:
                 // array on has ORIGINAL_CONTAINER When saving a Struct, the categories
                 // do not have STACKABLE set
                 // int32_t mask = SDS_FLAGS_ORIGINAL_CONTAINER;
-                LOGGING(
-                    "[%lld]Col: %s -- ColPos:%lld  FileRow:%d pBlock:%p Enum:%d  "
-                    "ftype:%d\n",
-                    col, pKing->ColName, pKing->ColPos, pKing->FileRow, pKing->ppArrayBlocks, pKing->ArrayEnum, fileTypeStackable);
+                logger->debug(
+                    "[{}]Col: {} -- ColPos:{}  FileRow:{} pBlock:{} Enum:{}  "
+                    "ftype:{}",
+                    col, pKing->ColName, pKing->ColPos, pKing->FileRow, (void *)pKing->ppArrayBlocks, pKing->ArrayEnum,
+                    fileTypeStackable);
 
                 int64_t currentOffset = 0;
                 int64_t currentUnfilteredOffset = 0;
@@ -7314,7 +7320,7 @@ public:
                         if (! pArrayBlock || pOriginalLengths[row] == 0)
                         {
                             // NO IO PACKET (GAP)
-                            LOGGING(">>> gap fill for row: %lld   col: %lld  name: %s\n", row, col, pKing->ColName);
+                            logger->debug(">>> gap fill for row: {}   col: {}  name: {}", row, col, pKing->ColName);
                             calcLength = pDatasets[row].Length;
                         }
                         else
@@ -7368,9 +7374,9 @@ public:
                             currentUnfilteredOffset += calcLength;
                             calcLength = filterTrueCount;
 
-                            LOGGING(
-                                "ROW %lld has true: %lld  ufo: %lld  for offset: %lld vs "
-                                "%lld\n",
+                            logger->debug(
+                                "ROW {} has true: {}  ufo: {}  for offset: {} vs "
+                                "{}",
                                 row, pFilterInfo[row].TrueCount, currentUnfilteredOffset, currentOffset,
                                 pFilterInfo[row].RowOffset);
                         }
@@ -7402,7 +7408,7 @@ public:
                     // Readjust TrueCount based on what we calculated
                     pReadCallbacks->Filter.BoolMaskTrueCount =
                         row == 0 ? 0 : pFilterInfo[row - 1].RowOffset + pFilterInfo[row - 1].TrueCount;
-                    LOGGING("Final TrueCount %lld  masterRow: %lld\n", pReadCallbacks->Filter.BoolMaskTrueCount, row);
+                    logger->debug("Final TrueCount {}  masterRow: {}", pReadCallbacks->Filter.BoolMaskTrueCount, row);
                     hasFilter++;
                 }
 
@@ -7421,9 +7427,9 @@ public:
                 pOriginalArrayOffsets[row] = currentUnfilteredOffset;
                 pKing->TotalRowLength = rowLengthToAlloc;
 
-                LOGGING(
-                    "stack: %d   totalplusreseve:%lld  totalrowlength: %lld  rows: "
-                    "%lld\n",
+                logger->debug(
+                    "stack: {}   totalplusreseve:{}  totalrowlength: {}  rows: "
+                    "{}",
                     isFilterable, rowLengthToAlloc, currentOffset, row);
                 // TODO: -- allocate one big array and fixup IO PACKETS
 
@@ -7489,16 +7495,16 @@ public:
                     // FILTERING check...
                     wasFiltered |= PossiblyShrinkArray(&sdsArrayCallback, pReadCallbacks, fileTypeStackable);
 
-                    LOGGING(
-                        "Allocating col: %s  lengthplusr: %lld  length: %lld   itemsize: "
-                        "%lld  strides: %lld  dims:%d  dtype:%d  wasFiltered:%d\n",
+                    logger->debug(
+                        "Allocating col: {}  lengthplusr: {}  length: {}   itemsize: "
+                        "{}  strides: {}  dims:{}  dtype:{}  wasFiltered:{}",
                         sdsArrayCallback.pArrayName, rowLengthToAlloc, currentOffset, sdsArrayCallback.itemsize, strides[0],
                         (int)sdsArrayCallback.ndim, sdsArrayCallback.numpyType, wasFiltered);
                     // callback into python or matlab to allocate memory
                     // this will fill in pData and pArrayObject
                     pReadCallbacks->AllocateArrayCallback(&sdsArrayCallback);
-                    LOGGING("Array allocated at %p for object %p\n", sdsArrayCallback.pDestInfo->pData,
-                            sdsArrayCallback.pDestInfo->pArrayObject);
+                    logger->debug("Array allocated at {} for object {}", (void *)sdsArrayCallback.pDestInfo->pData,
+                                  sdsArrayCallback.pDestInfo->pArrayObject);
                 }
 
                 // Fill in destination information
@@ -7573,9 +7579,9 @@ public:
                             SDS_ARRAY_BLOCK * pMasterBlock = &pKing->KingBlock;
 
                             // NO IO PACKET (GAP)
-                            LOGGING(
-                                ">>> gap fill %lld  for row: %lld   col: %lld   "
-                                "orig:%lld  ds:%lld  mdtype:%d\n",
+                            logger->debug(
+                                ">>> gap fill {}  for row: {}   col: {}   "
+                                "orig:{}  ds:{}  mdtype:{}",
                                 gapLength, row, col, pOriginalLengths[row], pDatasets[row].Length, pMasterBlock->DType);
                             CopyFromBlockToInfo(pMasterBlock, pDestInfo);
                         }
@@ -7603,15 +7609,15 @@ public:
                             // This is the important one, this is where the IO will be copied
                             // into
                             pDestInfo->pData = sdsArrayCallback.pDestInfo->pData + (oneRowSize * pArrayOffsets[row]);
-                            LOGGING(
-                                "Fixing up pData for stackposition: %lld  itemoffset:%lld  "
-                                "onerowsize:%lld  mbitemsize:%d  dest:%p\n",
-                                row, pArrayOffsets[row], oneRowSize, pMasterBlock->ItemSize, pDestInfo->pData);
+                            logger->debug(
+                                "Fixing up pData for stackposition: {}  itemoffset:{}  "
+                                "onerowsize:{}  mbitemsize:{}  dest:{}",
+                                row, pArrayOffsets[row], oneRowSize, pMasterBlock->ItemSize, (void *)pDestInfo->pData);
                         }
 
                         if (validPos > totalIOPackets)
                         {
-                            printf("!!!internal error validPos vs totalIOPackets\n");
+                            logger->error("!!!internal error validPos vs totalIOPackets\n");
                         }
 
                         validPos++;
@@ -7634,7 +7640,7 @@ public:
                 pReadCallbacks->EndAllowThreads(saveState);
             }
 
-            LOGGING("Multistack done reading -- returning %d cols\n", TotalUniqueColumns);
+            logger->debug("Multistack done reading -- returning {} cols", TotalUniqueColumns);
 
             // ALLOCATE all the Final Callbacks
             SDS_STACK_CALLBACK * pMultiFinalCallback =
@@ -7655,7 +7661,7 @@ public:
 
                 if (pSDSDecompress == NULL)
                 {
-                    printf("!!!internal error in final multistack loop\n");
+                    logger->error("!!!internal error in final multistack loop");
                 }
                 else
                 {
@@ -7716,7 +7722,7 @@ public:
         }
 
         // Reduce list to valids
-        LOGGING("ReadAndStackFiles complete %p\n", result);
+        logger->debug("ReadAndStackFiles complete {}", result);
         return result;
     }
 };
@@ -7880,7 +7886,7 @@ extern "C"
 
             for (int64_t i = 0; i < fileCount; i++)
             {
-                LOGGING("...%s\n", pMultiRead[i].pFileName);
+                logger->debug("MultiMode {}", pMultiRead[i].pFileName);
                 pSDSDecompressFile[i] = new SDSDecompressFile(
                     pMultiRead[i].pFileName, &includeList, i, NULL, &folderList, &sectionsList,
                     multiMode == SDS_MULTI_MODE_CONCAT_MANY ? SDS_MULTI_MODE_CONCAT_MANY : COMPRESSION_MODE_INFO);

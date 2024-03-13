@@ -1,6 +1,6 @@
 #include "ut_core.h"
-#include "logging/logger.h"
 #include "tuple_util.h"
+#include "logging/logging.h"
 
 #include <tuple>
 #include <array>
@@ -16,13 +16,14 @@ using namespace riptide_utility::internal;
 
 namespace
 {
-    auto & logg = riptide::logging::logger::get();
+    auto service = get_service();
+    auto logger = get_logger();
 
     void produce(size_t log_count, int id)
     {
         for (size_t i = 0; i < log_count; i++)
         {
-            logg.log(loglevel::debug, "{0} {1}", id, i);
+            logger->log(loglevel::debug, "{0} {1}", id, i);
         }
     }
 
@@ -38,9 +39,9 @@ namespace
 
     void consume(std::vector<log_record> & result)
     {
-        while (logg.active())
+        while (service->active())
         {
-            auto curr{ logg.receive() };
+            auto curr{ service->receive() };
 
             if (! curr)
                 continue;
@@ -70,7 +71,8 @@ namespace
 
             std::vector<log_record> result;
 
-            logg.enable({ .max_size = 1'000'000'000, .level = loglevel::debug });
+            logger->set_level(loglevel::debug);
+            service->enable({ .max_size = 1'000'000'000 });
 
             auto prods{ producer(Threads, Logs) };
             std::thread cons{ consume, std::ref(result) };
@@ -78,10 +80,10 @@ namespace
             for (auto & t : prods)
                 t.join();
 
-            logg.set_level(loglevel::none);
+            service->shutdown();
 
             cons.join();
-            logg.disable();
+            service->disable();
 
             std::unordered_map<int, int> log_count;
             while (! result.empty())
@@ -111,9 +113,29 @@ namespace
         }
     };
 
+    struct nullptr_format_validation_tester
+    {
+        template <typename T>
+        void operator()()
+        {
+            char const * expected{ "(null)" };
+            auto const actual{ details::validate_arg(static_cast<T const *>(nullptr)) };
+            expect(actual != nullptr) << fatal;
+            for (int i{ 0 }; i < 5; ++i)
+            {
+                expect(actual[i] != 0) << fatal;
+                expect(actual[i] == static_cast<T>(expected[i]));
+            }
+            expect(! actual[6]);
+        }
+    };
+
     file_suite riptide_ops = []
     {
         // TODO: move this to riptide_python_test
         "test_logging_normal"_test = logging_tester{} | SupportedArgs{};
+
+        "test_format_validation"_test =
+            nullptr_format_validation_tester{} | std::tuple<char, unsigned char, wchar_t, char16_t, char32_t>{};
     };
 }

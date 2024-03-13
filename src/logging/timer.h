@@ -1,3 +1,5 @@
+#pragma once
+
 #include <chrono>
 #include <thread>
 #include <mutex>
@@ -16,7 +18,7 @@ namespace riptide::logging::details
         }
 
         template <typename Function>
-        void set_interval(Function function, interval delay)
+        void set_interval(Function function, const interval delay)
         {
             if (active_)
                 return;

@@ -7,15 +7,18 @@
 #include "Heap.h"
 #include "missing_values.h"
 #include "numpy_traits.h"
-
+#include "logging/logging.h"
 #include <algorithm>
 #include <cmath>
 #include <span>
 #include <stdio.h>
 #include <vector>
 
-#define LOGGING(...)
-// #define LOGGING printf
+namespace
+{
+    static auto logger = riptide::logging::get_logger("GroupBy");
+    using loglevel = riptide::logging::loglevel;
+}
 
 // Overloads to handle case of bool
 inline bool MEDIAN_SPLIT(bool X, bool Y)
@@ -491,7 +494,7 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
-            // printf("NanMin clearing at %p  %lld  %lld\n", pOut, binLow, binHigh);
+            logger->debug("NanMin clearing at pOut: {} low: {} high: {}", (void *)pOut, binLow, binHigh);
             for (int64_t i = binLow; i < binHigh; i++)
             {
                 pOut[i] = invalid;
@@ -1200,20 +1203,18 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        LOGGING("in accum first low: %lld  high: %lld   group:%p  first:%p  count:%p\n", binLow, binHigh, pGroup, pFirst, pCount);
+        logger->debug("in accum first low: {}  high: {}  group: {}  first: {}  count:{}\n", binLow, binHigh, (void *)pGroup,
+                      (void *)pFirst, (void *)pCount);
 
         U const invalid{ riptide::invalid_for_type<U>::value };
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            // printf("[%lld]", i);
             if (pCount[i] > 0)
             {
                 V grpIndex = pFirst[i];
-                // printf("(%d)", grpIndex);
                 V bin = pGroup[grpIndex];
-                // printf("{%lld}", (int64_t)bin);
                 pDest[i] = pSrc[bin];
             }
             else
@@ -1263,14 +1264,11 @@ public:
         V const * const pCount = (V *)pCountT;
 
         U const invalid{ riptide::invalid_for_type<U>::value };
-        // printf("last called %lld -- %llu %llu %llu\n", numUnique, sizeof(T),
-        // sizeof(U), sizeof(V));
+        logger->debug("AccumLast: T: {} U: {} V: {}", sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
-            // printf("Last:  %d %d\n", (int)pFirst[i], (int)pCount[i]);
-            // printf("Last2:  %d\n", (int)(pGroup[pFirst[i] + pCount[i] - 1]));
             if (pCount[i] > 0)
             {
                 V grpIndex = pFirst[i] + pCount[i] - 1;
@@ -1709,7 +1707,7 @@ public:
         int64_t const windowSize = funcParam;
         U const invalid{ riptide::invalid_for_type<U>::value };
 
-        LOGGING("in rolling count %lld %lld  sizeofdest %lld\n", binLow, binHigh, sizeof(U));
+        logger->debug("AccumRollingCount {} {}  sizeofdest {}", binLow, binHigh, sizeof(U));
 
         if (binLow == 0)
         {
@@ -1731,8 +1729,6 @@ public:
             V last = start + pCount[i];
 
             U currentSum = 0;
-
-            // printf("in rolling count [%lld] %d %d\n", i, start, last);
 
             if (windowSize < 0)
             {
@@ -1776,8 +1772,7 @@ public:
 
         int64_t windowSize = (int64_t)funcParam;
 
-        // printf("binlow %lld,  binhigh %lld,  windowSize: %d\n", binLow, binHigh,
-        // windowSize);
+        logger->debug("AcculRollingShift: binlow {},  binhigh {},  windowSize: {}", binLow, binHigh, windowSize);
 
         if (binLow == 0)
         {
@@ -1840,8 +1835,6 @@ public:
                 windowSize = -windowSize;
                 last--;
                 start--;
-                // printf("bin[%lld]  start:%d  last:%d  windowSize:%d\n", i, start,
-                // last, windowSize);
 
                 for (V j = last; j > start && j > (last - windowSize); j--)
                 {
@@ -2001,7 +1994,7 @@ public:
 
         U const invalid{ riptide::invalid_for_type<U>::value };
 
-        LOGGING("TrimMean rows: %lld\n", totalInputRows);
+        logger->debug("TrimMean rows: {}", totalInputRows);
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -2080,7 +2073,7 @@ public:
         T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
         U const invalid{ riptide::invalid_for_type<U>::value };
 
-        // printf("Mode %llu\n", totalInputRows);
+        logger->debug("AccumMode {}", totalInputRows);
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -2183,8 +2176,7 @@ public:
         // Alloc
         T * const pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
 
-        LOGGING("Quantile %llu  %lld  %lld  sizeof: %lld %lld %lld\n", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U),
-                sizeof(V));
+        logger->debug("Quantile {} {} {}  sizeof: {} {} {}", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -2294,8 +2286,7 @@ public:
         // Alloc
         T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
 
-        LOGGING("Median %llu  %lld  %lld  sizeof: %lld %lld %lld\n", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U),
-                sizeof(V));
+        logger->debug("AccumMedian {} {} {}  sizeof: {} {} {}", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
@@ -2312,8 +2303,6 @@ public:
             // Copy over the items for this group
             for (V j = 0; j < nCount; j++)
             {
-                // printf("**[%lld][%d]  %d\n", i, index + j, (int32_t)pGroup[index +
-                // j]);
                 pSort[j] = pSrc[pGroup[index + j]];
             }
 
@@ -2325,7 +2314,6 @@ public:
             T * pEnd = pSort + nCount - 1;
             while (pEnd >= pSort)
             {
-                // printf("checking %lf\n", (double)*pEnd);
                 if (*pEnd == *pEnd)
                     break;
                 pEnd--;
@@ -2353,7 +2341,6 @@ public:
                 middle = MEDIAN_SPLIT(pSort[nCount / 2], pSort[(nCount / 2) - 1]);
             }
 
-            // printf("step3 %lf, %lf ==> %lf\n", (double)pSort[nCount / 2],
             // (double)pSort[(nCount / 2) - 1], (double)middle);
             // copy the data over from pCount[i]
             pDest[i] = middle;
@@ -2374,7 +2361,7 @@ public:
         V const * const pFirst = (V *)pFirstT;
         V const * const pCount = (V *)pCountT;
 
-        // printf("Median string %llu\n", totalInputRows);
+        logger->debug("AccumMedian rows {}", totalInputRows);
         // For all the bins we have to fill
         for (int64_t i = binLow; i < binHigh; i++)
         {
@@ -3690,7 +3677,7 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 template <typename V>
 static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNCTIONS func)
 {
-    LOGGING("GBX Func is %d  inputtype: %d  outputtype: %d\n", func, inputType, outputType);
+    logger->debug("GBX Func is {}  inputtype: {}  outputtype: {}", static_cast<int32_t>(func), inputType, outputType);
     static_assert(std::is_signed<V>::value, "Array types must be signed");
 
     if (func == GB_TRIMBR)
@@ -3772,7 +3759,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_ROLLING_DIFF)
     {
-        LOGGING("Rolling+diff called with type %d\n", inputType);
+        logger->debug("Rolling+diff called with type {}", inputType);
         switch (inputType)
         {
         // case NPY_BOOL:
@@ -3804,7 +3791,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_ROLLING_SHIFT)
     {
-        LOGGING("Rolling shift called with type %d\n", inputType);
+        logger->debug("Rolling shift called with type {}", inputType);
         switch (inputType)
         {
         case NPY_BOOL:
@@ -3842,7 +3829,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     {
         if (func == GB_ROLLING_MEAN || func == GB_ROLLING_NANMEAN || func == GB_ROLLING_QUANTILE)
         {
-            LOGGING("Rolling+mean called with type %d\n", inputType);
+            logger->debug("Rolling+mean called with type {}", inputType);
             // default to a double for output
             switch (inputType)
             {
@@ -3874,7 +3861,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         else
         {
             // due to overflow, all ints become int64_t
-            LOGGING("Rolling+sum called with type %d\n", inputType);
+            logger->debug("Rolling+sum called with type {}", inputType);
             switch (inputType)
             {
                 // really need to change output type for accumsum/rolling
@@ -3972,7 +3959,7 @@ static bool BandedGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int cor
         // First index is 1 so we subtract
         index--;
 
-        LOGGING("|%d %d %lld %p %p", core, (int)workBlock, index, pDataIn, pDataOut);
+        logger->debug("BandedGroupByCall |{} {} {} {} {}", core, (int)workBlock, index, pDataIn, pDataOut);
         int64_t binLow = pGroupBy32->returnObjects[index].binLow;
         int64_t binHigh = pGroupBy32->returnObjects[index].binHigh;
 
@@ -4022,12 +4009,12 @@ static bool ScatterGroupByCall(struct stMATH_WORKER_ITEM * pstWorkerItem, int co
     int64_t itemSize1 = aInfo[0].ItemSize;
     int64_t itemSize2 = pGroupBy32->itemSize2;
 
-    // printf("Scatter working core %d  %lld\n", core, len);
+    logger->debug("Scatter working core {}  {}", core, len);
     // As long as there is work to do
     while ((lenX = pstWorkerItem->GetNextWorkBlock(&workBlock)) > 0)
     {
-        // printf("|%d %d %lld %p %p %p %p", core, (int)workBlock, lenX, pDataIn,
-        // pDataIn2, pCountOut, pDataOut);
+        logger->debug("ScatterGroupByCall: {} {} {} {} {} {} {}", core, (int)workBlock, lenX, pDataIn, pDataIn2, pCountOut,
+                      pDataOut);
 
         int64_t inputAdj1 = pstWorkerItem->BlockSize * workBlock * itemSize1;
         int64_t inputAdj2 = pstWorkerItem->BlockSize * workBlock * itemSize2;
@@ -4075,16 +4062,16 @@ void GroupByCall(void * pGroupBy, int64_t i)
 
     if (outArray && pFunction)
     {
-        LOGGING(
-            "col %llu  ==> outsize %llu   len: %llu   numpy types %d --> %d   "
-            "%d %d\n",
+        logger->debug(
+            "GroupByCall: col {}  ==> outsize {}   len: {}   numpy types {} --> {}   "
+            "{} {}",
             i, uniqueRows, len, aInfo[i].NumpyDType, numpyOutType, gNumpyTypeToSize[aInfo[i].NumpyDType],
             gNumpyTypeToSize[numpyOutType]);
 
         void * pDataOut = PyArray_BYTES(outArray);
         void * pDataTmp = pGroupBy32->returnObjects[i].pTmpArray;
 
-        LOGGING("%llu  typeCall %d  numpyOutType %d\n", i, (int)typeCall, numpyOutType);
+        logger->debug("GroupByCall: {}  typeCall {}  numpyOutType {}", i, (int)typeCall, numpyOutType);
 
         if (typeCall == ANY_GROUPBY_FUNC)
         {
@@ -4107,7 +4094,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
             // int32_t* pCount, void* pAccumBin, int64_t numUnique, int64_t
             // totalInputRows, int64_t itemSize, int64_t funcParam) {
             if (funcNum < GB_FIRST)
-                printf("!!! internal bug in GroupByCall -- %d\n", funcNum);
+                logger->warn("!!! internal bug in GroupByCall -- {}", funcNum);
 
             if (pFunctionX)
             {
@@ -4117,7 +4104,7 @@ void GroupByCall(void * pGroupBy, int64_t i)
             }
             else
             {
-                printf("!!!internal error no pfunctionx\n");
+                logger->error("!!!internal error no pfunctionx");
             }
         }
 
@@ -4128,13 +4115,13 @@ void GroupByCall(void * pGroupBy, int64_t i)
         // TJD: memory leak?
         if (outArray)
         {
-            printf("!!! deleting extra object\n");
+            logger->warn("!!! deleting extra object\n");
             Py_DecRef((PyObject *)outArray);
         }
 
-        LOGGING(
-            "**skipping col %llu  ==> outsize %llu   len: %llu   numpy types "
-            "%d --> %d   %d %d\n",
+        logger->debug(
+            "**skipping col {}  ==> outsize {}   len: {}   numpy types "
+            "{} --> {}   {} {}",
             i, uniqueRows, len, aInfo[i].NumpyDType, numpyOutType, gNumpyTypeToSize[aInfo[i].NumpyDType],
             gNumpyTypeToSize[numpyOutType]);
         pGroupBy32->returnObjects[i].returnObject = Py_None;
@@ -4204,7 +4191,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
     int32_t numpyOutType = aInfo[0].NumpyDType;
     bool hasCounts = false;
 
-    LOGGING("In banded groupby %d\n", (int)firstFuncNum);
+    logger->debug("GroupBySingleOpMultiBands: func {}", (int)firstFuncNum);
 
     GROUPBY_X_FUNC pFunction = NULL;
 
@@ -4242,7 +4229,7 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
         if (bins < cores)
             cores = bins;
 
-        LOGGING("Banded cores %lld\n", cores);
+        logger->debug("Banded cores {}", cores);
 
         // See if we get a work item (threading might be off)
         stMATH_WORKER_ITEM * pWorkItem = g_cMathWorker->GetWorkItemCount(cores);
@@ -4298,8 +4285,8 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
 
             pstGroupBy32->totalInputRows = arraySizeKey;
 
-            LOGGING("groupby dtypes:  key:%d  ifirst:%d  igroup:%d  count:%d\n", PyArray_TYPE(iKey), PyArray_TYPE(iFirst),
-                    PyArray_TYPE(iGroup), PyArray_TYPE(nCount));
+            logger->debug("groupby dtypes:  key:{}  ifirst:{}  igroup:{}  count:{}", PyArray_TYPE(iKey), PyArray_TYPE(iFirst),
+                          PyArray_TYPE(iGroup), PyArray_TYPE(nCount));
 
             int64_t dividend = unique_rows / cores;
             int64_t remainder = unique_rows % cores;
@@ -4339,11 +4326,8 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             pWorkItem->DoWorkCallback = BandedGroupByCall;
             pWorkItem->WorkCallbackArg = pstGroupBy32;
 
-            LOGGING("before threaded\n");
-
             // This will notify the worker threads of a new work item
             g_cMathWorker->WorkMain(pWorkItem, cores, 0, 1, false);
-            LOGGING("after threaded\n");
 
             WORKSPACE_FREE(pstGroupBy32);
 
@@ -4389,7 +4373,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                                                      firstFuncNum);
     }
 
-    // printf("Taking the divide path  %lld \n", unique_rows);
+    logger->debug("Taking the divide path: rows {}", unique_rows);
 
     if (pFunction && numpyOutType != -1)
     {
@@ -4421,8 +4405,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                 return NULL;
             }
 
-            LOGGING("***workspace %p   unique:%lld   itemsize:%lld   cores:%d\n", workspace.data(), unique_rows, itemSize,
-                    numCores);
+            logger->debug("***workspace {} unique:{} itemsize:{} cores:{}", workspace_buffers.data(), unique_rows, itemSize,
+                          numCores);
 
             cache_aligned_buffer_array count_buffers;
             if (hasCounts)
@@ -4432,8 +4416,8 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
                     return NULL;
                 }
                 memset(count_buffers.data(), 0, count_buffers.get_total_size());
-                LOGGING("***pCountOut %p   unique:%lld  allocsize:%lld   cores:%d\n", count_buffers.data(), unique_rows, allocSize,
-                        numCores);
+                logger->debug("GroupBySingleOpMultithreaded: ***pCountOut {}   unique:{}  allocsize:{}   cores:{}",
+                              count_buffers.data(), unique_rows, count_buffers.get_total_size(), numCores);
             }
 
             int32_t tempItemSize{ 0 };
@@ -4492,12 +4476,12 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             pWorkItem->DoWorkCallback = ScatterGroupByCall;
             pWorkItem->WorkCallbackArg = pstGroupBy32;
 
-            LOGGING("before threaded\n");
+            logger->debug("before threaded");
 
             // This will notify the worker threads of a new work item
             g_cMathWorker->WorkMain(pWorkItem, arraySizeKey, 0);
 
-            LOGGING("after threaded\n");
+            logger->debug("after threaded");
 
             // Gather resullts
             GROUPBY_GATHER_FUNC pGather;
@@ -4517,7 +4501,7 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
             }
             else
             {
-                printf("!!!Internal error in GetGroupByGatherFunction\n");
+                logger->error("!!!Internal error in GetGroupByGatherFunction");
             }
 
             // New reference
@@ -4747,7 +4731,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             }
             else
             {
-                LOGGING("Failed to find function %llu for type %d\n", funcNum, numpyOutType);
+                logger->warn("Failed to find function {} for type {}", static_cast<int32_t>(funcNum), numpyOutType);
             }
 
             pstGroupBy32->returnObjects[i].outArray = outArray;
@@ -4761,7 +4745,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
         g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
 
-        LOGGING("!!groupby done %llu\n", tupleSize);
+        logger->debug("!!groupby done {}", tupleSize);
 
         // New reference
         returnTuple = PyTuple_New(tupleSize);
@@ -4775,7 +4759,6 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             if (item == Py_None)
                 Py_INCREF(Py_None);
 
-            // printf("ref %d  %llu\n", i, item->ob_refcnt);
             PyTuple_SET_ITEM(returnTuple, i, item);
 
             void * pCountOut = pstGroupBy32->returnObjects[i].pCountOut;
@@ -4785,7 +4768,7 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
     // LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
     FreeArrayInfo(aInfo);
 
-    LOGGING("!!groupby returning\n");
+    logger->debug("!!groupby returning\n");
 
     return returnTuple;
 }
@@ -4831,8 +4814,8 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         return NULL;
     }
 
-    LOGGING("GroupByAllPack32 types: key:%d  group:%d  first:%d  count:%d\n", PyArray_TYPE(iKey), PyArray_TYPE(iGroup),
-            PyArray_TYPE(iFirst), PyArray_TYPE(nCount));
+    logger->debug("GroupByAllPack32 types: key:{}  group:{}  first:{}  count:{}", PyArray_TYPE(iKey), PyArray_TYPE(iGroup),
+                  PyArray_TYPE(iFirst), PyArray_TYPE(nCount));
 
     int32_t iGroupType = PyArray_TYPE(iGroup);
     int32_t iFirstType = PyArray_TYPE(iFirst);
@@ -4907,7 +4890,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         GB_FUNCTIONS const firstFuncNum{ static_cast<GB_FUNCTIONS>(
             PyLong_AsLongLongAndOverflow(PyList_GET_ITEM(listFuncNum, 0), &overflow)) };
 
-        LOGGING("Checking banded %lld\n", firstFuncNum);
+        logger->debug("Checking banded {}", static_cast<int32_t>(firstFuncNum));
 
         if ((firstFuncNum >= GB_MEDIAN && firstFuncNum <= GB_TRIMBR) || (firstFuncNum == GB_QUANTILE_MULT))
         {
@@ -4945,7 +4928,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         // Allocate the struct + ROOM at the end of struct for all the tuple objects
         // being produced
         int64_t allocSize = (sizeof(stGroupBy32) + 8 + sizeof(stGroupByReturn)) * tupleSize;
-        LOGGING("in GroupByAllPack32 allocating %lld\n", allocSize);
+        logger->debug("GroupByAllPack32 allocating {}", allocSize);
 
         stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(allocSize);
 
@@ -4957,7 +4940,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         pstGroupBy32->totalInputRows = ArrayLength(iKey);
 
-        // printf("funcParam %lld\n", funcParam);
         pstGroupBy32->funcParam = funcParam;
 
         pstGroupBy32->pKey = PyArray_BYTES(iKey);
@@ -5095,7 +5077,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                     }
                     else
                     {
-                        LOGGING("GroupByAllPack32:  Allocating for output type: %d\n", aInfo[i].NumpyDType);
+                        logger->debug("GroupByAllPack32:  Allocating for output type: {}", aInfo[i].NumpyDType);
                         outArray = AllocateLikeResize(aInfo[i].pObject, unique_rows);
                     }
                 }
@@ -5108,7 +5090,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             }
             else
             {
-                LOGGING("Failed to find function %llu for type %d\n", funcNum, numpyOutType);
+                logger->error("Failed to find function {} for type {}", static_cast<int32_t>(funcNum), numpyOutType);
                 PyErr_Format(PyExc_NotImplementedError, "GroupByAllPack32 doesn't implement function %llu for type %d", funcNum,
                              numpyOutType);
                 goto ERROR_EXIT;
@@ -5122,7 +5104,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
         g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
 
-        LOGGING("!!groupby done %llu\n", tupleSize);
+        logger->debug("!!groupby done {}", tupleSize);
 
         // New reference
         returnTuple = PyTuple_New(tupleSize);
@@ -5135,7 +5117,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             if (item == Py_None)
                 Py_INCREF(Py_None);
 
-            // printf("ref %d  %llu\n", i, item->ob_refcnt);
             PyTuple_SET_ITEM(returnTuple, i, item);
         }
 
@@ -5166,13 +5147,13 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         //   }
         //}
 
-        LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
+        logger->debug("Return tuple ref {}", returnTuple->ob_refcnt);
 
     ERROR_EXIT:
         WORKSPACE_FREE(pstGroupBy32);
         FreeArrayInfo(aInfo);
 
-        LOGGING("!!groupby returning\n");
+        logger->debug("!!groupby returning");
     }
 
     return returnTuple;

@@ -1797,6 +1797,7 @@ static PyMethodDef CSigMathUtilMethods[] = {
     { "StrptimeToNanos", StrptimeToNanos, METH_VARARGS, "Parse string in strptime  then .mmm to UTC epoch nanos" },
     { "EnableLogging", EnableLogging, METH_VARARGS, "Enable logging with the specified parameters." },
     { "DisableLogging", DisableLogging, METH_VARARGS, "Disable the logger and shutdown all associated threads" },
+    { "GetRiptideLoggers", GetRiptideLoggers, METH_NOARGS, "Get the names of available riptide loggers" },
     //{ "addf32x", addf32x, METH_VARARGS, "addf32 with output calculation" },
     { NULL, NULL, 0, NULL } /* Sentinel - marks the end of this structure */
 };
