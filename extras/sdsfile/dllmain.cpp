@@ -1,15 +1,36 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include <stdlib.h>
 #include "../../src/CommonInc.h"
 #include "../../src/MathWorker.h"
 #include "../../src/SDSFile.h"
+
+#include <mutex>
+#include <stdlib.h>
 
 //#define LOGGING printf
 #define LOGGING(...)
 
 //----------------------------------------------------------------------------------
-CMathWorker * g_cMathWorker = new CMathWorker();
-bool g_bStarted = false;
+CMathWorker * g_cMathWorker = nullptr; //new CMathWorker();
+
+namespace
+{
+    // Starting working threads requires thread synchronization, so it cannot be
+    // called from DllMain or from static object.
+    // Each API needs to call ensure_threads_started() to ensure that threads have been
+    // started prior to continuing.
+
+    std::once_flag g_bStarted{};
+
+    void ensure_threads_started()
+    {
+        std::call_once(g_bStarted,
+                       []()
+                       {
+                           g_cMathWorker = new CMathWorker();
+                           g_cMathWorker->StartWorkerThreads(0);
+                       });
+    }
+}
 
 static int64_t g_TotalAllocs = 0;
 static int64_t g_TotalFree = 0;
@@ -140,18 +161,10 @@ uint64_t GetUTCNanos()
 #if defined(_WIN32)
 bool APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    // NOTE: Cannot do any thread-related work in DllMain.
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-
-        if (! g_bStarted)
-        {
-            g_bStarted = true;
-
-            // default to numa node 0
-            g_cMathWorker->StartWorkerThreads(0);
-        }
-        break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
@@ -419,6 +432,8 @@ extern "C"
     //    pointer to stReadSharedMemory
     RT_DLLEXPORT stReadSharedMemory * ReadFromSharedMemory(const char * fileName, const char * shareName)
     {
+        ensure_threads_started();
+
         // uint64_t fileNameSize;
         // uint64_t shareNameSize = 0;
 
@@ -815,6 +830,8 @@ extern "C"
                                     const char * inListNames, // use commas to separate
                                     int64_t totalRows, int64_t bandSize = 0)
     {
+        ensure_threads_started();
+
         bool result = CreateSDSFileInternal(fileName, shareName, metaData,
                                             inListNames, // use commas to separate
                                             totalRows, bandSize);
@@ -829,10 +846,11 @@ extern "C"
     //    shareName: the sharename the user provided, may be NULL
     // Returns:
     //    true/false
-    RT_DLLEXPORT bool AppendSDSFile(const char * outFileName,
-
-                                    const char * shareFileName, const char * shareName, int64_t totalRows, int64_t bandSize = 0)
+    RT_DLLEXPORT bool AppendSDSFile(const char * outFileName, const char * shareFileName, const char * shareName,
+                                    int64_t totalRows, int64_t bandSize = 0)
     {
+        ensure_threads_started();
+
         stReadSharedMemory * pSharedMemory = (stReadSharedMemory *)ReadFromSharedMemory(shareFileName, shareName);
         if (pSharedMemory)
         {

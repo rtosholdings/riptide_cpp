@@ -186,11 +186,8 @@ public:
         int64_t workBlock;
 
         // As long as there is work to do
-        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
+        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) >= 0)
         {
-            // First index is 1 so we subtract
-            index--;
-
             pstWorkerItem->MTWorkCallback(pstWorkerItem->WorkCallbackArg, core, index);
 
             didSomeWork = true;
@@ -427,7 +424,7 @@ public:
         {
             // custom mode (called from groupby)
             // also can be called from parmerge
-            pWorkItem->BlockLast = len + 1;
+            pWorkItem->BlockLast = len;
         }
 
         pWorkItem->BlocksCompleted = 0;
@@ -491,11 +488,11 @@ public:
         THREADLOGGING("[%d] DoWork start loop\n", core);
 
         // As long as there is work to do
-        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
+        while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) >= 0)
         {
-            THREADLOGGING("[%d][%llu] Groupby started working on %lld\n", core, workIndex, workBlock - 1);
+            THREADLOGGING("[%d][%llu] Groupby started working on %lld\n", core, workIndex, workBlock);
 
-            groupByCall(pstWorkerItem->OldCallback.pDataInBase1, workBlock - 1);
+            groupByCall(pstWorkerItem->OldCallback.pDataInBase1, workBlock);
 
             // Indicate we completed a block
             didSomeWork = true;
@@ -503,7 +500,7 @@ public:
             // tell others we completed this work block
             pstWorkerItem->CompleteWorkBlock();
 
-            THREADLOGGING("[%d][%llu] Groupby completed working on %lld\n", core, workIndex, workBlock - 1);
+            THREADLOGGING("[%d][%llu] Groupby completed working on %lld\n", core, workIndex, workBlock);
         }
 
         THREADLOGGING("[%d] Work item complete %lld\n", core, index);

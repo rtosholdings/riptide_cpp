@@ -1,3 +1,5 @@
+#pragma once
+
 #include <thread>
 #include <deque>
 
@@ -59,7 +61,7 @@ namespace riptide::logging::details
             notify_.notify_one();
         }
 
-        void set_max_size(uint32_t size) noexcept
+        void set_max_size(const uint32_t size) noexcept
         {
             max_size_ = size;
         }

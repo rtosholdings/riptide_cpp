@@ -1,11 +1,12 @@
-#include "logging/logger.h"
+#include "logging/logging.h"
 
 #include <benchmark/benchmark.h>
 
 namespace
 {
     using namespace riptide::logging;
-    auto & logg = logger::get();
+    auto service = get_service();
+    auto logg = get_logger();
 
     static void bench_logging(benchmark::State & state)
     {
@@ -17,15 +18,15 @@ namespace
             {
                 for (auto i = 0; i < num_logs; i++)
                 {
-                    logg.log(loglevel::debug, "Thread: {0} log number: {1}", id, i);
+                    logg->log(loglevel::debug, "Thread: {0} log number: {1}", id, i);
                 }
             };
 
             auto consume = [=]()
             {
-                while (logg.active())
+                while (service->active())
                 {
-                    auto curr{ logg.receive() };
+                    auto curr{ service->receive() };
                     if (! curr)
                         break;
 
@@ -34,7 +35,8 @@ namespace
                 }
             };
 
-            logg.enable({ .max_size = 1'000'000'000, .level = loglevel::debug });
+            logg->set_level(loglevel::debug);
+            service->enable({ .max_size = 1'000'000'000 });
 
             std::thread consumer{ consume };
             std::vector<std::thread> threads;
@@ -49,7 +51,7 @@ namespace
                 t.join();
             }
 
-            logg.disable();
+            service->disable();
             consumer.join();
         }
     }

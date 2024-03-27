@@ -509,6 +509,22 @@ void CMathWorker::StartWorkerThreads(int numaNode)
         WorkerThreadHandles[i] = StartThread(pWorkerRing);
     }
 
+    // There's a potential for deadlock here if this function is called from DllMain
+    // When threads are created in DllMain, they can be suspended until DllMain exits,
+    // meaning the loops below will just end up waiting forever
+
+    // Wait for all of the worker threads to start
+    while (static_cast<int32_t>(pWorkerRing->ThreadsRunning) < WorkerThreadCount)
+    {
+        YieldProcessor();
+    }
+
+    // Wait for all of the worker thread to idle
+    while (pWorkerRing->AnyThreadsAwakened())
+    {
+        YieldProcessor();
+    }
+
     // Pin the main thread to a numa node?
     // TODO: work
     // uint64_t mask = ((uint64_t)1 << WorkerThreadCount);//core number starts

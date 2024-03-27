@@ -7,10 +7,12 @@ set(SOURCES
     bins_bsearch_tests.cpp
     bins_sorted_tests.cpp
     combine_accum_tests.cpp
+    datetime_tests.cpp
     ema_test.cpp
     groupby_tests.cpp
     hash_linear_tests.cpp
     lexsort_tests.cpp
+    logging_python_tests.cpp
     main.cpp
     mkalign_tests.cpp
     mbget_tests.cpp

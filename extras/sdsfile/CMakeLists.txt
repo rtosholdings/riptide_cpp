@@ -20,6 +20,7 @@ set(HEADERS
     ../../src/MathThreads.h
     ../../src/MathWorker.h
     ../../src/SDSFile.h
+    ../../src/logging/logging.h
     ../../src/SharedMemory.h
     ../../src/ZstdCompress.h)
 
@@ -29,6 +30,7 @@ set(SOURCES
     ../../src/MathThreads.cpp
     ../../src/MathWorker.cpp
     ../../src/SDSFile.cpp
+    ../../src/logging/logging.cpp
     ../../src/SharedMemory.cpp
     ../../src/ZstdCompress.cpp)
 

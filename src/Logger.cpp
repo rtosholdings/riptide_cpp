@@ -1,4 +1,5 @@
-#include "logging/logger.h"
+#include "logging/logging.h"
+
 #include "Logger.h"
 
 #include <thread>
@@ -9,28 +10,34 @@
 namespace
 {
     PyObject * logging_lib = NULL;
-    PyObject * log_sink = NULL;
 
-    riptide::logging::logger & logger = riptide::logging::logger::get();
+    auto service = riptide::logging::get_service();
     using log_record = riptide::logging::log_record;
     using loglevel = riptide::logging::loglevel;
 
+    std::unordered_map<std::string, PyObject *> sinks;
     std::optional<PyObject *> exception_callback;
     std::optional<std::string> exception_message;
 
     void UpdateLogLevel()
     {
-        auto level_attr = PyObject_GetAttrString(log_sink, "level");
-        if (! PyLong_Check(level_attr))
+        for (const auto & [name, sink] : sinks)
         {
-            Py_XDECREF(level_attr);
-            return;
-        }
-        int32_t level = PyLong_AsLong(level_attr);
-        Py_XDECREF(level_attr);
+            auto level_attr = PyObject_GetAttrString(sink, "level");
+            if (! PyLong_Check(level_attr))
+            {
+                Py_XDECREF(level_attr);
+                continue;
+                ;
+            }
 
-        if (level >= static_cast<int>(loglevel::notset) and level <= static_cast<int>(loglevel::crtical))
-            logger.set_level(static_cast<loglevel>(level));
+            int32_t level = PyLong_AsLong(level_attr);
+            Py_XDECREF(level_attr);
+
+            auto logger{ riptide::logging::get_logger(name) };
+            if (level >= static_cast<int>(loglevel::notset) and level <= static_cast<int>(loglevel::critical))
+                logger->set_level(static_cast<loglevel>(level));
+        }
     }
 
     void LoggingHandler()
@@ -59,7 +66,7 @@ namespace
         {
             std::vector<log_record> batch;
             // make sure we have the GIL initially.
-            while (logger.active())
+            while (service->active())
             {
                 batch.clear();
 
@@ -69,11 +76,11 @@ namespace
                     return std::chrono::duration_cast<std::chrono::milliseconds>(delta);
                 };
 
-                auto batch_size{ logger.batch_size() };
-                while (batch.size() < batch_size and diff(last_sent) < logger.interval())
+                auto batch_size{ service->batch_size() };
+                while (batch.size() < batch_size and diff(last_sent) < service->interval())
                 {
                     // if there is no log, then this thread will sleep here.
-                    auto curr_log{ logger.receive() };
+                    auto curr_log{ service->receive() };
 
                     if (! curr_log)
                         break;
@@ -91,11 +98,34 @@ namespace
 
                 UpdateLogLevel();
 
-                for (size_t index = 0; index < batch.size(); index++)
+                for (auto & msg : batch)
                 {
-                    auto res = PyObject_CallMethod(log_sink, "log", "is", static_cast<int>(batch[index].level),
-                                                   batch[index].message.c_str());
-                    Py_XDECREF(res);
+                    auto sink{ sinks[msg.name] };
+
+                    auto log_method{ PyObject_GetAttrString(sink, "log") };
+                    if (not log_method)
+                        continue;
+
+                    auto source_loc{ msg.loc };
+
+                    auto source_info{ Py_BuildValue("{s:s, s:i, s:i, s:s}", "filename", source_loc.file_name(), "line",
+                                                    source_loc.line(), "column", source_loc.column(), "function",
+                                                    source_loc.function_name()) };
+
+                    auto timestamp_ns{ msg.time.time_since_epoch().count() };
+
+                    auto extra{ Py_BuildValue("{s:O, s:I}", "source_info", source_info, "timestamp", timestamp_ns) };
+
+                    auto args{ Py_BuildValue("(iN)", static_cast<int>(msg.level),
+                                             PyUnicode_Decode(msg.message.c_str(), msg.message.size(), NULL, "replace")) };
+                    auto kwargs{ Py_BuildValue("{s:O}", "extra", extra) };
+
+                    if (args and kwargs)
+                    {
+                        auto res{ PyObject_Call(log_method, args, kwargs) };
+                        Py_XDECREF(res);
+                    }
+                    Py_DECREF(log_method);
                 }
 
                 // release
@@ -117,17 +147,25 @@ void SetupLogging()
 {
     // these ref should stay alive during the entire lifetime of the module.
     logging_lib = PyImport_ImportModule("logging");
-    log_sink = PyObject_CallMethod(logging_lib, "getLogger", "s", "riptable.riptide_cpp");
+
+    for (auto & name : riptide::logging::get_logger_names())
+    {
+        auto logger_name{ "riptable.riptide_cpp" + (name.empty() ? "" : "." + name) };
+        auto sink{ PyObject_CallMethod(logging_lib, "getLogger", "s", logger_name.c_str()) };
+        if (sink == nullptr)
+            continue;
+        sinks[name] = sink;
+    }
 }
 
 void CleanupLogging()
 {
-    logger.disable();
+    service->disable();
 }
 
 PyObject * EnableLogging(PyObject * self, PyObject * args)
 {
-    if (logger.active())
+    if (service->active())
     {
         Py_INCREF(Py_None);
         return Py_None;
@@ -151,16 +189,28 @@ PyObject * EnableLogging(PyObject * self, PyObject * args)
     if (PyFunction_Check(callback))
         exception_callback = callback;
 
-    logger.enable({ .batch_size = bsize, .flush_interval = std::chrono::milliseconds(interval), .max_size = msize });
+    service->enable({ .batch_size = bsize, .flush_interval = std::chrono::milliseconds(interval), .max_size = msize });
     UpdateLogLevel();
-    logger.set_handler(LoggingHandler);
+    service->set_handler(LoggingHandler);
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+PyObject * GetRiptideLoggers(PyObject * self, PyObject * args)
+{
+    auto names{ riptide::logging::get_logger_names() };
+    auto list{ PyList_New(names.size()) };
+    for (size_t i = 0; i < names.size(); i++)
+    {
+        auto logger_name{ "riptable.riptide_cpp" + (names[i].empty() ? "" : "." + names[i]) };
+        PyList_SetItem(list, i, PyUnicode_FromString(logger_name.c_str()));
+    }
+    return list;
+}
+
 PyObject * DisableLogging(PyObject * self, PyObject * args)
 {
-    if (! logger.active())
+    if (! service->active())
     {
         Py_INCREF(Py_None);
         return Py_None;
@@ -176,9 +226,9 @@ PyObject * DisableLogging(PyObject * self, PyObject * args)
     Py_BEGIN_ALLOW_THREADS;
 
     if (timeout != -1)
-        logger.disable(std::chrono::milliseconds(timeout));
+        service->disable(std::chrono::milliseconds(timeout));
     else
-        logger.disable();
+        service->disable();
 
     Py_END_ALLOW_THREADS;
     Py_INCREF(Py_None);

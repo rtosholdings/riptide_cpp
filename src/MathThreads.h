@@ -189,7 +189,7 @@ struct stMATH_WORKER_ITEM
     //-------------------------------------------------
     // The next block (atomic)
     // Incremented
-    // If BlockNext > BlockLast -- no work to be done
+    // If BlockNext >= BlockLast -- no work to be done
     volatile int64_t BlockNext;
 
     //-----------------------------------------------
@@ -216,7 +216,7 @@ struct stMATH_WORKER_ITEM
 
     //=============================================================
     // Called by routines that work by index
-    // returns 0 on failure
+    // returns -1 on failure
     // else returns length of workblock
     RT_FORCEINLINE int64_t GetNextWorkIndex(int64_t * workBlock)
     {
@@ -230,7 +230,7 @@ struct stMATH_WORKER_ITEM
             return wBlock;
         }
 
-        return 0;
+        return -1;
     }
 
     //=============================================================
@@ -370,8 +370,7 @@ struct stWorkerRing
         // Linux thread wakeup
         int s = futex((int *)&WorkIndex, FUTEX_WAKE, maxThreadsToWake, nullptr, nullptr, 0);
         if (s == -1)
-            printf("***error futex-FUTEX_WAKE\n"); // TODO: Change to use
-                                                   // fprintf(stderr, msg) instead
+            perror("futex");
 
 #elif defined(__APPLE__)
         // temp remove warning

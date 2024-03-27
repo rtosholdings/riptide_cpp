@@ -2244,11 +2244,8 @@ static bool ParMergeThreadCallback(struct stMATH_WORKER_ITEM * pstWorkerItem, in
     int64_t workBlock;
 
     // As long as there is work to do
-    while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) > 0)
+    while ((index = pstWorkerItem->GetNextWorkIndex(&workBlock)) >= 0)
     {
-        // First index is 1 so we subtract
-        index--;
-
         // PLOGGING("[%d] DoWork start loop -- %lld  index: %lld\n", core,
         // workIndex, index);
 
