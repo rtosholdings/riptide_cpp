@@ -2,9 +2,11 @@
 
 #include "ut_core.h"
 
-#include <mutex>
+#include <chrono>
 #include <condition_variable>
+#include <mutex>
 #include <thread>
+#include <unordered_set>
 
 using namespace boost::ut;
 using riptide_utility::ut::file_suite;
@@ -119,6 +121,71 @@ namespace
         }
     }
 
+    struct GetNextWorkIndexTestState
+    {
+        std::mutex mutex;
+        std::condition_variable wakeup;
+        std::unordered_set<int32_t> cores;
+    };
+
+    static bool GetNextWorkIndexTestCallback(void * callbackArg, int32_t core, int64_t workIndex)
+    {
+        auto * state = static_cast<GetNextWorkIndexTestState *>(callbackArg);
+        std::unique_lock lock(state->mutex);
+        state->cores.insert(core);
+
+        if (state->cores.size() == 1)
+        {
+            // This is the first thread, wait for the other
+            state->wakeup.wait(lock);
+        }
+        else
+        {
+            // This is the second thread, wake up the first
+            state->wakeup.notify_all();
+        }
+
+        lock.unlock();
+        return true;
+    }
+
+    struct ThreadWakeUpTestState
+    {
+        std::mutex mutex;
+        std::condition_variable condition;
+        int64_t count;
+        int64_t expected;
+    };
+
+    static bool ThreadWakeUpTestCallback(struct stMATH_WORKER_ITEM * worker_item, int core, int64_t work_index)
+    {
+        auto * state = static_cast<ThreadWakeUpTestState *>(worker_item->WorkCallbackArg);
+        std::unique_lock lock(state->mutex);
+
+        int64_t work_block;
+        worker_item->GetNextWorkBlock(&work_block);
+
+        if (++state->count < state->expected)
+        {
+            state->condition.notify_all();
+        }
+        else
+        {
+            auto pred = [&]
+            {
+                return state->count == state->expected;
+            };
+
+            // Wait for up to 10s
+            state->condition.wait_for(lock, std::chrono::seconds(10), pred);
+        }
+
+        worker_item->CompleteWorkBlock();
+
+        lock.unlock();
+        return false;
+    }
+
     file_suite math_worker_ops = []
     {
         "work_main_joins_workers"_test = [&]
@@ -154,5 +221,70 @@ namespace
 
             lock.unlock();
         };
+
+        "get_next_work_index"_test = [&]
+        {
+            expect(fatal(g_cMathWorker != nullptr));
+            once_start_math_workers();
+
+            int64_t const numItems{ 2 };     // Two work items
+            int32_t const threadWakeup{ 1 }; // One worker thread (plus main thread)
+            GetNextWorkIndexTestState state;
+
+            // This function uses GetNextWorkIndex internally to dispatch work
+            g_cMathWorker->DoMultiThreadedWork(numItems, GetNextWorkIndexTestCallback, (void *)&state, threadWakeup);
+
+            // Two threads should have done work
+            expect(state.cores.size() == 2) << "state.cores=" << state.cores;
+
+            // The main thread should be one of them
+            expect(state.cores.contains(0)) << "state.cores=" << state.cores;
+        };
+
+        "thread_wakeup"_test = [&](int32_t thread_wakeup)
+        {
+            switch (thread_wakeup)
+            {
+            case 1:
+                thread_wakeup = 1;
+                break;
+            case 2:
+                thread_wakeup = g_cMathWorker->WorkerThreadCount / 2;
+                break;
+            case 3:
+                thread_wakeup = g_cMathWorker->WorkerThreadCount;
+                break;
+            }
+
+            expect(fatal(g_cMathWorker != nullptr));
+            once_start_math_workers();
+
+            auto * work_item{ g_cMathWorker->GetWorkItem(CMathWorker::WORK_ITEM_BIG) };
+            work_item->DoWorkCallback = ThreadWakeUpTestCallback;
+
+            ThreadWakeUpTestState state;
+            state.count = 0;
+            state.expected = thread_wakeup;
+            work_item->WorkCallbackArg = &state;
+
+            work_item->BlocksCompleted = 0;
+            work_item->BlockNext = 0;
+            work_item->BlockSize = 1;
+            work_item->BlockLast = thread_wakeup;
+
+            // Wake up threads
+            g_cMathWorker->pWorkerRing->SetWorkItem(thread_wakeup);
+
+            // Wait for all work items to be complete and all thread to go back to sleep
+            while (work_item->BlocksCompleted < work_item->BlockLast || g_cMathWorker->pWorkerRing->AnyThreadsAwakened())
+            {
+                YieldProcessor();
+            }
+
+            // Check that the correct number of threads woke up
+            expect(state.count == state.expected) << "expected" << state.expected << "thread(s) to wake up, got" << state.count;
+
+            g_cMathWorker->pWorkerRing->CompleteWorkItem();
+        } | std::vector<int32_t>{ 1, 2, 3 };
     };
 }

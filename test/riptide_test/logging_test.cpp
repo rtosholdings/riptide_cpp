@@ -1,6 +1,7 @@
 #include "ut_core.h"
-#include "logging/logger.h"
 #include "tuple_util.h"
+#include "logging/logging.h"
+#include "ut_extensions.h"
 
 #include <tuple>
 #include <array>
@@ -16,13 +17,18 @@ using namespace riptide_utility::internal;
 
 namespace
 {
-    auto & logg = riptide::logging::logger::get();
+    struct throw_exception
+    {
+    };
+
+    auto service = get_service();
+    auto logger = get_logger();
 
     void produce(size_t log_count, int id)
     {
         for (size_t i = 0; i < log_count; i++)
         {
-            logg.log(loglevel::debug, "{0} {1}", id, i);
+            logger->log(loglevel::debug, "{0} {1}", id, i);
         }
     }
 
@@ -38,9 +44,9 @@ namespace
 
     void consume(std::vector<log_record> & result)
     {
-        while (logg.active())
+        while (service->active())
         {
-            auto curr{ logg.receive() };
+            auto curr{ service->receive() };
 
             if (! curr)
                 continue;
@@ -70,7 +76,8 @@ namespace
 
             std::vector<log_record> result;
 
-            logg.enable({ .max_size = 1'000'000'000, .level = loglevel::debug });
+            logger->set_level(loglevel::debug);
+            service->enable({ .max_size = 1'000'000'000 });
 
             auto prods{ producer(Threads, Logs) };
             std::thread cons{ consume, std::ref(result) };
@@ -78,10 +85,10 @@ namespace
             for (auto & t : prods)
                 t.join();
 
-            logg.set_level(loglevel::none);
+            service->shutdown();
 
             cons.join();
-            logg.disable();
+            service->disable();
 
             std::unordered_map<int, int> log_count;
             while (! result.empty())
@@ -111,9 +118,68 @@ namespace
         }
     };
 
+    static_assert(! std::is_const_v<std::remove_pointer_t<decltype(details::validate_arg(std::declval<char *>()))>>);
+    static_assert(std::is_const_v<std::remove_pointer_t<decltype(details::validate_arg(std::declval<char const *>()))>>);
+
+    struct nullptr_format_validation_tester
+    {
+        template <typename PtrT>
+        void operator()()
+        {
+            using T = std::remove_pointer_t<PtrT>;
+
+            char const * const expected{ "(null)" };
+            auto const actual{ details::validate_arg(static_cast<PtrT>(nullptr)) };
+            typed_expect<PtrT>(actual != nullptr) << fatal;
+            for (int i{ 0 }; i < 5; ++i)
+            {
+                typed_expect<PtrT>(actual[i] != 0) << fatal;
+                typed_expect<PtrT>(actual[i] == static_cast<T>(expected[i]));
+            }
+            typed_expect<PtrT>(! actual[6]);
+        }
+    };
+
+    struct format_exception_tester
+    {
+        void operator()()
+        {
+            logger->set_level(loglevel::debug);
+            service->enable();
+            auto format{ "Throws exception: {}" };
+            expect(nothrow(
+                [&]()
+                {
+                    logger->debug(format, throw_exception{});
+                }));
+
+            auto record{ service->receive() };
+            expect(record.has_value());
+            expect(record.value().message == std::format("Caught exception: {}\nwhen formatting: {}", "Formatting error", format));
+
+            service->disable();
+        }
+    };
+
     file_suite riptide_ops = []
     {
         // TODO: move this to riptide_python_test
         "test_logging_normal"_test = logging_tester{} | SupportedArgs{};
+
+        "test_format_validation"_test = nullptr_format_validation_tester{} |
+                                        std::tuple<char *, unsigned char *, wchar_t *, char16_t *, char32_t *, char const *,
+                                                   unsigned char const *, wchar_t const *, char16_t const *, char32_t const *>{};
+
+        "test_format_exception"_test = format_exception_tester{};
     };
 }
+
+template <>
+struct std::formatter<throw_exception> : std::formatter<int>
+{
+    auto format(throw_exception const & exp, std::format_context & ctx) const
+    {
+        throw std::runtime_error("Formatting error");
+        return std::format_to(ctx.out(), "");
+    }
+};

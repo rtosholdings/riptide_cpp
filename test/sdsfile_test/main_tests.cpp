@@ -1,4 +1,6 @@
 #include "ut_core.h"
+
+#include <filesystem>
 #include <thread>
 
 using namespace boost::ut;
@@ -25,6 +27,19 @@ namespace
 {
     bool dummy{ 0 };
 
+    struct tmppath
+    {
+        tmppath(std::filesystem::path const & fname)
+            : path_{ std::filesystem::temp_directory_path() / fname }
+        {
+        }
+        ~tmppath()
+        {
+            std::filesystem::remove(path_);
+        }
+        std::filesystem::path path_;
+    };
+
     file_suite stsfile_tests = []
     {
         "test_main"_test = [&]
@@ -37,6 +52,12 @@ namespace
                 CreateSDSFile("FileName", "ShareName", "MetaData", "ListNames", /*TotalRows*/ 1, /*BandSize*/ 2);
                 AppendSDSFile("OutFileName", "ShareFileName", "ShareName", /*TotalRows*/ 1, /*BandSize*/ 2);
             }
+        };
+
+        "create_empty_sds_file"_test = [&]
+        {
+            tmppath const sdspath{ "test.sds" };
+            CreateSDSFile(sdspath.path_.generic_string().c_str(), nullptr, nullptr, "A:I4", 1, 0);
         };
     };
 }

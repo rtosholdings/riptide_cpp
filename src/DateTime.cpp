@@ -3,12 +3,85 @@
 #include "MathWorker.h"
 #include "DateTime.h"
 
+#include <format>
+#include <optional>
+#include <string>
+#include <string_view>
+
 const char * rt_strptime(const char * buf, const char * fmt, struct tm * tm);
 
 #define LOGGING(...)
 
 const char COLON = ':';
 const char PERIOD = '.';
+
+template <typename T>
+struct parsing_error
+{
+    const T * start;
+    const T * end;
+    const char * message;
+    int64_t position;
+
+    parsing_error(const T * start, const T * end, const char * message, int64_t position)
+        : start(start)
+        , end(end)
+        , message(message)
+        , position(position)
+    {
+    }
+};
+
+template <typename T>
+class DateTimeParser
+{
+    const T * pStartCopy = nullptr; // Start of the string
+    const T * pStart = nullptr;     // Current parser position
+    const T * pEnd = nullptr;       // End of the string
+
+    std::optional<parsing_error<T>> error; // First parsing error encountered
+
+public:
+    void ParseDateTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize);
+    void ParseDateString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize);
+    void ParseTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize);
+
+    RT_FORCEINLINE int64_t ParseNumber(int64_t maxplaces);
+    bool ParseSingleNonNumber(T expected);
+
+    void consume_leading_whitespace()
+    {
+        while (! at_end() && std::isspace(*pStart))
+            pStart++;
+    }
+
+    void consume_trailing_characters()
+    {
+        while (! at_end())
+        {
+            if (! std::isspace(*pStart))
+                set_error("Unexpected characters");
+
+            pStart++;
+        }
+    }
+
+    bool at_end() const
+    {
+        return pStart >= pEnd || *pStart == '\0';
+    }
+
+    void set_error(const char * message)
+    {
+        if (! error.has_value())
+            error = parsing_error<T>(pStartCopy, pEnd, message, pStart - pStartCopy);
+    }
+
+    const std::optional<parsing_error<T>> & get_error() const
+    {
+        return error;
+    }
+};
 
 //------------------------------------------------------------------
 // T is either a char or UCS4 (byte string or unicode string)
@@ -48,11 +121,26 @@ RT_FORCEINLINE int64_t ParseDecimal(const T ** ppStart, const T * pEnd)
         num = num * 10;
         places++;
     }
+
+    *ppStart = pStart;
     return num;
 }
 
 // Return non-zero if success and increments pStart
-#define ParseSingleNonNumber(pStartX, pEndX) ((pStartX < pEndX && (*pStartX < '0' || *pStartX > '9')) ? ++pStartX : 0)
+template <typename T>
+bool DateTimeParser<T>::ParseSingleNonNumber(T expected)
+{
+    if (pStart < pEnd && (*pStart < '0' || *pStart > '9'))
+    {
+        if (*pStart != expected)
+            set_error("Unexpected delimiter");
+
+        pStart++;
+        return true;
+    }
+
+    return false;
+}
 
 //------------------------------------------------------------------
 // T is either a char or UCS4 (byte string or unicode string)
@@ -60,15 +148,14 @@ RT_FORCEINLINE int64_t ParseDecimal(const T ** ppStart, const T * pEnd)
 // will stop at end, stop at nonnumber, or when places reached
 // pStart updated on return
 template <typename T>
-RT_FORCEINLINE int64_t ParseNumber(const T ** ppStart, const T * pEnd, int64_t maxplaces)
+RT_FORCEINLINE int64_t DateTimeParser<T>::ParseNumber(int64_t maxplaces)
 {
-    const T * pStart = *ppStart;
-
     // skip non numbers in front
     while (pStart < pEnd)
     {
         if (*pStart < '0' || *pStart > '9')
         {
+            set_error("Unexpected characters");
             pStart++;
             continue;
         }
@@ -93,8 +180,6 @@ RT_FORCEINLINE int64_t ParseNumber(const T ** ppStart, const T * pEnd, int64_t m
         break;
     }
 
-    // update pStart
-    *ppStart = pStart;
     return num;
 }
 
@@ -103,54 +188,66 @@ RT_FORCEINLINE int64_t ParseNumber(const T ** ppStart, const T * pEnd, int64_t m
 // T is either a char or UCS4 (byte string or unicode string)
 //
 template <typename T>
-void ParseTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
+void DateTimeParser<T>::ParseTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
 {
     for (int64_t i = 0; i < arrayLength; i++)
     {
-        const T * pStart = &pString[i * itemSize];
-        const T * pEnd = pStart + itemSize;
+        pStartCopy = pStart = &pString[i * itemSize];
+        pEnd = pStart + itemSize;
+
+        consume_leading_whitespace();
+
+        if (at_end())
+        {
+            pOutNanoTime[i] = 0;
+            continue;
+        }
 
         int64_t hour = 0;
         int64_t minute = 0;
         int64_t seconds = 0;
 
-        bool bSuccess = 0;
+        bool bSuccess = 1;
+        pOutNanoTime[i] = 0;
 
-        hour = ParseNumber<T>(&pStart, pEnd, 2);
+        hour = ParseNumber(2);
+        if (hour >= 24)
+            bSuccess = 0;
 
         // could check for colon here...
-        if (hour < 24 && ParseSingleNonNumber(pStart, pEnd))
+        if (ParseSingleNonNumber(':'))
         {
             // could check for colon here...
-            minute = ParseNumber<T>(&pStart, pEnd, 2);
+            minute = ParseNumber(2);
+            if (minute >= 60)
+                bSuccess = 0;
 
-            if (minute < 60)
+            // seconds are not required
+            if (ParseSingleNonNumber(':'))
             {
-                // seconds are not required
-                if (ParseSingleNonNumber(pStart, pEnd))
-                {
-                    seconds = ParseNumber<T>(&pStart, pEnd, 2);
-                }
+                seconds = ParseNumber(2);
+                if (seconds >= 60)
+                    bSuccess = 0;
+            }
 
-                bSuccess = 1;
-
+            if (bSuccess)
+            {
                 LOGGING("time: %lld:%lld:%lld\n", hour, minute, seconds);
                 pOutNanoTime[i] = 1000000000LL * ((hour * 3600) + (minute * 60) + seconds);
+            }
 
-                // check for milli/micro/etc seconds
-                if (pStart < pEnd && *pStart == PERIOD)
-                {
-                    // skip decimal
-                    pStart++;
-                    pOutNanoTime[i] += ParseDecimal<T>(&pStart, pEnd);
-                }
+            // check for milli/micro/etc seconds
+            if (pStart < pEnd && *pStart == PERIOD)
+            {
+                // skip decimal
+                pStart++;
+                int64_t decimal = ParseDecimal<T>(&pStart, pEnd);
+                if (bSuccess)
+                    pOutNanoTime[i] += decimal;
             }
         }
 
-        if (! bSuccess)
-        {
-            pOutNanoTime[i] = 0;
-        }
+        consume_trailing_characters();
     }
 }
 
@@ -216,25 +313,43 @@ int64_t YearToEpochNano(int64_t year, int64_t month, int64_t day)
 // T is either a char or UCS4 (byte string or unicode string)
 //
 template <typename T>
-void ParseDateString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
+void DateTimeParser<T>::ParseDateString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
 {
     for (int64_t i = 0; i < arrayLength; i++)
     {
-        const T * pStart = &pString[i * itemSize];
-        const T * pEnd = pStart + itemSize;
+        pStartCopy = pStart = &pString[i * itemSize];
+        pEnd = pStart + itemSize;
+
+        consume_leading_whitespace();
+
+        if (at_end())
+        {
+            pOutNanoTime[i] = 0;
+            continue;
+        }
 
         int64_t year = 0;
         int64_t month = 0;
         int64_t day = 0;
 
-        year = ParseNumber<T>(&pStart, pEnd, 4);
-        // could check for dash here...
-        month = ParseNumber<T>(&pStart, pEnd, 2);
-        day = ParseNumber<T>(&pStart, pEnd, 2);
+        year = ParseNumber(4);
+
+        bool expect_delimiter = ParseSingleNonNumber('-');
+
+        month = ParseNumber(2);
+
+        if (expect_delimiter != ParseSingleNonNumber('-'))
+            set_error(expect_delimiter ? "Expected delimiter" : "Unexpected delimiter");
+
+        day = ParseNumber(2);
+
         LOGGING("date: %lld:%lld:%lld\n", year, month, day);
         int64_t result = YearToEpochNano(year, month, day);
         if (result < 0)
             result = 0;
+
+        consume_trailing_characters();
+
         pOutNanoTime[i] = result;
     }
 }
@@ -244,75 +359,116 @@ void ParseDateString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pStr
 // T is either a char or UCS4 (byte string or unicode string)
 // Anything invalid is set to 0
 template <typename T>
-void ParseDateTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
+void DateTimeParser<T>::ParseDateTimeString(int64_t * pOutNanoTime, int64_t arrayLength, const T * pString, int64_t itemSize)
 {
     for (int64_t i = 0; i < arrayLength; i++)
     {
-        const T * pStart = &pString[i * itemSize];
-        const T * pEnd = pStart + itemSize;
+        pStartCopy = pStart = &pString[i * itemSize];
+        pEnd = pStart + itemSize;
+
+        consume_leading_whitespace();
+
+        if (at_end())
+        {
+            pOutNanoTime[i] = 0;
+            continue;
+        }
 
         int64_t year = 0;
         int64_t month = 0;
         int64_t day = 0;
+        bool bSuccess = 1;
 
-        year = ParseNumber<T>(&pStart, pEnd, 4);
-        // could check for dash here...
-        month = ParseNumber<T>(&pStart, pEnd, 2);
-        day = ParseNumber<T>(&pStart, pEnd, 2);
+        year = ParseNumber(4);
+
+        bool expect_delimiter = ParseSingleNonNumber('-');
+
+        month = ParseNumber(2);
+
+        if (expect_delimiter != ParseSingleNonNumber('-'))
+            set_error(expect_delimiter ? "Expected delimiter" : "Unexpected delimiter");
+
+        day = ParseNumber(2);
+
         LOGGING("date: %lld:%lld:%lld\n", year, month, day);
         int64_t yearresult = YearToEpochNano(year, month, day);
 
-        // What if year is negative?
-        if (yearresult >= 0)
+        if (yearresult < 0)
         {
-            int64_t hour = 0;
-            int64_t minute = 0;
-            int64_t seconds = 0;
-            bool bSuccess = 0;
-
-            if (ParseSingleNonNumber(pStart, pEnd))
-            {
-                hour = ParseNumber<T>(&pStart, pEnd, 2);
-
-                // could check for colon here...
-                if (hour < 24 && ParseSingleNonNumber(pStart, pEnd))
-                {
-                    minute = ParseNumber<T>(&pStart, pEnd, 2);
-
-                    if (minute < 60)
-                    {
-                        // seconds do not have to exist
-                        if (ParseSingleNonNumber(pStart, pEnd))
-                        {
-                            seconds = ParseNumber<T>(&pStart, pEnd, 2);
-                        }
-
-                        bSuccess = 1;
-                    }
-                }
-            }
-
-            if (bSuccess)
-            {
-                LOGGING("time: %lld:%lld:%lld\n", hour, minute, seconds);
-                yearresult += (1000000000LL * ((hour * 3600) + (minute * 60) + seconds));
-
-                // check for milli/micro/etc seconds
-                if (pStart < pEnd && *pStart == PERIOD)
-                {
-                    // skip decimal
-                    pStart++;
-                    yearresult += ParseDecimal<T>(&pStart, pEnd);
-                }
-            }
-        }
-        else
-        {
+            bSuccess = 0;
             yearresult = 0;
         }
 
+        int64_t hour = 0;
+        int64_t minute = 0;
+        int64_t seconds = 0;
+
+        if (pStart < pEnd && (*pStart < '0' || *pStart > '9'))
+        {
+            if (*pStart != 'T' && *pStart != ' ')
+                set_error("Unexpected delimiter");
+
+            pStart++;
+            hour = ParseNumber(2);
+            if (hour >= 24)
+                bSuccess = 0;
+
+            // could check for colon here...
+            if (ParseSingleNonNumber(':'))
+            {
+                minute = ParseNumber(2);
+                if (minute >= 60)
+                    bSuccess = 0;
+
+                // seconds do not have to exist
+                if (ParseSingleNonNumber(':'))
+                {
+                    seconds = ParseNumber(2);
+                    if (seconds >= 60)
+                        bSuccess = 0;
+                }
+            }
+        }
+
+        if (bSuccess)
+        {
+            LOGGING("time: %lld:%lld:%lld\n", hour, minute, seconds);
+            yearresult += (1000000000LL * ((hour * 3600) + (minute * 60) + seconds));
+        }
+
+        // check for milli/micro/etc seconds
+        if (pStart < pEnd && *pStart == PERIOD)
+        {
+            // skip decimal
+            pStart++;
+            int64_t decimal = ParseDecimal<T>(&pStart, pEnd);
+
+            if (bSuccess)
+                yearresult += decimal;
+        }
+
+        consume_trailing_characters();
+
         pOutNanoTime[i] = yearresult;
     }
+}
+
+template <typename T>
+void parsing_error_to_py_warning(const parsing_error<T> & error);
+
+template <>
+void parsing_error_to_py_warning<char>(const parsing_error<char> & error)
+{
+    std::string datetime(error.start, error.end);
+    PyErr_WarnFormat(PyExc_RuntimeWarning, 1, "%s in \"%s\" at position %lld", error.message, datetime.c_str(), error.position);
+}
+
+template <>
+void parsing_error_to_py_warning<uint32_t>(const parsing_error<uint32_t> & error)
+{
+    PyObject * datetime = PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, error.start, error.end - error.start);
+    PyErr_WarnFormat(PyExc_RuntimeWarning, 1, "%s in \"%U\" at position %lld", error.message, datetime, error.position);
+    Py_XDECREF(datetime);
 }
 
 //--------------------------------------------------------------
@@ -355,11 +511,21 @@ PyObject * TimeStringToNanos(PyObject * self, PyObject * args)
 
         if (dType == NPY_STRING)
         {
-            ParseTimeString<char>(pNanoTime, arrayLength, pString, itemSize);
+            DateTimeParser<char> parser;
+            parser.ParseTimeString(pNanoTime, arrayLength, pString, itemSize);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         else
         {
-            ParseTimeString<uint32_t>(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+            DateTimeParser<uint32_t> parser;
+            parser.ParseTimeString(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         return (PyObject *)outArray;
     }
@@ -408,11 +574,21 @@ PyObject * DateStringToNanos(PyObject * self, PyObject * args)
 
         if (dType == NPY_STRING)
         {
-            ParseDateString<char>(pNanoTime, arrayLength, pString, itemSize);
+            DateTimeParser<char> parser;
+            parser.ParseDateString(pNanoTime, arrayLength, pString, itemSize);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         else
         {
-            ParseDateString<uint32_t>(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+            DateTimeParser<uint32_t> parser;
+            parser.ParseDateString(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         return (PyObject *)outArray;
     }
@@ -461,11 +637,21 @@ PyObject * DateTimeStringToNanos(PyObject * self, PyObject * args)
 
         if (dType == NPY_STRING)
         {
-            ParseDateTimeString<char>(pNanoTime, arrayLength, pString, itemSize);
+            DateTimeParser<char> parser;
+            parser.ParseDateTimeString(pNanoTime, arrayLength, pString, itemSize);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         else
         {
-            ParseDateTimeString<uint32_t>(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+            DateTimeParser<uint32_t> parser;
+            parser.ParseDateTimeString(pNanoTime, arrayLength, (uint32_t *)pString, itemSize / 4);
+
+            const auto & maybe_error = parser.get_error();
+            if (maybe_error)
+                parsing_error_to_py_warning(*maybe_error);
         }
         return (PyObject *)outArray;
     }

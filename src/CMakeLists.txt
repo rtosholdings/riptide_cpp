@@ -18,6 +18,7 @@ set(HEADERS
     Hook.h
     is_member_tg.h
     Logger.h
+    logging/logging.h
     MathThreads.h
     MathWorker.h
     Merge.h
@@ -54,6 +55,7 @@ set(SOURCES
     Hook.cpp
     is_member_tg.cpp
     Logger.cpp
+    logging/logging.cpp
     MathThreads.cpp
     MathWorker.cpp
     Merge.cpp

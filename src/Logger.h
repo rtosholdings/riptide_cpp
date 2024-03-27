@@ -2,7 +2,8 @@
 
 #include <Python.h>
 
-void SetupLogging();
+RT_DLLEXPORT void SetupLogging();
 void CleanupLogging();
 PyObject * EnableLogging(PyObject * self, PyObject * args);
 PyObject * DisableLogging(PyObject * self, PyObject * args);
+PyObject * GetRiptideLoggers(PyObject * self, PyObject * args);
