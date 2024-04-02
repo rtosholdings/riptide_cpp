@@ -106,3 +106,28 @@ struct stGroupBy32
 
     stGroupByReturn returnObjects[1];
 };
+
+namespace riptide::benchmark
+{
+    using CountType = int32_t;
+    using IndexType = int32_t;
+
+    struct GroupByTwoFunction
+    {
+        GROUPBY_TWO_FUNC function;
+        int input_type;
+        size_t output_type_size;
+        size_t temp_type_size;
+    };
+
+    RT_DLLEXPORT GroupByTwoFunction get_groupby_two_function(GB_FUNCTIONS function, int input_type);
+
+    struct GroupByXFunction
+    {
+        GROUPBY_X_FUNC function;
+        int input_type;
+        size_t output_type_size;
+    };
+
+    RT_DLLEXPORT GroupByXFunction get_groupby_x_function(GB_FUNCTIONS function, int input_type);
+}
