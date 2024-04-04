@@ -3318,3 +3318,22 @@ PyObject * Reduce(PyObject * self, PyObject * args)
     // punt to numpy
     Py_RETURN_NONE;
 }
+
+namespace riptide::benchmark
+{
+    void call_reduce_function(REDUCE_FUNCTIONS function, NPY_TYPES input_type, void * data, int64_t length)
+    {
+        if (function >= REDUCE_ARGMIN && function <= REDUCE_NANARGMAX)
+        {
+            auto reduce = GetArgReduceFuncPtr(input_type, function);
+            stArgScatterGatherFunc sg_func = { input_type, 0, 0, 0, -1 };
+            reduce(data, length, 0, &sg_func);
+        }
+        else
+        {
+            auto reduce = GetReduceFuncPtr(input_type, function);
+            stScatterGatherFunc sg_func = { (int32_t)input_type, 0, 0, 0, 0, 0 };
+            reduce(data, length, &sg_func);
+        }
+    }
+}

@@ -3675,18 +3675,21 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 //}
 
 template <typename V>
-static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNCTIONS func)
+static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int * outputType, GB_FUNCTIONS func)
 {
-    logger->debug("GBX Func is {}  inputtype: {}  outputtype: {}", static_cast<int32_t>(func), inputType, outputType);
+    logger->debug("GBX Func is {}  inputtype: {}", static_cast<int32_t>(func), inputType);
     static_assert(std::is_signed<V>::value, "Array types must be signed");
 
     if (func == GB_TRIMBR)
     {
+        *outputType = NPY_DOUBLE;
         switch (inputType)
         {
         case NPY_BOOL:
+            *outputType = NPY_FLOAT;
             return GroupByBase<bool, float, V>::AccumTrimMeanBR;
         case NPY_FLOAT:
+            *outputType = NPY_FLOAT;
             return GroupByBase<float, float, V>::AccumTrimMeanBR;
         case NPY_DOUBLE:
             return GroupByBase<double, double, V>::AccumTrimMeanBR;
@@ -3713,15 +3716,19 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_QUANTILE_MULT)
     {
+        *outputType = NPY_DOUBLE;
         switch (inputType)
         {
         case NPY_BOOL:
+            *outputType = NPY_BOOL;
             return GroupByBase<bool, bool, V>::GetXFunc(func);
         case NPY_FLOAT:
+            *outputType = NPY_FLOAT;
             return GroupByBase<float, float, V>::GetXFunc(func);
         case NPY_DOUBLE:
             return GroupByBase<double, double, V>::GetXFunc(func);
         case NPY_LONGDOUBLE:
+            *outputType = NPY_LONGDOUBLE;
             return GroupByBase<long double, long double, V>::GetXFunc(func);
         case NPY_INT8:
             return GroupByBase<int8_t, double, V>::GetXFunc(func);
@@ -3744,6 +3751,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_ROLLING_COUNT)
     {
+        *outputType = NPY_INT32;
         switch (inputType)
         {
         case NPY_INT8:
@@ -3760,6 +3768,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     else if (func == GB_ROLLING_DIFF)
     {
         logger->debug("Rolling+diff called with type {}", inputType);
+        *outputType = inputType;
         switch (inputType)
         {
         // case NPY_BOOL:
@@ -3792,6 +3801,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     else if (func == GB_ROLLING_SHIFT)
     {
         logger->debug("Rolling shift called with type {}", inputType);
+        *outputType = inputType;
         switch (inputType)
         {
         case NPY_BOOL:
@@ -3831,6 +3841,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         {
             logger->debug("Rolling+mean called with type {}", inputType);
             // default to a double for output
+            *outputType = NPY_DOUBLE;
             switch (inputType)
             {
             case NPY_FLOAT:
@@ -3862,16 +3873,20 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         {
             // due to overflow, all ints become int64_t
             logger->debug("Rolling+sum called with type {}", inputType);
+            *outputType = NPY_INT64;
             switch (inputType)
             {
                 // really need to change output type for accumsum/rolling
             case NPY_BOOL:
                 return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
             case NPY_FLOAT:
+                *outputType = NPY_FLOAT;
                 return GroupByBase<float, float, V>::GetXFunc2(func);
             case NPY_DOUBLE:
+                *outputType = NPY_DOUBLE;
                 return GroupByBase<double, double, V>::GetXFunc2(func);
             case NPY_LONGDOUBLE:
+                *outputType = NPY_LONGDOUBLE;
                 return GroupByBase<long double, long double, V>::GetXFunc2(func);
             case NPY_INT8:
                 return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
@@ -3894,6 +3909,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else
     {
+        *outputType = inputType;
         switch (inputType)
         {
         // first,last,median,nth
@@ -4196,24 +4212,11 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
     switch (iGroupType)
     {
     CASE_NPY_INT32:
-        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, firstFuncNum);
+        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, &numpyOutType, firstFuncNum);
         break;
     CASE_NPY_INT64:
-        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, firstFuncNum);
+        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, &numpyOutType, firstFuncNum);
         break;
-    }
-
-    if ((firstFuncNum == GB_TRIMBR) || (firstFuncNum == GB_QUANTILE_MULT))
-    {
-        numpyOutType = NPY_FLOAT64;
-        if (aInfo[0].NumpyDType == NPY_FLOAT32)
-        {
-            numpyOutType = NPY_FLOAT32;
-        }
-        else if (aInfo[0].NumpyDType == NPY_BOOL && firstFuncNum != GB_TRIMBR)
-        {
-            numpyOutType = NPY_BOOL;
-        }
     }
 
     if (pFunction)
@@ -4984,11 +4987,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             switch (iGroupType)
             {
             CASE_NPY_INT32:
-                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, funcNum);
+                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, &numpyOutType, funcNum);
                 break;
 
             CASE_NPY_INT64:
-                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, funcNum);
+                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, &numpyOutType, funcNum);
                 break;
             }
 
@@ -5000,20 +5003,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 // pull in strings also
                 if (funcNum == GB_TRIMBR)
                 {
-                    // Variance must be in float form
-                    // Everything is a float64 unless it is already a float32 or bool, then we
-                    // keep it as float32
-                    switch (aInfo[i].NumpyDType)
-                    {
-                    case NPY_BOOL:
-                    case NPY_FLOAT32:
-                        numpyOutType = NPY_FLOAT32;
-                        break;
-
-                    default:
-                        numpyOutType = NPY_FLOAT64;
-                        break;
-                    }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);
                 }
@@ -5021,23 +5010,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 // string will need to be different when they are supported
                 else if (funcNum == GB_QUANTILE_MULT)
                 {
-                    // Variance must be in float form
-                    numpyOutType = NPY_FLOAT64;
-
-                    // Everything is a float64 unless it is already a float32, then we
-                    // keep it as float32
-                    if (aInfo[i].NumpyDType == NPY_FLOAT32)
-                    {
-                        numpyOutType = NPY_FLOAT32;
-                    }
-                    else if (aInfo[i].NumpyDType == NPY_BOOL)
-                    {
-                        numpyOutType = NPY_BOOL;
-                    }
-                    else if (aInfo[i].NumpyDType == NPY_LONGDOUBLE)
-                    {
-                        numpyOutType = NPY_LONGDOUBLE;
-                    }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);
                 }
@@ -5046,38 +5018,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                     // For functions in the 200+ range like rolling we use all the items
                     if (funcNum >= GB_ROLLING_SUM)
                     {
-                        // shift and diff keep the same dtype
-                        if (funcNum == GB_ROLLING_SUM || funcNum == GB_ROLLING_NANSUM || funcNum == GB_ROLLING_COUNT)
-                        {
-                            numpyOutType = NPY_INT64;
-
-                            if (funcNum == GB_ROLLING_COUNT)
-                            {
-                                numpyOutType = NPY_INT32;
-                            }
-                            else
-                            {
-                                switch (aInfo[i].NumpyDType)
-                                {
-                                case NPY_FLOAT32:
-                                    numpyOutType = NPY_FLOAT32;
-                                    break;
-                                case NPY_DOUBLE:
-                                case NPY_LONGDOUBLE:
-                                    numpyOutType = NPY_FLOAT64;
-                                    break;
-                                CASE_NPY_UINT64:
-
-                                    numpyOutType = NPY_UINT64;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN || funcNum == GB_ROLLING_QUANTILE)
-                        {
-                            numpyOutType = NPY_FLOAT64;
-                        }
-
                         if (aInfo[i].ArrayLength != pstGroupBy32->totalInputRows)
                         {
                             PyErr_Format(PyExc_ValueError,
@@ -5171,4 +5111,30 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
     }
 
     return returnTuple;
+}
+
+namespace riptide::benchmark
+{
+    GroupByTwoFunction get_groupby_two_function(GB_FUNCTIONS function, int input_type)
+    {
+        GroupByTwoFunction groupby;
+        bool has_counts; // Not used
+        int32_t output_type;
+        int32_t temp_type;
+        groupby.function = GetGroupByFunction<IndexType, CountType>(&has_counts, &output_type, &temp_type, input_type, function);
+        groupby.input_type = input_type;
+        groupby.output_type_size = NpyToSize(output_type);
+        groupby.temp_type_size = NpyToSize(temp_type);
+        return groupby;
+    }
+
+    GroupByXFunction get_groupby_x_function(GB_FUNCTIONS function, int input_type)
+    {
+        GroupByXFunction groupby;
+        int32_t output_type;
+        groupby.function = GetGroupByXFunction<IndexType>(input_type, &output_type, function);
+        groupby.input_type = input_type;
+        groupby.output_type_size = NpyToSize(output_type);
+        return groupby;
+    }
 }

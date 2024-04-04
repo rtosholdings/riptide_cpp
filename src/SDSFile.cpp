@@ -6280,6 +6280,7 @@ public:
             if (! compat.IsCompatible)
             {
                 logger->warn("Warning: Column '{}' has both string and unicode. Support for this is experimental", columnName);
+                TotalDimensionProblems++;
             }
             if (compat.NeedsStringFixup)
             {

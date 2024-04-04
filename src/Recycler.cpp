@@ -526,9 +526,6 @@ PyObject * RecycleDump(PyObject * self, PyObject * args)
     return PyLong_FromLongLong(totalSize);
 }
 
-// cache the name
-static PyObject * g_namestring = PyUnicode_FromString("_name");
-
 //-----------------------------------
 // Called when we look for recycled array
 // Scans the tables to see if a recycled array is available
@@ -536,6 +533,9 @@ PyArrayObject * RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize)
 {
     if (totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE && ndim == 1)
     {
+        // cache the name
+        static PyObject * g_namestring = PyUnicode_FromString("_name");
+
         // Based on size and type, lookup
         int64_t log2 = lzcnt_64(totalSize);
 

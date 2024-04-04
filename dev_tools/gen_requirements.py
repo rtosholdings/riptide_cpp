@@ -20,7 +20,7 @@ def is_python(major: int, minor: int) -> bool:
 
 _BENCHMARK_REQ = "benchmark>=1.7,<1.8"
 _CMAKE_REQ = "cmake>=3.26.1"
-_NUMPY_REQ = "numpy>=1.23,<1.25"
+_NUMPY_REQ = "numpy>=1.23,<1.27"
 _NUMPY_MIN_REQ = "numpy>=1.23"
 _TBB_VER = "==2021.6.*"
 _TBB_REQ = "tbb" + _TBB_VER
