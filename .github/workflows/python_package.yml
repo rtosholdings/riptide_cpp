@@ -85,13 +85,14 @@ jobs:
         shell: bash -l {0}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2022]
+        os: [windows-2022]
         python-version: ["3.10", "3.11", "3.12"]
         numpy-version: [1.26]
-        exclude:
-          # only latest needed for sdist, so exlude all others
-          - os: ubuntu-latest
-            python-version: "3.10"
+        include:
+          # only latest needed for sdist
+          - os: [ubuntu-latest]
+            python-version: ["3.12"]
+            numpy-version: [1.26]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -152,8 +153,9 @@ jobs:
         python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24, 1.25, 1.26]
         include:
-          - python-version: "3.12"
-            numpy-version: "1.26"
+          - os: ["ubuntu-latest", "windows-2022"]
+            python-version: ["3.12"]
+            numpy-version: ["1.26"]
     env:
       ANACONDA_USER: rtosholdings
       BUILD_VERSION: ${{needs.conda_build.outputs.build_version}}
@@ -220,8 +222,9 @@ jobs:
         python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24, 1.25, 1.26]
         include:
-          - python-version: "3.12"
-            numpy-version: "1.26"
+          - os: [ubuntu-latest, windows-2022]
+            python-version: ["3.12"]
+            numpy-version: ["1.26"]
     steps:
       - name: Checkout repo (sparse)
         uses: actions/checkout@v4
