@@ -205,8 +205,7 @@ jobs:
       - name: Test riptable
         run: |
           set -ex
-          #NOPE#
-          python -m pytest -W ignore::DeprecationWarning --pyargs riptable.tests
+          python -m pytest --pyargs riptable.tests
           # disable tooling integration tests until they work
           # ipython -m pytest riptable/test_tooling_integration
           # disable hypothesis tests until they run faster, are more consistent, and are easier to investigate
