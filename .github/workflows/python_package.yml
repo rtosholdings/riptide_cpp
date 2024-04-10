@@ -89,10 +89,10 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
         numpy-version: [1.26]
         include:
-          # only latest needed for sdist
-          - os: [ubuntu-latest]
-            python-version: ["3.12"]
-            numpy-version: [1.26]
+          # only one python/numpy combo needed for sdist
+          - os: ubuntu-latest
+            python-version: "3.12"
+            numpy-version: 1.26
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -153,8 +153,7 @@ jobs:
         python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24, 1.25, 1.26]
         include:
-          - os: ["ubuntu-latest", "windows-2022"]
-            python-version: ["3.12"]
+          - python-version: ["3.12"]
             numpy-version: ["1.26"]
     env:
       ANACONDA_USER: rtosholdings
@@ -222,9 +221,8 @@ jobs:
         python-version: ["3.10", "3.11"]
         numpy-version: [1.23, 1.24, 1.25, 1.26]
         include:
-          - os: [ubuntu-latest, windows-2022]
-            python-version: ["3.12"]
-            numpy-version: ["1.26"]
+          - python-version: "3.12"
+            numpy-version: "1.26"
     steps:
       - name: Checkout repo (sparse)
         uses: actions/checkout@v4
