@@ -27,6 +27,7 @@
 #include "Array.h"
 #include "is_member_tg.h"
 #include "Logger.h"
+#include "interrupt.h"
 
 namespace
 {

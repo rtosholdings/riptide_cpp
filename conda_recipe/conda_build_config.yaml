@@ -4,7 +4,7 @@ python:
   - 3.11
 
 numpy:
-  - 1.24
+  - 1.26
 
 c_compiler:
   - vs2022 # [win]

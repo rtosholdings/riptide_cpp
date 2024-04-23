@@ -16,6 +16,7 @@ set(HEADERS
     HashFunctions.h
     HashLinear.h
     Hook.h
+    interrupt.h
     is_member_tg.h
     Logger.h
     logging/logging.h
@@ -25,11 +26,13 @@ set(HEADERS
     missing_values.h
     MultiKey.h
     one_input.h
+    operations.h
     Recycler.h
     Reduce.h
     RipTide.h
     SDSFile.h
     SDSFilePython.h
+    simd.h
     SharedMemory.h
     Sort.h
     TileRepeat.h
@@ -53,6 +56,7 @@ set(SOURCES
     HashFunctions.cpp
     HashLinear.cpp
     Hook.cpp
+    interrupt.cpp
     is_member_tg.cpp
     Logger.cpp
     logging/logging.cpp

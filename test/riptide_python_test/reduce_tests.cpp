@@ -49,25 +49,7 @@ namespace
     template <NPY_TYPES TypeCode>
     auto get_prim_value(PyObject * const obj)
     {
-        if constexpr (TypeCode == NPY_UINT64)
-        {
-            uint64_t result{};
-            if (PyLong_Check(obj))
-            {
-                result = PyLong_AsUnsignedLongLong(obj);
-            }
-            return result;
-        }
-        else if constexpr (TypeCode == NPY_INT64)
-        {
-            int64_t result{};
-            if (PyLong_Check(obj))
-            {
-                result = PyLong_AsLongLong(obj);
-            }
-            return result;
-        }
-        else if constexpr (TypeCode == NPY_DOUBLE)
+        if constexpr (TypeCode == NPY_FLOAT || TypeCode == NPY_DOUBLE || TypeCode == NPY_LONGDOUBLE)
         {
             double result{};
             if (PyFloat_Check(obj))
@@ -76,9 +58,23 @@ namespace
             }
             return result;
         }
+        else if constexpr (TypeCode == NPY_UINT64)
+        {
+            uint64_t result{};
+            if (PyLong_Check(obj))
+            {
+                result = PyLong_AsUnsignedLongLong(obj);
+            }
+            return result;
+        }
         else
         {
-            static_assert(std::is_void_v<TypeCode>, "Unexpected typecode");
+            riptide::numpy_cpp_type_t<TypeCode> result{};
+            if (PyLong_Check(obj))
+            {
+                result = static_cast<decltype(result)>(PyLong_AsLongLong(obj));
+            }
+            return result;
         }
     }
 
@@ -92,6 +88,19 @@ namespace
         if (fn >= 100 && fn < REDUCE_MIN)
         {
             return NPY_DOUBLE;
+        }
+
+        if (fn >= REDUCE_MIN && fn <= REDUCE_NANMAX)
+        {
+            switch (typecode_in)
+            {
+            case NPY_FLOAT:
+            case NPY_DOUBLE:
+            case NPY_LONGDOUBLE:
+                return NPY_DOUBLE;
+            default:
+                return typecode_in;
+            }
         }
 
         switch (typecode_in)
@@ -159,8 +168,8 @@ namespace
                 is_equal = equal_to_nan_aware(actual_value, expected_value);
             }
 
-            typed_expect<desc_type>(is_equal)
-                << "expected : " << to_out(expected_value) << ", actual : " << to_out(actual_value) << caller_loc;
+            typed_expect<desc_type>(is_equal) << "for" << test_values << "expected : " << to_out(expected_value)
+                                              << ", actual : " << to_out(actual_value) << caller_loc;
         }
     };
 
@@ -335,7 +344,7 @@ namespace
                 constexpr auto invalid{ riptide::invalid_for_type<cpp_type_out>::value };
                 return test_case_type{
                     get_invalid_values<cpp_type_in>(3),
-                    invalid,
+                    TypeCode == NPY_BOOL ? false : invalid,
                 };
             }
         }
@@ -414,7 +423,7 @@ namespace
                 constexpr auto invalid{ riptide::invalid_for_type<cpp_type_out>::value };
                 return test_case_type{
                     get_invalid_values<cpp_type_in>(3),
-                    invalid,
+                    TypeCode == NPY_BOOL ? false : invalid,
                     ddof,
                 };
             }
@@ -499,7 +508,7 @@ namespace
                 constexpr auto invalid{ riptide::invalid_for_type<cpp_type_out>::value };
                 return test_case_type{
                     get_invalid_values<cpp_type_in>(3),
-                    invalid,
+                    TypeCode == NPY_BOOL ? false : invalid,
                     ddof,
                 };
             }
@@ -800,7 +809,7 @@ namespace
                 constexpr auto invalid{ riptide::invalid_for_type<cpp_type_out>::value };
                 return test_case_type{
                     get_mixed_values<cpp_type_in>(3),
-                    TypeCode == NPY_BOOL ? 1 : 0,
+                    TypeCode == NPY_BOOL ? 2 : 1,
                 };
             }
 
@@ -881,68 +890,59 @@ namespace
     file_suite reduce_ops = []
     {
         "reduce_sum_valid"_test = reduce_tests<REDUCE_SUM>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_sum_mixed"_test = reduce_tests<REDUCE_SUM>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_sum_invalid"_test =
-        //reduce_tests<REDUCE_SUM>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_sum_mixed"_test = reduce_tests<REDUCE_SUM>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_sum_invalid"_test = reduce_tests<REDUCE_SUM>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nansum_valid"_test = reduce_tests<REDUCE_NANSUM>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nansum_mixed"_test = reduce_tests<REDUCE_NANSUM>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_nansum_invalid"_test = reduce_tests<REDUCE_NANSUM>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_mean_valid"_test = reduce_tests<REDUCE_MEAN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_mean_mixed"_test = reduce_tests<REDUCE_MEAN>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_mean_invalid"_test =
-        //reduce_tests<REDUCE_MEAN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_mean_mixed"_test = reduce_tests<REDUCE_MEAN>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_mean_invalid"_test = reduce_tests<REDUCE_MEAN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nanmean_valid"_test = reduce_tests<REDUCE_NANMEAN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanmean_mixed"_test = reduce_tests<REDUCE_NANMEAN>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_nanmean_invalid"_test = reduce_tests<REDUCE_NANMEAN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_var_valid"_test = reduce_tests<REDUCE_VAR>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_var_mixed"_test = reduce_tests<REDUCE_VAR>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_var_invalid"_test =
-        //reduce_tests<REDUCE_VAR>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_var_mixed"_test = reduce_tests<REDUCE_VAR>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_var_invalid"_test = reduce_tests<REDUCE_VAR>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nanvar_valid"_test = reduce_tests<REDUCE_NANVAR>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanvar_mixed"_test = reduce_tests<REDUCE_NANVAR>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_nanvar_invalid"_test = reduce_tests<REDUCE_NANVAR>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_std_valid"_test = reduce_tests<REDUCE_STD>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_std_mixed"_test = reduce_tests<REDUCE_STD>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_std_invalid"_test =
-        //reduce_tests<REDUCE_STD>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_std_mixed"_test = reduce_tests<REDUCE_STD>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_std_invalid"_test = reduce_tests<REDUCE_STD>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nanstd_valid"_test = reduce_tests<REDUCE_NANSTD>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanstd_mixed"_test = reduce_tests<REDUCE_NANSTD>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_nanstd_invalid"_test = reduce_tests<REDUCE_NANSTD>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_min_valid"_test = reduce_tests<REDUCE_MIN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_min_mixed"_test = reduce_tests<REDUCE_MIN>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_min_invalid"_test =
-        //reduce_tests<REDUCE_MIN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_min_mixed"_test = reduce_tests<REDUCE_MIN>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_min_invalid"_test = reduce_tests<REDUCE_MIN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
         "reduce_min_bignum"_test = reduce_bignum_tests<REDUCE_MIN>{};
 
         "reduce_nanmin_valid"_test = reduce_tests<REDUCE_NANMIN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanmin_mixed"_test = reduce_tests<REDUCE_NANMIN>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_nanmin_invalid"_test = reduce_tests<REDUCE_NANMIN>::test<test_case_id::INVALID>{} |
-        //SupportedTypeCodeTypes{};
+        "reduce_nanmin_invalid"_test = reduce_tests<REDUCE_NANMIN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanmin_bignum"_test = reduce_bignum_tests<REDUCE_NANMIN>{};
 
         "reduce_max_valid"_test = reduce_tests<REDUCE_MAX>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_max_mixed"_test = reduce_tests<REDUCE_MAX>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{}; badimpl//"reduce_max_invalid"_test =
-        //reduce_tests<REDUCE_MAX>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
+        "reduce_max_mixed"_test = reduce_tests<REDUCE_MAX>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
+        "reduce_max_invalid"_test = reduce_tests<REDUCE_MAX>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
         "reduce_max_bignum"_test = reduce_bignum_tests<REDUCE_MAX>{};
 
         "reduce_nanmax_valid"_test = reduce_tests<REDUCE_NANMAX>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanmax_mixed"_test = reduce_tests<REDUCE_NANMAX>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_nanmax_invalid"_test = reduce_tests<REDUCE_NANMAX>::test<test_case_id::INVALID>{} |
-        //SupportedTypeCodeTypes{};
+        "reduce_nanmax_invalid"_test = reduce_tests<REDUCE_NANMAX>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
         "reduce_nanmax_bignum"_test = reduce_bignum_tests<REDUCE_NANMAX>{};
 
         "reduce_argmin_valid"_test = reduce_tests<REDUCE_ARGMIN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_argmin_mixed"_test = reduce_tests<REDUCE_ARGMIN>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{};
+        "reduce_argmin_mixed"_test = reduce_tests<REDUCE_ARGMIN>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_argmin_invalid"_test = reduce_tests<REDUCE_ARGMIN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nanargmin_valid"_test = reduce_tests<REDUCE_NANARGMIN>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
@@ -950,8 +950,7 @@ namespace
         "reduce_nanargmin_invalid"_test = reduce_tests<REDUCE_NANARGMIN>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_argmax_valid"_test = reduce_tests<REDUCE_ARGMAX>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
-        //badimpl//"reduce_argmax_mixed"_test = reduce_tests<REDUCE_ARGMAX>::test<test_case_id::MIXED>{} |
-        //SupportedTypeCodeTypes{};
+        "reduce_argmax_mixed"_test = reduce_tests<REDUCE_ARGMAX>::test<test_case_id::MIXED>{} | SupportedTypeCodeTypes{};
         "reduce_argmax_invalid"_test = reduce_tests<REDUCE_ARGMAX>::test<test_case_id::INVALID>{} | SupportedTypeCodeTypes{};
 
         "reduce_nanargmax_valid"_test = reduce_tests<REDUCE_NANARGMAX>::test<test_case_id::VALID>{} | SupportedTypeCodeTypes{};
@@ -1229,5 +1228,103 @@ namespace
             expect(ret_val == expected) << "expected=" << expected << "actual=" << ret_val;
             expect(is_float_type == 0_i);
         };
+
+        "reduce_invalid_propagation"_test = [&]<typename TypeCode, NPY_TYPES typecode = TypeCode::value,
+                                                typename T = riptide::numpy_cpp_type<typecode>::type>
+        {
+            std::vector<T> input(100000, 0);
+            std::fill(input.begin(), input.begin() + 13, riptide::invalid_for_type<T>::value);
+            std::shuffle(input.begin(), input.end(), std::mt19937{ dev() });
+
+            auto reduce = [&](REDUCE_FUNCTIONS function)
+            {
+                auto dims = static_cast<npy_intp>(input.size());
+                PyObject * array{ PyArray_SimpleNewFromData(1, &dims, typecode, input.data()) };
+                PyObject * function_object = get_named_function(riptide_module_p, "Reduce");
+                PyObject * reduce_fn_num{ Py_BuildValue("i", function) };
+                return PyObject_CallFunctionObjArgs(function_object, array, reduce_fn_num, NULL);
+            };
+
+            auto check =
+                [&](REDUCE_FUNCTIONS function, const reflection::source_location & sl = reflection::source_location::current())
+            {
+                auto pyobject = reduce(function);
+                bool is_result_valid;
+
+                if (function >= REDUCE_ARGMIN && function <= REDUCE_NANARGMAX)
+                {
+                    uint64_t index = PyLong_AsUnsignedLongLong(pyobject);
+                    is_result_valid = riptide::invalid_for_type<T>::is_valid(input[index]);
+                }
+                else if (function >= REDUCE_MEAN && function <= REDUCE_NANSTD)
+                {
+                    double result = PyFloat_AsDouble(pyobject);
+                    is_result_valid = riptide::invalid_for_type<double>::is_valid(result);
+                }
+                else if (function >= REDUCE_MIN && function <= REDUCE_NANMAX)
+                {
+                    if (typecode == NPY_FLOAT || typecode == NPY_DOUBLE || typecode == NPY_LONGDOUBLE)
+                    {
+                        double result = PyFloat_AsDouble(pyobject);
+                        is_result_valid = riptide::invalid_for_type<double>::is_valid(result);
+                    }
+                    else if (typecode == NPY_UINT64)
+                    {
+                        uint64_t result = PyLong_AsUnsignedLongLong(pyobject);
+                        is_result_valid = riptide::invalid_for_type<uint64_t>::is_valid(result);
+                    }
+                    else
+                    {
+                        T result = static_cast<T>(PyLong_AsLongLong(pyobject));
+                        is_result_valid = riptide::invalid_for_type<T>::is_valid(result);
+                    }
+                }
+                else // SUM, NANSUM
+                {
+                    if (typecode == NPY_FLOAT || typecode == NPY_DOUBLE || typecode == NPY_LONGDOUBLE)
+                    {
+                        double result = PyFloat_AsDouble(pyobject);
+                        is_result_valid = riptide::invalid_for_type<double>::is_valid(result);
+                    }
+                    else if (typecode == NPY_UINT64)
+                    {
+                        uint64_t result = PyLong_AsUnsignedLongLong(pyobject);
+                        is_result_valid = riptide::invalid_for_type<uint64_t>::is_valid(result);
+                    }
+                    else
+                    {
+                        int64_t result = PyLong_AsLongLong(pyobject);
+                        is_result_valid = riptide::invalid_for_type<int64_t>::is_valid(result);
+                    }
+                }
+
+                bool is_nan_function = (function & 1) == 1;
+                return expect(is_result_valid == is_nan_function, sl);
+            };
+
+            check(REDUCE_SUM) << "REDUCE_SUM" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_MEAN) << "REDUCE_MEAN" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_VAR) << "REDUCE_VAR" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_STD) << "REDUCE_STD" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_MIN) << "REDUCE_MIN" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_MAX) << "REDUCE_MAX" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_ARGMIN) << "REDUCE_ARGMIN" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_ARGMAX) << "REDUCE_ARGMAX" << reflection::type_name<T>() << "expected invalid result";
+            check(REDUCE_NANSUM) << "REDUCE_NANSUM" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANMEAN) << "REDUCE_NANMEAN" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANVAR) << "REDUCE_NANVAR" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANSTD) << "REDUCE_NANSTD" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANMIN) << "REDUCE_NANMIN" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANMAX) << "REDUCE_NANMAX" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANARGMIN) << "REDUCE_NANARGMIN" << reflection::type_name<T>() << "expected valid result";
+            check(REDUCE_NANARGMAX) << "REDUCE_NANARGMAX" << reflection::type_name<T>() << "expected valid result";
+        }
+        // bools aren't tested because they have no invalid handling
+        | std::tuple<typecode_to_type<NPY_TYPES::NPY_INT8>, typecode_to_type<NPY_TYPES::NPY_INT16>,
+                     typecode_to_type<NPY_TYPES::NPY_INT32>, typecode_to_type<NPY_TYPES::NPY_INT64>,
+                     typecode_to_type<NPY_TYPES::NPY_UINT8>, typecode_to_type<NPY_TYPES::NPY_UINT16>,
+                     typecode_to_type<NPY_TYPES::NPY_UINT32>, typecode_to_type<NPY_TYPES::NPY_UINT64>,
+                     typecode_to_type<NPY_TYPES::NPY_FLOAT>, typecode_to_type<NPY_TYPES::NPY_DOUBLE>,
+                     typecode_to_type<NPY_TYPES::NPY_LONGDOUBLE>>{};
     };
 }

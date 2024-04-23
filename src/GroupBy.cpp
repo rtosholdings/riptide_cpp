@@ -8,6 +8,8 @@
 #include "missing_values.h"
 #include "numpy_traits.h"
 #include "logging/logging.h"
+#include "interrupt.h"
+
 #include <algorithm>
 #include <cmath>
 #include <span>
@@ -194,6 +196,10 @@ static size_t strip_nans(T * x, size_t n)
 // multi-threading.
 #define ACCUM_INNER_LOOP(_index, _binLow, _binHigh) if (_index >= _binLow && _index < _binHigh)
 
+using riptide::is_interrupted;
+using riptide::interruptible_for;
+using riptide::interruptible_section;
+
 //-------------------------------------------------------------------
 // T = data type as input
 // U = data type as output
@@ -229,7 +235,7 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -253,7 +259,8 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     // This routine is only for float32.  It will upcast to float64, add up all
@@ -277,7 +284,7 @@ public:
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -299,14 +306,15 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         // Copy intermediate values to output.
         // If the number of bins is less than len, its more efficient to copy by iterating over
         // all bins. Otherwise, its more efficient to copy by iterating over all indexes
         if (binHigh - binLow < len)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] >= 0)
                 {
@@ -316,12 +324,14 @@ public:
                 {
                     pOut[i] = invalid_float;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
         else
         {
-            for (V const index : std::span(pIndex, pIndex + len))
+            auto loop_body = [=](auto i)
             {
+                V const index{ pIndex[i] };
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     if (pCountOut[index] >= 0)
@@ -333,7 +343,8 @@ public:
                         pOut[index] = invalid_float;
                     }
                 }
-            }
+            };
+            interruptible_for(0, len, 1, std::move(loop_body));
         }
     }
 
@@ -351,7 +362,7 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -364,7 +375,8 @@ public:
                     pOut[index] += (U)temp;
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     // This is for float only
@@ -387,7 +399,7 @@ public:
             memset(pOutAccum, 0, sizeof(double) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -400,27 +412,31 @@ public:
                     pOutAccum[index - binLow] += (double)temp;
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         // Copy intermediate values to output
         // If the number of bins is less than len, its more efficient to copy by iterating over
         // all bins. Otherwise, its more efficient to copy by iterating over all indexes
         if (binHigh - binLow < len)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOut[i] = static_cast<float>(pOutAccum[i - binLow]);
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
         else
         {
-            for (V const index : std::span(pIndex, pIndex + len))
+            auto loop_body = [=](auto i)
             {
+                V const index{ pIndex[i] };
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     pOut[index] = static_cast<float>(pOutAccum[index - binLow]);
                 }
-            }
+            };
+            interruptible_for(0, len, 1, std::move(loop_body));
         }
     }
 
@@ -438,13 +454,14 @@ public:
 
         if (pass <= 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOut[i] = invalid;
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -479,7 +496,8 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -495,13 +513,14 @@ public:
         if (pass <= 0)
         {
             logger->debug("NanMin clearing at pOut: {} low: {} high: {}", (void *)pOut, binLow, binHigh);
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOut[i] = invalid;
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -510,17 +529,17 @@ public:
             {
                 T const temp{ pIn[i] };
                 // if temp is invalid, just ignore and continue
-                if (not riptide::invalid_for_type<T>::is_valid(temp))
+                if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    continue;
-                }
-                // if the current answer is invalid (first valid data), or otherwise if comparison holds
-                else if ((not riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] > temp))
-                {
-                    pOut[index] = temp;
+                    // if the current answer is invalid (first valid data), or otherwise if comparison holds
+                    if ((! riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] > temp))
+                    {
+                        pOut[index] = temp;
+                    }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -536,13 +555,14 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOut[i] = invalid;
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -577,7 +597,8 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -592,13 +613,14 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
         if (pass <= 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOut[i] = invalid;
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -607,17 +629,17 @@ public:
             {
                 T const temp{ pIn[i] };
                 // if temp is invalid, just ignore and continue
-                if (not riptide::invalid_for_type<T>::is_valid(temp))
+                if (riptide::invalid_for_type<T>::is_valid(temp))
                 {
-                    continue;
-                }
-                // if the current answer is invalid (first valid data), or otherwise if comparison holds
-                else if ((not riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] < temp))
-                {
-                    pOut[index] = temp;
+                    // if the current answer is invalid (first valid data), or otherwise if comparison holds
+                    if ((! riptide::invalid_for_type<T>::is_valid(pOut[index])) || (pOut[index] < temp))
+                    {
+                        pOut[index] = temp;
+                    }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -637,7 +659,7 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -662,11 +684,12 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         if (pass < 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] > 0)
                 {
@@ -676,7 +699,8 @@ public:
                 {
                     pOut[i] = invalid;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
     }
 
@@ -703,7 +727,7 @@ public:
             memset(pOut, 0, sizeof(double) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -728,14 +752,15 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         // Copy intermediate values to output
         // If the number of bins is less than len, its more efficient to copy by iterating over
         // all bins. Otherwise, its more efficient to copy by iterating over all indexes
         if (binHigh - binLow < len)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] >= 0)
                 {
@@ -745,12 +770,14 @@ public:
                 {
                     pOriginalOut[i] = invalid;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
         else
         {
-            for (V const index : std::span(pIndex, pIndex + len))
+            auto loop_body = [=](auto i)
             {
+                V const index{ pIndex[i] };
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     if (pCountOut[index] >= 0)
@@ -762,13 +789,14 @@ public:
                         pOriginalOut[index] = invalid;
                     }
                 }
-            }
+            };
+            interruptible_for(0, len, 1, std::move(loop_body));
         }
 
         // Gather function won't be called, so compute the mean here
         if (pass < 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] > 0)
                 {
@@ -778,7 +806,8 @@ public:
                 {
                     pOriginalOut[i] = invalid;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
     }
 
@@ -799,7 +828,7 @@ public:
             memset(pOut + binLow, 0, sizeof(U) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -813,11 +842,12 @@ public:
                     pCountOut[index]++;
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         if (pass < 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] > 0)
                 {
@@ -827,7 +857,8 @@ public:
                 {
                     pOut[i] = invalid;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
     }
 
@@ -853,7 +884,7 @@ public:
             memset(pOut, 0, sizeof(double) * (binHigh - binLow));
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -867,33 +898,37 @@ public:
                     pCountOut[index]++;
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body));
 
         // Copy intermediate values to output
         // If the number of bins is less than len, its more efficient to copy by iterating over
         // all bins. Otherwise, its more efficient to copy by iterating over all indexes
         if (binHigh - binLow < len)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 pOriginalOut[i] = static_cast<U>(pOut[i - binLow]);
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
         else
         {
-            for (V const index : std::span(pIndex, pIndex + len))
+            auto loop_body = [=](auto i)
             {
+                V const index{ pIndex[i] };
                 ACCUM_INNER_LOOP(index, binLow, binHigh)
                 {
                     pOriginalOut[index] = static_cast<U>(pOut[index - binLow]);
                 }
-            }
+            };
+            interruptible_for(0, len, 1, std::move(loop_body));
         }
 
         // Gather function won't be called, so compute the mean here
         if (pass < 0)
         {
-            for (int64_t i = binLow; i < binHigh; i++)
+            auto loop_body = [=](auto i)
             {
                 if (pCountOut[i] > 0)
                 {
@@ -903,7 +938,8 @@ public:
                 {
                     pOriginalOut[i] = invalid;
                 }
-            }
+            };
+            interruptible_for(binLow, binHigh, 1, std::move(loop_body));
         }
     }
 
@@ -943,7 +979,7 @@ public:
             mean = pOut + binLow;
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body1 = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -967,21 +1003,23 @@ public:
                     }
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body1));
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body2 = [=](auto i)
         {
             if (pCountOut[i] >= 0)
             {
                 mean[i - binLow] /= (TempType)(pCountOut[i]);
             }
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body2));
 
         workspace_mem_ptr sumsquares_owner{ WORKSPACE_ALLOC(sizeof(TempType) * binHigh) };
         TempType * const sumsquares{ reinterpret_cast<TempType *>(sumsquares_owner.get()) };
         memset(sumsquares, 0, sizeof(TempType) * binHigh);
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body3 = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -996,9 +1034,10 @@ public:
                     sumsquares[index] += (diff * diff);
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body3));
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body4 = [=](auto i)
         {
             if (pCountOut[i] > 1)
             {
@@ -1008,7 +1047,8 @@ public:
             {
                 pOut[i] = invalid;
             }
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body4));
     }
 
     //-------------------------------------------------------------------------------
@@ -1046,7 +1086,7 @@ public:
             mean = pOut + binLow;
         }
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body1 = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -1060,18 +1100,20 @@ public:
                     pCountOut[index]++;
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body1));
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body2 = [=](auto i)
         {
             mean[i - binLow] /= (TempType)(pCountOut[i]);
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body2));
 
         workspace_mem_ptr sumsquares_owner{ WORKSPACE_ALLOC(sizeof(TempType) * binHigh) };
         TempType * const sumsquares{ reinterpret_cast<TempType *>(sumsquares_owner.get()) };
         memset(sumsquares, 0, sizeof(TempType) * binHigh);
 
-        for (int64_t i = 0; i < len; i++)
+        auto loop_body3 = [=](auto i)
         {
             V const index{ pIndex[i] };
 
@@ -1085,9 +1127,10 @@ public:
                     sumsquares[index] += (diff * diff);
                 }
             }
-        }
+        };
+        interruptible_for(0, len, 1, std::move(loop_body3));
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body4 = [=](auto i)
         {
             if (pCountOut[i] > 1)
             {
@@ -1097,7 +1140,8 @@ public:
             {
                 pOut[i] = invalid;
             }
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body4));
     }
 
     //-------------------------------------------------------------------------------
@@ -1107,10 +1151,11 @@ public:
         U * pOut = (U *)pDataOut;
 
         AccumVar(pDataIn, pIndexT, pCountOutT, pDataOut, len, binLow, binHigh, pass, pDataTmp);
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body = [=](auto i)
         {
             pOut[i] = sqrt(pOut[i]);
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -1120,10 +1165,11 @@ public:
         U * pOut = (U *)pDataOut;
 
         AccumNanVar(pDataIn, pIndexT, pCountOutT, pDataOut, len, binLow, binHigh, pass, pDataTmp);
-        for (int64_t i = binLow; i < binHigh; i++)
+        auto loop_body = [=](auto i)
         {
             pOut[i] = sqrt(pOut[i]);
-        }
+        };
+        interruptible_for(binLow, binHigh, 1, std::move(loop_body));
     }
 
     //-------------------------------------------------------------------------------
@@ -1143,7 +1189,7 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             auto const nthIndex{ nth >= 0 ? nth : pCount[i] + nth }; // handle wraparound
             if (pCount[i] > 0 && nthIndex >= 0 && nthIndex < pCount[i])
@@ -1174,7 +1220,7 @@ public:
         int64_t nth = funcParam;
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             auto const nthIndex{ nth >= 0 ? nth : pCount[i] + nth }; // handle wraparound
             if (pCount[i] > 0 && nthIndex >= 0 && nthIndex < pCount[i])
@@ -1209,7 +1255,7 @@ public:
         U const invalid{ riptide::invalid_for_type<U>::value };
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             if (pCount[i] > 0)
             {
@@ -1237,7 +1283,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             if (pCount[i] > 0)
             {
@@ -1267,7 +1313,7 @@ public:
         logger->debug("AccumLast: T: {} U: {} V: {}", sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             if (pCount[i] > 0)
             {
@@ -1295,7 +1341,7 @@ public:
         V const * const pCount = (V *)pCountT;
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             if (pCount[i] > 0)
             {
@@ -1344,7 +1390,7 @@ public:
             return;
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1407,7 +1453,7 @@ public:
         if (windowSize < 0)
             return;
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1482,7 +1528,7 @@ public:
             return;
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1545,7 +1591,7 @@ public:
         if (windowSize < 0)
             return;
 
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1636,7 +1682,7 @@ public:
         {
             // return data itself (probably can do better than copying everything, but no one should call this with window=1
             // anyway) (things in RollingQuantile:: will break (for now) with windowSize = 1)
-            for (int64_t i = binLow; i < binHigh; i++)
+            for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
             {
                 V start{ pFirst[i] };
                 V last{ start + pCount[i] };
@@ -1660,8 +1706,11 @@ public:
             using QElement = RollingQuantile::StructureElement<T>;
 
             // Space will be reused for each bin. Only need O(window) extra space
-            QElement * all_elements = (QElement *)WORKSPACE_ALLOC(windowSize * sizeof(QElement));
-            QElement ** all_element_pointers = (QElement **)WORKSPACE_ALLOC(windowSize * sizeof(QElement *));
+            workspace_mem_ptr all_elements_owner(WORKSPACE_ALLOC(windowSize * sizeof(QElement)));
+            workspace_mem_ptr all_element_pointers_owner(WORKSPACE_ALLOC(windowSize * sizeof(QElement *)));
+
+            QElement * all_elements = (QElement *)all_elements_owner.get();
+            QElement ** all_element_pointers = (QElement **)all_element_pointers_owner.get();
 
             // max_heap_size is (floor((windowSize - 1) * quantile) + 1), but need to handle some precision issues
             size_t max_heap_size = RollingQuantile::IntegralIndex(windowSize, quantile) + 1;
@@ -1673,7 +1722,7 @@ public:
             RollingQuantile::RollingQuantile<T, U> rolling_quantile(windowSize, quantile, all_elements, all_element_pointers,
                                                                     max_heap_size, min_heap_size, min_count, QUANTILE_SPLIT<T, U>);
 
-            for (int64_t i = binLow; i < binHigh; i++)
+            for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
             {
                 V start{ pFirst[i] };
                 V last{ start + pCount[i] };
@@ -1686,8 +1735,6 @@ public:
 
                 rolling_quantile.Clean();
             }
-            WORKSPACE_FREE(all_elements);
-            WORKSPACE_FREE(all_element_pointers);
         }
     }
 
@@ -1723,7 +1770,7 @@ public:
         }
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1795,7 +1842,7 @@ public:
         }
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V start = pFirst[i];
             V last = start + pCount[i];
@@ -1899,7 +1946,7 @@ public:
         if (windowSize == 1)
         {
             // For all the bins we have to fill
-            for (int64_t i = binLow; i < binHigh; i++)
+            for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
             {
                 V start = pFirst[i];
                 V last = start + pCount[i];
@@ -1925,7 +1972,7 @@ public:
         else
         {
             // For all the bins we have to fill
-            for (int64_t i = binLow; i < binHigh; i++)
+            for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
             {
                 V start = pFirst[i];
                 V last = start + pCount[i];
@@ -1990,14 +2037,15 @@ public:
         V const * const pCount = (V *)pCountT;
 
         // Alloc worst case
-        T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
+        workspace_mem_ptr pSortOwner(WORKSPACE_ALLOC(totalInputRows * sizeof(T)));
+        T * pSort = (T *)pSortOwner.get();
 
         U const invalid{ riptide::invalid_for_type<U>::value };
 
         logger->debug("TrimMean rows: {}", totalInputRows);
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V index = pFirst[i];
             V nCount = pCount[i];
@@ -2052,8 +2100,6 @@ public:
                 pDest[i] = invalid;
             }
         }
-
-        WORKSPACE_FREE(pSort);
     }
 
     //------------------------------
@@ -2070,13 +2116,15 @@ public:
         V const * const pCount = (V *)pCountT;
 
         // Alloc worst case
-        T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
+        workspace_mem_ptr pSortOwner(WORKSPACE_ALLOC(totalInputRows * sizeof(T)));
+        T * pSort = (T *)pSortOwner.get();
+
         U const invalid{ riptide::invalid_for_type<U>::value };
 
         logger->debug("AccumMode {}", totalInputRows);
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V index = pFirst[i];
             V nCount = pCount[i];
@@ -2136,8 +2184,6 @@ public:
             // copy the data over from pCount[i]
             pDest[i] = bestValue;
         }
-
-        WORKSPACE_FREE(pSort);
     }
 
     //------------------------------
@@ -2174,12 +2220,13 @@ public:
         double const quantile{ quantile_with_1e9_mult / multiplier };
 
         // Alloc
-        T * const pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
+        workspace_mem_ptr pSortOwner(WORKSPACE_ALLOC(totalInputRows * sizeof(T)));
+        T * pSort = (T *)pSortOwner.get();
 
         logger->debug("Quantile {} {} {}  sizeof: {} {} {}", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V const index{ pFirst[i] };
             V nCount{ pCount[i] };
@@ -2264,8 +2311,6 @@ public:
             // copy the data over from pSort
             pDest[i] = answer;
         }
-
-        WORKSPACE_FREE(pSort);
     }
 
     //------------------------------
@@ -2284,12 +2329,13 @@ public:
         V const * const pCount = (V *)pCountT;
 
         // Alloc
-        T * pSort = (T *)WORKSPACE_ALLOC(totalInputRows * sizeof(T));
+        workspace_mem_ptr pSortOwner(WORKSPACE_ALLOC(totalInputRows * sizeof(T)));
+        T * pSort = (T *)pSortOwner.get();
 
         logger->debug("AccumMedian {} {} {}  sizeof: {} {} {}", totalInputRows, binLow, binHigh, sizeof(T), sizeof(U), sizeof(V));
 
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             V index = pFirst[i];
             V nCount = pCount[i];
@@ -2345,8 +2391,6 @@ public:
             // copy the data over from pCount[i]
             pDest[i] = middle;
         }
-
-        WORKSPACE_FREE(pSort);
     }
 
     //-------------------------------------------------------------------------------
@@ -2363,7 +2407,7 @@ public:
 
         logger->debug("AccumMedian rows {}", totalInputRows);
         // For all the bins we have to fill
-        for (int64_t i = binLow; i < binHigh; i++)
+        for (int64_t i = binLow; i < binHigh && ! is_interrupted(); i++)
         {
             for (V j = 0; j < itemSize; j++)
             {
@@ -3675,18 +3719,21 @@ static GROUPBY_TWO_FUNC GetGroupByFunction(bool * hasCounts, int32_t * wantedOut
 //}
 
 template <typename V>
-static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNCTIONS func)
+static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int * outputType, GB_FUNCTIONS func)
 {
-    logger->debug("GBX Func is {}  inputtype: {}  outputtype: {}", static_cast<int32_t>(func), inputType, outputType);
+    logger->debug("GBX Func is {}  inputtype: {}", static_cast<int32_t>(func), inputType);
     static_assert(std::is_signed<V>::value, "Array types must be signed");
 
     if (func == GB_TRIMBR)
     {
+        *outputType = NPY_DOUBLE;
         switch (inputType)
         {
         case NPY_BOOL:
+            *outputType = NPY_FLOAT;
             return GroupByBase<bool, float, V>::AccumTrimMeanBR;
         case NPY_FLOAT:
+            *outputType = NPY_FLOAT;
             return GroupByBase<float, float, V>::AccumTrimMeanBR;
         case NPY_DOUBLE:
             return GroupByBase<double, double, V>::AccumTrimMeanBR;
@@ -3713,15 +3760,19 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_QUANTILE_MULT)
     {
+        *outputType = NPY_DOUBLE;
         switch (inputType)
         {
         case NPY_BOOL:
+            *outputType = NPY_BOOL;
             return GroupByBase<bool, bool, V>::GetXFunc(func);
         case NPY_FLOAT:
+            *outputType = NPY_FLOAT;
             return GroupByBase<float, float, V>::GetXFunc(func);
         case NPY_DOUBLE:
             return GroupByBase<double, double, V>::GetXFunc(func);
         case NPY_LONGDOUBLE:
+            *outputType = NPY_LONGDOUBLE;
             return GroupByBase<long double, long double, V>::GetXFunc(func);
         case NPY_INT8:
             return GroupByBase<int8_t, double, V>::GetXFunc(func);
@@ -3744,6 +3795,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else if (func == GB_ROLLING_COUNT)
     {
+        *outputType = NPY_INT32;
         switch (inputType)
         {
         case NPY_INT8:
@@ -3760,6 +3812,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     else if (func == GB_ROLLING_DIFF)
     {
         logger->debug("Rolling+diff called with type {}", inputType);
+        *outputType = inputType;
         switch (inputType)
         {
         // case NPY_BOOL:
@@ -3792,6 +3845,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     else if (func == GB_ROLLING_SHIFT)
     {
         logger->debug("Rolling shift called with type {}", inputType);
+        *outputType = inputType;
         switch (inputType)
         {
         case NPY_BOOL:
@@ -3831,6 +3885,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         {
             logger->debug("Rolling+mean called with type {}", inputType);
             // default to a double for output
+            *outputType = NPY_DOUBLE;
             switch (inputType)
             {
             case NPY_FLOAT:
@@ -3862,16 +3917,20 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
         {
             // due to overflow, all ints become int64_t
             logger->debug("Rolling+sum called with type {}", inputType);
+            *outputType = NPY_INT64;
             switch (inputType)
             {
                 // really need to change output type for accumsum/rolling
             case NPY_BOOL:
                 return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
             case NPY_FLOAT:
+                *outputType = NPY_FLOAT;
                 return GroupByBase<float, float, V>::GetXFunc2(func);
             case NPY_DOUBLE:
+                *outputType = NPY_DOUBLE;
                 return GroupByBase<double, double, V>::GetXFunc2(func);
             case NPY_LONGDOUBLE:
+                *outputType = NPY_LONGDOUBLE;
                 return GroupByBase<long double, long double, V>::GetXFunc2(func);
             case NPY_INT8:
                 return GroupByBase<int8_t, int64_t, V>::GetXFunc2(func);
@@ -3894,6 +3953,7 @@ static GROUPBY_X_FUNC GetGroupByXFunction(int inputType, int outputType, GB_FUNC
     }
     else
     {
+        *outputType = inputType;
         switch (inputType)
         {
         // first,last,median,nth
@@ -4196,24 +4256,11 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
     switch (iGroupType)
     {
     CASE_NPY_INT32:
-        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, firstFuncNum);
+        pFunction = GetGroupByXFunction<int32_t>(numpyOutType, &numpyOutType, firstFuncNum);
         break;
     CASE_NPY_INT64:
-        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, firstFuncNum);
+        pFunction = GetGroupByXFunction<int64_t>(numpyOutType, &numpyOutType, firstFuncNum);
         break;
-    }
-
-    if ((firstFuncNum == GB_TRIMBR) || (firstFuncNum == GB_QUANTILE_MULT))
-    {
-        numpyOutType = NPY_FLOAT64;
-        if (aInfo[0].NumpyDType == NPY_FLOAT32)
-        {
-            numpyOutType = NPY_FLOAT32;
-        }
-        else if (aInfo[0].NumpyDType == NPY_BOOL && firstFuncNum != GB_TRIMBR)
-        {
-            numpyOutType = NPY_BOOL;
-        }
     }
 
     if (pFunction)
@@ -4248,7 +4295,8 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
 
             // Allocate the struct + ROOM at the end of struct for all the tuple
             // objects being produced
-            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(sizeof(stGroupBy32) + (cores * sizeof(stGroupByReturn)));
+            workspace_mem_ptr pstGroupBy32_owner(WORKSPACE_ALLOC(sizeof(stGroupBy32) + (cores * sizeof(stGroupByReturn))));
+            stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)pstGroupBy32_owner.get();
 
             if (pstGroupBy32 == NULL)
             {
@@ -4323,10 +4371,16 @@ PyObject * GroupBySingleOpMultiBands(ArrayInfo * aInfo, PyArrayObject * iKey, Py
             pWorkItem->DoWorkCallback = BandedGroupByCall;
             pWorkItem->WorkCallbackArg = pstGroupBy32;
 
-            // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, cores, 0, 1, false);
+            auto section = [&]
+            {
+                g_cMathWorker->WorkMain(pWorkItem, cores, 0, 1, false);
+            };
 
-            WORKSPACE_FREE(pstGroupBy32);
+            if (interruptible_section(section))
+            {
+                PyErr_SetInterrupt();
+                return NULL;
+            }
 
             // New reference
             returnTuple = PyTuple_New(tupleSize);
@@ -4474,8 +4528,17 @@ PyObject * GroupBySingleOpMultithreaded(ArrayInfo * aInfo, PyArrayObject * iKey,
 
             logger->debug("before threaded");
 
-            // This will notify the worker threads of a new work item
-            g_cMathWorker->WorkMain(pWorkItem, arraySizeKey, 0);
+            auto section = [&]
+            {
+                // This will notify the worker threads of a new work item
+                g_cMathWorker->WorkMain(pWorkItem, arraySizeKey, 0);
+            };
+
+            if (interruptible_section(section))
+            {
+                PyErr_SetInterrupt();
+                return NULL;
+            }
 
             logger->debug("after threaded");
 
@@ -4567,7 +4630,8 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
 
     int64_t totalItemSize = 0;
     int64_t tupleSize = 0;
-    ArrayInfo * aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize);
+    array_info_ptr array_info_owner(BuildArrayInfo(inList1, &tupleSize, &totalItemSize));
+    ArrayInfo * aInfo = array_info_owner.get();
 
     if (! aInfo)
     {
@@ -4748,7 +4812,16 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             pstGroupBy32->returnObjects[i].numpyOutType = numpyOutType;
         }
 
-        g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
+        auto section = [&]
+        {
+            g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
+        };
+
+        if (interruptible_section(section))
+        {
+            PyErr_SetInterrupt();
+            return NULL;
+        }
 
         logger->debug("!!groupby done {}", tupleSize);
 
@@ -4769,9 +4842,6 @@ PyObject * GroupByAll32(PyObject * self, PyObject * args)
             void * pCountOut = pstGroupBy32->returnObjects[i].pCountOut;
         }
     }
-
-    // LOGGING("Return tuple ref %llu\n", returnTuple->ob_refcnt);
-    FreeArrayInfo(aInfo);
 
     logger->debug("!!groupby returning\n");
 
@@ -4850,7 +4920,9 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
 
     int64_t totalItemSize = 0;
     int64_t tupleSize = 0;
-    ArrayInfo * aInfo = BuildArrayInfo(inList1, &tupleSize, &totalItemSize);
+
+    array_info_ptr array_info_owner(BuildArrayInfo(inList1, &tupleSize, &totalItemSize));
+    ArrayInfo * aInfo = array_info_owner.get();
 
     if (! aInfo)
     {
@@ -4944,7 +5016,8 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         int64_t allocSize = (sizeof(stGroupBy32) + 8 + sizeof(stGroupByReturn)) * tupleSize;
         logger->debug("GroupByAllPack32 allocating {}", allocSize);
 
-        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)WORKSPACE_ALLOC(allocSize);
+        workspace_mem_ptr pstGroupBy32Owner((stGroupBy32 *)WORKSPACE_ALLOC(allocSize));
+        stGroupBy32 * pstGroupBy32 = (stGroupBy32 *)pstGroupBy32Owner.get();
 
         pstGroupBy32->aInfo = aInfo;
         pstGroupBy32->pDataIn2 = pDataIn2;
@@ -4984,11 +5057,11 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             switch (iGroupType)
             {
             CASE_NPY_INT32:
-                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, numpyOutType, funcNum);
+                pFunction = GetGroupByXFunction<int32_t>(numpyOutType, &numpyOutType, funcNum);
                 break;
 
             CASE_NPY_INT64:
-                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, numpyOutType, funcNum);
+                pFunction = GetGroupByXFunction<int64_t>(numpyOutType, &numpyOutType, funcNum);
                 break;
             }
 
@@ -5000,20 +5073,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 // pull in strings also
                 if (funcNum == GB_TRIMBR)
                 {
-                    // Variance must be in float form
-                    // Everything is a float64 unless it is already a float32 or bool, then we
-                    // keep it as float32
-                    switch (aInfo[i].NumpyDType)
-                    {
-                    case NPY_BOOL:
-                    case NPY_FLOAT32:
-                        numpyOutType = NPY_FLOAT32;
-                        break;
-
-                    default:
-                        numpyOutType = NPY_FLOAT64;
-                        break;
-                    }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);
                 }
@@ -5021,23 +5080,6 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 // string will need to be different when they are supported
                 else if (funcNum == GB_QUANTILE_MULT)
                 {
-                    // Variance must be in float form
-                    numpyOutType = NPY_FLOAT64;
-
-                    // Everything is a float64 unless it is already a float32, then we
-                    // keep it as float32
-                    if (aInfo[i].NumpyDType == NPY_FLOAT32)
-                    {
-                        numpyOutType = NPY_FLOAT32;
-                    }
-                    else if (aInfo[i].NumpyDType == NPY_BOOL)
-                    {
-                        numpyOutType = NPY_BOOL;
-                    }
-                    else if (aInfo[i].NumpyDType == NPY_LONGDOUBLE)
-                    {
-                        numpyOutType = NPY_LONGDOUBLE;
-                    }
                     outArray = AllocateNumpyArray(1, (npy_intp *)&unique_rows, numpyOutType);
                     CHECK_MEMORY_ERROR(outArray);
                 }
@@ -5046,45 +5088,13 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                     // For functions in the 200+ range like rolling we use all the items
                     if (funcNum >= GB_ROLLING_SUM)
                     {
-                        // shift and diff keep the same dtype
-                        if (funcNum == GB_ROLLING_SUM || funcNum == GB_ROLLING_NANSUM || funcNum == GB_ROLLING_COUNT)
-                        {
-                            numpyOutType = NPY_INT64;
-
-                            if (funcNum == GB_ROLLING_COUNT)
-                            {
-                                numpyOutType = NPY_INT32;
-                            }
-                            else
-                            {
-                                switch (aInfo[i].NumpyDType)
-                                {
-                                case NPY_FLOAT32:
-                                    numpyOutType = NPY_FLOAT32;
-                                    break;
-                                case NPY_DOUBLE:
-                                case NPY_LONGDOUBLE:
-                                    numpyOutType = NPY_FLOAT64;
-                                    break;
-                                CASE_NPY_UINT64:
-
-                                    numpyOutType = NPY_UINT64;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (funcNum == GB_ROLLING_MEAN || funcNum == GB_ROLLING_NANMEAN || funcNum == GB_ROLLING_QUANTILE)
-                        {
-                            numpyOutType = NPY_FLOAT64;
-                        }
-
                         if (aInfo[i].ArrayLength != pstGroupBy32->totalInputRows)
                         {
                             PyErr_Format(PyExc_ValueError,
                                          "GroupByAllPack32 for rolling functions, input size "
                                          "must be same size as group size: %lld vs %lld",
                                          aInfo[i].ArrayLength, pstGroupBy32->totalInputRows);
-                            goto ERROR_EXIT;
+                            return NULL;
                         }
 
                         outArray = AllocateLikeNumpyArray(aInfo[i].pObject, numpyOutType);
@@ -5099,7 +5109,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 // Bail if out of memory
                 if (outArray == NULL)
                 {
-                    goto ERROR_EXIT;
+                    return NULL;
                 }
             }
             else
@@ -5107,7 +5117,7 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
                 logger->error("Failed to find function {} for type {}", static_cast<int32_t>(funcNum), numpyOutType);
                 PyErr_Format(PyExc_NotImplementedError, "GroupByAllPack32 doesn't implement function %llu for type %d", funcNum,
                              numpyOutType);
-                goto ERROR_EXIT;
+                return NULL;
             }
 
             pstGroupBy32->returnObjects[i].outArray = outArray;
@@ -5116,7 +5126,16 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
             pstGroupBy32->returnObjects[i].numpyOutType = numpyOutType;
         }
 
-        g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
+        auto section = [&]
+        {
+            g_cMathWorker->WorkGroupByCall(GroupByCall, pstGroupBy32, tupleSize);
+        };
+
+        if (interruptible_section(section))
+        {
+            PyErr_SetInterrupt();
+            return NULL;
+        }
 
         logger->debug("!!groupby done {}", tupleSize);
 
@@ -5162,13 +5181,34 @@ PyObject * GroupByAllPack32(PyObject * self, PyObject * args)
         //}
 
         logger->debug("Return tuple ref {}", returnTuple->ob_refcnt);
-
-    ERROR_EXIT:
-        WORKSPACE_FREE(pstGroupBy32);
-        FreeArrayInfo(aInfo);
-
         logger->debug("!!groupby returning");
     }
 
     return returnTuple;
+}
+
+namespace riptide::benchmark
+{
+    GroupByTwoFunction get_groupby_two_function(GB_FUNCTIONS function, int input_type)
+    {
+        GroupByTwoFunction groupby;
+        bool has_counts; // Not used
+        int32_t output_type;
+        int32_t temp_type;
+        groupby.function = GetGroupByFunction<IndexType, CountType>(&has_counts, &output_type, &temp_type, input_type, function);
+        groupby.input_type = input_type;
+        groupby.output_type_size = NpyToSize(output_type);
+        groupby.temp_type_size = NpyToSize(temp_type);
+        return groupby;
+    }
+
+    GroupByXFunction get_groupby_x_function(GB_FUNCTIONS function, int input_type)
+    {
+        GroupByXFunction groupby;
+        int32_t output_type;
+        groupby.function = GetGroupByXFunction<IndexType>(input_type, &output_type, function);
+        groupby.input_type = input_type;
+        groupby.output_type_size = NpyToSize(output_type);
+        return groupby;
+    }
 }

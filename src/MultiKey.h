@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 //---------------------------------------------------------------------
 // NOTE: See SDSArrayInfo and keep same
@@ -45,3 +46,16 @@ extern ArrayInfo * BuildArrayInfo(PyObject * listObject, int64_t * pTupleSize, i
                                   bool convert = true);
 
 extern void FreeArrayInfo(ArrayInfo * pArrayInfo);
+
+namespace riptide::internal
+{
+    struct array_info_deleter
+    {
+        void operator()(ArrayInfo * array_info)
+        {
+            FreeArrayInfo(array_info);
+        }
+    };
+}
+
+using array_info_ptr = std::unique_ptr<ArrayInfo, riptide::internal::array_info_deleter>;

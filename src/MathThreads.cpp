@@ -115,11 +115,9 @@ void * WorkerThreadFunction(void * lpParam)
         // See if work to do
         if (workIndex > workIndexCompleted)
         {
-#if defined(RT_OS_WINDOWS)
             // On windows all threads awakened, so ignore spurious awakenings.
             bool const wakeup{ InterlockedDecrement64(&pWorkerRing->ThreadWakeup) >= 0 };
             if (wakeup)
-#endif
             {
                 stMATH_WORKER_ITEM * pWorkItem = pWorkerRing->GetExistingWorkItem();
 

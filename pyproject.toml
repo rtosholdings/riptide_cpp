@@ -12,6 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: BSD License",
 ]
 
@@ -24,7 +25,7 @@ requires = [
     #"benchmark >=1.7,<1.8", # DOES NOT EXIST! We must assume it exists in environment
     "cmake >=3.26.1",
     "ninja; platform_system!='Windows'",
-    "numpy >=1.23,<1.25",
+    "numpy >=1.23,<1.27",
     "scikit-build-core >=0.7,<0.8",
     "setuptools >=65",
     "setuptools_scm[toml] >=7.1",
@@ -93,3 +94,7 @@ cmake.define = { "RIPTIDE_PYTHON_VER" = "3.10" }
 [[tool.scikit-build.overrides]]
 if.python-version = "~=3.11"
 cmake.define = { "RIPTIDE_PYTHON_VER" = "3.11" }
+
+[[tool.scikit-build.overrides]]
+if.python-version = "~=3.12"
+cmake.define = { "RIPTIDE_PYTHON_VER" = "3.12" }

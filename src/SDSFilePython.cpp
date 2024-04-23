@@ -1624,11 +1624,14 @@ void GetFilters(PyObject * kwargs, SDS_READ_CALLBACKS * pRCB)
         //}
 
         PyObject * maskItem = PyDict_GetItemString(kwargs, "mask");
+        PyObject * fancyItem{ PyDict_GetItemString(kwargs, "fancy") };
 
         if (maskItem && PyArray_Check(maskItem))
         {
             if (PyArray_TYPE((PyArrayObject *)maskItem) == NPY_BOOL)
             {
+                if (fancyItem)
+                    pRCB->Filter.IsFancy = PyObject_IsTrue(fancyItem);
                 pRCB->Filter.BoolMaskLength = ArrayLength((PyArrayObject *)maskItem);
                 pRCB->Filter.pBoolMask = (bool *)PyArray_GETPTR1((PyArrayObject *)maskItem, 0);
                 // Needed

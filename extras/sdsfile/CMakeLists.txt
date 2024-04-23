@@ -17,6 +17,7 @@ if(WIN32)
 endif()
 
 set(HEADERS
+    ../../src/interrupt.h
     ../../src/MathThreads.h
     ../../src/MathWorker.h
     ../../src/SDSFile.h
@@ -27,6 +28,7 @@ set(HEADERS
 set(SOURCES
     dllmain.cpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_BINARY_DIR}/sdsfile.rc>
+    ../../src/interrupt.cpp
     ../../src/MathThreads.cpp
     ../../src/MathWorker.cpp
     ../../src/SDSFile.cpp
