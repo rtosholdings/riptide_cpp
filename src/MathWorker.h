@@ -444,7 +444,7 @@ public:
         if (bGenericMode)
         {
             // Check if all workers have completed
-            while (pWorkItem->BlocksCompleted < pWorkItem->BlockLast)
+            while (pWorkItem->BlocksCompleted < pWorkItem->BlockLast && ! riptide::is_interrupted())
             {
                 MATHLOGGING("Waiting %llu  %llu \n", pWorkItem->BlocksCompleted, pWorkItem->BlockLast);
                 YieldProcessor();
@@ -454,7 +454,7 @@ public:
         else
         {
             // Check if all workers have completed
-            while (pWorkItem->BlocksCompleted < len)
+            while (pWorkItem->BlocksCompleted < len && ! riptide::is_interrupted())
             {
                 MATHLOGGING("Waiting %llu  %llu \n", pWorkItem->BlocksCompleted, pWorkItem->BlockLast);
                 YieldProcessor();

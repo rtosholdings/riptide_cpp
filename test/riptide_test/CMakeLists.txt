@@ -11,6 +11,7 @@ set(SOURCES
     math_tests.cpp
     math_worker_tests.cpp
     numpy_traits_tests.cpp
+    simd_tests.cpp
     test_one_input.cpp)
 
 add_executable(${TARGET_NAME}

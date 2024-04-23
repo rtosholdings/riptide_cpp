@@ -2,6 +2,8 @@
 #ifndef RIPTABLE_CPP_SIMD_AVX2_H
     #define RIPTABLE_CPP_SIMD_AVX2_H
 
+    #include "../Defs.h"
+
     #include <algorithm>
     #include <cstdint>
     #include <immintrin.h>
@@ -860,6 +862,11 @@ namespace riptide::simd::avx2
         static RT_FORCEINLINE reg_type broadcast(const element_type value)
         {
             return _mm256_set1_epi8(static_cast<int8_t>(value));
+        }
+
+        static RT_FORCEINLINE reg_type isequal(const reg_type x, const reg_type y)
+        {
+            return _mm256_cmpeq_epi8(x, y);
         }
 
         /**
@@ -1743,6 +1750,11 @@ namespace riptide::simd::avx2
         static RT_FORCEINLINE reg_type broadcast(const element_type value)
         {
             return _mm256_set1_epi16(static_cast<int16_t>(value));
+        }
+
+        static RT_FORCEINLINE reg_type isequal(const reg_type x, const reg_type y)
+        {
+            return _mm256_cmpeq_epi16(x, y);
         }
 
         /**
@@ -2704,6 +2716,11 @@ namespace riptide::simd::avx2
             return _mm256_set1_epi32(static_cast<int32_t>(value));
         }
 
+        static RT_FORCEINLINE reg_type isequal(const reg_type x, const reg_type y)
+        {
+            return _mm256_cmpeq_epi32(x, y);
+        }
+
         /**
          * @brief Get a vector of packed 32-bit integers representing the 0-based SIMD
          * lane indices.
@@ -3067,6 +3084,11 @@ namespace riptide::simd::avx2
         static RT_FORCEINLINE reg_type broadcast(const element_type value)
         {
             return _mm256_set1_epi64x(value);
+        }
+
+        static RT_FORCEINLINE reg_type isequal(const reg_type x, const reg_type y)
+        {
+            return _mm256_cmpeq_epi64(x, y);
         }
 
         /**
@@ -3449,6 +3471,11 @@ namespace riptide::simd::avx2
         static RT_FORCEINLINE reg_type broadcast(const element_type value)
         {
             return _mm256_set1_epi64x(static_cast<int64_t>(value));
+        }
+
+        static RT_FORCEINLINE reg_type isequal(const reg_type x, const reg_type y)
+        {
+            return _mm256_cmpeq_epi64(x, y);
         }
 
         /**

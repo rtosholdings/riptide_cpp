@@ -53,4 +53,4 @@ void WorkSpaceFreeAllocLarge(void *& pHashTableAny, size_t HashTableAllocSize);
 void * WorkSpaceAllocSmall(size_t BitAllocSize);
 void WorkSpaceFreeAllocSmall(void *& pBitFields, size_t BitAllocSize);
 
-int64_t GarbageCollect(int64_t timespan, bool verbose);
+int64_t GarbageCollect(int64_t timespan, bool force);

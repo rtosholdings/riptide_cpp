@@ -1,6 +1,11 @@
 # The rt_common_settings interface library provides the common set of compiler options to use for all
 # targets.
 
+# Mitigations for Intel JCC Erratum on Skylake https://stackoverflow.com/a/70439405
+# On Skylake processors, jump instructions that end on or cross a 32 byte boundary cannot be cached,
+# resulting in performance penalties. This can be mitigated by using compiler flags to pad functions
+# and move jumps off of 32 byte boundaries.
+
 add_library(rt_common_settings INTERFACE)
 
 if(PROJ_COMPILER_FRONTEND STREQUAL "MSVC")
@@ -22,6 +27,7 @@ if(PROJ_COMPILER_FRONTEND STREQUAL "MSVC")
     target_compile_options(rt_common_settings INTERFACE -wd4458) # FIXME: declaration of '...' hides class member
     target_compile_options(rt_common_settings INTERFACE -wd4459) # FIXME: declaration of '...' hides global declaration
     target_compile_options(rt_common_settings INTERFACE -wd4702) # FIXME: unreachable code
+    target_compile_options(rt_common_settings INTERFACE /QIntel-jcc-erratum) # Mitigations for Intel JCC Erratum on Skylake (See above)
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(rt_common_settings INTERFACE -permissive- -d2FH4- -Zc:strictStrings-)
@@ -60,6 +66,7 @@ elseif(PROJ_COMPILER_FRONTEND STREQUAL "GNU")
     target_compile_options(rt_common_settings INTERFACE -Wno-duplicated-branches)
     target_compile_options(rt_common_settings INTERFACE -Wno-useless-cast)
     target_compile_options(rt_common_settings INTERFACE -Wno-old-style-cast)
+    target_compile_options(rt_common_settings INTERFACE -Wa,-mbranches-within-32B-boundaries) # Mitigations for Intel JCC Erratum on Skylake (See above)
 elseif(PROJ_COMPILER_FRONTEND STREQUAL "LLVM")
     target_compile_options(rt_common_settings INTERFACE "$<$<CONFIG:Debug>:-O0;-g>")
     target_compile_options(rt_common_settings INTERFACE "$<$<CONFIG:Release>:-O2;-g1>")
@@ -75,6 +82,7 @@ elseif(PROJ_COMPILER_FRONTEND STREQUAL "LLVM")
     target_compile_options(rt_common_settings INTERFACE -Wno-duplicated-branches)
     target_compile_options(rt_common_settings INTERFACE -Wno-useless-cast)
     target_compile_options(rt_common_settings INTERFACE -Wno-old-style-cast)
+    target_compile_options(rt_common_settings INTERFACE -mbranches-within-32B-boundaries) # Mitigations for Intel JCC Erratum on Skylake (See above)
 else()
     message(FATAL_ERROR "Unexpected proj compiler front-end, ${PROJ_COMPILER_FRONTEND}")
 endif()

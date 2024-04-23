@@ -3,6 +3,7 @@
 #include "Defs.h"
 
 #include <vector>
+#include <optional>
 
 /*-=====  Pre-defined compression levels  =====-*/
 #ifndef ZSTD_CLEVEL_DEFAULT
@@ -492,6 +493,7 @@ struct SDS_FILTER
     int64_t BoolMaskLength;      // length of bool mask (but not final array)
     int64_t BoolMaskTrueCount;   // length of final array
     SDSFilterInfo * pFilterInfo; // allocated on the fly when stacking
+    std::optional<bool> IsFancy;
 };
 
 //==================================================

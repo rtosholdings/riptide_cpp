@@ -38,3 +38,8 @@ enum REDUCE_FUNCTIONS
 PyObject * Reduce(PyObject * self, PyObject * args);
 
 PyObject * ReduceInternal(PyArrayObject * inArr1, int64_t func);
+
+namespace riptide::benchmark
+{
+    RT_DLLEXPORT void call_reduce_function(REDUCE_FUNCTIONS function, NPY_TYPES input_type, void * data, int64_t length);
+}

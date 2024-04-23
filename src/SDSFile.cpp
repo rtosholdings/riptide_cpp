@@ -6280,6 +6280,7 @@ public:
             if (! compat.IsCompatible)
             {
                 logger->warn("Warning: Column '{}' has both string and unicode. Support for this is experimental", columnName);
+                TotalDimensionProblems++;
             }
             if (compat.NeedsStringFixup)
             {
@@ -6359,12 +6360,28 @@ public:
         // Allocate all the arrays
         int64_t totalIOPackets = 0;
 
+        bool has_filter{ pReadCallbacks->Filter.pBoolMask != NULL };
+        bool has_fancy{ pReadCallbacks->Filter.IsFancy.has_value() };
+        bool is_fancy{ pReadCallbacks->Filter.IsFancy.value_or(false) };
         // First pass, calculate what we need
         for (int64_t f = 0; f < FileCount; f++)
         {
             SDSDecompressFile * pSDSDecompress = pSDSDecompressFile[f];
             if (pSDSDecompress->IsFileValid)
             {
+                if (has_filter and has_fancy and pSDSDecompress->pFileHeader->ArraysWritten > 0)
+                {
+                    auto dim_len{ pSDSDecompress->pArrayBlocks[0].Dimensions[0] };
+                    auto mask_len{ pReadCallbacks->Filter.BoolMaskLength };
+
+                    if (dim_len < mask_len or (not is_fancy and dim_len != mask_len))
+                    {
+                        SetErr_Format(SDS_VALUE_ERROR,
+                                      "Array length does not match filter length: ArrayLength: %d, FilterLength:%d",
+                                      pSDSDecompress->pArrayBlocks[0].Dimensions[0], pReadCallbacks->Filter.BoolMaskLength);
+                        return NULL;
+                    }
+                }
                 totalIOPackets += pSDSDecompress->GetTotalArraysWritten();
             }
         }
@@ -6374,6 +6391,8 @@ public:
         // Allocate MultiIO PACKETS!!
         SDS_MULTI_IO_PACKETS * pMultiIOPackets = SDS_MULTI_IO_PACKETS::Allocate(totalIOPackets, &pReadCallbacks->Filter);
         int64_t currentPos = 0;
+
+        auto orig_true_count{ pReadCallbacks->Filter.BoolMaskTrueCount };
 
         // Fill in all the IOPACKETs
         // Skip over invalid files
@@ -6389,6 +6408,22 @@ public:
                 SDS_IO_PACKET * pIOPacket = &pMultiIOPackets->pIOPacket[currentPos];
                 SDSArrayInfo * pArrayInfo = &pMultiIOPackets->pDestInfo[currentPos];
 
+                // In the case where it was not provided a value of the type of mask (fancy or not)
+                // we want to preserve old behavior and not error
+                // but we still want to only read upto dataset length to prevent allocating more than necessary
+                // and returning bad result.
+                if (has_filter and tupleSize != 0 and (not has_fancy or is_fancy))
+                {
+                    // pReadCallbacks is used to access the filter
+                    // Set the true count of 1s in the mask BEFORE allocating to ensure correct length.
+
+                    auto read_len{ pSDSDecompress->pArrayBlocks[0].Dimensions[0] };
+                    if (read_len > pReadCallbacks->Filter.BoolMaskLength)
+                        read_len = pReadCallbacks->Filter.BoolMaskLength;
+                    pReadCallbacks->Filter.BoolMaskTrueCount =
+                        SumBooleanMask((int8_t *)pReadCallbacks->Filter.pBoolMask, read_len);
+                }
+
                 //--------- ALLOCATE COMPRESS ARRAYS INTO all the IO PACKETS
                 pSDSDecompress->AllocMultiArrays(pIOPacket, pArrayInfo, pReadCallbacks, tupleSize, false);
 
@@ -6396,6 +6431,7 @@ public:
                 currentPos += tupleSize;
             }
         }
+        pReadCallbacks->Filter.BoolMaskTrueCount = orig_true_count;
 
         if (totalIOPackets)
         {
@@ -7063,6 +7099,11 @@ public:
         // Allocate dataset row length for blank rows (gaps)
         AllocateDatasetLengths(validCount);
 
+        bool has_filter{ pReadCallbacks->Filter.pBoolMask != NULL };
+        bool has_fancy{ pReadCallbacks->Filter.IsFancy.has_value() };
+        bool is_fancy{ pReadCallbacks->Filter.IsFancy.value_or(false) };
+
+        int64_t total_length{ 0 };
         // Now build a hash of all the valid filenames
         // Also.. how homogenous are the files... all datasets?  all structs?
         for (int32_t t = 0; t < FileCount; t++)
@@ -7087,7 +7128,6 @@ public:
                 for (int64_t c = 0; c < pSDSDecompress->NameCount; c++)
                 {
                     const char * columnName = pSDSDecompress->pArrayNames[c];
-
                     // Include exclude check
                     // If ONEFILE and NO FOLDERS
                     if (IsNameIncluded(pIncludeList, pFolderList, columnName, isOneFile))
@@ -7143,19 +7183,42 @@ public:
                                 }
                             }
                         }
+                        else
+                        {
+                            if (has_filter)
+                            {
+                                SetErr_Format(SDS_VALUE_ERROR,
+                                              "SDS stacking with filter is currently only supported for datasets.");
+                                ClearColumnList();
+                                return nullptr;
+                            }
+                        }
                     }
                 }
-
+                total_length += pDatasets[validPos].Length;
                 // increment for every valid file
                 validPos++;
             }
         }
 
+        if (has_filter and TotalUniqueColumns > 0)
+        {
+            auto mask_length{ pReadCallbacks->Filter.BoolMaskLength };
+            if (has_fancy and (mask_length > total_length or (not is_fancy and mask_length < total_length)))
+            {
+                SetErr_Format(SDS_VALUE_ERROR,
+                              "Filter length does not match stacked dataset length\nDataset Length: %lu, Mask Length: %lu",
+                              total_length, mask_length);
+                ClearColumnList();
+                return nullptr;
+            }
+        }
+
         logger->debug(
             "Total column stats  uniq:{}, first:{}, conv:{}, strfix:{}, "
-            "dim:{}, colgaps:{}, valid: {}",
+            "dim:{}, colgaps:{}, valid: {}, total_length:{}",
             TotalUniqueColumns, TotalFirstColumns, TotalConversions, TotalStringFixups, TotalDimensionProblems, TotalColumnGaps,
-            validCount);
+            validCount, total_length);
 
         const char * pFirstFileName = "<no valid file>";
         if (FileCount > 0)
@@ -7219,7 +7282,7 @@ public:
             SDSFilterInfo * pFilterInfo = NULL;
 
             // Check if we are filtering the data with a boolean mask
-            if (pReadCallbacks->Filter.pBoolMask)
+            if (has_filter)
             {
                 // Worst case allocation (only valid files calculated)
                 logger->debug("~ALLOCATING for filtering");

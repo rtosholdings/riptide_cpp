@@ -3,7 +3,9 @@ set(TARGET_NAME riptide_bench)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(SOURCES main.cpp
+    bench_groupby.cpp
     bench_one_input.cpp
+    bench_reduce.cpp
     hash_linear_bench.cpp
     memcmp_bench.cpp
     bench_logging.cpp

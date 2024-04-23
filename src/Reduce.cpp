@@ -4,9 +4,27 @@
 #include "Reduce.h"
 #include "Convert.h"
 #include "missing_values.h"
+#include "operations.h"
 #include "platform_detect.h"
+#include "simd.h"
 
 #include <algorithm>
+#include <variant>
+
+namespace
+{
+    using any_supported_cpptype =
+        std::variant<bool, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, float, double, long double>;
+
+    template <typename T>
+    constexpr bool invalid_is_max_v = riptide::invalid_for_type<T>::value == std::numeric_limits<T>::max();
+
+    template <typename T>
+    constexpr bool invalid_is_min_v = riptide::invalid_for_type<T>::value == std::numeric_limits<T>::min();
+
+    template <typename T>
+    constexpr bool invalid_is_nan_v = riptide::invalid_for_type<T>::value != riptide::invalid_for_type<T>::value;
+}
 
 #if defined(__clang__)
     #pragma clang diagnostic ignored "-Wmissing-braces"
@@ -14,6 +32,7 @@
 #endif
 
 using namespace riptide;
+using namespace riptide::simd;
 
 //#define LOGGING printf
 //#define LOGGING OutputDebugStringA
@@ -81,11 +100,11 @@ static inline __m256i MIN_OP(uint32_t z, __m256i x, __m256i y)
 }
 static inline __m256 MIN_OP(float z, __m256 x, __m256 y)
 {
-    return _mm256_min_ps(x, y);
+    return _mm256_min_ps(x, _mm256_blendv_ps(y, x, _mm256_cmp_ps(x, x, _CMP_UNORD_Q)));
 }
 static inline __m256d MIN_OP(double z, __m256d x, __m256d y)
 {
-    return _mm256_min_pd(x, y);
+    return _mm256_min_pd(x, _mm256_blendv_pd(y, x, _mm256_cmp_pd(x, x, _CMP_UNORD_Q)));
 }
 
 static inline __m256i MAX_OP(int8_t z, __m256i x, __m256i y)
@@ -114,11 +133,11 @@ static inline __m256i MAX_OP(uint32_t z, __m256i x, __m256i y)
 }
 static inline __m256 MAX_OP(float z, __m256 x, __m256 y)
 {
-    return _mm256_max_ps(x, y);
+    return _mm256_max_ps(x, _mm256_blendv_ps(y, x, _mm256_cmp_ps(x, x, _CMP_UNORD_Q)));
 }
 static inline __m256d MAX_OP(double z, __m256d x, __m256d y)
 {
-    return _mm256_max_pd(x, y);
+    return _mm256_max_pd(x, _mm256_blendv_pd(y, x, _mm256_cmp_pd(x, x, _CMP_UNORD_Q)));
 }
 
 /**
@@ -354,9 +373,10 @@ struct stScatterGatherFunc
     double meanCalculation;
 
     double resultOut;
+    int64_t resultOutInt64;
 
     // Separate output for min/max
-    int64_t resultOutInt64;
+    any_supported_cpptype min_or_max;
 };
 
 bool CMathWorker::AnyScatterGather(struct stMATH_WORKER_ITEM * pstWorkerItem, int core, int64_t workIndex)
@@ -446,18 +466,6 @@ void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, vo
         // Gather the results from all cores
         if (func == REDUCE_MIN || func == REDUCE_NANMIN || func == REDUCE_MAX || func == REDUCE_NANMAX)
         {
-            // Must do min/max with proper signedness.
-            bool is_unsigned = false;
-            switch (pstScatterGatherFunc->inputType)
-            {
-            case NPY_UINT8:
-            case NPY_UINT16:
-            case NPY_UINT32:
-            case NPY_UINT64:
-                is_unsigned = true;
-                break;
-            }
-
             int32_t calcs = 0;
             // Collect all the results...
             for (int i = 0; i < numCores; i++)
@@ -473,24 +481,55 @@ void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, vo
                         calcs++;
                         pstScatterGatherFunc->resultOut = pZeroArray[i].resultOut;
                         pstScatterGatherFunc->resultOutInt64 = pZeroArray[i].resultOutInt64;
+                        pstScatterGatherFunc->min_or_max = pZeroArray[i].min_or_max;
                     }
                     else
                     {
                         if (func == REDUCE_MIN || func == REDUCE_NANMIN)
                         {
-                            pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
-                            pstScatterGatherFunc->resultOutInt64 =
-                                is_unsigned ? (int64_t)(MINF((uint64_t)pstScatterGatherFunc->resultOutInt64,
-                                                             (uint64_t)pZeroArray[i].resultOutInt64)) :
-                                              (MINF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64));
+                            pstScatterGatherFunc->resultOut =
+                                riptide::min(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
+
+                            std::visit(
+                                [&pstScatterGatherFunc](auto value)
+                                {
+                                    using T = decltype(value);
+                                    T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                                    pstScatterGatherFunc->min_or_max = riptide::min(previous, value);
+
+                                    if (! invalid_for_type<double>::is_valid(pstScatterGatherFunc->resultOut))
+                                    {
+                                        pstScatterGatherFunc->min_or_max = invalid_for_type<T>::value;
+                                    }
+                                    else if (! invalid_for_type<T>::is_valid(std::get<T>(pstScatterGatherFunc->min_or_max)))
+                                    {
+                                        pstScatterGatherFunc->resultOut = invalid_for_type<double>::value;
+                                    }
+                                },
+                                pZeroArray[i].min_or_max);
                         }
                         else
                         {
-                            pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
-                            pstScatterGatherFunc->resultOutInt64 =
-                                is_unsigned ? (int64_t)(MAXF((uint64_t)pstScatterGatherFunc->resultOutInt64,
-                                                             (uint64_t)pZeroArray[i].resultOutInt64)) :
-                                              (MAXF(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64));
+                            pstScatterGatherFunc->resultOut =
+                                riptide::max(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
+
+                            std::visit(
+                                [&pstScatterGatherFunc](auto value)
+                                {
+                                    using T = decltype(value);
+                                    T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                                    pstScatterGatherFunc->min_or_max = riptide::max(previous, value);
+
+                                    if (! invalid_for_type<double>::is_valid(pstScatterGatherFunc->resultOut))
+                                    {
+                                        pstScatterGatherFunc->min_or_max = invalid_for_type<T>::value;
+                                    }
+                                    else if (! invalid_for_type<T>::is_valid(std::get<T>(pstScatterGatherFunc->min_or_max)))
+                                    {
+                                        pstScatterGatherFunc->resultOut = invalid_for_type<double>::value;
+                                    }
+                                },
+                                pZeroArray[i].min_or_max);
                         }
                     }
                 }
@@ -505,8 +544,18 @@ void CMathWorker::WorkScatterGatherCall(FUNCTION_LIST * anyScatterGatherCall, vo
             for (int i = 0; i < numCores; i++)
             {
                 pstScatterGatherFunc->lenOut += pZeroArray[i].lenOut;
-                pstScatterGatherFunc->resultOut += pZeroArray[i].resultOut;
-                pstScatterGatherFunc->resultOutInt64 += pZeroArray[i].resultOutInt64;
+                pstScatterGatherFunc->resultOut = riptide::add(pstScatterGatherFunc->resultOut, pZeroArray[i].resultOut);
+                pstScatterGatherFunc->resultOutInt64 =
+                    riptide::add(pstScatterGatherFunc->resultOutInt64, pZeroArray[i].resultOutInt64);
+
+                if (! invalid_for_type<double>::is_valid(pstScatterGatherFunc->resultOut))
+                {
+                    pstScatterGatherFunc->resultOutInt64 = invalid_for_type<int64_t>::value;
+                }
+                else if (! invalid_for_type<int64_t>::is_valid(pstScatterGatherFunc->resultOutInt64))
+                {
+                    pstScatterGatherFunc->resultOut = invalid_for_type<double>::value;
+                }
             }
         }
         WORKSPACE_FREE(pWorkSpace);
@@ -554,16 +603,25 @@ class ReduceArgMax final
         T result = *pIn++;
         int64_t resultOutArgInt64 = 0;
 
-        while (pIn < pEnd)
+        if (riptide::invalid_for_type<T>::is_valid(result))
         {
-            // get the minimum
-            T temp = *pIn;
-            if (temp > result)
+            while (pIn < pEnd)
             {
-                result = temp;
-                resultOutArgInt64 = pIn - pStart;
+                // get the minimum
+                T temp = *pIn;
+                if (! riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    result = temp;
+                    resultOutArgInt64 = pIn - pStart;
+                    break;
+                }
+                if (temp > result)
+                {
+                    result = temp;
+                    resultOutArgInt64 = pIn - pStart;
+                }
+                pIn++;
             }
-            pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
@@ -572,14 +630,11 @@ class ReduceArgMax final
             *(T *)&pstScatterGatherFunc->resultOut = result;
             pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
         }
-        else
+        else if (riptide::invalid_for_type<T>::is_valid(*(T *)&pstScatterGatherFunc->resultOut) &&
+                 result > *(T *)&pstScatterGatherFunc->resultOut)
         {
-            // A previous run used this entry
-            if (result > *(T *)&pstScatterGatherFunc->resultOut)
-            {
-                *(T *)&pstScatterGatherFunc->resultOut = result;
-                pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
-            }
+            *(T *)&pstScatterGatherFunc->resultOut = result;
+            pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
         }
         pstScatterGatherFunc->lenOut += len;
         return pstScatterGatherFunc->resultOutArgInt64;
@@ -644,16 +699,25 @@ class ReduceArgMin final
         T result = *pIn++;
         int64_t resultOutArgInt64 = 0;
 
-        while (pIn < pEnd)
+        if (riptide::invalid_for_type<T>::is_valid(result))
         {
-            // get the minimum
-            T temp = *pIn;
-            if (temp < result)
+            while (pIn < pEnd)
             {
-                result = temp;
-                resultOutArgInt64 = pIn - pStart;
+                // get the minimum
+                T temp = *pIn;
+                if (! riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    result = temp;
+                    resultOutArgInt64 = pIn - pStart;
+                    break;
+                }
+                if (temp < result)
+                {
+                    result = temp;
+                    resultOutArgInt64 = pIn - pStart;
+                }
+                pIn++;
             }
-            pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
@@ -662,14 +726,11 @@ class ReduceArgMin final
             *(T *)&pstScatterGatherFunc->resultOut = result;
             pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
         }
-        else
+        else if (riptide::invalid_for_type<T>::is_valid(*(T *)&pstScatterGatherFunc->resultOut) &&
+                 result < *(T *)&pstScatterGatherFunc->resultOut)
         {
-            // A previous run used this entry
-            if (result < *(T *)&pstScatterGatherFunc->resultOut)
-            {
-                *(T *)&pstScatterGatherFunc->resultOut = result;
-                pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
-            }
+            *(T *)&pstScatterGatherFunc->resultOut = result;
+            pstScatterGatherFunc->resultOutArgInt64 = resultOutArgInt64 + fixup;
         }
         pstScatterGatherFunc->lenOut += len;
         return pstScatterGatherFunc->resultOutArgInt64;
@@ -816,7 +877,6 @@ public:
         CASE_NPY_INT32:
             return non_vector<int32_t>;
         CASE_NPY_INT64:
-
             return non_vector<int64_t>;
         case NPY_UINT8:
             return non_vector<uint8_t>;
@@ -961,42 +1021,41 @@ class ReduceMax final
     template <typename T>
     static double non_vector(void * pDataIn, int64_t len, stScatterGatherFunc * pstScatterGatherFunc)
     {
-        T * pIn = (T *)pDataIn;
-        const T * const pEnd = pIn + len;
+        T * pIn = static_cast<T *>(pDataIn);
+        T * pEnd = pIn + len;
 
-        // Always set first item
         T result = *pIn++;
 
-        while (pIn < pEnd)
+        if (riptide::invalid_for_type<T>::is_valid(result))
         {
-            // get the maximum
-            T temp = *pIn;
-            if (temp > result)
+            for (; pIn < pEnd; pIn++)
             {
-                result = temp;
+                T temp = *pIn;
+                if (! riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    result = riptide::invalid_for_type<T>::value;
+                    break;
+                }
+                result = std::max(result, temp);
             }
-            pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
         if (pstScatterGatherFunc->lenOut == 0)
         {
-            pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+            pstScatterGatherFunc->resultOut = riptide::cast<double>(result);
+            pstScatterGatherFunc->min_or_max = result;
         }
         else
         {
-            // in case of nan when calling max (instead of nanmax), preserve nans
-            if (pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut)
-            {
-                pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, (double)result);
-            }
+            pstScatterGatherFunc->resultOut = riptide::max(pstScatterGatherFunc->resultOut, riptide::cast<double>(result));
 
-            T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)(MAXF(previous, result));
+            T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+            pstScatterGatherFunc->min_or_max = riptide::max(previous, result);
         }
+
         pstScatterGatherFunc->lenOut += len;
-        return (double)pstScatterGatherFunc->resultOutInt64;
+        return static_cast<double>(pstScatterGatherFunc->resultOutInt64);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -1005,6 +1064,20 @@ class ReduceMax final
     {
         T * pIn = (T *)pDataIn;
         T * pEnd;
+
+        // If the input type is a signed integer, scan ahead of time for any invalids
+        // We don't need to do this for unsigned integers, since the invalid sentinel is the max value,
+        // and computing the max will propagate invalids for free.
+        if constexpr (! invalid_is_max_v<T> && ! invalid_is_nan_v<T>)
+        {
+            if (contains_invalid(std::span<T>(pIn, pIn + len)))
+            {
+                pstScatterGatherFunc->resultOut = riptide::invalid_for_type<double>::value;
+                pstScatterGatherFunc->min_or_max = riptide::invalid_for_type<T>::value;
+                pstScatterGatherFunc->lenOut += len;
+                return riptide::invalid_for_type<double>::value;
+            }
+        }
 
         // Always set first item
         T result = *pIn;
@@ -1065,7 +1138,7 @@ class ReduceMax final
 
             for (int i = 1; i < perReg; i++)
             {
-                result = MAXF(result, tempT[i]);
+                result = riptide::max(result, tempT[i]);
             }
             // update pIn to last location we read
             pIn = (T *)pIn256;
@@ -1075,22 +1148,24 @@ class ReduceMax final
         while (pIn < pEnd)
         {
             // get the minimum
-            result = MAXF(result, *pIn);
+            result = riptide::max(result, *pIn);
             pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
         if (pstScatterGatherFunc->lenOut == 0)
         {
-            pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+            pstScatterGatherFunc->resultOut = riptide::cast<double>(result);
+            pstScatterGatherFunc->min_or_max = result;
         }
         else
         {
-            pstScatterGatherFunc->resultOut = MAXF(pstScatterGatherFunc->resultOut, (double)result);
-            T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)(MAXF(previous, result));
+            pstScatterGatherFunc->resultOut = riptide::max<double>(pstScatterGatherFunc->resultOut, riptide::cast<double>(result));
+
+            T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+            pstScatterGatherFunc->min_or_max = riptide::max(previous, result);
         }
+
         pstScatterGatherFunc->lenOut += len;
         return pstScatterGatherFunc->resultOut;
     }
@@ -1108,6 +1183,7 @@ public:
             return avx2<double, __m256d, __m128d>;
         case NPY_LONGDOUBLE:
             return non_vector<long double>;
+
         case NPY_BOOL:
         case NPY_INT8:
             return avx2<int8_t, __m256i, __m128i>;
@@ -1116,17 +1192,17 @@ public:
         CASE_NPY_INT32:
             return avx2<int32_t, __m256i, __m128i>;
         CASE_NPY_INT64:
-
             return non_vector<int64_t>;
+
         case NPY_UINT8:
-            return non_vector<uint8_t>;
+            return avx2<uint8_t, __m256i, __m128i>;
         case NPY_UINT16:
-            return non_vector<uint16_t>;
+            return avx2<uint16_t, __m256i, __m128i>;
         CASE_NPY_UINT32:
             return avx2<uint32_t, __m256i, __m128i>;
         CASE_NPY_UINT64:
-
             return non_vector<uint64_t>;
+
         default:
             return nullptr;
         }
@@ -1143,39 +1219,39 @@ class ReduceMin final
     template <typename T>
     static double non_vector(void * pDataIn, int64_t len, stScatterGatherFunc * pstScatterGatherFunc)
     {
-        T * pIn = (T *)pDataIn;
-        const T * const pEnd = pIn + len;
+        T * pIn = static_cast<T *>(pDataIn);
+        T * pEnd = pIn + len;
 
-        // Always set first item
         T result = *pIn++;
 
-        while (pIn < pEnd)
+        if (riptide::invalid_for_type<T>::is_valid(result))
         {
-            // get the minimum
-            T temp = *pIn;
-            if (temp < result)
+            for (; pIn < pEnd; pIn++)
             {
-                result = temp;
+                T temp = *pIn;
+                if (! riptide::invalid_for_type<T>::is_valid(temp))
+                {
+                    result = riptide::invalid_for_type<T>::value;
+                    break;
+                }
+                result = std::min(result, temp);
             }
-            pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
         if (pstScatterGatherFunc->lenOut == 0)
         {
-            pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+            pstScatterGatherFunc->resultOut = riptide::cast<double>(result);
+            pstScatterGatherFunc->min_or_max = result;
         }
         else
         {
-            // in case of nan when calling min (instead of nanmin), preserve nans
-            if (pstScatterGatherFunc->resultOut == pstScatterGatherFunc->resultOut)
-            {
-                pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
-            }
-            T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)(MINF(previous, result));
+            pstScatterGatherFunc->resultOut = riptide::min<double>(pstScatterGatherFunc->resultOut, riptide::cast<double>(result));
+
+            T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+            pstScatterGatherFunc->min_or_max = riptide::min(previous, result);
         }
+
         pstScatterGatherFunc->lenOut += len;
         return (double)pstScatterGatherFunc->resultOutInt64;
     }
@@ -1186,6 +1262,20 @@ class ReduceMin final
     {
         T * pIn = (T *)pDataIn;
         T * pEnd;
+
+        // If the input type is an unsigned integer, scan ahead of time for any invalids
+        // We don't need to do this for signed integers, since the invalid sentinel is the min value,
+        // and computing the min will propagate invalids for free.
+        if constexpr (! invalid_is_min_v<T> && ! invalid_is_nan_v<T>)
+        {
+            if (contains_invalid<T>(std::span<T>(pIn, pIn + len)))
+            {
+                pstScatterGatherFunc->resultOut = riptide::invalid_for_type<double>::value;
+                pstScatterGatherFunc->min_or_max = riptide::invalid_for_type<T>::value;
+                pstScatterGatherFunc->lenOut += len;
+                return riptide::invalid_for_type<double>::value;
+            }
+        }
 
         // Always set first item
         T result = *pIn;
@@ -1238,50 +1328,18 @@ class ReduceMin final
             m4 = MIN_OP(result, m4, m6);
             m0 = MIN_OP(result, m0, m4);
 
-            if (false)
+            // Write 256 bits into memory
+            __m256i temp;
+            _mm256_storeu_si256(&temp, *(__m256i *)&m0);
+            T * tempT = (T *)&temp;
+            result = tempT[0];
+
+            // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize,
+            // pstScatterGatherFunc->resultOut, (double)result,
+            // pstScatterGatherFunc->resultOutInt64);
+            for (int i = 1; i < perReg; i++)
             {
-                // Older path
-                // Write 256 bits into memory
-                __m256i temp;
-                _mm256_storeu_si256(&temp, *(__m256i *)&m0);
-                T * tempT = (T *)&temp;
-                result = tempT[0];
-
-                // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize,
-                // pstScatterGatherFunc->resultOut, (double)result,
-                // pstScatterGatherFunc->resultOutInt64);
-                for (int i = 1; i < perReg; i++)
-                {
-                    result = MINF(result, tempT[i]);
-                }
-            }
-            else
-            {
-                // go from 256bit to 128bit to 64bit
-                // split the single 256bit register into two 128bit registers
-                U128 ym0 = CAST_256_TO_128_LO(m0);
-                U128 ym1 = CAST_256_TO_128_HI(m0);
-                __m128i temp;
-
-                // move the min to ym0
-                ym0 = MIN_OP128(result, ym0, ym1);
-
-                // move the min to lower half (64 bits)
-                ym1 = CAST_TO128ME(ym1, _mm_shuffle_pd(CAST_TO128d(ym0), CAST_TO128d(ym1), 1));
-                ym0 = MIN_OP128(result, ym0, ym1);
-
-                // Write 128 bits into memory (although only need 64bits)
-                _mm_storeu_si128(&temp, CAST_TO128i(ym0));
-                T * tempT = (T *)&temp;
-                result = tempT[0];
-
-                // printf("sofar minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize,
-                // pstScatterGatherFunc->resultOut, (double)result,
-                // pstScatterGatherFunc->resultOutInt64);
-                for (int i = 0; i < (perReg / 4); i++)
-                {
-                    result = MINF(result, tempT[i]);
-                }
+                result = riptide::min(result, tempT[i]);
             }
 
             // update pIn to last location we read
@@ -1292,27 +1350,24 @@ class ReduceMin final
         while (pIn < pEnd)
         {
             // get the minimum
-            result = MINF(result, *pIn);
+            result = riptide::min(result, *pIn);
             pIn++;
         }
 
         // Check for previous scattering.  If we are the first one
         if (pstScatterGatherFunc->lenOut == 0)
         {
-            pstScatterGatherFunc->resultOut = (double)result;
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
-            // printf("minop 0  chunk: %lld    %lf %lf %lld\n", chunkSize,
-            // pstScatterGatherFunc->resultOut, (double)result,
-            // pstScatterGatherFunc->resultOutInt64);
+            pstScatterGatherFunc->resultOut = riptide::cast<double>(result);
+            pstScatterGatherFunc->min_or_max = result;
         }
         else
         {
-            // printf("minop !0 %lf %lf\n", pstScatterGatherFunc->resultOut,
-            // (double)result);
-            pstScatterGatherFunc->resultOut = MINF(pstScatterGatherFunc->resultOut, (double)result);
-            T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-            pstScatterGatherFunc->resultOutInt64 = (int64_t)(MINF(previous, result));
+            pstScatterGatherFunc->resultOut = riptide::min<double>(pstScatterGatherFunc->resultOut, riptide::cast<double>(result));
+
+            T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+            pstScatterGatherFunc->min_or_max = riptide::min(previous, result);
         }
+
         pstScatterGatherFunc->lenOut += len;
         return pstScatterGatherFunc->resultOut;
     }
@@ -1536,6 +1591,7 @@ public:
             return avx2<double, __m256d, __m128d>;
         case NPY_LONGDOUBLE:
             return non_vector<long double>;
+
         case NPY_BOOL:
         case NPY_INT8:
             return avx2<int8_t, __m256i, __m128i>;
@@ -1544,17 +1600,17 @@ public:
         CASE_NPY_INT32:
             return avx2<int32_t, __m256i, __m128i>;
         CASE_NPY_INT64:
-
             return non_vector<int64_t>;
+
         case NPY_UINT8:
-            return non_vector<uint8_t>;
+            return avx2<uint8_t, __m256i, __m128i>;
         case NPY_UINT16:
-            return non_vector<uint16_t>;
+            return avx2<uint16_t, __m256i, __m128i>;
         CASE_NPY_UINT32:
             return avx2<uint32_t, __m256i, __m128i>;
         CASE_NPY_UINT64:
-
             return non_vector<uint64_t>;
+
         default:
             return nullptr;
         }
@@ -1620,7 +1676,7 @@ class ReduceNanMin final
             if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+                pstScatterGatherFunc->min_or_max = result;
 
                 // Set 'lenOut' to 1. This field nominally stores the total number of
                 // non-NaN values found in the array while performing the calculation;
@@ -1633,8 +1689,8 @@ class ReduceNanMin final
             {
                 pstScatterGatherFunc->resultOut = (std::min)(pstScatterGatherFunc->resultOut, (double)result);
 
-                T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::min)(previous, result));
+                T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                pstScatterGatherFunc->min_or_max = riptide::min(previous, result);
             }
 
             return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1765,7 +1821,7 @@ class ReduceNanMin final
             if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+                pstScatterGatherFunc->min_or_max = result;
 
                 // Set 'lenOut' to 1. This field nominally stores the total number of
                 // non-NaN values found in the array while performing the calculation;
@@ -1778,8 +1834,8 @@ class ReduceNanMin final
             {
                 pstScatterGatherFunc->resultOut = (std::min)(pstScatterGatherFunc->resultOut, (double)result);
 
-                T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::min)(previous, result));
+                T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                pstScatterGatherFunc->min_or_max = riptide::min(previous, result);
             }
 
             return (double)pstScatterGatherFunc->resultOutInt64;
@@ -1894,7 +1950,7 @@ class ReduceNanMax final
             if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+                pstScatterGatherFunc->min_or_max = result;
 
                 // Set 'lenOut' to 1. This field nominally stores the total number of
                 // non-NaN values found in the array while performing the calculation;
@@ -1907,8 +1963,8 @@ class ReduceNanMax final
             {
                 pstScatterGatherFunc->resultOut = (std::max)(pstScatterGatherFunc->resultOut, (double)result);
 
-                T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::max)(previous, result));
+                T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                pstScatterGatherFunc->min_or_max = riptide::max(previous, result);
             }
 
             return (double)pstScatterGatherFunc->resultOutInt64;
@@ -2039,7 +2095,7 @@ class ReduceNanMax final
             if (pstScatterGatherFunc->lenOut == 0)
             {
                 pstScatterGatherFunc->resultOut = (double)result;
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)result;
+                pstScatterGatherFunc->min_or_max = result;
 
                 // Set 'lenOut' to 1. This field nominally stores the total number of
                 // non-NaN values found in the array while performing the calculation;
@@ -2052,8 +2108,8 @@ class ReduceNanMax final
             {
                 pstScatterGatherFunc->resultOut = (std::max)(pstScatterGatherFunc->resultOut, (double)result);
 
-                T previous = (T)(pstScatterGatherFunc->resultOutInt64);
-                pstScatterGatherFunc->resultOutInt64 = (int64_t)((std::max)(previous, result));
+                T previous = std::get<T>(pstScatterGatherFunc->min_or_max);
+                pstScatterGatherFunc->min_or_max = riptide::min(previous, result);
             }
 
             return (double)pstScatterGatherFunc->resultOutInt64;
@@ -2131,21 +2187,21 @@ class ReduceSum final
         {
             pEnd = pIn + length;
 
-            // Always set first item
-            result = (double)(*pIn++);
-
             while (pIn < pEnd)
             {
-                // get the minimum
-                result += (double)(*pIn++);
+                T value = *pIn++;
+                if (! riptide::invalid_for_type<T>::is_valid(value))
+                {
+                    result = riptide::invalid_for_type<double>::value;
+                    break;
+                }
+                result += static_cast<double>(value);
             }
         }
 
         pstScatterGatherFunc->lenOut += length;
-        // printf("float adding %lf to %lf\n", pstScatterGatherFunc->resultOut,
-        // result);
-        pstScatterGatherFunc->resultOut += result;
-        pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
+        pstScatterGatherFunc->resultOut = riptide::add(pstScatterGatherFunc->resultOut, result);
+        pstScatterGatherFunc->resultOutInt64 = riptide::cast<int64_t>(pstScatterGatherFunc->resultOut);
         return result;
     }
 
@@ -2218,6 +2274,15 @@ class ReduceSum final
         double result = 0;
         int32_t * pIn = (int32_t *)pDataIn;
         int32_t * pEnd;
+
+        if (contains_invalid(std::span<int32_t>(pIn, pIn + len)))
+        {
+            pstScatterGatherFunc->resultOut = riptide::invalid_for_type<double>::value;
+            pstScatterGatherFunc->resultOutInt64 = riptide::invalid_for_type<int64_t>::value;
+            pstScatterGatherFunc->lenOut += len;
+            return riptide::invalid_for_type<double>::value;
+        }
+
         if (len >= 32)
         {
             pEnd = &pIn[32 * (len / 32)];
@@ -2268,8 +2333,8 @@ class ReduceSum final
             result += (double)(*pIn++);
         }
         pstScatterGatherFunc->lenOut += len;
-        pstScatterGatherFunc->resultOut += result;
-        pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
+        pstScatterGatherFunc->resultOut = riptide::add<double>(pstScatterGatherFunc->resultOut, result);
+        pstScatterGatherFunc->resultOutInt64 = riptide::add<int64_t>(pstScatterGatherFunc->resultOutInt64, result);
 
         return result;
     }
@@ -2525,8 +2590,7 @@ public:
         CASE_NPY_INT32:
             return ReduceAddI32;
         CASE_NPY_INT64:
-
-            return ReduceAddI64;
+            return ReduceAddSlow<int64_t>;
 
         case NPY_UINT8:
             return ReduceAddSlow<uint8_t>;
@@ -2535,8 +2599,7 @@ public:
         CASE_NPY_UINT32:
             return ReduceAddSlow<uint32_t>;
         CASE_NPY_UINT64:
-
-            return ReduceAddU64;
+            return ReduceAddSlow<uint64_t>;
 
         default:
             return nullptr;
@@ -2596,7 +2659,6 @@ public:
         CASE_NPY_INT32:
             return non_vector<int32_t>;
         CASE_NPY_INT64:
-
             return non_vector<int64_t>;
 
         case NPY_UINT8:
@@ -2606,7 +2668,6 @@ public:
         CASE_NPY_UINT32:
             return non_vector<uint32_t>;
         CASE_NPY_UINT64:
-
             return non_vector<uint64_t>;
 
         default:
@@ -2694,12 +2755,17 @@ class ReduceVariance final
 
         for (int64_t i = 0; i < len; i++)
         {
+            if (! riptide::invalid_for_type<T>::is_valid(pIn[i]))
+            {
+                result = riptide::invalid_for_type<double>::value;
+                break;
+            }
             double temp = (double)pIn[i] - mean;
             result += (temp * temp);
         }
         pstScatterGatherFunc->lenOut += len;
-        pstScatterGatherFunc->resultOut += result;
-        pstScatterGatherFunc->resultOutInt64 += (int64_t)result;
+        pstScatterGatherFunc->resultOut = riptide::add(pstScatterGatherFunc->resultOut, result);
+        pstScatterGatherFunc->resultOutInt64 = riptide::cast<int64_t>(pstScatterGatherFunc->resultOut);
         return pstScatterGatherFunc->resultOut;
     }
 
@@ -2781,7 +2847,6 @@ public:
         CASE_NPY_INT32:
             return ReduceVar<int32_t>;
         CASE_NPY_INT64:
-
             return ReduceVar<int64_t>;
 
         case NPY_UINT8:
@@ -2791,7 +2856,6 @@ public:
         CASE_NPY_UINT32:
             return ReduceVar<uint32_t>;
         CASE_NPY_UINT64:
-
             return ReduceVar<uint64_t>;
 
         default:
@@ -3197,59 +3261,101 @@ static PyObject * ReduceInternal(PyArrayObject * inArr1, REDUCE_FUNCTIONS func, 
 
         g_cMathWorker->WorkScatterGatherCall(&fl, pDataIn, len, func, &sgFunc);
 
-        if (func == REDUCE_FUNCTIONS::REDUCE_SUM || func == REDUCE_FUNCTIONS::REDUCE_NANSUM)
+        switch (func)
         {
-            // Check for overflow
+        case REDUCE_SUM:
+        case REDUCE_NANSUM:
             switch (numpyInType)
             {
-            CASE_NPY_UINT64:
-
-                if (sgFunc.resultOut > 18446744073709551615.0)
-                {
-                    LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
-                    return PyFloat_FromDouble(sgFunc.resultOut);
-                }
-                break;
             CASE_NPY_INT64:
-
                 if (sgFunc.resultOut > 9223372036854775807.0 || sgFunc.resultOut < -9223372036854775808.0)
                 {
                     LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
                     return PyFloat_FromDouble(sgFunc.resultOut);
                 }
+                return PyLong_FromLongLong(sgFunc.resultOutInt64);
+            CASE_NPY_UINT64:
+                if (sgFunc.resultOut > 18446744073709551615.0)
+                {
+                    LOGGING("Returning overflow %lf  for func %lld\n", sgFunc.resultOut, func);
+                    return PyFloat_FromDouble(sgFunc.resultOut);
+                }
+                return PyLong_FromUnsignedLongLong(riptide::cast<uint64_t>(sgFunc.resultOutInt64));
+            case NPY_FLOAT:
+            case NPY_DOUBLE:
+            case NPY_LONGDOUBLE:
+                return PyFloat_FromDouble(sgFunc.resultOut);
             default:
-                break;
+                return PyLong_FromLongLong(sgFunc.resultOutInt64);
             }
-        }
-
-        switch (numpyInType)
-        {
-        CASE_NPY_UINT64:
-
-            LOGGING("Returning %llu  vs  %lf for func %lld\n", (uint64_t)sgFunc.resultOutInt64, sgFunc.resultOut, func);
-            return PyLong_FromUnsignedLongLong(sgFunc.resultOutInt64);
-
-        case NPY_FLOAT:
-        case NPY_DOUBLE:
-        case NPY_LONGDOUBLE:
+        case REDUCE_MIN:
+        case REDUCE_MAX:
+        case REDUCE_NANMIN:
+        case REDUCE_NANMAX:
             // If the function called was a "nan___" reduction function, we need to
             // check whether it found *any* non-NaN values. Otherwise, we'll return
             // the initial value of the reduction result (usually just initialized to
             // zero when the stScatterGatherFunc is created above) which will be
             // wrong.
-            switch (func)
+            if (sgFunc.lenOut == 0)
             {
-            case REDUCE_FUNCTIONS::REDUCE_NANMIN:
-            case REDUCE_FUNCTIONS::REDUCE_NANMAX:
-                return PyFloat_FromDouble(sgFunc.lenOut > 0 ? sgFunc.resultOut : Py_NAN);
-
-            default:
-                return PyFloat_FromDouble(sgFunc.resultOut);
+                switch (numpyInType)
+                {
+                case NPY_INT8:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<int8_t>::value);
+                case NPY_INT16:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<int16_t>::value);
+                CASE_NPY_INT32:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<int32_t>::value);
+                CASE_NPY_INT64:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<int64_t>::value);
+                case NPY_UINT8:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<uint8_t>::value);
+                case NPY_UINT16:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<uint16_t>::value);
+                CASE_NPY_UINT32:
+                    return PyLong_FromLongLong(riptide::invalid_for_type<uint32_t>::value);
+                CASE_NPY_UINT64:
+                    return PyLong_FromUnsignedLongLong(riptide::invalid_for_type<uint64_t>::value);
+                case NPY_FLOAT:
+                case NPY_DOUBLE:
+                case NPY_LONGDOUBLE:
+                    return PyFloat_FromDouble(riptide::invalid_for_type<double>::value);
+                default:
+                    return NULL;
+                }
             }
-
+            else
+            {
+                switch (numpyInType)
+                {
+                case NPY_BOOL:
+                case NPY_INT8:
+                    return PyLong_FromLongLong(std::get<int8_t>(sgFunc.min_or_max));
+                case NPY_INT16:
+                    return PyLong_FromLongLong(std::get<int16_t>(sgFunc.min_or_max));
+                CASE_NPY_INT32:
+                    return PyLong_FromLongLong(std::get<int32_t>(sgFunc.min_or_max));
+                CASE_NPY_INT64:
+                    return PyLong_FromLongLong(std::get<int64_t>(sgFunc.min_or_max));
+                case NPY_UINT8:
+                    return PyLong_FromLongLong(std::get<uint8_t>(sgFunc.min_or_max));
+                case NPY_UINT16:
+                    return PyLong_FromLongLong(std::get<uint16_t>(sgFunc.min_or_max));
+                CASE_NPY_UINT32:
+                    return PyLong_FromLongLong(std::get<uint32_t>(sgFunc.min_or_max));
+                CASE_NPY_UINT64:
+                    return PyLong_FromUnsignedLongLong(std::get<uint64_t>(sgFunc.min_or_max));
+                case NPY_FLOAT:
+                case NPY_DOUBLE:
+                case NPY_LONGDOUBLE:
+                    return PyFloat_FromDouble(sgFunc.resultOut);
+                default:
+                    return NULL;
+                }
+            }
         default:
-            LOGGING("Returning %lld  vs  %lf for func %lld\n", sgFunc.resultOutInt64, sgFunc.resultOut, func);
-            return PyLong_FromLongLong(sgFunc.resultOutInt64);
+            return NULL;
         }
     }
 }
@@ -3317,4 +3423,23 @@ PyObject * Reduce(PyObject * self, PyObject * args)
 
     // punt to numpy
     Py_RETURN_NONE;
+}
+
+namespace riptide::benchmark
+{
+    void call_reduce_function(REDUCE_FUNCTIONS function, NPY_TYPES input_type, void * data, int64_t length)
+    {
+        if (function >= REDUCE_ARGMIN && function <= REDUCE_NANARGMAX)
+        {
+            auto reduce = GetArgReduceFuncPtr(input_type, function);
+            stArgScatterGatherFunc sg_func = { input_type, 0, 0, 0, -1 };
+            reduce(data, length, 0, &sg_func);
+        }
+        else
+        {
+            auto reduce = GetReduceFuncPtr(input_type, function);
+            stScatterGatherFunc sg_func = { (int32_t)input_type, 0, 0, 0, 0, 0 };
+            reduce(data, length, &sg_func);
+        }
+    }
 }

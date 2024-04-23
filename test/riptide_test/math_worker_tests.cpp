@@ -1,9 +1,10 @@
+#include "interrupt.h"
 #include "MathWorker.h"
-
 #include "ut_core.h"
 
 #include <chrono>
 #include <condition_variable>
+#include <csignal>
 #include <mutex>
 #include <thread>
 #include <unordered_set>
@@ -153,6 +154,7 @@ namespace
     {
         std::mutex mutex;
         std::condition_variable condition;
+        std::vector<int> cores;
         int64_t count;
         int64_t expected;
     };
@@ -161,6 +163,8 @@ namespace
     {
         auto * state = static_cast<ThreadWakeUpTestState *>(worker_item->WorkCallbackArg);
         std::unique_lock lock(state->mutex);
+
+        state->cores.push_back(core);
 
         int64_t work_block;
         worker_item->GetNextWorkBlock(&work_block);
@@ -282,9 +286,69 @@ namespace
             }
 
             // Check that the correct number of threads woke up
-            expect(state.count == state.expected) << "expected" << state.expected << "thread(s) to wake up, got" << state.count;
+            expect(state.count == state.expected)
+                << "expected" << state.expected << "thread(s) to wake up, got" << state.count << ", cores: " << state.cores;
 
             g_cMathWorker->pWorkerRing->CompleteWorkItem();
         } | std::vector<int32_t>{ 1, 2, 3 };
+
+        "interrupt"_test = []
+        {
+            expect(fatal(g_cMathWorker != nullptr));
+            once_start_math_workers();
+
+            struct State
+            {
+                std::mutex mutex;
+                std::condition_variable condition;
+            } state;
+
+            auto callback = [](struct stMATH_WORKER_ITEM * worker_item, int core, int64_t work_index)
+            {
+                auto * state = static_cast<State *>(worker_item->WorkCallbackArg);
+
+                // Run until interrupted
+                while (! riptide::is_interrupted())
+                {
+                    std::lock_guard lock(state->mutex);
+                    state->condition.notify_all();
+                }
+
+                worker_item->CompleteWorkBlock();
+                return true;
+            };
+
+            auto * work_item{ g_cMathWorker->GetWorkItem(CMathWorker::WORK_ITEM_BIG) };
+            work_item->DoWorkCallback = callback;
+            work_item->WorkCallbackArg = &state;
+
+            work_item->BlocksCompleted = 0;
+            work_item->BlockNext = 0;
+            work_item->BlockSize = 1;
+            work_item->BlockLast = 1;
+
+            std::unique_lock lock(state.mutex);
+            g_cMathWorker->pWorkerRing->SetWorkItem(1);
+            state.condition.wait(lock);
+            lock.unlock();
+
+            // Ignore SIGINT, otherwise the test gets killed
+            auto previous_handler = std::signal(SIGINT, SIG_IGN);
+            auto section = [&]
+            {
+                std::raise(SIGINT);
+                expect(riptide::is_interrupted());
+
+                // Wait for worker thread to go to sleep
+                while (g_cMathWorker->pWorkerRing->AnyThreadsAwakened())
+                {
+                    YieldProcessor();
+                }
+            };
+            expect(riptide::interruptible_section(section));
+            std::signal(SIGINT, previous_handler);
+
+            g_cMathWorker->pWorkerRing->CompleteWorkItem();
+        };
     };
 }

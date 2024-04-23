@@ -2,6 +2,12 @@
 #include "Recycler.h"
 #include "MathWorker.h"
 #include "immintrin.h"
+#include "logging/logging.h"
+
+namespace
+{
+    static auto logger{ riptide::logging::get_logger("Recycler") };
+}
 
 // Array to store what we can recycle
 stRecycleList g_stRecycleList[RECYCLE_ENTRIES][RECYCLE_MAXIMUM_TYPE];
@@ -383,19 +389,17 @@ static void RefCountNumpyArray(stRecycleList * pItems, int32_t lzcount, int32_t 
 }
 
 //------------------------------------------------------------
-// Just does a printf to dump the stats for an item
-static void DumpItemStats(stRecycleList * pItems, int k)
+// Returns stats for an item as string
+static std::string GetItemStats(stRecycleList * pItems, int k)
 {
     int64_t delta = (int64_t)(__rdtsc() - pItems->Item[k].tsc);
-    printf(
-        "    delta: %lld   refcount: %d  now: %lld  addr: %p  type: %d \t %p "
-        "\t %lld\n",
-        delta / NANO_BILLION, pItems->Item[k].initRefCount,
-        pItems->Item[k].recycledArray == NULL ? 0LL : (int64_t)(pItems->Item[k].recycledArray->ob_base.ob_refcnt),
-        // too dangerous -- might be gone pItems->Item[k].recycledOrigArray ==
-        // NULL ? 0 : pItems->Item[k].recycledOrigArray->ob_base.ob_refcnt,
-        pItems->Item[k].recycledArray == NULL ? NULL : PyArray_BYTES(pItems->Item[k].recycledArray), pItems->Item[k].type,
-        pItems->Item[k].recycledArray, pItems->Item[k].totalSize);
+    return std::format("    delta: {}   refcount: {}  now: {}  addr: {}  type: {} \t {} ", delta / NANO_BILLION,
+                       pItems->Item[k].initRefCount,
+                       pItems->Item[k].recycledArray == NULL ? 0LL : (int64_t)(pItems->Item[k].recycledArray->ob_base.ob_refcnt),
+                       // too dangerous -- might be gone pItems->Item[k].recycledOrigArray ==
+                       // NULL ? 0 : pItems->Item[k].recycledOrigArray->ob_base.ob_refcnt,
+                       pItems->Item[k].recycledArray == NULL ? NULL : (void *)PyArray_BYTES(pItems->Item[k].recycledArray),
+                       pItems->Item[k].type, (void *)pItems->Item[k].recycledArray, pItems->Item[k].totalSize);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -403,31 +407,27 @@ static void DumpItemStats(stRecycleList * pItems, int k)
 //       input the number 2 or 3 is roughly equivalent to 1 second
 //       if your cpu is at 2.5 GHZ then input of 150 is equal to 60 seconds or 1
 //       minute
-// Arg2: whether or not to print GC stats and also whether or not to foce a GC
+// Arg2: whether or not to force a garbage collection, doing so will also log info about the garbage collection.
 //
 // NOTE: on normal operation will only run GC when 1 billion cycles have elapsed
 // Returns TotalDeleted
-int64_t GarbageCollect(int64_t timespan, bool verbose)
+int64_t GarbageCollect(int64_t timespan, bool force)
 {
     uint64_t currentTSC = __rdtsc();
     int64_t totalDeleted = 0;
 
-    if (verbose)
+    auto loglevel{ force ? riptide::logging::loglevel::info : riptide::logging::loglevel::debug };
+
+    // non force mode will only run GC if enough cycles have expired
+    if (not force and (currentTSC - gLastGarbageCollectTSC) < 60 * NANO_BILLION)
     {
-        // verbose mode will always run GC because assumed user initiated
-        printf("--- Garbage Collector start --- timespan: %lld\n", timespan);
-    }
-    else
-    {
-        // non verbose mode will only run GC if enough cycles have expired
-        if ((currentTSC - gLastGarbageCollectTSC) < 60 * NANO_BILLION)
-        {
-            // printf("GC did not happen\n");
-            return 0;
-        }
+        logger->log(loglevel, "Skipping GC, not enough cycles since last collect");
+        return 0;
     }
 
-    LOGRECYCLE("Checking GC\n");
+    // force mode will always run GC because assumed user initiated
+    logger->log(loglevel, "--- Garbage Collector start --- timespan: {}", timespan);
+    logger->log(loglevel, "Checking GC");
 
     // remember last time we garbage collected
     gLastGarbageCollectTSC = currentTSC;
@@ -453,8 +453,7 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
             }
             if (pItems->Head != pItems->Tail)
             {
-                if (verbose)
-                    printf("%d:%d  head: %d  tail: %d\n", i, j, pItems->Head, pItems->Tail);
+                logger->log(loglevel, "{}:{} head: {}  tail: {}", i, j, pItems->Head, pItems->Tail);
                 for (int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++)
                 {
                     int64_t totalSize = pItems->Item[k].totalSize;
@@ -463,15 +462,14 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
                     if (totalSize > 0)
                     {
                         int64_t delta = (int64_t)(currentTSC - pItems->Item[k].tsc);
-                        if (verbose)
-                            DumpItemStats(pItems, k);
+                        if (logger->should_log(loglevel))
+                            logger->log(loglevel, GetItemStats(pItems, k));
 
                         // printf("Comparing %lld to %lld\n", delta, timespan);
 
                         if (delta > timespan)
                         {
-                            if (verbose)
-                                printf("    ***GC deleting with size %lld\n", totalSize);
+                            logger->log(loglevel, "    ***GC deleting with size {}", totalSize);
 
                             // Release ref count and remove entry
                             RefCountNumpyArray(pItems, i, j, k, false);
@@ -486,8 +484,7 @@ int64_t GarbageCollect(int64_t timespan, bool verbose)
     gRecursion--;
     gGarbageCollecting--;
 
-    if (verbose)
-        printf("--- Garbage Collector end   --- deleted: %lld\n", totalDeleted);
+    logger->log(loglevel, "--- Garbage Collector end   --- deleted: {}", totalDeleted);
 
     return totalDeleted;
 }
@@ -516,7 +513,7 @@ PyObject * RecycleDump(PyObject * self, PyObject * args)
                 for (int k = 0; k < RECYCLE_MAXIMUM_SEARCH; k++)
                 {
                     totalSize += pItems->Item[k].totalSize;
-                    DumpItemStats(pItems, k);
+                    std::printf(GetItemStats(pItems, k).c_str());
                 }
             }
         }
@@ -526,9 +523,6 @@ PyObject * RecycleDump(PyObject * self, PyObject * args)
     return PyLong_FromLongLong(totalSize);
 }
 
-// cache the name
-static PyObject * g_namestring = PyUnicode_FromString("_name");
-
 //-----------------------------------
 // Called when we look for recycled array
 // Scans the tables to see if a recycled array is available
@@ -536,6 +530,9 @@ PyArrayObject * RecycleFindArray(int32_t ndim, int32_t type, int64_t totalSize)
 {
     if (totalSize >= RECYCLE_MIN_SIZE && type < RECYCLE_MAXIMUM_TYPE && ndim == 1)
     {
+        // cache the name
+        static PyObject * g_namestring = PyUnicode_FromString("_name");
+
         // Based on size and type, lookup
         int64_t log2 = lzcnt_64(totalSize);
 
@@ -970,7 +967,7 @@ PyObject * RecycleGarbageCollectNow(PyObject * self, PyObject * args)
     FreeWorkSpaceAllocLarge(g_pHashTableAny);
     FreeWorkSpaceAllocSmall(g_pBitFields);
 
-    int64_t totalDeleted = GarbageCollect(timespan, false);
+    int64_t totalDeleted = GarbageCollect(timespan, true);
 
     PyDict_SetItemString(pDict, "TotalDeleted", (PyObject *)PyLong_FromLongLong(totalDeleted));
     // return PyLong_FromLongLong(totalDeleted);

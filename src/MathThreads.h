@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonInc.h"
+#include "interrupt.h"
 
 #if defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #include <fcntl.h>
@@ -225,7 +226,7 @@ struct stMATH_WORKER_ITEM
         // printf("working on block %llu\n", wBlock);
 
         // Make sure something to work on
-        if (wBlock < BlockLast)
+        if (wBlock < BlockLast && ! riptide::is_interrupted())
         {
             return wBlock;
         }
@@ -244,7 +245,7 @@ struct stMATH_WORKER_ITEM
         // printf("working on block %llu\n", wBlock);
 
         // Make sure something to work on
-        if (wBlock < BlockLast)
+        if (wBlock < BlockLast && ! riptide::is_interrupted())
         {
             int64_t lenWorkBlock;
             lenWorkBlock = BlockSize;
@@ -299,10 +300,8 @@ struct stWorkerRing
     // Change this value to wake up less workers
     int32_t FutexWakeCount;
 
-#ifdef _WIN32
     // How many threads to wake up (atomic decrement)
     int64_t ThreadWakeup;
-#endif
 
     std::atomic<int64_t> ThreadsAwakened{ 0 };
 
@@ -344,9 +343,9 @@ struct stWorkerRing
         // Once we increment other threads will notice
         InterlockedIncrement64(&WorkIndex);
 
-#if defined(_WIN32)
         ThreadWakeup = maxThreadsToWake;
 
+#if defined(_WIN32)
         // Are we allowed to wake threads?
         if (g_WakeAllAddress != NULL)
         {
