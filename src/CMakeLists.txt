@@ -111,6 +111,49 @@ set_target_properties(${TARGET_NAME} PROPERTIES
     SUFFIX "${PYTHON_EXT_LIB_SUFFIX}"
     )
 
+# Setting the target properties doesn't cause the corresponding .pdb to be renamed to
+# match, which then causes the .pdb not to be considered part of the output by the 'install' target.
+# Fix this so the .pdb is available in the installed Python egg.
+if (WIN32)
+  get_filename_component(_PYTHON_EXTENSION_SUFFIX_NOEXT ${_PYTHON_EXTENSION_SUFFIX} NAME_WLE)
+
+  # Create the PDB filename by taking the "normal" output name of the library and appending
+  # the CPython-extension suffix (without filename extension).
+  #get_target_property(RIPTIDE_OUTPUT_NAME riptide_cpp LIBRARY_OUTPUT_NAME) # TODO: Use this instead to ensure consistency; this needs to be fixed though, it gives RIPTIDE_OUTPUT_NAME-NOTFOUND
+  set(RIPTIDE_OUTPUT_NAME "riptide_cpp")
+  string(CONCAT _PYTHON_EXTENSION_PDB_NAME ${RIPTIDE_OUTPUT_NAME} ${_PYTHON_EXTENSION_SUFFIX_NOEXT})
+
+  set_target_properties(riptide_cpp PROPERTIES PDB_NAME ${_PYTHON_EXTENSION_PDB_NAME})
+endif()
+
+################################################################################
+# Set some additional optimization options (compiler-specific, but that's handled by CMake).
+################################################################################
+# Optional IPO. Do not use IPO if it's not supported by compiler.
+# If compiling with MSVC, this is meant to enable the use of Link-Time Code Generation (LTCG).
+check_ipo_supported(RESULT ipo_is_supported OUTPUT error_text_if_any)
+if(ipo_is_supported)
+  set_property(TARGET riptide_cpp PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+  message(WARNING "IPO is not supported: ${error_text_if_any}")
+endif()
+
+################################################################################
+# Preserve debugging information.
+################################################################################
+# The RelWithDebInfo configuration passes compiler flags to preserve/emit debugging info
+# but also uses /O2 (MSVC) or -O2 (gcc) rather than /Ox (MSVC) or -O3 (gcc).
+# We want to keep the max. optimization flags but turn on debugging info so we get better
+# symbols / stacktraces in case there's a crash. Do this by adding the compiler-specific flag
+# for this regardless of build configuration.
+if (MSVC)
+  target_compile_options(riptide_cpp PUBLIC /Zi)
+  target_link_options(riptide_cpp PUBLIC /DEBUG)
+else() # MSVC
+  # Assuming gcc/clang here
+  target_compile_options(riptide_cpp PUBLIC -g)
+endif()
+
 if(WIN32)
     set(RUNTIME_SPECIFIER RUNTIME)
 elseif(UNIX)
